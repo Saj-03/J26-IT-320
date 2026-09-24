@@ -1,0 +1,30 @@
+# --- Web framework ---
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+email-validator>=2.2          # EmailStr validation on sign-up
+pydantic-settings==2.5.2
+python-multipart==0.0.12
+
+# --- Database ---
+sqlalchemy==2.0.35
+psycopg2-binary>=2.9.10       # Postgres driver (Neon)
+alembic==1.13.3
+
+# --- Security ---
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# --- ML / NLP (shared by all components) ---
+numpy==1.26.4
+pandas==2.2.3
+scikit-learn==1.5.2
+xgboost==2.1.1                 # Physical wellbeing recommender
+joblib==1.4.2
+vaderSentiment==3.3.2          # Burnout: sentiment
+sentence-transformers==3.1.1   # Career: SBERT similarity
+transformers==4.45.2           # Burnout: DistilBERT emotion
+httpx==0.27.2                  # LLM API calls
+
+# --- Testing ---
+pytest==8.3.3

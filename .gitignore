@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+node_modules/
+dist/
+*.sqlite3
+backend/ml_models/*.pkl
+backend/ml_models/*.joblib
+.DS_Store
