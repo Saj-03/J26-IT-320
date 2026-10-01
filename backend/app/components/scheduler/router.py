@@ -5,8 +5,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.core.dependencies import get_current_user
 from app.components.scheduler import schemas, service
-from app.components.scheduler.models import Task, FocusSession, ScheduleChange
-from app.components.scheduler.engine import stress_rules
+from app.components.scheduler.models import AdaptationProposal, FocusSession, Task
 
 router = APIRouter()
 
@@ -23,8 +22,9 @@ def list_tasks(db: Session = Depends(get_db), user=Depends(get_current_user)):
 
 
 @router.get("/plan")
-def plan(adaptive: bool = True, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    """adaptive=false gives the STATIC baseline used in the controlled pilot."""
+def plan(adaptive: bool | None = None, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """By default uses the participant's assigned mode (ExperimentAssignment).
+    adaptive=false forces the STATIC baseline used in the controlled pilot."""
     return service.build_plan(db, user, adaptive)
 
 
@@ -36,20 +36,15 @@ def log_focus(data: schemas.FocusIn, db: Session = Depends(get_db), user=Depends
 
 @router.post("/adapt")
 def adapt(db: Session = Depends(get_db), user=Depends(get_current_user)):
-    risk = service.latest_risk_level(db, user.research_id)
-    tasks = db.query(Task).filter_by(user_id=user.id).all()
-    proposal = stress_rules.propose_changes(tasks, risk, datetime.utcnow())
-    ch = ScheduleChange(user_id=user.id, reason=proposal["reason"], change_set=proposal["changes"])
-    db.add(ch); db.commit()
-    return {"change_id": ch.id, **proposal}
+    return service.propose_adaptation(db, user)
 
 
-@router.post("/changes/{change_id}/decision")
-def decide(change_id: str, data: schemas.DecisionIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    ch = db.get(ScheduleChange, change_id)
-    if not ch or ch.user_id != user.id:
+@router.post("/changes/{proposal_id}/decision")
+def decide(proposal_id: str, data: schemas.DecisionIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    p = db.get(AdaptationProposal, proposal_id)
+    if not p or p.user_id != user.id:
         raise HTTPException(404)
-    ch.decision = data.decision; db.commit()
+    service.decide_proposal(db, p, data.decision)
     return {"ok": True}
 
 
