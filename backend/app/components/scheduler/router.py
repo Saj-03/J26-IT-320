@@ -1,22 +1,23 @@
-from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.core.dependencies import get_current_user
 from app.components.scheduler import schemas, service
-from app.components.scheduler.models import AdaptationProposal, FocusSession, Task
+from app.components.scheduler.models import AdaptationProposal, FocusSession, Subtask, Task
 
 router = APIRouter()
 
 
-@router.post("/tasks")
-def add_task(data: schemas.TaskIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    t = Task(user_id=user.id, **data.model_dump()); db.add(t); db.commit()
-    return {"id": t.id}
+@router.post("/tasks", response_model=schemas.TaskRead)
+def add_task(data: schemas.TaskCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    t = Task(user_id=user.id, **data.model_dump(exclude={"subtasks"}))
+    t.subtasks = [Subtask(**s.model_dump()) for s in data.subtasks]
+    db.add(t); db.commit(); db.refresh(t)
+    return t
 
 
-@router.get("/tasks")
+@router.get("/tasks", response_model=list[schemas.TaskRead])
 def list_tasks(db: Session = Depends(get_db), user=Depends(get_current_user)):
     return db.query(Task).filter_by(user_id=user.id).order_by(Task.deadline).all()
 
