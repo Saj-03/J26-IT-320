@@ -162,3 +162,18 @@ export const focusNotifications = [
     { id: 'fn3', emoji: '🌿', title: 'Your stress level is high', body: 'We suggest a lighter plan for today.', time: '5h ago', unread: false },
     { id: 'fn4', emoji: '🌅', title: 'You usually focus best around 9 AM', body: 'We scheduled your difficult task there.', time: 'Yesterday', unread: false }
 ];
+// [ITEM 3] Research pilot: which scheduler each participant gets.
+// 'adaptive' = full adaptive scheduler, 'static' = static baseline (control group).
+// Only the researcher changes this on the AdminResearch page. Students never see it.
+export const schedulerModes = [
+    { value: 'adaptive', label: 'Adaptive' },
+    { value: 'static', label: 'Static baseline' }
+];
+export const participantSchedulerMode = {
+    'P-0142': 'adaptive',
+    'P-0138': 'static',
+    'P-0129': 'adaptive',
+    'P-0121': 'static',
+    'P-0117': 'adaptive',
+    'P-0109': 'static'
+};

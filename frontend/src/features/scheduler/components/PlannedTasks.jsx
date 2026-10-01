@@ -1,5 +1,6 @@
-// Live plan from /scheduler/plan. adaptive=false is the STATIC baseline used in the controlled pilot.
-import { useState } from "react";
+// Live plan from /scheduler/plan.
+// [ITEM 3] The Adaptive / Static baseline toggle was REMOVED from here. Students must not see it.
+// It is now a per-participant setting on the AdminResearch page.
 import { useNavigate } from "react-router-dom";
 import { CheckIcon, PlusIcon, TimerIcon } from "lucide-react";
 import { Card } from "../../../shared/components/ui/Card";
@@ -18,8 +19,7 @@ const loadStyle = {
 
 export default function PlannedTasks() {
   const navigate = useNavigate();
-  const [adaptive, setAdaptive] = useState(true);
-  const { data, error, loading, reload } = useFetch(`/scheduler/plan?adaptive=${adaptive}`);
+  const { data, error, loading, reload } = useFetch("/scheduler/plan");
 
   return (
     <Card padding="lg">
@@ -30,14 +30,6 @@ export default function PlannedTasks() {
             Peak hours: {data?.peak_hours?.length ? data.peak_hours.map((h) => `${h}:00`).join(", ") : "still learning"}
             {data?.pomodoro && ` · ${data.pomodoro.focus_minutes} min focus / ${data.pomodoro.break_minutes} min break`}
           </p>
-        </div>
-        <div className="flex bg-cream rounded-full p-1 w-fit">
-          {[true, false].map((a) => (
-            <button key={String(a)} onClick={() => setAdaptive(a)}
-              className={cn("px-4 py-1.5 rounded-full text-sm font-semibold transition-colors", adaptive === a ? "bg-brand-500 text-white" : "text-charcoal-light")}>
-              {a ? "Adaptive" : "Static baseline"}
-            </button>
-          ))}
         </div>
       </div>
 

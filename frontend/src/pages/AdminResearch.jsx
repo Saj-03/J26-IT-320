@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { UsersIcon, ActivityIcon, CheckCircle2Icon, GaugeIcon, HeartPulseIcon, TrendingUpIcon, TrendingDownIcon, MinusIcon } from 'lucide-react';
 import { PageHeader } from '../shared/components/layout/PageHeader';
 import { Card } from '../shared/components/ui/Card';
 import { LineChart, BarChart, DonutChart } from '../shared/components/charts/Charts';
 import { participants, stressData, weeklyTasksData } from '../shared/lib/data';
 import { cn } from '../shared/lib/cn';
+// [ITEM 3] Scheduler mode options + starting values for each participant
+import { schedulerModes, participantSchedulerMode } from '../features/scheduler/data';
 const kpis = [
     { icon: UsersIcon, label: 'Total participants', value: '142', bg: 'bg-brand-50', color: 'text-brand-500' },
     { icon: ActivityIcon, label: 'Active participants', value: '118', bg: 'bg-sage-light', color: 'text-emerald-600' },
@@ -21,6 +23,9 @@ const focusDist = [
 const trendIcon = { rising: TrendingUpIcon, falling: TrendingDownIcon, stable: MinusIcon };
 const trendColor = { rising: 'text-emerald-600', falling: 'text-brand-600', stable: 'text-charcoal-muted' };
 export function AdminResearch() {
+    // [ITEM 3] Adaptive / Static baseline is chosen per participant by the researcher (moved here from the Scheduler page)
+    const [modes, setModes] = useState(participantSchedulerMode);
+    const setMode = (id, mode) => setModes((m) => ({ ...m, [id]: mode }));
     return (<div className="space-y-6">
       <PageHeader title="Research Dashboard" subtitle="Aggregated, anonymised study metrics across all participants."/>
 
@@ -89,10 +94,10 @@ export function AdminResearch() {
       <Card padding="none">
         <div className="p-5 border-b border-black/[0.05]">
           <h3 className="font-bold text-charcoal">Participants</h3>
-          <p className="text-xs text-charcoal-muted">Anonymised IDs only</p>
+          <p className="text-xs text-charcoal-muted">Anonymised IDs only · Scheduler mode is set per participant</p>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[560px]">
+          <table className="w-full text-sm min-w-[760px]">
             <thead>
               <tr className="text-left text-xs font-bold uppercase tracking-wide text-charcoal-muted">
                 <th className="px-5 py-3">Participant ID</th>
@@ -100,6 +105,8 @@ export function AdminResearch() {
                 <th className="px-5 py-3">Average Focus</th>
                 <th className="px-5 py-3">Stress Trend</th>
                 <th className="px-5 py-3">Last Active</th>
+                {/* [ITEM 3] New column */}
+                <th className="px-5 py-3">Scheduler mode</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-black/[0.05]">
@@ -122,6 +129,14 @@ export function AdminResearch() {
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-charcoal-muted">{p.active}</td>
+                    {/* [ITEM 3] Adaptive / Static baseline toggle for this participant */}
+                    <td className="px-5 py-3.5">
+                      <div className="flex bg-cream rounded-full p-1 w-fit" role="group" aria-label={`Scheduler mode for ${p.id}`}>
+                        {schedulerModes.map((m) => <button key={m.value} onClick={() => setMode(p.id, m.value)} aria-pressed={(modes[p.id] ?? 'adaptive') === m.value} className={cn('px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors', (modes[p.id] ?? 'adaptive') === m.value ? 'bg-brand-500 text-white' : 'text-charcoal-light')}>
+                            {m.label}
+                          </button>)}
+                      </div>
+                    </td>
                   </tr>);
         })}
             </tbody>
