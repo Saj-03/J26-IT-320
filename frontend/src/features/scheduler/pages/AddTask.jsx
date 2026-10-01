@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { SparklesIcon, WandSparklesIcon, CalendarIcon, ClockIcon, GaugeIcon, FlagIcon, ArrowRightIcon, CheckIcon } from 'lucide-react';
+import { SparklesIcon, WandSparklesIcon, ArrowRightIcon, CheckIcon } from 'lucide-react';
 import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
@@ -9,11 +9,15 @@ import { Field, SelectField } from '../../../shared/components/ui/Field';
 import { AIInsightCard } from '../../../shared/components/domain/AIInsightCard';
 import { cn } from '../../../shared/lib/cn';
 import { addTask } from '../api';
+import { fakeExtract } from '../utils/fakeExtract';
 export function AddTask() {
     const navigate = useNavigate();
-    const [mode, setMode] = useState('ai');
+    // [ITEM 5] "Manual entry" is now the default tab
+    const [mode, setMode] = useState('manual');
     const [input, setInput] = useState('');
-    const [preview, setPreview] = useState(false);
+    // [ITEM 5] Extracted fields shown in the preview card (null = no preview yet)
+    const [preview, setPreview] = useState(null);
+    const [confirmed, setConfirmed] = useState(false);
     const [analysing, setAnalysing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
@@ -41,10 +45,23 @@ export function AddTask() {
             setSaving(false);
         }
     };
+    // [ITEM 5] "Create Task" -> run the fake extraction and show the preview card
     const generate = () => {
-        if (input.trim().length < 3)
-            setInput('Submit chemistry report by Friday, about 3 hours');
-        setPreview(true);
+        let text = input.trim();
+        if (text.length < 3) {
+            text = 'Submit chemistry report by Friday, about 3 hours';
+            setInput(text);
+        }
+        setPreview(fakeExtract(text));
+        setConfirmed(false);
+    };
+    // [ITEM 5] Change one field in the preview card
+    const editPreview = (field, value) => setPreview((p) => ({ ...p, [field]: value }));
+    // [ITEM 5] User checked the fields and confirms. No backend yet, so we only show a saved message.
+    const confirmPreview = () => {
+        if (!preview.title.trim() || !preview.deadline)
+            return;
+        setConfirmed(true);
     };
     const breakItDown = () => {
         setAnalysing(true);
@@ -55,7 +72,8 @@ export function AddTask() {
 
       {/* Mode toggle */}
       <div className="flex bg-white rounded-full p-1 border border-black/[0.05] shadow-soft w-fit">
-        {['ai', 'manual'].map((m) => <button key={m} onClick={() => setMode(m)} className={cn('px-5 py-2 rounded-full text-sm font-semibold transition-colors', mode === m ? 'bg-brand-500 text-white' : 'text-charcoal-light')}>
+        {/* [ITEM 5] Manual entry is first and selected by default */}
+        {['manual', 'ai'].map((m) => <button key={m} onClick={() => setMode(m)} className={cn('px-5 py-2 rounded-full text-sm font-semibold transition-colors', mode === m ? 'bg-brand-500 text-white' : 'text-charcoal-light')}>
             {m === 'ai' ? 'Natural language' : 'Manual entry'}
           </button>)}
       </div>
@@ -75,31 +93,39 @@ export function AddTask() {
           <AnimatePresence>
             {preview &&
                     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+                {/* [ITEM 5] PREVIEW CARD — extracted fields the user can edit before saving */}
                 <Card padding="lg">
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center gap-2 mb-1">
                     <span className="w-7 h-7 rounded-xl bg-brand-500 text-white flex items-center justify-center">
                       <SparklesIcon size={14}/>
                     </span>
-                    <h3 className="font-bold text-charcoal">AI-generated task preview</h3>
+                    <h3 className="font-bold text-charcoal">Check your task</h3>
                   </div>
-                  <h2 className="text-xl font-extrabold text-charcoal">Chemistry Lab Report</h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
-                    {[
-                            { icon: FlagIcon, l: 'Type', v: 'Lab Report' },
-                            { icon: SparklesIcon, l: 'Subject', v: 'Chemistry' },
-                            { icon: CalendarIcon, l: 'Deadline', v: 'Fri, Jul 24' },
-                            { icon: ClockIcon, l: 'Duration', v: '3 hours' },
-                            { icon: GaugeIcon, l: 'Difficulty', v: '4 / 5' },
-                            { icon: FlagIcon, l: 'Priority', v: 'HIGH' }
-                        ].
-                            map((f) => <div key={f.l} className="bg-cream rounded-2xl p-3">
-                        <div className="flex items-center gap-1.5 text-charcoal-muted mb-1">
-                          <f.icon size={13}/>
-                          <span className="text-xs font-semibold">{f.l}</span>
-                        </div>
-                        <p className={cn('font-bold text-charcoal', f.l === 'Priority' && 'text-brand-600')}>{f.v}</p>
-                      </div>)}
+                  <p className="text-sm text-charcoal-muted mb-4">This is what we understood. Fix anything that is wrong, then confirm.</p>
+                  <div className="space-y-4">
+                    <Field label="Title" value={preview.title} onChange={(e) => editPreview('title', e.target.value)} disabled={confirmed}/>
+                    <div className="grid sm:grid-cols-3 gap-4">
+                      <Field label="Deadline" type="date" value={preview.deadline} onChange={(e) => editPreview('deadline', e.target.value)} disabled={confirmed}/>
+                      <Field label="Duration (minutes)" type="number" min={5} step={5} value={preview.minutes} onChange={(e) => editPreview('minutes', Number(e.target.value))} disabled={confirmed}/>
+                      <SelectField label="Priority" value={preview.priority} onChange={(e) => editPreview('priority', e.target.value)} disabled={confirmed}>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                      </SelectField>
+                    </div>
                   </div>
+                  {confirmed ?
+                    <p className="mt-5 text-sm font-semibold text-emerald-700 bg-sage-light rounded-2xl px-4 py-3 flex items-center gap-2">
+                      <CheckIcon size={16}/> Task saved: {preview.title}
+                    </p> :
+                    <div className="mt-5 flex flex-col sm:flex-row gap-3">
+                      <Button className="flex-1" onClick={confirmPreview} disabled={!preview.title.trim() || !preview.deadline}>
+                        <CheckIcon size={16}/> Confirm and save
+                      </Button>
+                      <Button variant="ghost" className="flex-1" onClick={() => setPreview(null)}>
+                        Cancel
+                      </Button>
+                    </div>}
                 </Card>
 
                 <AIInsightCard title="AI Scheduling Recommendation">
@@ -107,6 +133,8 @@ export function AddTask() {
                   Your focus performance is strongest during this time.
                 </AIInsightCard>
 
+                {/* [ITEM 5] Next steps appear only after the user confirmed the task */}
+                {confirmed && <>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button size="lg" className="flex-1" onClick={() => navigate('/app/schedule')}>
                     <CheckIcon size={18}/> Add to Smart Schedule
@@ -118,6 +146,7 @@ export function AddTask() {
                 <p className="text-xs text-charcoal-muted text-center -mt-2">
                   A study plan splits this into small, ordered steps you can actually start.
                 </p>
+                </>}
               </motion.div>}
           </AnimatePresence>
         </> :
