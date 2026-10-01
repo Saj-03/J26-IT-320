@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { SparklesIcon, WandSparklesIcon, ArrowRightIcon, CheckIcon } from 'lucide-react';
+import { SparklesIcon, WandSparklesIcon, ArrowRightIcon, CheckIcon, MicIcon, MicOffIcon } from 'lucide-react';
 import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
@@ -10,6 +10,7 @@ import { AIInsightCard } from '../../../shared/components/domain/AIInsightCard';
 import { cn } from '../../../shared/lib/cn';
 import { addTask } from '../api';
 import { fakeExtract } from '../utils/fakeExtract';
+import { useVoiceInput } from '../hooks/useVoiceInput';
 export function AddTask() {
     const navigate = useNavigate();
     // [ITEM 5] "Manual entry" is now the default tab
@@ -18,6 +19,21 @@ export function AddTask() {
     // [ITEM 5] Extracted fields shown in the preview card (null = no preview yet)
     const [preview, setPreview] = useState(null);
     const [confirmed, setConfirmed] = useState(false);
+    // [ITEM 6] VOICE INPUT
+    // voiceLang: 'en-US' = English (default), 'si-LK' = Sinhala
+    const [voiceLang, setVoiceLang] = useState('en-US');
+    // Text that was already in the box before the mic started (we add the spoken words after it)
+    const textBeforeVoice = useRef('');
+    const voice = useVoiceInput({
+        lang: voiceLang,
+        // Live text (interim results) goes straight into the text box so the user can see / edit it
+        onText: (spoken) => setInput(textBeforeVoice.current ? `${textBeforeVoice.current} ${spoken}` : spoken)
+    });
+    const toggleMic = () => {
+        if (!voice.listening)
+            textBeforeVoice.current = input.trim();
+        voice.toggle();
+    };
     const [analysing, setAnalysing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
@@ -47,6 +63,8 @@ export function AddTask() {
     };
     // [ITEM 5] "Create Task" -> run the fake extraction and show the preview card
     const generate = () => {
+        if (voice.listening)
+            voice.stop(); // [ITEM 6] stop the mic when the user creates the task
         let text = input.trim();
         if (text.length < 3) {
             text = 'Submit chemistry report by Friday, about 3 hours';
@@ -83,8 +101,41 @@ export function AddTask() {
           <Card padding="lg">
             <label className="text-sm font-semibold text-charcoal-light">Your task</label>
             <div className="mt-2 relative">
-              <textarea value={input} onChange={(e) => setInput(e.target.value)} rows={3} placeholder="Try typing: Submit chemistry report by Friday, about 3 hours" className="w-full rounded-2xl border border-black/10 bg-cream/50 px-4 py-3.5 text-sm text-charcoal placeholder:text-charcoal-muted outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 resize-none"/>
+              {/* Typing always works. Voice is optional. */}
+              <textarea value={input} onChange={(e) => setInput(e.target.value)} rows={3} placeholder="Try typing: Submit chemistry report by Friday, about 3 hours" className="w-full rounded-2xl border border-black/10 bg-cream/50 pl-4 pr-16 py-3.5 text-sm text-charcoal placeholder:text-charcoal-muted outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 resize-none"/>
+
+              {/* [ITEM 6] MIC BUTTON inside the text box */}
+              {voice.supported ?
+                <button type="button" onClick={toggleMic} aria-pressed={voice.listening} aria-label={voice.listening ? 'Stop voice input' : 'Start voice input'} title={voice.listening ? 'Click to stop' : 'Speak your task'} className={cn('absolute right-3 top-3 w-10 h-10 rounded-full flex items-center justify-center transition-colors', voice.listening ? 'bg-red-500 text-white' : 'bg-white text-brand-600 border border-black/10 hover:bg-brand-50')}>
+                  {/* Red pulsing ring while listening */}
+                  {voice.listening && <span className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-60"/>}
+                  <MicIcon size={18} className="relative"/>
+                </button> :
+                // [ITEM 6] Browser has no speech support (e.g. Firefox): no mic button, only a hint with a tooltip
+                <span tabIndex={0} className="group absolute right-3 top-3 w-10 h-10 rounded-full bg-black/[0.04] text-charcoal-muted flex items-center justify-center cursor-help outline-none" aria-label="Voice input works in Chrome or Edge">
+                  <MicOffIcon size={16}/>
+                  <span role="tooltip" className="pointer-events-none absolute right-0 top-11 z-10 whitespace-nowrap rounded-xl bg-charcoal text-white text-xs font-semibold px-3 py-1.5 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity">
+                    Voice input works in Chrome or Edge
+                  </span>
+                </span>}
             </div>
+
+            {/* [ITEM 6] Listening status, errors and language toggle */}
+            {voice.supported &&
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                <div className="text-xs font-semibold min-h-[1rem]" aria-live="polite">
+                  {voice.listening ?
+                    <span className="inline-flex items-center gap-1.5 text-red-600">
+                      <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"/> Listening...
+                    </span> :
+                    voice.error && <span className="text-brand-700">{voice.error}</span>}
+                </div>
+                <div className="flex bg-cream rounded-full p-0.5" role="group" aria-label="Voice language">
+                  {[{ v: 'en-US', l: 'English' }, { v: 'si-LK', l: 'සිංහල' }].map((o) => <button key={o.v} type="button" disabled={voice.listening} onClick={() => setVoiceLang(o.v)} aria-pressed={voiceLang === o.v} className={cn('px-3 py-1 rounded-full text-xs font-semibold transition-colors disabled:opacity-50', voiceLang === o.v ? 'bg-white text-charcoal shadow-soft' : 'text-charcoal-muted')}>
+                      {o.l}
+                    </button>)}
+                </div>
+              </div>}
             <Button className="mt-4" onClick={generate}>
               <WandSparklesIcon size={16}/> Create Task
             </Button>
