@@ -58,7 +58,7 @@ export function Scheduler() {
             </Button>
           </div>}/>
 
-      {/* Stress-aware adaptation banner */}
+      {/* [ITEM 2] Stress banner — uses suggestion wording (the user decides) */}
       <motion.button initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} onClick={() => navigate('/app/schedule/adjusted')} className={cn('w-full text-left rounded-3xl border p-5 flex items-center gap-4 transition-colors hover:brightness-[0.98]', stress.bg, stress.border)}>
         <span className={cn('w-2.5 h-2.5 rounded-full shrink-0', stress.dot)}/>
         <div className="flex-1 min-w-0">
@@ -66,7 +66,7 @@ export function Scheduler() {
           <p className="text-base font-semibold text-charcoal mt-0.5 leading-snug">{focusStudent.stressMessage}</p>
         </div>
         <span className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-charcoal shrink-0">
-          View Changes <ArrowRightIcon size={15}/>
+          See suggestions <ArrowRightIcon size={15}/>
         </span>
       </motion.button>
 

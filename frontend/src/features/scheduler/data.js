@@ -2,7 +2,8 @@
 export const focusStudent = {
     name: 'Awantha',
     stress: 'High',
-    stressMessage: 'Your workload has been adjusted to make today more manageable.'
+    // [ITEM 2] Suggestion wording: the system suggests, the user decides
+    stressMessage: 'We suggest a lighter plan for today. You decide what to change.'
 };
 export const loadStyles = {
     Heavy: { bg: 'bg-brand-50', text: 'text-brand-700', dot: 'bg-brand-500' },
@@ -71,18 +72,26 @@ export const weekSchedule = [
     { id: 'w9', day: 'Thursday', start: '2:00', end: '2:30', title: 'Testing', load: 'Medium', status: 'todo' },
     { id: 'w10', day: 'Friday', start: '9:00', end: '9:40', title: 'Final Review', load: 'Light', status: 'todo' }
 ];
-export const stressAdjustment = {
-    before: [
-        { time: '9:00 – 11:00', title: 'Programming', load: 'Heavy' },
-        { time: '2:00 – 3:00', title: 'Research', load: 'Medium' },
-        { time: '4:00 – 5:00', title: 'Testing', load: 'Medium' }
+// [ITEM 2] STRESS SUGGESTIONS
+// The system only SUGGESTS changes. Each change has a short reason and the user accepts / edits / rejects it.
+// Tasks due within `protectDays` days are "Protected - due soon" and are never moved.
+export const stressSuggestion = {
+    protectDays: 2,
+    // Today's original plan (what the user planned)
+    original: [
+        { id: 'p1', time: '9:00 – 11:00', title: 'Programming', load: 'Heavy', dueInDays: 5 },
+        { id: 'p2', time: '11:30 – 12:30', title: 'SQL Queries', load: 'Heavy', dueInDays: 1 },
+        { id: 'p3', time: '2:00 – 3:00', title: 'Research', load: 'Medium', dueInDays: 4 },
+        { id: 'p4', time: '4:00 – 5:00', title: 'Testing', load: 'Medium', dueInDays: 4 }
     ],
-    after: [
-        { time: '9:00 – 10:00', title: 'Programming', load: 'Heavy' },
-        { time: '10:00 – 10:30', title: 'Recovery Break', load: 'Break' },
-        { time: '2:00 – 2:30', title: 'Light Research', load: 'Light' }
-    ],
-    moved: 'Testing has been moved to tomorrow.'
+    // Suggested changes. taskId = which task it changes (null = something new, like a break)
+    changes: [
+        { id: 'c1', taskId: 'p1', title: 'Programming', from: '9:00 – 11:00', to: '9:00 – 10:00', reason: 'Shortened to 1 hour - long heavy blocks are harder on a stressful day' },
+        { id: 'c2', taskId: null, title: 'Recovery Break', from: null, to: '10:00 – 10:30', reason: 'New 30 min break - a short rest helps lower stress' },
+        { id: 'c3', taskId: 'p2', title: 'SQL Queries', from: 'Today 11:30', to: 'Tomorrow 9:00', reason: 'Move to tomorrow to free up the morning' },
+        { id: 'c4', taskId: 'p3', title: 'Research', from: '2:00 – 3:00', to: '2:00 – 2:30', reason: 'Made lighter - only reading notes today' },
+        { id: 'c5', taskId: 'p4', title: 'Testing', from: 'Today 4:00', to: 'Tomorrow 2:00', reason: 'Testing moved to tomorrow - not due until Monday' }
+    ]
 };
 export const missedSession = {
     missed: { day: 'Wednesday', time: '9:00 AM', title: 'SQL Development' },
@@ -150,6 +159,6 @@ export const mainTask = {
 export const focusNotifications = [
     { id: 'fn1', emoji: '⏰', title: 'Your Database Design session starts in 10 minutes', body: '30 minutes · 9:00 AM', time: 'Just now', unread: true },
     { id: 'fn2', emoji: '🔄', title: 'You missed your SQL session', body: 'We moved it to Thursday morning.', time: '2h ago', unread: true },
-    { id: 'fn3', emoji: '🌿', title: 'Your stress level is high', body: 'Today’s schedule has been lightened.', time: '5h ago', unread: false },
+    { id: 'fn3', emoji: '🌿', title: 'Your stress level is high', body: 'We suggest a lighter plan for today.', time: '5h ago', unread: false },
     { id: 'fn4', emoji: '🌅', title: 'You usually focus best around 9 AM', body: 'We scheduled your difficult task there.', time: 'Yesterday', unread: false }
 ];
