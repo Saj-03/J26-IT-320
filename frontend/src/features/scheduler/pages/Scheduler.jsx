@@ -69,11 +69,18 @@ export function Scheduler() {
       <PlannedTasks />
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         {legend.map((l) => <span key={l.cat} className="inline-flex items-center gap-2 text-xs font-semibold text-charcoal-muted">
             <span className={cn('w-3 h-3 rounded-md', categoryStyles[l.cat].dot)}/>
             {l.label}
           </span>)}
+        {/* [ITEM 9] Explain what the dots mean in words */}
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-charcoal-muted">
+          <span className="flex gap-0.5" aria-hidden>
+            {[0, 1, 2, 3, 4].map((k) => <span key={k} className={cn('w-1 h-1 rounded-full', k < 4 ? 'bg-charcoal-muted' : 'bg-black/10')}/>)}
+          </span>
+          Dots = priority (e.g. P4/5)
+        </span>
       </div>
 
       <Card padding="sm">
@@ -98,7 +105,7 @@ export function Scheduler() {
               {blocks.map((b, i) => {
             const cat = categoryStyles[b.category];
             const colW = `calc((100% - 56px) / 7)`;
-            return (<motion.div key={i} initial={optimised ? { scale: 0.9, opacity: 0.6 } : false} animate={{ scale: 1, opacity: 1 }} className={cn('absolute rounded-xl border p-1.5 overflow-hidden', cat.bg, cat.ring)} style={{
+            return (<motion.div key={i} title={`${b.title} · ${b.duration} · Priority ${b.focus}/5`} initial={optimised ? { scale: 0.9, opacity: 0.6 } : false} animate={{ scale: 1, opacity: 1 }} className={cn('absolute rounded-xl border p-1.5 overflow-hidden', cat.bg, cat.ring)} style={{
                     left: `calc(56px + ${b.day} * ${colW})`,
                     top: `${b.start * 64}px`,
                     width: `calc(${colW} - 6px)`,
@@ -107,8 +114,10 @@ export function Scheduler() {
                 }}>
                     <p className={cn('text-[11px] font-bold leading-tight truncate', cat.text)}>{b.title}</p>
                     <p className="text-[9px] text-charcoal-muted font-medium">{b.duration}</p>
-                    <div className="flex gap-0.5 mt-1">
-                      {Array.from({ length: 5 }).map((_, k) => <span key={k} className={cn('w-1 h-1 rounded-full', k < b.focus ? cat.dot : 'bg-black/10')}/>)}
+                    {/* [ITEM 9] Priority is not shown by colour only: tooltip (title) + visible text "P4/5" + screen-reader label */}
+                    <div className="flex items-center gap-0.5 mt-1" title={`Priority ${b.focus}/5`} role="img" aria-label={`Priority ${b.focus} out of 5`}>
+                      {Array.from({ length: 5 }).map((_, k) => <span key={k} aria-hidden className={cn('w-1 h-1 rounded-full', k < b.focus ? cat.dot : 'bg-black/10')}/>)}
+                      <span aria-hidden className="ml-1 text-[9px] font-bold text-charcoal-muted leading-none">P{b.focus}/5</span>
                     </div>
                   </motion.div>);
         })}
