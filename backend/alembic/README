@@ -1,0 +1,18 @@
+Database migrations (Alembic)
+
+Run every command from the backend/ folder. The database URL comes from DATABASE_URL in .env.
+
+  alembic upgrade head                      # create / update all tables
+  alembic current                           # which migration the database is on
+  alembic revision --autogenerate -m "msg"  # new migration after you change a model
+  alembic check                             # fails if models and database differ
+
+Migrations:
+  0001  baseline - shared + other team tables that existed before Alembic
+  0002  Component 3 scheduler tables
+
+Local Docker database (docker compose up -d db):
+  DATABASE_URL=postgresql://ihusd:ihusd@127.0.0.1:5432/ihusd alembic upgrade head
+
+A database that was already built by Base.metadata.create_all (e.g. Neon) already has
+the 0001 tables: run "alembic stamp 0001" once, then "alembic upgrade head".
