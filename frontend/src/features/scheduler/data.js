@@ -103,12 +103,25 @@ export const missedSession = {
         { day: 'Friday', time: '9:00 AM', note: 'Closer to your deadline', best: false }
     ]
 };
-export const pomodoroRecommendation = {
-    focus: 30,
-    breakMins: 7,
-    averageSession: 32,
-    reason: 'Based on your recent focus history'
-};
+// [ITEM 7] SESSION LENGTH
+// Lengths (in minutes) of the user's recent focus sessions.
+// Tip for demo: delete items so there are fewer than 5 to see the "still learning" fallback.
+export const focusSessionHistory = [28, 35, 30, 32, 26, 34, 31, 33, 29, 36];
+// We need at least this many sessions before we trust the user's own pattern
+export const MIN_SESSIONS_FOR_PATTERN = 5;
+// Standard Pomodoro used until we have enough sessions
+export const DEFAULT_SESSION = { focus: 25, breakMins: 5 };
+// Works out the focus / break length that every page should use
+export function getSessionPlan(history = focusSessionHistory) {
+    if (history.length < MIN_SESSIONS_FOR_PATTERN) {
+        // Not enough data yet -> fallback to 25 / 5
+        return { ...DEFAULT_SESSION, averageSession: null, sessionCount: history.length, learning: true };
+    }
+    const average = Math.round(history.reduce((sum, m) => sum + m, 0) / history.length);
+    const focus = Math.round(average / 5) * 5; // round to the nearest 5 minutes (31 -> 30)
+    const breakMins = Math.max(5, Math.floor(focus / 4)); // about a quarter of the focus time
+    return { focus, breakMins, averageSession: average, sessionCount: history.length, learning: false };
+}
 export const focusProgress = {
     completed: 8,
     total: 10,
