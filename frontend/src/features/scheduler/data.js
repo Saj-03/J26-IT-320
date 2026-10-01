@@ -1,4 +1,20 @@
 // Adaptive task breakdown & scheduling data — powers Schedule, Tasks and Focus.
+// [ITEM 8] SINGLE SOURCE OF TRUTH: every scheduler page (and the Overview page) reads its mock data
+// from this file, so task counts, focus/break lengths and peak hours are the same everywhere.
+// No backend is connected yet.
+
+// [ITEM 8] Greeting based on the current time (used instead of a fixed "Good morning")
+export function getGreeting(date = new Date()) {
+    const h = date.getHours();
+    if (h < 12)
+        return 'Good morning';
+    if (h < 18)
+        return 'Good afternoon';
+    return 'Good evening';
+}
+
+// [ITEM 8] The user's peak focus hours — one value used by every page
+export const peakHours = { start: 9, end: 11, label: '9 AM – 11 AM' };
 export const focusStudent = {
     name: 'Awantha',
     stress: 'High',
@@ -16,11 +32,16 @@ export const stressStyles = {
     Medium: { bg: 'bg-amber-light', border: 'border-amber-200/60', text: 'text-amber-700', dot: 'bg-amber-soft' },
     High: { bg: 'bg-brand-50', border: 'border-brand-100', text: 'text-brand-700', dot: 'bg-brand-500' }
 };
+// [ITEM 8] Today's plan — used by the Overview timeline, the Focus page and the "tasks today" count
 export const todaySessions = [
-    { id: 's1', start: '9:00 AM', end: '9:45 AM', title: 'Database Design', load: 'Heavy', day: 'Mon', status: 'todo' },
-    { id: 's2', start: '10:00 AM', end: '10:30 AM', title: 'Recovery Break', load: 'Break', day: 'Mon', status: 'todo' },
-    { id: 's3', start: '2:00 PM', end: '2:30 PM', title: 'Research Notes', load: 'Light', day: 'Mon', status: 'todo' }
+    { id: 's1', start: '9:00 AM', end: '9:45 AM', title: 'Database Design', load: 'Heavy', day: 'Mon', status: 'todo', minutes: 45, priority: 'high', category: 'academic', subtitle: 'Peak focus time' },
+    { id: 's2', start: '10:00 AM', end: '10:30 AM', title: 'Recovery Break', load: 'Break', day: 'Mon', status: 'todo', minutes: 30, priority: 'low', category: 'recovery', subtitle: 'Rest and recharge' },
+    { id: 's3', start: '2:00 PM', end: '2:30 PM', title: 'Research Notes', load: 'Light', day: 'Mon', status: 'todo', minutes: 30, priority: 'medium', category: 'academic', subtitle: 'Light work' }
 ];
+// Number of real tasks today (breaks are not tasks)
+export const todayTaskCount = todaySessions.filter((s) => s.load !== 'Break').length;
+// The first task of the day — shown on the Focus page
+export const nextFocusTask = todaySessions.find((s) => s.load !== 'Break');
 export const subtasks = [
     { id: 'st1', order: 1, title: 'Read Requirements', load: 'Light', minutes: 20, status: 'done' },
     { id: 'st2', order: 2, title: 'Create ER Diagram', load: 'Heavy', minutes: 45, status: 'done' },
@@ -55,7 +76,7 @@ export const attentionCurve = [
     { label: '9p', value: 24 }
 ];
 export const matchingRules = [
-    { load: 'Heavy', window: 'Peak Focus Time', example: '9 AM – 11 AM' },
+    { load: 'Heavy', window: 'Peak Focus Time', example: peakHours.label },
     { load: 'Medium', window: 'Normal Focus Time', example: '2 PM – 4 PM' },
     { load: 'Light', window: 'Low Focus Time', example: '7 PM – 9 PM' }
 ];
@@ -126,8 +147,7 @@ export const focusProgress = {
     completed: 8,
     total: 10,
     focusTime: '6h 40m',
-    bestPeriod: '9 AM – 11 AM',
-    averageSession: '31 minutes',
+    bestPeriod: peakHours.label,
     rescheduled: 2,
     stressAdjustments: 3,
     insight: 'You complete heavy tasks 24% faster during morning sessions.'
@@ -190,3 +210,44 @@ export const participantSchedulerMode = {
     'P-0117': 'adaptive',
     'P-0109': 'static'
 };
+
+// [ITEM 8] Weekly calendar on the Scheduler page (moved here from Scheduler.jsx)
+// day: 0 = Mon … 6 = Sun, start: row in calendarHours, span: number of rows, focus: priority 1-5
+export const calendarDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+export const calendarHours = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'];
+export const calendarBlocks = [
+    { day: 2, start: 1, span: 1, title: 'Gym', category: 'personal', duration: '1h', focus: 1 },
+    { day: 2, start: 2, span: 1, title: 'Chemistry Lab Report', category: 'academic', duration: '2h', focus: 5 },
+    { day: 2, start: 4, span: 1, title: 'Math Assignment', category: 'academic', duration: '1.5h', focus: 4 },
+    { day: 0, start: 2, span: 1, title: 'Software Eng.', category: 'academic', duration: '2.5h', focus: 5 },
+    { day: 1, start: 5, span: 2, title: 'Work Shift', category: 'work', duration: '4h', focus: 2 },
+    { day: 3, start: 2, span: 1, title: 'Group Presentation', category: 'academic', duration: '1h', focus: 3 },
+    { day: 3, start: 3, span: 1, title: 'Recovery', category: 'recovery', duration: '45m', focus: 1 },
+    { day: 4, start: 2, span: 1, title: 'Software Eng.', category: 'academic', duration: '2.5h', focus: 5 },
+    { day: 5, start: 3, span: 1, title: 'Social Time', category: 'social', duration: '2h', focus: 1 },
+    { day: 3, start: 5, span: 2, title: 'Work Shift', category: 'work', duration: '4h', focus: 2 }
+];
+export const calendarLegend = [
+    { cat: 'academic', label: 'High priority' },
+    { cat: 'work', label: 'Work' },
+    { cat: 'recovery', label: 'Recovery' },
+    { cat: 'personal', label: 'Personal' },
+    { cat: 'social', label: 'Social' }
+];
+
+// [ITEM 8] Task list for the Tasks page and "Planned by IHSD" (same shape the backend will send later)
+// Dates are made relative to today so the Today / Upcoming / Overdue tabs always work.
+function daysFromNow(days, hour = 23, minute = 59) {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    d.setHours(hour, minute, 0, 0);
+    return d.toISOString();
+}
+export const schedulerTasks = [
+    { id: 't1', title: 'Database Design', cognitive_load: 'heavy', priority: 5, status: 'todo', estimated_minutes: 45, deadline: daysFromNow(3), scheduled_start: daysFromNow(0, peakHours.start, 0) },
+    { id: 't2', title: 'Research Notes', cognitive_load: 'low', priority: 3, status: 'todo', estimated_minutes: 30, deadline: daysFromNow(4), scheduled_start: daysFromNow(0, 14, 0) },
+    { id: 't3', title: 'SQL Queries', cognitive_load: 'heavy', priority: 4, status: 'todo', estimated_minutes: 60, deadline: daysFromNow(1), scheduled_start: daysFromNow(1, peakHours.start, 0) },
+    { id: 't4', title: 'Testing', cognitive_load: 'medium', priority: 3, status: 'todo', estimated_minutes: 30, deadline: daysFromNow(4), scheduled_start: daysFromNow(1, 14, 0) },
+    { id: 't5', title: 'ER Diagram', cognitive_load: 'heavy', priority: 4, status: 'done', estimated_minutes: 45, deadline: daysFromNow(-1), scheduled_start: daysFromNow(-2, peakHours.start, 0) },
+    { id: 't6', title: 'Documentation', cognitive_load: 'medium', priority: 2, status: 'missed', estimated_minutes: 30, deadline: daysFromNow(-1), scheduled_start: null }
+];

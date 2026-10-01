@@ -68,7 +68,8 @@ export function SessionSetup() {
             </motion.div>}
 
           <div className="mt-5 space-y-3">
-            <Button size="lg" fullWidth onClick={() => navigate('/app/focus')}>
+            {/* [ITEM 8] Send the chosen lengths to the Focus page so both pages show the same numbers */}
+            <Button size="lg" fullWidth onClick={() => navigate('/app/focus', { state: { focus, breakMins: brk } })}>
               <PlayIcon size={18} fill="currentColor"/> Start Session
             </Button>
             <Button size="lg" fullWidth variant="outline" onClick={() => setManual((m) => !m)}>

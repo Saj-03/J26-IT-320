@@ -11,6 +11,7 @@ import { cn } from '../../../shared/lib/cn';
 import { addTask } from '../api';
 import { fakeExtract } from '../utils/fakeExtract';
 import { useVoiceInput } from '../hooks/useVoiceInput';
+import { peakHours } from '../data';
 export function AddTask() {
     const navigate = useNavigate();
     // [ITEM 5] "Manual entry" is now the default tab
@@ -180,7 +181,8 @@ export function AddTask() {
                 </Card>
 
                 <AIInsightCard title="AI Scheduling Recommendation">
-                  <span className="block font-bold text-charcoal mb-1">Best time: Thursday 9:00 AM – 12:00 PM</span>
+                  {/* [ITEM 8] Peak hours from data.js */}
+                  <span className="block font-bold text-charcoal mb-1">Best time: {peakHours.label}</span>
                   Your focus performance is strongest during this time.
                 </AIInsightCard>
 

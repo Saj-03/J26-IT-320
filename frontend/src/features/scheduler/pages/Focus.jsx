@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PauseIcon, PlayIcon, SlidersHorizontalIcon, StarIcon } from 'lucide-react';
 import { ProgressRing } from '../../../shared/components/ui/ProgressRing';
 import { Button } from '../../../shared/components/ui/Button';
 import { Modal } from '../../../shared/components/ui/Modal';
-import useFetch from '../../../shared/hooks/useFetch';
 import { cn } from '../../../shared/lib/cn';
+import { getSessionPlan, nextFocusTask } from '../data';
 function fmt(sec) {
     const h = Math.floor(sec / 3600);
     const m = Math.floor(sec % 3600 / 60);
@@ -17,11 +17,13 @@ function fmt(sec) {
 const finishOptions = ['Yes', 'Partly', 'No'];
 export function Focus() {
     const navigate = useNavigate();
-    // Session length comes from the adaptive pomodoro (sized to attention capacity)
-    const { data } = useFetch('/scheduler/plan');
-    const planned = data?.pomodoro?.focus_minutes ?? 25;
-    const breakMins = data?.pomodoro?.break_minutes ?? 5;
-    const taskTitle = data?.tasks?.[0]?.title ?? 'Focus session';
+    // [ITEM 8] Session length comes from data.js (same numbers as the Session Length page).
+    // If the user changed it on the Session Length page, that page sends the new values here.
+    const { state } = useLocation();
+    const recommended = getSessionPlan();
+    const planned = state?.focus ?? recommended.focus;
+    const breakMins = state?.breakMins ?? recommended.breakMins;
+    const taskTitle = nextFocusTask?.title ?? 'Focus session';
     const total = planned * 60;
 
     // [ITEM 1] TIMER USING A START TIMESTAMP

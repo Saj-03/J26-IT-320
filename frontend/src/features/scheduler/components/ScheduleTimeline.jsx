@@ -1,7 +1,11 @@
 import React from 'react';
 import { PlayIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { todaySchedule, categoryStyles, priorityStyles } from '../../../shared/lib/data';
+import { categoryStyles, priorityStyles } from '../../../shared/lib/data';
+// [ITEM 8] Today's plan comes from the scheduler data.js (same as the Scheduler and Focus pages)
+import { todaySessions } from '../data';
+import { formatMinutes } from './PlanPrimitives';
+const todaySchedule = todaySessions.map((s) => ({ ...s, time: s.start, duration: formatMinutes(s.minutes) }));
 import { cn } from '../../../shared/lib/cn';
 export function ScheduleTimeline() {
     const navigate = useNavigate();
@@ -11,7 +15,7 @@ export function ScheduleTimeline() {
             const isAcademic = block.category === 'academic';
             return (<div key={i} className="flex gap-4">
             {/* time + line */}
-            <div className="flex flex-col items-center w-12 shrink-0">
+            <div className="flex flex-col items-center w-16 shrink-0">
               <span className="text-xs font-bold text-charcoal-muted pt-1">{block.time}</span>
               <div className="relative flex-1 flex justify-center pt-2">
                 <span className={cn('w-3 h-3 rounded-full ring-4 ring-white', cat.dot)}/>
