@@ -69,7 +69,7 @@ export function AdminResearch() {
         </Card>
         <Card padding="lg">
           <h3 className="font-bold text-charcoal mb-4">Task completion over time</h3>
-          <BarChart data={weeklyTasksData}/>
+          <BarChart data={weeklyTasksData.map((d) => ({ label: d.day, value: d.value }))}/>
         </Card>
         <Card padding="lg">
           <h3 className="font-bold text-charcoal mb-4">Schedule adjustment frequency</h3>

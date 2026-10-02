@@ -149,7 +149,7 @@ export function Dashboard() {
               <h4 className="font-bold text-charcoal">Completed Tasks</h4>
               <span className="text-xs font-semibold text-brand-600">+18% vs last week</span>
             </div>
-            <BarChart data={weeklyTasksData}/>
+            <BarChart data={weeklyTasksData.map((d) => ({ label: d.day, value: d.value }))}/>
           </Card>
           <Card>
             <div className="flex items-center justify-between mb-4">
