@@ -8,9 +8,9 @@ import { Card } from '../../../shared/components/ui/Card';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { TaskCard } from '../components/TaskCard';
 import { LoadBadge } from '../components/PlanPrimitives';
-import { EmptyState, LoadingState, ErrorState } from '../../../shared/components/ui/States';
-import useFetch from '../../../shared/hooks/useFetch';
-import { mainTask, subtasks } from '../data';
+import { EmptyState } from '../../../shared/components/ui/States';
+// [ITEM 8] Tasks come from data.js (same list as the Scheduler page), no backend yet
+import { mainTask, subtasks, schedulerTasks } from '../data';
 import { cn } from '../../../shared/lib/cn';
 const tabs = ['All', 'Today', 'Upcoming', 'Completed', 'Overdue'];
 const sourceCategory = { career: 'career', physical: 'personal' };
@@ -51,8 +51,7 @@ export function Tasks() {
     const navigate = useNavigate();
     const [tab, setTab] = useState('All');
     const [q, setQ] = useState('');
-    const { data, error, loading, reload } = useFetch('/scheduler/tasks');
-    const tasks = (data || []).map(toCard);
+    const tasks = schedulerTasks.map(toCard);
     const list = filterTasks(tasks, tab, q);
     return (<div className="space-y-6">
       <PageHeader title="Tasks" subtitle="Everything on your plate — grouped, prioritised and scheduled for you." action={<Button onClick={() => navigate('/app/add-task')}>
@@ -130,9 +129,7 @@ export function Tasks() {
       </div>
 
       {/* List */}
-      {loading && !data ? <LoadingState label="Loading your tasks…"/> :
-            error ? <ErrorState onRetry={reload}/> :
-            list.length === 0 ?
+      {list.length === 0 ?
             <EmptyState title="Nothing here yet" desc="You’re all caught up in this view. Add a task and IHSD will find the best time for it." actionLabel="Add a task" onAction={() => navigate('/app/add-task')}/> :
             <div className="grid md:grid-cols-2 gap-4">
           {list.map((t) => <TaskCard key={t.id} task={t} onStart={() => navigate('/app/focus/setup')}/>)}

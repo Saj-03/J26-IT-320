@@ -1,14 +1,21 @@
-// Live plan from /scheduler/plan. adaptive=false is the STATIC baseline used in the controlled pilot.
-import { useState } from "react";
+// "Planned by IHSD" card on the Scheduler page.
+// [ITEM 8] Uses mock data from data.js (no backend yet): same tasks, peak hours and focus/break as other pages.
+// [ITEM 3] The Adaptive / Static baseline toggle was REMOVED from here. Students must not see it.
+// It is now a per-participant setting on the AdminResearch page.
 import { useNavigate } from "react-router-dom";
-import { CheckIcon, PlusIcon, TimerIcon } from "lucide-react";
+import { useState } from "react";
+import { CheckIcon, PlusIcon, TimerIcon, HeartHandshakeIcon } from "lucide-react";
 import { Card } from "../../../shared/components/ui/Card";
 import { Button } from "../../../shared/components/ui/Button";
-import { LoadingState, ErrorState, EmptyState } from "../../../shared/components/ui/States";
-import useFetch from "../../../shared/hooks/useFetch";
+import { EmptyState } from "../../../shared/components/ui/States";
 import { cn } from "../../../shared/lib/cn";
-import AdaptationBanner from "./AdaptationBanner";
-import { completeTask } from "../api";
+import { schedulerTasks, peakHours, getSessionPlan } from "../data";
+
+// [ITEM 8] Turn the shared task list into the plan shape this card shows (only tasks not done yet)
+const startingPlan = schedulerTasks
+  .filter((t) => t.status !== "done")
+  .map((t) => ({ id: t.id, title: t.title, load: t.cognitive_load, start: t.scheduled_start, deadline: t.deadline }));
+const session = getSessionPlan();
 
 const loadStyle = {
   heavy: "bg-brand-50 text-brand-700",
@@ -18,8 +25,9 @@ const loadStyle = {
 
 export default function PlannedTasks() {
   const navigate = useNavigate();
-  const [adaptive, setAdaptive] = useState(true);
-  const { data, error, loading, reload } = useFetch(`/scheduler/plan?adaptive=${adaptive}`);
+  const [tasks, setTasks] = useState(startingPlan);
+  // Mark a task done = remove it from the plan (local only)
+  const complete = (id) => setTasks((ts) => ts.filter((t) => t.id !== id));
 
   return (
     <Card padding="lg">
@@ -27,30 +35,24 @@ export default function PlannedTasks() {
         <div>
           <h3 className="font-bold text-charcoal">Planned by IHSD</h3>
           <p className="text-sm text-charcoal-muted">
-            Peak hours: {data?.peak_hours?.length ? data.peak_hours.map((h) => `${h}:00`).join(", ") : "still learning"}
-            {data?.pomodoro && ` · ${data.pomodoro.focus_minutes} min focus / ${data.pomodoro.break_minutes} min break`}
+            Peak hours: {peakHours.label} · {session.focus} min focus / {session.breakMins} min break
           </p>
-        </div>
-        <div className="flex bg-cream rounded-full p-1 w-fit">
-          {[true, false].map((a) => (
-            <button key={String(a)} onClick={() => setAdaptive(a)}
-              className={cn("px-4 py-1.5 rounded-full text-sm font-semibold transition-colors", adaptive === a ? "bg-brand-500 text-white" : "text-charcoal-light")}>
-              {a ? "Adaptive" : "Static baseline"}
-            </button>
-          ))}
         </div>
       </div>
 
-      <div className="mb-5"><AdaptationBanner onDone={reload} /></div>
+      {/* Opens the stress suggestions page (the user decides there) */}
+      <div className="mb-5">
+        <Button variant="soft" size="sm" onClick={() => navigate("/app/schedule/adjusted")}>
+          <HeartHandshakeIcon size={15} /> Check if my plan should ease up
+        </Button>
+      </div>
 
-      {loading && !data ? <LoadingState label="Building your plan…" /> :
-        error ? <ErrorState onRetry={reload} /> :
-        !data?.tasks?.length ? (
+      {!tasks.length ? (
           <EmptyState title="No tasks to plan yet" desc="Add a task and IHSD will place it in your best focus hours."
             actionLabel="Add a task" onAction={() => navigate("/app/add-task")} />
         ) : (
           <ul className="space-y-2">
-            {data.tasks.map((t) => (
+            {tasks.map((t) => (
               <li key={t.id} className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl bg-cream p-3.5">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -66,7 +68,7 @@ export default function PlannedTasks() {
                   <Button size="sm" variant="outline" className="bg-white" onClick={() => navigate("/app/focus")}>
                     <TimerIcon size={14} /> Focus
                   </Button>
-                  <Button size="sm" onClick={() => completeTask(t.id).then(reload)}>
+                  <Button size="sm" onClick={() => complete(t.id)}>
                     <CheckIcon size={14} /> Done
                   </Button>
                 </div>

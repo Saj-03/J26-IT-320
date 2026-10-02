@@ -6,7 +6,7 @@ import { PageHeader } from '../../../../shared/components/layout/PageHeader';
 import { Card } from '../../../../shared/components/ui/Card';
 import { Button } from '../../../../shared/components/ui/Button';
 import { AIInsightCard } from '../../../../shared/components/domain/AIInsightCard';
-import { pomodoroRecommendation } from '../../data';
+import { getSessionPlan, MIN_SESSIONS_FOR_PATTERN } from '../../data';
 function Stepper({ label, value, setValue, step, suffix }) {
     return (<div className="flex items-center justify-between rounded-2xl bg-cream p-4">
       <span className="text-sm font-semibold text-charcoal-light">{label}</span>
@@ -23,19 +23,29 @@ function Stepper({ label, value, setValue, step, suffix }) {
       </div>
     </div>);
 }
+// [ITEM 7] Recommended lengths (or the 25 / 5 fallback when there are fewer than 5 sessions)
+const plan = getSessionPlan();
 export function SessionSetup() {
     const navigate = useNavigate();
-    const [focus, setFocus] = useState(pomodoroRecommendation.focus);
-    const [brk, setBrk] = useState(pomodoroRecommendation.breakMins);
+    const [focus, setFocus] = useState(plan.focus);
+    const [brk, setBrk] = useState(plan.breakMins);
     const [manual, setManual] = useState(false);
     return (<div className="space-y-6">
       <PageHeader title="Session Length" subtitle="We suggest a length that matches how you actually focus."/>
 
       <div className="max-w-xl space-y-5">
-        <AIInsightCard title="Based on your recent focus history">
-          We recommend a <b>{pomodoroRecommendation.focus} minute</b> focus block followed by a{' '}
-          <b>{pomodoroRecommendation.breakMins} minute</b> break.
-        </AIInsightCard>
+        {/* [ITEM 7] FALLBACK STATE — fewer than 5 sessions, so we use the standard 25 / 5 */}
+        {plan.learning ?
+            <AIInsightCard title="Still learning">
+            We’re still learning your focus pattern - using <b>{plan.focus} min focus</b> / <b>{plan.breakMins} min break</b>.
+            <span className="block text-xs mt-1">
+              {plan.sessionCount} of {MIN_SESSIONS_FOR_PATTERN} sessions done. After {MIN_SESSIONS_FOR_PATTERN} sessions we suggest a length that fits you.
+            </span>
+          </AIInsightCard> :
+            <AIInsightCard title="Based on your recent focus history">
+            We recommend a <b>{plan.focus} minute</b> focus block followed by a{' '}
+            <b>{plan.breakMins} minute</b> break.
+          </AIInsightCard>}
 
         <Card padding="lg">
           <div className="grid grid-cols-2 gap-3">
@@ -58,7 +68,8 @@ export function SessionSetup() {
             </motion.div>}
 
           <div className="mt-5 space-y-3">
-            <Button size="lg" fullWidth onClick={() => navigate('/app/focus')}>
+            {/* [ITEM 8] Send the chosen lengths to the Focus page so both pages show the same numbers */}
+            <Button size="lg" fullWidth onClick={() => navigate('/app/focus', { state: { focus, breakMins: brk } })}>
               <PlayIcon size={18} fill="currentColor"/> Start Session
             </Button>
             <Button size="lg" fullWidth variant="outline" onClick={() => setManual((m) => !m)}>
@@ -67,12 +78,14 @@ export function SessionSetup() {
           </div>
         </Card>
 
-        <Card padding="sm" className="flex items-center gap-3">
+        {/* [ITEM 7] Average is only shown when we have enough sessions */}
+        {!plan.learning &&
+            <Card padding="sm" className="flex items-center gap-3">
           <span className="text-2xl">📊</span>
           <p className="text-sm text-charcoal-light">
-            Average focused session: <b className="text-charcoal">{pomodoroRecommendation.averageSession} minutes</b>
+            Average focused session: <b className="text-charcoal">{plan.averageSession} minutes</b> ({plan.sessionCount} sessions)
           </p>
-        </Card>
+        </Card>}
       </div>
     </div>);
 }
