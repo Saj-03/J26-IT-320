@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MoonIcon, ZapIcon, BookOpenIcon, BriefcaseIcon, UsersIcon, ArrowRightIcon, SparklesIcon, NotebookPenIcon, MessageCircleHeartIcon, RefreshCwIcon } from 'lucide-react';
@@ -9,7 +9,7 @@ import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { LineChart } from '../../../shared/components/charts/Charts';
 import { stressData } from '../../../shared/lib/data';
 import { cn } from '../../../shared/lib/cn';
-import { sendMood, computeSignal } from '../api';
+import { sendMood, computeSignal, getSummary } from '../api';
 const moods = [
     { emoji: '😣', label: 'Struggling', score: 1 },
     { emoji: '😐', label: 'Okay', score: 3 },
@@ -29,11 +29,17 @@ export function Wellbeing() {
     const [mood, setMood] = useState(null);
     const [signal, setSignal] = useState(null);
     const [updating, setUpdating] = useState(false);
+    const [history, setHistory] = useState([]);
+    useEffect(() => {
+        getSummary().then((s) => { setSignal(s.latest); setHistory(s.history); }).catch(() => { });
+    }, []);
     const tapMood = (i) => sendMood(moods[i].score).then(() => setMood(i));
     const updateSignal = async () => {
         setUpdating(true);
         try {
-            setSignal(await computeSignal());
+            const s = await computeSignal();
+            setSignal(s);
+            setHistory((h) => [...h, s.risk_score].slice(-14));
         }
         finally {
             setUpdating(false);
@@ -97,9 +103,11 @@ export function Wellbeing() {
                 <span className="font-bold text-brand-700">Wellbeing summary</span>
               </div>
               <p className="text-charcoal-light leading-relaxed text-sm">
-                {signal ? <>This week’s load looks <strong className="text-charcoal">{signal.risk_level.toLowerCase()}</strong> compared with your usual week.</> : <>Your stress appears slightly elevated. We’ve automatically created more breathing room in your schedule
-                today — nothing you need to do.</>}
+                {signal ? <>Your pattern this week looks <strong className="text-charcoal">{signal.label}</strong> compared with your usual week.</> : <>Not enough information yet. A quick mood tap or a journal entry helps build your picture — everything here is optional.</>}
               </p>
+              {signal?.reasons?.length > 0 && signal.reasons[0] !== 'not enough data yet' && <ul className="mt-3 space-y-1 text-xs text-charcoal-light list-disc pl-4">
+                  {signal.reasons.map((r) => <li key={r}>{r}</li>)}
+                </ul>}
               <p className="text-xs text-charcoal-muted mt-3 leading-relaxed">
                 This is an awareness tool, not a diagnosis. If you feel unsafe, contact the university counselling service.
               </p>
@@ -113,18 +121,18 @@ export function Wellbeing() {
           </motion.div>
 
           <Card>
-            <h3 className="font-bold text-charcoal mb-1">Weekly stress</h3>
-            <p className="text-xs text-charcoal-muted mb-3">Gently trending down over the weekend</p>
-            <LineChart data={stressData.map((d) => ({ label: d.day, value: d.value }))} color="#F2B857"/>
+            <h3 className="font-bold text-charcoal mb-1">Your pattern over time</h3>
+            <p className="text-xs text-charcoal-muted mb-3">{history.length > 1 ? 'Recent updates (higher = a heavier pattern)' : 'Update your pattern a few times to see a trend'}</p>
+            <LineChart data={history.length > 1 ? history.map((v, i) => ({ label: String(i + 1), value: Math.round(v * 100) })) : stressData.map((d) => ({ label: d.day, value: d.value }))} color="#F2B857"/>
           </Card>
         </div>
       </div>
 
       {/* Stress-aware scheduling */}
-      <StressAwareScheduling />
+      {signal && signal.risk_level !== 'LOW' && <StressAwareScheduling signal={signal}/>}
     </div>);
 }
-function StressAwareScheduling() {
+function StressAwareScheduling({ signal }) {
     return (<Card padding="lg">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>
@@ -132,8 +140,8 @@ function StressAwareScheduling() {
           <p className="text-sm text-charcoal-muted">How IHSD lightened your day — automatically.</p>
         </div>
         <div className="flex gap-2">
-          <span className="text-xs font-bold bg-amber-light text-amber-700 rounded-full px-3 py-1.5">Signal: Elevated</span>
-          <span className="text-xs font-bold bg-brand-50 text-brand-700 rounded-full px-3 py-1.5">Risk 0.78 · Rising</span>
+          <span className="text-xs font-bold bg-amber-light text-amber-700 rounded-full px-3 py-1.5">Pattern: {signal.label}</span>
+          <span className="text-xs font-bold bg-brand-50 text-brand-700 rounded-full px-3 py-1.5">{Math.round(signal.risk_score * 100)}% · {signal.trend.toLowerCase()}</span>
         </div>
       </div>
 
