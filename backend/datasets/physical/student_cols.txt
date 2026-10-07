@@ -1,0 +1,106 @@
+0: Timestamp
+1: What is your current academic status?
+2: What is your current employment status
+3: What is your Faculty academic field
+4: What is your degree programme or specialisation?
+5: How would you describe your current academic performance trend?
+(If you are in your 1st year and it is too early to tell, select the last option.)
+6: What career area are you currently most interested in?
+7: What specific career role do you prefer most?
+Short answer — e.g. Software Engineer, Accountant, Teacher, Nurse, Lawyer
+8: How confident are you about this career interest?
+9: Did you previously prefer a different career path?
+10: If yes, what was your previous career interest?
+11: Rate your current skill level in the following area:
+1 = No knowledge  |  5 = Advanced [Digital literacy]
+12: Rate your current skill level in the following area:
+1 = No knowledge  |  5 = Advanced [Communication]
+13: Rate your current skill level in the following area:
+1 = No knowledge  |  5 = Advanced [Problem solving]
+14: Rate your current skill level in the following area:
+1 = No knowledge  |  5 = Advanced [Leadership]
+15: Rate your current skill level in the following area:
+1 = No knowledge  |  5 = Advanced [Teamwork]
+16: Rate your current skill level in the following area:
+1 = No knowledge  |  5 = Advanced [Research]
+17: Rate your current skill level in the following area:
+1 = No knowledge  |  5 = Advanced [Data Analysis]
+18: Rate your current skill level in the following area:
+1 = No knowledge  |  5 = Advanced [Documentation]
+19: Rate your current skill level in the following area:
+1 = No knowledge  |  5 = Advanced [Creativity]
+20: What is your preferred learning method?
+21: How consistent are you with learning new skills outside university work?
+22: Have you participated in extracurricular activities?
+23: What type of extracurricular activities have you participated in? 
+Select all that apply
+24: What is your highest role in extracurricular activities
+25: Have you completed certifications, courses, projects, or practical work related to your career?
+26: What type of career-related work have you completed?
+Select all that apply
+27: What type of career support would be most useful for you?
+Select up to 3 options
+28: How many subjects or modules are you currently studying?
+29: Approximately how many hours do you study per week outside lectures?
+30: At what time of day are you usually most productive?
+31: Do you have a part-time or full-time job?
+32: If yes, how many hours do you work per week
+33: Which commitments normally affect your study schedule?
+Select all that apply
+34: How many academic tasks do you normally have in one week?
+35: How often do you complete tasks before the deadline?
+36: When several tasks are due, which one do you normally do first?
+37: Would you like a system to automatically reduce your workload when your stress level becomes high?
+38: What is your biggest problem when managing university tasks?
+Optional — your answer will be used for qualitative analysis only
+39: In the last month, how often have you felt the following? [Been upset because of something that happened unexpectedly?]
+40: In the last month, how often have you felt the following? [Unable to control the important things in your life?]
+41: In the last month, how often have you felt the following? [Nervous and stressed?]
+42: In the last month, how often have you felt the following? [Confident about your ability to handle your personal problems?]
+43: In the last month, how often have you felt the following? [Things were going your way?]
+44: In the last month, how often have you felt the following? [Unable to cope with all the things you had to do?]
+45: In the last month, how often have you felt the following? [Able to control irritations in your life?]
+46: In the last month, how often have you felt the following? [On top of things?]
+47: In the last month, how often have you felt the following? [Angered because of things that were outside of your control?]
+48: In the last month, how often have you felt the following? [Difficulties were piling up so high that you could not overcome them?]
+49: How many hours do you usually sleep per night on average?
+Enter a whole number between 1 and 12
+50: How often does stress affect your ability to complete academic tasks?
+51: When you are highly stressed, would moving lower-priority tasks to another day help you?
+52: What is your age?
+Enter a whole number
+53: What is your height?
+Enter in centimetres — e.g. 165
+54: What is your current weight?
+Enter in kilograms — e.g. 62. BMI will be calculated automatically.
+55: What is your main physical wellbeing goal?
+Select all that apply
+56: How would you describe your current physical activity level?
+57: How often do you currently exercise?
+Enter a number between 0 and 7 — days per week
+58: Which physical activities would you be willing to do regularly?
+Select all that apply
+59: Do you have any physical limitations that should be considered when recommending exercises?
+60: Physical limitations that should be considered when recommending exercises?
+61: What exercise facilities or equipment do you have access to?
+Select all that apply
+62: On a typical university day, how much time can you realistically spend on physical activity?
+63: How motivated are you to maintain healthy physical habits?
+64: What are the main reasons that make it difficult to maintain healthy physical habits?
+Select all that apply
+65: What is your main nutrition goal?
+Select all that apply
+66: What is your meal preference?
+67: What is your dietary preference?
+68: Where do you usually get your meals?
+69: Rate how often each of the following applies to you, based on the past few weeks   [How often do you feel tired?]
+70: Rate how often each of the following applies to you, based on the past few weeks   [How often are you physically exhausted?]
+71: Rate how often each of the following applies to you, based on the past few weeks   [How often are you emotionally exhausted?]
+72: Rate how often each of the following applies to you, based on the past few weeks   [How often do you think: "I can't take it anymore"?]
+73: Rate how often each of the following applies to you, based on the past few weeks   [How often do you feel worn out?]
+74: Rate how often each of the following applies to you, based on the past few weeks   [How often do you feel weak and susceptible to illness?]
+75: Rate how often each of the following applies to you, based on the past few weeks   [How often do you feel worn out at the end of a day of classes/studying?]
+76: Rate how often each of the following applies to you, based on the past few weeks   [How often are you exhausted in the morning at the thought of another day of classes/studying?]
+77: Rate how often each of the following applies to you, based on the past few weeks   [How often do you feel that every hour of studying is tiring for you?]
+78: Rate how often each of the following applies to you, based on the past few weeks   [Do you have enough energy for family and friends during your leisure time?]
+79: Column 69
