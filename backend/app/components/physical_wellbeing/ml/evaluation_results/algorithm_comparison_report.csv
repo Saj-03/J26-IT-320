@@ -1,0 +1,6 @@
+Algorithm,R2_Score,RMSE,MAE,Training_Time_sec,Inference_Time_sec
+Linear Regression,0.891,0.1029,0.0858,0.0168,0.0003
+Decision Tree,0.996,0.0197,0.0068,0.0191,0.0013
+Random Forest,0.9966,0.0182,0.0067,1.3928,0.0304
+Gradient Boosting,0.9974,0.0159,0.0067,2.0784,0.0156
+XGBoost,0.997,0.0169,0.0079,0.3171,0.0052

@@ -1,0 +1,26 @@
+{
+    "model_type": "XGBRegressor",
+    "feature_cols": [
+        "student_workload_score",
+        "student_stress_score",
+        "student_burnout_score",
+        "student_sleep_deficit",
+        "student_bmi",
+        "student_available_mins",
+        "item_duration_mins",
+        "item_intensity_level",
+        "item_prep_time",
+        "item_protein",
+        "item_calories",
+        "is_exam_period",
+        "limitation_conflict",
+        "equipment_match"
+    ],
+    "metrics": {
+        "rmse": 0.0169,
+        "mae": 0.0079,
+        "r2_score": 0.997
+    },
+    "training_samples": 10080,
+    "test_samples": 2520
+}
