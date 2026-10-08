@@ -6,8 +6,11 @@ from app.core.dependencies import get_current_user
 from app.components.career import schemas, service
 from app.components.career.models import CareerProfile
 from app.components.career.ml import interview_eval
+from app.components.career.routes import router as acrds_router
 
 router = APIRouter()
+# ACRDS MVP endpoints (health, recommend-careers, gap-analysis, roadmap, careers)
+router.include_router(acrds_router)
 
 
 def _profile(db, user):

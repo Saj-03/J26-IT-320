@@ -1,0 +1,172 @@
+[
+  {
+    "career_id": "software_engineer",
+    "career_name": "Software Engineer",
+    "career_area": "Technology/Software",
+    "description": "Designs, builds, tests and maintains software applications and systems.",
+    "required_skills": {
+      "digital_literacy": 5, "communication": 3, "problem_solving": 5, "leadership": 2, "teamwork": 4,
+      "research": 3, "data_analysis": 3, "documentation": 4, "creativity": 3
+    },
+    "required_tools": ["Git/GitHub", "VS Code", "Java/Python/JavaScript", "SQL", "Docker"],
+    "main_tasks": ["Write clean and testable code", "Design software components", "Review code and fix bugs", "Collaborate in agile sprints"],
+    "recommended_courses": ["Data Structures and Algorithms", "Object-Oriented Design Patterns", "Full-Stack Web Development"],
+    "recommended_projects": ["Build a full-stack web app with authentication", "Contribute to an open-source repository"],
+    "recommended_certifications": ["AWS Certified Developer - Associate", "Oracle Certified Professional: Java SE Developer"],
+    "interview_focus_areas": ["Data structures and algorithms", "OOP principles", "System design basics", "Version control workflow"],
+    "expected_keywords": ["algorithm", "complexity", "OOP", "API", "testing", "git", "design pattern"]
+  },
+  {
+    "career_id": "data_analyst",
+    "career_name": "Data Analyst",
+    "career_area": "Data/Analytics",
+    "description": "Collects, cleans and analyses data to produce insights and dashboards for decision-making.",
+    "required_skills": {
+      "digital_literacy": 4, "communication": 4, "problem_solving": 4, "leadership": 2, "teamwork": 3,
+      "research": 4, "data_analysis": 5, "documentation": 3, "creativity": 3
+    },
+    "required_tools": ["Excel", "SQL", "Power BI/Tableau", "Python (pandas)"],
+    "main_tasks": ["Clean and prepare datasets", "Build dashboards and reports", "Identify trends and patterns", "Present insights to stakeholders"],
+    "recommended_courses": ["SQL for Data Analysis", "Statistics for Data Science", "Power BI Data Visualization"],
+    "recommended_projects": ["Build a sales dashboard from a public dataset", "Exploratory data analysis notebook on a Kaggle dataset"],
+    "recommended_certifications": ["Google Data Analytics Professional Certificate", "Microsoft Certified: Power BI Data Analyst Associate"],
+    "interview_focus_areas": ["SQL queries and joins", "Data cleaning", "Data visualization", "Explaining insights"],
+    "expected_keywords": ["SQL", "dashboard", "insight", "trend", "visualization", "KPI", "cleaning"]
+  },
+  {
+    "career_id": "business_analyst",
+    "career_name": "Business Analyst",
+    "career_area": "Business/Management",
+    "description": "Bridges business needs and technical teams by gathering requirements and improving processes.",
+    "required_skills": {
+      "digital_literacy": 3, "communication": 5, "problem_solving": 4, "leadership": 3, "teamwork": 4,
+      "research": 4, "data_analysis": 4, "documentation": 5, "creativity": 3
+    },
+    "required_tools": ["Excel", "Jira/Confluence", "Visio/Draw.io", "SQL basics"],
+    "main_tasks": ["Elicit and document requirements", "Model business processes", "Write BRDs and user stories", "Coordinate between stakeholders and developers"],
+    "recommended_courses": ["Business Analysis Fundamentals", "Requirements Engineering", "Business Process Modelling (BPMN)"],
+    "recommended_projects": ["Write a BRD for a university system", "Model an as-is/to-be process with BPMN"],
+    "recommended_certifications": ["IIBA ECBA", "PMI-PBA (later career)"],
+    "interview_focus_areas": ["Requirement gathering techniques", "Stakeholder management", "Use cases and user stories", "Process improvement"],
+    "expected_keywords": ["requirements", "stakeholder", "BRD", "user story", "process", "gap analysis"]
+  },
+  {
+    "career_id": "ui_ux_designer",
+    "career_name": "UI/UX Designer",
+    "career_area": "Design/Creative",
+    "description": "Designs user-friendly, accessible and visually appealing digital experiences.",
+    "required_skills": {
+      "digital_literacy": 4, "communication": 4, "problem_solving": 3, "leadership": 2, "teamwork": 4,
+      "research": 4, "data_analysis": 2, "documentation": 3, "creativity": 5
+    },
+    "required_tools": ["Figma", "Adobe XD", "Miro", "Maze/usability testing tools"],
+    "main_tasks": ["Conduct user research", "Create wireframes and prototypes", "Run usability tests", "Maintain design systems"],
+    "recommended_courses": ["Google UX Design Course", "Interaction Design Foundations", "Accessibility in Design"],
+    "recommended_projects": ["Redesign a mobile app with a case study", "Build a clickable Figma prototype and test it with 5 users"],
+    "recommended_certifications": ["Google UX Design Professional Certificate", "NN/g UX Certification"],
+    "interview_focus_areas": ["Design process", "Portfolio walkthrough", "User research methods", "Accessibility"],
+    "expected_keywords": ["user research", "persona", "wireframe", "prototype", "usability", "accessibility"]
+  },
+  {
+    "career_id": "qa_engineer",
+    "career_name": "QA Engineer",
+    "career_area": "Technology/Software",
+    "description": "Ensures software quality through manual and automated testing.",
+    "required_skills": {
+      "digital_literacy": 4, "communication": 3, "problem_solving": 4, "leadership": 2, "teamwork": 4,
+      "research": 3, "data_analysis": 3, "documentation": 5, "creativity": 3
+    },
+    "required_tools": ["Selenium", "Postman", "Jira", "JUnit/PyTest", "Cypress"],
+    "main_tasks": ["Write test plans and test cases", "Automate regression tests", "Report and track defects", "Perform API testing"],
+    "recommended_courses": ["Software Testing Fundamentals", "Test Automation with Selenium", "API Testing with Postman"],
+    "recommended_projects": ["Automate test cases for a demo web app", "Create a full test plan for a sample system"],
+    "recommended_certifications": ["ISTQB Foundation Level", "Certified Selenium Professional"],
+    "interview_focus_areas": ["Testing types and levels", "Writing test cases", "Bug life cycle", "Automation frameworks"],
+    "expected_keywords": ["test case", "regression", "automation", "defect", "test plan", "coverage"]
+  },
+  {
+    "career_id": "cybersecurity_analyst",
+    "career_name": "Cybersecurity Analyst",
+    "career_area": "Security/Networking",
+    "description": "Monitors, detects and responds to security threats to protect an organisation's systems and data.",
+    "required_skills": {
+      "digital_literacy": 5, "communication": 3, "problem_solving": 5, "leadership": 2, "teamwork": 3,
+      "research": 4, "data_analysis": 4, "documentation": 4, "creativity": 3
+    },
+    "required_tools": ["Wireshark", "Nmap", "SIEM (Splunk)", "Kali Linux", "Burp Suite"],
+    "main_tasks": ["Monitor security alerts", "Investigate incidents", "Run vulnerability assessments", "Write incident reports"],
+    "recommended_courses": ["Network Security Fundamentals", "Ethical Hacking Basics", "Security Operations (SOC) Fundamentals"],
+    "recommended_projects": ["Set up a home SOC lab with a SIEM", "Complete beginner CTF challenges and write-ups"],
+    "recommended_certifications": ["CompTIA Security+", "Cisco CyberOps Associate"],
+    "interview_focus_areas": ["CIA triad", "Common attacks and defences", "Incident response process", "Network protocols"],
+    "expected_keywords": ["threat", "vulnerability", "incident", "firewall", "SIEM", "encryption"]
+  },
+  {
+    "career_id": "network_engineer",
+    "career_name": "Network Engineer",
+    "career_area": "Security/Networking",
+    "description": "Designs, configures and maintains computer networks and their infrastructure.",
+    "required_skills": {
+      "digital_literacy": 5, "communication": 3, "problem_solving": 4, "leadership": 2, "teamwork": 4,
+      "research": 3, "data_analysis": 3, "documentation": 4, "creativity": 2
+    },
+    "required_tools": ["Cisco Packet Tracer", "GNS3", "Wireshark", "Routers/Switches CLI"],
+    "main_tasks": ["Configure routers and switches", "Troubleshoot connectivity issues", "Plan network capacity", "Document network topology"],
+    "recommended_courses": ["Computer Networking (CCNA track)", "Routing and Switching Essentials", "Cloud Networking Basics"],
+    "recommended_projects": ["Design a campus network in Packet Tracer", "Configure VLANs and routing in a lab"],
+    "recommended_certifications": ["Cisco CCNA", "CompTIA Network+"],
+    "interview_focus_areas": ["OSI and TCP/IP models", "Subnetting", "Routing protocols", "Troubleshooting approach"],
+    "expected_keywords": ["subnet", "VLAN", "routing", "OSI", "TCP/IP", "switch"]
+  },
+  {
+    "career_id": "database_administrator",
+    "career_name": "Database Administrator",
+    "career_area": "Data/Analytics",
+    "description": "Manages, secures, tunes and backs up databases to keep data available and reliable.",
+    "required_skills": {
+      "digital_literacy": 5, "communication": 3, "problem_solving": 4, "leadership": 2, "teamwork": 3,
+      "research": 3, "data_analysis": 4, "documentation": 4, "creativity": 2
+    },
+    "required_tools": ["MySQL/PostgreSQL", "Oracle DB", "SQL Server", "MongoDB"],
+    "main_tasks": ["Design database schemas", "Optimise queries and indexes", "Manage backups and recovery", "Control database access"],
+    "recommended_courses": ["Database Design and Normalisation", "Advanced SQL and Query Optimisation", "Database Administration Fundamentals"],
+    "recommended_projects": ["Design and normalise a database for a library system", "Set up automated backups and restore tests"],
+    "recommended_certifications": ["Oracle Database SQL Certified Associate", "Microsoft Azure Database Administrator Associate"],
+    "interview_focus_areas": ["Normalisation", "Indexing", "Transactions and ACID", "Backup strategies"],
+    "expected_keywords": ["normalisation", "index", "ACID", "backup", "query", "transaction"]
+  },
+  {
+    "career_id": "project_manager",
+    "career_name": "Project Manager",
+    "career_area": "Business/Management",
+    "description": "Plans, leads and delivers projects on time, within scope and within budget.",
+    "required_skills": {
+      "digital_literacy": 3, "communication": 5, "problem_solving": 4, "leadership": 5, "teamwork": 5,
+      "research": 3, "data_analysis": 3, "documentation": 4, "creativity": 3
+    },
+    "required_tools": ["Jira", "MS Project", "Trello", "Confluence", "Excel"],
+    "main_tasks": ["Plan project scope and schedule", "Lead and coordinate the team", "Manage risks and stakeholders", "Track progress and report status"],
+    "recommended_courses": ["Project Management Fundamentals", "Agile and Scrum Essentials", "Risk Management"],
+    "recommended_projects": ["Manage a university group project using Scrum", "Create a full project plan with Gantt chart and risk register"],
+    "recommended_certifications": ["PMI CAPM", "Professional Scrum Master I (PSM I)"],
+    "interview_focus_areas": ["Leadership examples", "Handling conflict", "Agile vs waterfall", "Risk and scope management"],
+    "expected_keywords": ["stakeholder", "scope", "risk", "sprint", "deadline", "delegation"]
+  },
+  {
+    "career_id": "digital_marketing_executive",
+    "career_name": "Digital Marketing Executive",
+    "career_area": "Marketing/Communication",
+    "description": "Plans and runs online marketing campaigns across social media, search and email.",
+    "required_skills": {
+      "digital_literacy": 4, "communication": 5, "problem_solving": 3, "leadership": 3, "teamwork": 4,
+      "research": 3, "data_analysis": 4, "documentation": 3, "creativity": 5
+    },
+    "required_tools": ["Google Analytics", "Meta Ads Manager", "Canva", "Mailchimp", "SEO tools"],
+    "main_tasks": ["Plan social media content", "Run paid ad campaigns", "Optimise for search (SEO)", "Analyse campaign performance"],
+    "recommended_courses": ["Digital Marketing Fundamentals", "SEO and Content Marketing", "Social Media Advertising"],
+    "recommended_projects": ["Run a social media campaign for a student club", "Build an SEO-optimised blog and track its analytics"],
+    "recommended_certifications": ["Google Digital Marketing & E-commerce Certificate", "HubSpot Content Marketing Certification"],
+    "interview_focus_areas": ["Campaign planning", "Marketing metrics", "Content strategy", "Creativity examples"],
+    "expected_keywords": ["campaign", "SEO", "engagement", "conversion", "content", "analytics"]
+  }
+]
