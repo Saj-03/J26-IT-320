@@ -20,7 +20,7 @@ class WellbeingProfile(Base):
     burnout_score: Mapped[float] = mapped_column(Float, default=3.0)
     bmi: Mapped[float] = mapped_column(Float, default=22.0)
     physical_limitations: Mapped[str] = mapped_column(String, default="")
-    recovery_mode: Mapped[bool] = mapped_column(Boolean, default=False)
+    recovery_mode: Mapped[bool] = mapped_column(Boolean, default=False)  # set by C4 signal
 
 
 class ActivityLog(Base):
