@@ -1,0 +1,8 @@
+[
+  {"name": "Brisk walk", "minutes": 15, "intensity": "low", "equipment": ["none"]},
+  {"name": "Stretching routine", "minutes": 10, "intensity": "low", "equipment": ["none"]},
+  {"name": "Bodyweight circuit", "minutes": 20, "intensity": "medium", "equipment": ["none"]},
+  {"name": "Skipping", "minutes": 10, "intensity": "high", "equipment": ["rope"]},
+  {"name": "Dumbbell full body", "minutes": 30, "intensity": "medium", "equipment": ["dumbbells"]},
+  {"name": "Yoga for sleep", "minutes": 15, "intensity": "low", "equipment": ["mat"]}
+]

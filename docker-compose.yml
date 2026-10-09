@@ -1,0 +1,24 @@
+# Runs the whole IHUSD system: database + backend + frontend
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ihusd
+      POSTGRES_PASSWORD: ihusd
+      POSTGRES_DB: ihusd
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+
+  backend:
+    build: ./backend
+    env_file: ./backend/.env
+    depends_on: [db]
+    ports: ["8000:8000"]
+
+  frontend:
+    build: ./frontend
+    depends_on: [backend]
+    ports: ["5173:5173"]
+
+volumes:
+  pgdata:

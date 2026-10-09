@@ -1,0 +1,9 @@
+[
+  {"title": "Data Scientist", "required_skills": ["python", "sql", "statistics", "machine learning", "pandas"], "keywords": ["data", "analytics"]},
+  {"title": "Frontend Developer", "required_skills": ["javascript", "react", "css", "html", "git"], "keywords": ["web", "ui"]},
+  {"title": "Backend Developer", "required_skills": ["python", "sql", "api", "docker", "git"], "keywords": ["server", "web"]},
+  {"title": "Business Analyst", "required_skills": ["communication", "sql", "excel", "requirements", "presentation"], "keywords": ["business", "leadership"]},
+  {"title": "QA Engineer", "required_skills": ["testing", "selenium", "python", "communication"], "keywords": ["quality"]},
+  {"title": "UI/UX Designer", "required_skills": ["figma", "user research", "prototyping", "css"], "keywords": ["design", "ui"]},
+  {"title": "DevOps Engineer", "required_skills": ["linux", "docker", "kubernetes", "ci/cd", "aws"], "keywords": ["cloud", "infrastructure"]}
+]
