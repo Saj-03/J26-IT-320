@@ -54,3 +54,14 @@ SCENARIOS = {
 def test_scenario(name):
     args, expected = SCENARIOS[name]
     assert fuse(*args)["risk_level"] == expected
+
+
+def test_enabled_subset_ignores_other_signals():
+    r = fuse(0.9, -0.9, -0.9, 5, enabled=("mood",))
+    assert r["risk_score"] == 0.0
+    assert set(r["inputs"]) == {"mood"}
+
+
+def test_text_gain_makes_mild_negatives_count():
+    from app.components.burnout.ml.fusion import text_risk
+    assert text_risk(-0.4) > 0.5 and text_risk(0.3) == 0.0 and text_risk(-1) == 1.0

@@ -11,22 +11,31 @@ T_MODERATE, T_HIGH = 0.45, 0.70
 REASON_AT = 0.6          # a single signal above this adds a human-readable reason
 
 
+TEXT_GAIN = 1.5          # VADER gives mild negatives (-0.2..-0.5) even for strained writing; heuristic, chosen from
+                         # a 12-sentence check (3 of 9 strained sentences passed REASON_AT without gain, 4 with it); review on pilot data
+
+
 def text_risk(compound: float) -> float:
-    """VADER compound (-1..1) -> 0..1 risk. Neutral (0) and positive text carry NO risk;
-    only negative tone counts. (Mapping neutral to 0.5 would flag plain neutral entries.)"""
-    return min(1.0, max(0.0, -compound))
+    """VADER compound (-1..1) -> 0..1 risk. Neutral/positive text carries NO risk; only negative tone
+    counts, amplified by TEXT_GAIN because VADER under-reports strain."""
+    return min(1.0, max(0.0, -compound * TEXT_GAIN))
+
+
+ALL_SIGNALS = ("deviation", "journal", "chat", "mood")
 
 
 def fuse(deviation: float | None, journal_sent: float | None,
-         chat_sent: float | None, mood_avg: float | None) -> dict:
+         chat_sent: float | None, mood_avg: float | None,
+         enabled=ALL_SIGNALS) -> dict:
+    """`enabled` lets the evaluation switch signals off (ablation). Default = all on."""
     parts: dict[str, float] = {}
-    if deviation is not None:
+    if "deviation" in enabled and deviation is not None:
         parts["deviation"] = deviation                      # 0..1, higher = more unusual
-    if journal_sent is not None:
+    if "journal" in enabled and journal_sent is not None:
         parts["journal"] = text_risk(journal_sent)
-    if chat_sent is not None:
+    if "chat" in enabled and chat_sent is not None:
         parts["chat"] = text_risk(chat_sent)
-    if mood_avg is not None:
+    if "mood" in enabled and mood_avg is not None:
         parts["mood"] = (5 - mood_avg) / 4                  # 1..5 -> 1..0
     if not parts:
         return {"risk_score": 0.0, "risk_level": "LOW", "inputs": {},
@@ -45,7 +54,7 @@ def fuse(deviation: float | None, journal_sent: float | None,
         reasons.append("recent journal entries have a low tone")
     if parts.get("chat", 0) > REASON_AT:
         reasons.append("recent chat messages have a low tone")
-    if mood_avg is not None and mood_avg <= 2:
+    if "mood" in parts and mood_avg <= 2:
         reasons.append("low mood check-ins")
     return {"risk_score": round(score, 3), "risk_level": level,
             "inputs": {k: round(v, 3) for k, v in parts.items()}, "reasons": reasons}
