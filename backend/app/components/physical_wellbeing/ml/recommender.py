@@ -20,11 +20,19 @@ MODEL_PATH = os.path.join(MODEL_DIR, "adherence_xgb.joblib")
 SCALER_PATH = os.path.join(MODEL_DIR, "scaler.joblib")
 META_PATH = os.path.join(MODEL_DIR, "model_metadata.json")
 
+# ── Load everything once at module import time ──────────────────────────────
+_workouts = pd.read_csv(os.path.join(CLEANED_DIR, "cleaned_workout_plans.csv"))
+_meals    = pd.read_csv(os.path.join(CLEANED_DIR, "cleaned_meal_plans.csv"))
+_exercises= pd.read_csv(os.path.join(CLEANED_DIR, "cleaned_exercise_catalog.csv"))
+
+_xgb_model = joblib.load(MODEL_PATH) if os.path.exists(MODEL_PATH) else None
+_scaler    = joblib.load(SCALER_PATH) if os.path.exists(SCALER_PATH) else None
+with open(META_PATH, "r") as _f:
+    _meta = json.load(_f)
+_feature_cols = _meta["feature_cols"]
+
 def load_cleaned_datasets():
-    workouts = pd.read_csv(os.path.join(CLEANED_DIR, "cleaned_workout_plans.csv"))
-    meals = pd.read_csv(os.path.join(CLEANED_DIR, "cleaned_meal_plans.csv"))
-    exercises = pd.read_csv(os.path.join(CLEANED_DIR, "cleaned_exercise_catalog.csv"))
-    return workouts, meals, exercises
+    return _workouts, _meals, _exercises
 
 def get_baseline_recommendations(profile: dict, k: int = 3):
     """
@@ -93,13 +101,10 @@ def get_adaptive_recommendations(profile: dict, is_exam_period: bool = False, k:
         effective_workload = workload
         effective_stress = stress
 
-    # Load ML Model & Scaler if available
-    xgb_model = joblib.load(MODEL_PATH) if os.path.exists(MODEL_PATH) else None
-    scaler = joblib.load(SCALER_PATH) if os.path.exists(SCALER_PATH) else None
-    
-    with open(META_PATH, "r") as f:
-        meta = json.load(f)
-    feature_cols = meta["feature_cols"]
+    # Use cached ML Model & Scaler
+    xgb_model = _xgb_model
+    scaler = _scaler
+    feature_cols = _feature_cols
 
     # --- 1. RANK WORKOUT CANDIDATES ---
     workout_list = []

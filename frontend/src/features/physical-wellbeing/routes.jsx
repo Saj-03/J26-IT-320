@@ -15,12 +15,14 @@ import { PhysicalPrivacy } from "./pages/Privacy";
 import { PhysicalWelcome } from "./pages/Welcome";
 import { PhysicalAssessment } from "./pages/Assessment";
 import { PhysicalGenerating } from "./pages/Generating";
+import { PhysicalModelTester } from "./pages/PhysicalModelTester";
 
 // Mounted under /app by App.jsx (inside the standard IHSD shell).
 export default function physicalRoutes() {
   return (
     <>
       <Route path="physical" element={<PhysicalHome />} />
+      <Route path="physical/tester" element={<PhysicalModelTester />} />
       <Route path="physical/plan" element={<PhysicalPlan />} />
       <Route path="physical/exercise" element={<PhysicalExercise />} />
       <Route path="physical/workout" element={<PhysicalWorkout />} />

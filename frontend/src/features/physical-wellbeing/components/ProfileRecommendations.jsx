@@ -31,24 +31,32 @@ export default function ProfileRecommendations() {
         <Card>
           <SectionTitle title="Exercise for today" />
           <ul className="space-y-2">
-            {data.exercises?.map((e) => (
-              <li key={e.name} className="flex items-center justify-between gap-3 rounded-2xl bg-cream px-3.5 py-3">
-                <span className="text-sm font-bold text-charcoal">{e.name}</span>
-                <span className="text-xs font-bold bg-brand-50 text-brand-700 rounded-full px-2.5 py-1 shrink-0">{e.minutes} min</span>
-              </li>
-            ))}
+            {data.exercises?.map((e, idx) => {
+              const name = e.name || e.title || "Custom Workout";
+              const minutes = e.minutes || e.adapted_duration_mins || e.time_per_workout || e.duration_mins || 20;
+              return (
+                <li key={e.id || name + "-" + idx} className="flex items-center justify-between gap-3 rounded-2xl bg-cream px-3.5 py-3">
+                  <span className="text-sm font-bold text-charcoal">{name}</span>
+                  <span className="text-xs font-bold bg-brand-50 text-brand-700 rounded-full px-2.5 py-1 shrink-0">{minutes} min</span>
+                </li>
+              );
+            })}
           </ul>
         </Card>
         <Card>
           <SectionTitle title="Meal ideas" />
           <ul className="space-y-2">
-            {data.meals?.map((m) => (
-              <li key={m.name} className="flex items-center gap-3 rounded-2xl bg-cream px-3.5 py-3">
-                <LeafIcon size={15} className="text-emerald-600 shrink-0" />
-                <span className="text-sm font-bold text-charcoal flex-1">{m.name}</span>
-                <span className="text-xs text-charcoal-muted">{m.region}</span>
-              </li>
-            ))}
+            {data.meals?.map((m, idx) => {
+              const name = m.name || m.meal_name || m.title || "Healthy Meal";
+              const region = m.region || m.cuisine || (m.vegetarian ? "Vegetarian" : "Balanced");
+              return (
+                <li key={m.id || name + "-" + idx} className="flex items-center gap-3 rounded-2xl bg-cream px-3.5 py-3">
+                  <LeafIcon size={15} className="text-emerald-600 shrink-0" />
+                  <span className="text-sm font-bold text-charcoal flex-1">{name}</span>
+                  <span className="text-xs text-charcoal-muted">{region}</span>
+                </li>
+              );
+            })}
           </ul>
         </Card>
       </div>
