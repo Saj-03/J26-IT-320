@@ -16,11 +16,17 @@ export const SKILLS = [
 const LABELS = Object.fromEntries(SKILLS.map((s) => [s.key, s.label]));
 export const skillLabel = (key) => LABELS[key] || key.replace(/_/g, " ");
 
+// Answer options match the real ACRDS survey, because the trained model
+// was fitted on those exact answers (see backend career_features.py).
 export const OPTIONS = {
   academic_status: ["1st Year Undergraduate", "2nd Year Undergraduate", "3rd Year Undergraduate", "4th Year Undergraduate", "Graduate"],
-  employment_status: ["Not employed", "Intern/Trainee", "Part-time", "Full-time"],
-  faculty_field: ["Computing", "Engineering", "Business", "Science", "Humanities", "Other"],
-  academic_performance_trend: ["Improving", "Stable", "Declining"],
+  employment_status: ["Unemployed", "Intern/Trainee", "Part-Time Employee", "Full-Time Employee", "Fresh Graduate"],
+  faculty_field: [
+    "Computing", "Engineering", "Science", "Business/Management", "Health Science/Medicine",
+    "Design/Creative Studies", "Arts/Humanities", "Education", "Law", "Social Sciences", "Other",
+  ],
+  academic_performance_trend: ["Improving", "Stable", "Declining", "Not sure/Too early to tell"],
+  // Career areas of the ACRDS catalogue (used for the interest bonus).
   career_area_interest: [
     "Technology/Software", "Data/Analytics", "Business/Management", "Design/Creative",
     "Security/Networking", "Marketing/Communication", "Not sure yet",
@@ -30,16 +36,33 @@ export const OPTIONS = {
     "Cybersecurity Analyst", "Network Engineer", "Database Administrator", "Project Manager",
     "Digital Marketing Executive", "Not sure yet",
   ],
-  previous_career_preference: ["Yes", "No"],
-  preferred_learning_method: ["Practising with projects", "Online courses", "Videos/Tutorials", "Reading", "Mentoring"],
-  skill_learning_consistency: ["Daily", "Weekly", "Monthly", "Rarely"],
+  previous_career_preference: ["Yes", "No", "Not Sure"],
+  preferred_learning_method: [
+    "Practising with projects", "Watching Videos", "Reading notes/ articles", "Group discussions",
+    "Practical/laboratory work", "Lecturer guidance", "Trial and Error", "Online courses",
+  ],
+  skill_learning_consistency: ["Daily", "Weekly", "Monthly", "Rarely", "Never"],
   extracurricular_participation: ["Yes", "No"],
-  extracurricular_type: ["Technical communities", "Sports", "Arts/Cultural", "Volunteering", "Student union/Societies", "None"],
-  highest_extracurricular_role: ["None", "Member", "Committee member", "Team lead", "President/Captain"],
-  career_related_work_status: ["Not yet", "Planning to start", "Currently following/working on one", "Completed one"],
-  career_related_work_type: ["None", "Academic project", "Internship", "Freelance", "Part-time job", "Personal project"],
+  // Select-all-that-apply questions (stored as a comma-separated string)
+  extracurricular_type: [
+    "Clubs and societies", "Sports", "Volunteering", "Competition", "Student leadership",
+    "Media/Content Creation", "Religious/social service activities", "Academic societies",
+    "Debating/Public Speaking", "Performing arts", "Technical communities",
+  ],
+  highest_extracurricular_role: [
+    "Member", "Active Member", "Volunteer", "Committee member", "Organiser", "Coordinator",
+    "Secretary/Treasurer", "Team leader", "President/Captain",
+  ],
+  career_related_work_status: ["No", "Planning to start", "Currently following/working on one", "Yes"],
+  career_related_work_type: [
+    "Academic project", "Personal project", "Research project", "Volunteer work",
+    "Technical / practical work", "Portfolio work", "Case study / report",
+    "Laboratory / field work", "Business / entrepreneurship activity", "Internship",
+  ],
   career_support_needed: [
-    "Career recommendation", "Skill gap analysis", "Career roadmap", "Interview preparation", "CV/Portfolio guidance",
+    "Skill gap analysis", "Career recommendation", "Internship guidance", "Certification recommendations",
+    "Interview practice", "Career roadmap", "Project ideas", "CV guidance", "Course recommendations",
+    "Portfolio guidance", "Career change guidance",
   ],
 };
 

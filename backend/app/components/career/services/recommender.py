@@ -1,5 +1,5 @@
 """
-Content-based career recommendation using cosine similarity.
+Hybrid career recommendation: content-based cosine similarity + trained model.
 
 VIVA: "The student and every career become 9-dimensional skill vectors in
 the same order. We use *adjusted* (mean-centred) cosine similarity: each
@@ -7,13 +7,19 @@ vector's average is subtracted first, so we compare the shape of strengths
 and weaknesses. Plain cosine on 1-5 ratings gives every career ~95%
 because all values are positive; centring fixes that. The result (-1..1)
 is mapped to 0-100%, then small explainable bonuses reflect interests
-and experience."
+and experience.
+When the trained career-family model is available (ml_models/), the base
+score becomes  alpha * P(family) * 100 + (1 - alpha) * cosine match  -
+exactly the formula evaluated in ml_training/career/train_career_model.py.
+Without the model file the system falls back to the cosine score alone."
 """
 import math
 from difflib import SequenceMatcher
 
 from app.components.career.schemas import SKILL_KEYS
 from app.components.career.services.career_data import load_careers, skill_label
+from app.components.career.services.career_features import CAREER_FAMILY, role_level, work_status_level
+from app.components.career.services.career_model import family_probabilities, load_bundle
 
 # Bonus points added on top of the cosine score (kept small so skills dominate).
 AREA_BONUS = 5
@@ -21,9 +27,8 @@ ROLE_BONUS = 5
 WORK_BONUS = 3
 LEADERSHIP_BONUS = 3
 
-# Answers meaning "no experience" / "no leadership role" in the survey.
-NO_ANSWERS = {"", "no", "none", "not yet", "n/a", "never"}
-NON_LEADER_ROLES = NO_ANSWERS | {"member", "participant", "volunteer"}
+FAMILY_LABEL = {"software": "software and infrastructure", "data": "data", "cybersecurity": "cybersecurity",
+                "business": "business and management", "design": "design"}
 
 
 def skill_vector(skills: dict) -> list[float]:
@@ -64,12 +69,13 @@ def _role_matches(preferred_role: str, career_name: str) -> bool:
 
 
 def _has_career_work(profile: dict) -> bool:
-    status = _norm(profile.get("career_related_work_status"))
-    return status not in NO_ANSWERS and not status.startswith(("no", "not"))
+    """Currently doing, or has completed, career-related work."""
+    return work_status_level(profile.get("career_related_work_status")) >= 2
 
 
 def _has_leadership_role(profile: dict) -> bool:
-    return _norm(profile.get("highest_extracurricular_role")) not in NON_LEADER_ROLES
+    """Team leader or president/captain level."""
+    return role_level(profile.get("highest_extracurricular_role")) >= 4
 
 
 def calculate_bonus(profile: dict, career: dict) -> tuple[int, list[str]]:
@@ -110,7 +116,7 @@ def _join(items: list[str]) -> str:
 
 
 def build_explanation(career: dict, student_skills: dict, missing: list[str],
-                      bonus_reasons: list[str]) -> str:
+                      bonus_reasons: list[str], family_probability: float = None) -> str:
     required = career["required_skills"]
     name = career["career_name"]
     # Strengths = the career's most important skills where the student is
@@ -124,6 +130,10 @@ def build_explanation(career: dict, student_skills: dict, missing: list[str],
                 f"{_join([skill_label(k) for k in top_strengths])} skills are close to this career requirement.")
     else:
         text = f"{name} is a possible direction based on the overall shape of your skill profile."
+    if family_probability is not None and family_probability >= 0.35:
+        family = FAMILY_LABEL[CAREER_FAMILY[career["career_id"]]]
+        text += (f" Students with a background similar to yours often prefer {family} careers "
+                 f"(model estimate {family_probability:.0%}).")
     if bonus_reasons:
         text += f" It also ranks higher because {_join(bonus_reasons)}."
     if to_improve:
@@ -137,11 +147,15 @@ def recommend_careers(profile: dict, top_k: int = 5) -> list[dict]:
     """Score every career and return the top_k, best match first."""
     student_skills = profile["skills"]
     student_vec = skill_vector(student_skills)
+    family_proba = family_probabilities(profile)  # None when no trained model is available
+    alpha = load_bundle()["alpha"] if family_proba else 0.0
     results = []
 
     for career in load_careers():
         required = career["required_skills"]
-        base_score = adjusted_cosine_percentage(student_vec, skill_vector(required))
+        skill_match = adjusted_cosine_percentage(student_vec, skill_vector(required))
+        p_family = family_proba.get(CAREER_FAMILY[career["career_id"]], 0.0) if family_proba else None
+        base_score = skill_match if p_family is None else alpha * p_family * 100 + (1 - alpha) * skill_match
         bonus, bonus_reasons = calculate_bonus(profile, career)
         match = min(base_score + bonus, 100.0)
         matching, missing = split_skills(student_skills, required)
@@ -152,7 +166,9 @@ def recommend_careers(profile: dict, top_k: int = 5) -> list[dict]:
             "career_area": career["career_area"],
             "description": career["description"],
             "match_percentage": round(match, 2),
-            "explanation": build_explanation(career, student_skills, missing, bonus_reasons),
+            "skill_match_percentage": round(skill_match, 2),
+            "model_probability": None if p_family is None else round(p_family * 100, 2),
+            "explanation": build_explanation(career, student_skills, missing, bonus_reasons, p_family),
             "matching_skills": matching,
             "missing_skills": missing,
             "recommended_courses": career["recommended_courses"],

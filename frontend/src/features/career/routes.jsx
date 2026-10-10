@@ -8,6 +8,7 @@ import CareerSurveyForm from "./pages/CareerSurveyForm";
 import CareerRecommendations from "./pages/CareerRecommendations";
 import SkillGapAnalysis from "./pages/SkillGapAnalysis";
 import Roadmap from "./pages/Roadmap";
+import InterviewSimulator from "./pages/InterviewSimulator";
 
 // Mounted under /app by App.jsx.
 export default function careerRoutes() {
@@ -19,6 +20,7 @@ export default function careerRoutes() {
       <Route path="career/recommendations" element={<CareerRecommendations />} />
       <Route path="career/gap-analysis" element={<SkillGapAnalysis />} />
       <Route path="career/roadmap" element={<Roadmap />} />
+      <Route path="career/interview" element={<InterviewSimulator />} />
 
       {/* Earlier prototype pages (saved-profile flow), kept reachable */}
       <Route path="career/legacy" element={<Career />} />

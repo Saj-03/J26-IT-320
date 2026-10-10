@@ -19,7 +19,9 @@ def test_cosine_similarity_basics():
     assert cosine_similarity([1, 0], [0, 1]) == 0.0
 
 
-def test_top5_sorted_and_capped():
+def test_top5_sorted_and_capped(monkeypatch):
+    # Rule-based fallback (no trained model), so the result does not depend on ml_models/.
+    monkeypatch.setattr("app.components.career.services.recommender.family_probabilities", lambda profile: None)
     recs = recommend_careers(PROFILE)
     scores = [r["match_percentage"] for r in recs]
     assert len(recs) == 5

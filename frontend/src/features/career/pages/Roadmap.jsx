@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { MapIcon, PartyPopperIcon } from "lucide-react";
+import { MapIcon, MicIcon, PartyPopperIcon } from "lucide-react";
 import { PageHeader } from "../../../shared/components/layout/PageHeader";
 import Card from "../components/CareerCard";
 import CareerPage from "../components/CareerPage";
@@ -27,7 +27,12 @@ export default function Roadmap() {
       <PageHeader
         title={`Your Roadmap: ${roadmap.career_name}`}
         subtitle={`${roadmap.message} Current readiness: ${Math.round(roadmap.readiness_percentage)}%. High-priority items come first.`}
-        action={<Button variant="outline" onClick={() => navigate("/app/career")}>Back to career dashboard</Button>}
+        action={
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={() => navigate("/app/career")}>Dashboard</Button>
+            <Button onClick={() => navigate("/app/career/interview")}><MicIcon size={16} /> Practise interview</Button>
+          </div>
+        }
       />
 
       {roadmap.roadmap.length === 0 ? (

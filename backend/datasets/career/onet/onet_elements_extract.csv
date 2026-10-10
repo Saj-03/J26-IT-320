@@ -1,0 +1,757 @@
+career_id,O*NET-SOC Code,Element ID,Element Name,Scale ID,Data Value,Date,Domain Source
+software_engineer,15-1252.00,2.A.1.b,Active Listening,IM,3.38,08/2025,Analyst
+software_engineer,15-1252.00,2.A.1.b,Active Listening,LV,3.88,08/2025,Analyst
+software_engineer,15-1252.00,2.A.1.c,Writing,IM,3.25,08/2025,Analyst
+software_engineer,15-1252.00,2.A.1.c,Writing,LV,3.62,08/2025,Analyst
+software_engineer,15-1252.00,2.A.1.d,Speaking,IM,3.12,08/2025,Analyst
+software_engineer,15-1252.00,2.A.1.d,Speaking,LV,3.62,08/2025,Analyst
+software_engineer,15-1252.00,2.A.1.e,Mathematics,IM,2.75,08/2025,Analyst
+software_engineer,15-1252.00,2.A.1.e,Mathematics,LV,3.25,08/2025,Analyst
+software_engineer,15-1252.00,2.A.2.a,Critical Thinking,IM,3.88,08/2025,Analyst
+software_engineer,15-1252.00,2.A.2.a,Critical Thinking,LV,4.12,08/2025,Analyst
+software_engineer,15-1252.00,2.A.2.b,Active Learning,IM,3.5,08/2025,Analyst
+software_engineer,15-1252.00,2.A.2.b,Active Learning,LV,3.62,08/2025,Analyst
+software_engineer,15-1252.00,2.B.1.b,Coordination,IM,3.0,08/2025,Analyst
+software_engineer,15-1252.00,2.B.1.b,Coordination,LV,3.12,08/2025,Analyst
+software_engineer,15-1252.00,2.B.2.i,Complex Problem Solving,IM,3.38,08/2025,Analyst
+software_engineer,15-1252.00,2.B.2.i,Complex Problem Solving,LV,3.5,08/2025,Analyst
+software_engineer,15-1252.00,2.B.5.d,Management of Personnel Resources,IM,2.25,08/2025,Analyst
+software_engineer,15-1252.00,2.B.5.d,Management of Personnel Resources,LV,2.62,08/2025,Analyst
+software_engineer,15-1252.00,1.A.1.a.4,Written Expression,IM,3.5,08/2025,Analyst
+software_engineer,15-1252.00,1.A.1.a.4,Written Expression,LV,4.0,08/2025,Analyst
+software_engineer,15-1252.00,1.A.1.b.1,Fluency of Ideas,IM,3.25,08/2025,Analyst
+software_engineer,15-1252.00,1.A.1.b.1,Fluency of Ideas,LV,3.62,08/2025,Analyst
+software_engineer,15-1252.00,1.A.1.b.2,Originality,IM,3.12,08/2025,Analyst
+software_engineer,15-1252.00,1.A.1.b.2,Originality,LV,3.38,08/2025,Analyst
+software_engineer,15-1252.00,2.C.3.a,Computers and Electronics,IM,4.75,08/2025,Incumbent
+software_engineer,15-1252.00,2.C.3.a,Computers and Electronics,LV,6.23,08/2025,Incumbent
+software_engineer,15-1252.00,2.C.4.a,Mathematics,IM,3.57,08/2025,Incumbent
+software_engineer,15-1252.00,2.C.4.a,Mathematics,LV,4.55,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.1.a.1,Getting Information,IM,4.04,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.1.a.1,Getting Information,LV,4.08,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.2.a.2,Processing Information,IM,4.38,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.2.a.2,Processing Information,LV,5.06,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.2.a.4,Analyzing Data or Information,IM,4.2,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.2.a.4,Analyzing Data or Information,LV,4.77,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.2.b.1,Making Decisions and Solving Problems,IM,4.34,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.2.b.1,Making Decisions and Solving Problems,LV,5.09,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.2.b.2,Thinking Creatively,IM,4.33,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.2.b.2,Thinking Creatively,LV,5.45,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.2.b.3,Updating and Using Relevant Knowledge,IM,4.1,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.2.b.3,Updating and Using Relevant Knowledge,LV,5.16,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.3.b.1,Working with Computers,IM,4.61,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.3.b.1,Working with Computers,LV,4.92,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.3.b.6,Documenting/Recording Information,IM,3.78,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.3.b.6,Documenting/Recording Information,LV,3.78,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",IM,4.23,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",LV,4.12,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,IM,3.54,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,LV,3.86,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.4.b.1,Coordinating the Work and Activities of Others,IM,2.34,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.4.b.1,Coordinating the Work and Activities of Others,LV,2.05,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.4.b.2,Developing and Building Teams,IM,2.22,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.4.b.2,Developing and Building Teams,LV,1.4,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",IM,1.69,08/2025,Incumbent
+software_engineer,15-1252.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",LV,1.2,08/2025,Incumbent
+data_analyst,15-2051.01,2.A.1.b,Active Listening,IM,3.88,08/2024,Analyst
+data_analyst,15-2051.01,2.A.1.b,Active Listening,LV,4.0,08/2024,Analyst
+data_analyst,15-2051.01,2.A.1.c,Writing,IM,3.75,08/2024,Analyst
+data_analyst,15-2051.01,2.A.1.c,Writing,LV,4.0,08/2024,Analyst
+data_analyst,15-2051.01,2.A.1.d,Speaking,IM,3.88,08/2024,Analyst
+data_analyst,15-2051.01,2.A.1.d,Speaking,LV,4.0,08/2024,Analyst
+data_analyst,15-2051.01,2.A.1.e,Mathematics,IM,3.5,08/2024,Analyst
+data_analyst,15-2051.01,2.A.1.e,Mathematics,LV,3.88,08/2024,Analyst
+data_analyst,15-2051.01,2.A.2.a,Critical Thinking,IM,3.88,08/2024,Analyst
+data_analyst,15-2051.01,2.A.2.a,Critical Thinking,LV,4.25,08/2024,Analyst
+data_analyst,15-2051.01,2.A.2.b,Active Learning,IM,3.88,08/2024,Analyst
+data_analyst,15-2051.01,2.A.2.b,Active Learning,LV,4.12,08/2024,Analyst
+data_analyst,15-2051.01,2.B.1.b,Coordination,IM,3.0,08/2024,Analyst
+data_analyst,15-2051.01,2.B.1.b,Coordination,LV,3.0,08/2024,Analyst
+data_analyst,15-2051.01,2.B.2.i,Complex Problem Solving,IM,3.38,08/2024,Analyst
+data_analyst,15-2051.01,2.B.2.i,Complex Problem Solving,LV,3.75,08/2024,Analyst
+data_analyst,15-2051.01,2.B.5.d,Management of Personnel Resources,IM,2.12,08/2024,Analyst
+data_analyst,15-2051.01,2.B.5.d,Management of Personnel Resources,LV,2.0,08/2024,Analyst
+data_analyst,15-2051.01,1.A.1.a.4,Written Expression,IM,4.0,08/2024,Analyst
+data_analyst,15-2051.01,1.A.1.a.4,Written Expression,LV,4.12,08/2024,Analyst
+data_analyst,15-2051.01,1.A.1.b.1,Fluency of Ideas,IM,3.38,08/2024,Analyst
+data_analyst,15-2051.01,1.A.1.b.1,Fluency of Ideas,LV,3.88,08/2024,Analyst
+data_analyst,15-2051.01,1.A.1.b.2,Originality,IM,3.12,08/2024,Analyst
+data_analyst,15-2051.01,1.A.1.b.2,Originality,LV,3.25,08/2024,Analyst
+data_analyst,15-2051.01,2.C.3.a,Computers and Electronics,IM,4.29,08/2024,Occupational Expert
+data_analyst,15-2051.01,2.C.3.a,Computers and Electronics,LV,5.41,08/2024,Occupational Expert
+data_analyst,15-2051.01,2.C.4.a,Mathematics,IM,3.82,08/2024,Occupational Expert
+data_analyst,15-2051.01,2.C.4.a,Mathematics,LV,4.67,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.1.a.1,Getting Information,IM,4.5,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.1.a.1,Getting Information,LV,5.41,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.2.a.2,Processing Information,IM,4.64,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.2.a.2,Processing Information,LV,5.73,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.2.a.4,Analyzing Data or Information,IM,4.73,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.2.a.4,Analyzing Data or Information,LV,6.09,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.2.b.1,Making Decisions and Solving Problems,IM,3.82,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.2.b.1,Making Decisions and Solving Problems,LV,4.59,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.2.b.2,Thinking Creatively,IM,3.77,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.2.b.2,Thinking Creatively,LV,5.05,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.2.b.3,Updating and Using Relevant Knowledge,IM,4.05,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.2.b.3,Updating and Using Relevant Knowledge,LV,5.36,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.3.b.1,Working with Computers,IM,4.68,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.3.b.1,Working with Computers,LV,4.86,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.3.b.6,Documenting/Recording Information,IM,3.5,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.3.b.6,Documenting/Recording Information,LV,3.95,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",IM,4.23,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",LV,5.23,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,IM,3.64,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,LV,4.55,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.4.b.1,Coordinating the Work and Activities of Others,IM,2.73,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.4.b.1,Coordinating the Work and Activities of Others,LV,3.41,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.4.b.2,Developing and Building Teams,IM,2.68,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.4.b.2,Developing and Building Teams,LV,3.09,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",IM,2.68,08/2024,Occupational Expert
+data_analyst,15-2051.01,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",LV,3.41,08/2024,Occupational Expert
+business_analyst,13-1111.00,2.A.1.b,Active Listening,IM,4.12,08/2022,Analyst
+business_analyst,13-1111.00,2.A.1.b,Active Listening,LV,4.12,08/2022,Analyst
+business_analyst,13-1111.00,2.A.1.c,Writing,IM,4.0,08/2022,Analyst
+business_analyst,13-1111.00,2.A.1.c,Writing,LV,4.0,08/2022,Analyst
+business_analyst,13-1111.00,2.A.1.d,Speaking,IM,4.0,08/2022,Analyst
+business_analyst,13-1111.00,2.A.1.d,Speaking,LV,4.0,08/2022,Analyst
+business_analyst,13-1111.00,2.A.1.e,Mathematics,IM,3.0,08/2022,Analyst
+business_analyst,13-1111.00,2.A.1.e,Mathematics,LV,3.25,08/2022,Analyst
+business_analyst,13-1111.00,2.A.2.a,Critical Thinking,IM,4.12,08/2022,Analyst
+business_analyst,13-1111.00,2.A.2.a,Critical Thinking,LV,4.12,08/2022,Analyst
+business_analyst,13-1111.00,2.A.2.b,Active Learning,IM,3.25,08/2022,Analyst
+business_analyst,13-1111.00,2.A.2.b,Active Learning,LV,3.88,08/2022,Analyst
+business_analyst,13-1111.00,2.B.1.b,Coordination,IM,3.88,08/2022,Analyst
+business_analyst,13-1111.00,2.B.1.b,Coordination,LV,4.0,08/2022,Analyst
+business_analyst,13-1111.00,2.B.2.i,Complex Problem Solving,IM,4.0,08/2022,Analyst
+business_analyst,13-1111.00,2.B.2.i,Complex Problem Solving,LV,4.0,08/2022,Analyst
+business_analyst,13-1111.00,2.B.5.d,Management of Personnel Resources,IM,3.0,08/2022,Analyst
+business_analyst,13-1111.00,2.B.5.d,Management of Personnel Resources,LV,3.12,08/2022,Analyst
+business_analyst,15-1211.00,2.A.1.b,Active Listening,IM,3.75,08/2023,Analyst
+business_analyst,15-1211.00,2.A.1.b,Active Listening,LV,4.0,08/2023,Analyst
+business_analyst,15-1211.00,2.A.1.c,Writing,IM,3.38,08/2023,Analyst
+business_analyst,15-1211.00,2.A.1.c,Writing,LV,4.0,08/2023,Analyst
+business_analyst,15-1211.00,2.A.1.d,Speaking,IM,4.0,08/2023,Analyst
+business_analyst,15-1211.00,2.A.1.d,Speaking,LV,4.0,08/2023,Analyst
+business_analyst,15-1211.00,2.A.1.e,Mathematics,IM,3.0,08/2023,Analyst
+business_analyst,15-1211.00,2.A.1.e,Mathematics,LV,3.38,08/2023,Analyst
+business_analyst,15-1211.00,2.A.2.a,Critical Thinking,IM,3.75,08/2023,Analyst
+business_analyst,15-1211.00,2.A.2.a,Critical Thinking,LV,4.0,08/2023,Analyst
+business_analyst,15-1211.00,2.A.2.b,Active Learning,IM,3.62,08/2023,Analyst
+business_analyst,15-1211.00,2.A.2.b,Active Learning,LV,4.0,08/2023,Analyst
+business_analyst,15-1211.00,2.B.1.b,Coordination,IM,3.12,08/2023,Analyst
+business_analyst,15-1211.00,2.B.1.b,Coordination,LV,3.25,08/2023,Analyst
+business_analyst,15-1211.00,2.B.2.i,Complex Problem Solving,IM,3.38,08/2023,Analyst
+business_analyst,15-1211.00,2.B.2.i,Complex Problem Solving,LV,4.0,08/2023,Analyst
+business_analyst,15-1211.00,2.B.5.d,Management of Personnel Resources,IM,2.88,08/2023,Analyst
+business_analyst,15-1211.00,2.B.5.d,Management of Personnel Resources,LV,3.0,08/2023,Analyst
+business_analyst,13-1111.00,1.A.1.a.4,Written Expression,IM,4.0,08/2022,Analyst
+business_analyst,13-1111.00,1.A.1.a.4,Written Expression,LV,4.25,08/2022,Analyst
+business_analyst,13-1111.00,1.A.1.b.1,Fluency of Ideas,IM,3.75,08/2022,Analyst
+business_analyst,13-1111.00,1.A.1.b.1,Fluency of Ideas,LV,4.0,08/2022,Analyst
+business_analyst,13-1111.00,1.A.1.b.2,Originality,IM,3.25,08/2022,Analyst
+business_analyst,13-1111.00,1.A.1.b.2,Originality,LV,3.75,08/2022,Analyst
+business_analyst,15-1211.00,1.A.1.a.4,Written Expression,IM,3.38,08/2023,Analyst
+business_analyst,15-1211.00,1.A.1.a.4,Written Expression,LV,4.0,08/2023,Analyst
+business_analyst,15-1211.00,1.A.1.b.1,Fluency of Ideas,IM,3.5,08/2023,Analyst
+business_analyst,15-1211.00,1.A.1.b.1,Fluency of Ideas,LV,4.0,08/2023,Analyst
+business_analyst,15-1211.00,1.A.1.b.2,Originality,IM,3.0,08/2023,Analyst
+business_analyst,15-1211.00,1.A.1.b.2,Originality,LV,3.62,08/2023,Analyst
+business_analyst,13-1111.00,2.C.3.a,Computers and Electronics,IM,3.5,08/2022,Occupational Expert
+business_analyst,13-1111.00,2.C.3.a,Computers and Electronics,LV,4.24,08/2022,Occupational Expert
+business_analyst,13-1111.00,2.C.4.a,Mathematics,IM,3.62,08/2022,Occupational Expert
+business_analyst,13-1111.00,2.C.4.a,Mathematics,LV,4.57,08/2022,Occupational Expert
+business_analyst,15-1211.00,2.C.3.a,Computers and Electronics,IM,4.63,08/2023,Incumbent
+business_analyst,15-1211.00,2.C.3.a,Computers and Electronics,LV,6.0,08/2023,Incumbent
+business_analyst,15-1211.00,2.C.4.a,Mathematics,IM,3.25,08/2023,Incumbent
+business_analyst,15-1211.00,2.C.4.a,Mathematics,LV,3.76,08/2023,Incumbent
+business_analyst,13-1111.00,4.A.1.a.1,Getting Information,IM,4.7,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.1.a.1,Getting Information,LV,5.48,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.2.a.2,Processing Information,IM,4.15,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.2.a.2,Processing Information,LV,5.29,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.2.a.4,Analyzing Data or Information,IM,4.4,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.2.a.4,Analyzing Data or Information,LV,5.62,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.2.b.1,Making Decisions and Solving Problems,IM,4.62,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.2.b.1,Making Decisions and Solving Problems,LV,6.0,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.2.b.2,Thinking Creatively,IM,4.14,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.2.b.2,Thinking Creatively,LV,5.38,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.2.b.3,Updating and Using Relevant Knowledge,IM,4.24,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.2.b.3,Updating and Using Relevant Knowledge,LV,5.62,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.3.b.1,Working with Computers,IM,4.29,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.3.b.1,Working with Computers,LV,4.19,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.3.b.6,Documenting/Recording Information,IM,4.05,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.3.b.6,Documenting/Recording Information,LV,4.67,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",IM,4.65,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",LV,5.75,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,IM,4.65,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,LV,6.38,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.4.b.1,Coordinating the Work and Activities of Others,IM,3.6,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.4.b.1,Coordinating the Work and Activities of Others,LV,4.6,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.4.b.2,Developing and Building Teams,IM,3.9,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.4.b.2,Developing and Building Teams,LV,4.48,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",IM,3.14,08/2022,Occupational Expert
+business_analyst,13-1111.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",LV,4.1,08/2022,Occupational Expert
+business_analyst,15-1211.00,4.A.1.a.1,Getting Information,IM,4.59,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.1.a.1,Getting Information,LV,3.68,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.2.a.2,Processing Information,IM,4.43,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.2.a.2,Processing Information,LV,4.97,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.2.a.4,Analyzing Data or Information,IM,4.15,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.2.a.4,Analyzing Data or Information,LV,4.14,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.2.b.1,Making Decisions and Solving Problems,IM,4.59,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.2.b.1,Making Decisions and Solving Problems,LV,4.52,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.2.b.2,Thinking Creatively,IM,3.63,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.2.b.2,Thinking Creatively,LV,4.7,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.2.b.3,Updating and Using Relevant Knowledge,IM,4.44,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.2.b.3,Updating and Using Relevant Knowledge,LV,5.85,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.3.b.1,Working with Computers,IM,4.96,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.3.b.1,Working with Computers,LV,6.0,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.3.b.6,Documenting/Recording Information,IM,3.59,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.3.b.6,Documenting/Recording Information,LV,3.4,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",IM,4.17,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",LV,4.63,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,IM,3.57,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,LV,4.09,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.4.b.1,Coordinating the Work and Activities of Others,IM,2.47,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.4.b.1,Coordinating the Work and Activities of Others,LV,2.98,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.4.b.2,Developing and Building Teams,IM,3.14,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.4.b.2,Developing and Building Teams,LV,2.4,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",IM,2.55,08/2023,Incumbent
+business_analyst,15-1211.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",LV,2.25,08/2023,Incumbent
+ui_ux_designer,15-1254.00,2.A.1.b,Active Listening,IM,3.5,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.A.1.b,Active Listening,LV,3.5,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.A.1.c,Writing,IM,3.12,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.A.1.c,Writing,LV,3.5,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.A.1.d,Speaking,IM,3.25,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.A.1.d,Speaking,LV,3.25,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.A.1.e,Mathematics,IM,2.75,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.A.1.e,Mathematics,LV,2.88,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.A.2.a,Critical Thinking,IM,3.75,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.A.2.a,Critical Thinking,LV,3.88,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.A.2.b,Active Learning,IM,3.5,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.A.2.b,Active Learning,LV,3.62,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.B.1.b,Coordination,IM,3.0,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.B.1.b,Coordination,LV,3.0,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.B.2.i,Complex Problem Solving,IM,3.62,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.B.2.i,Complex Problem Solving,LV,3.62,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.B.5.d,Management of Personnel Resources,IM,2.38,07/2017,Analyst
+ui_ux_designer,15-1254.00,2.B.5.d,Management of Personnel Resources,LV,2.25,07/2017,Analyst
+ui_ux_designer,27-1024.00,2.A.1.b,Active Listening,IM,3.75,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.A.1.b,Active Listening,LV,3.25,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.A.1.c,Writing,IM,3.25,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.A.1.c,Writing,LV,3.0,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.A.1.d,Speaking,IM,3.38,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.A.1.d,Speaking,LV,3.75,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.A.1.e,Mathematics,IM,2.0,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.A.1.e,Mathematics,LV,2.12,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.A.2.a,Critical Thinking,IM,3.25,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.A.2.a,Critical Thinking,LV,3.88,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.A.2.b,Active Learning,IM,3.25,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.A.2.b,Active Learning,LV,3.25,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.B.1.b,Coordination,IM,3.12,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.B.1.b,Coordination,LV,3.12,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.B.2.i,Complex Problem Solving,IM,3.12,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.B.2.i,Complex Problem Solving,LV,3.12,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.B.5.d,Management of Personnel Resources,IM,2.25,08/2023,Analyst
+ui_ux_designer,27-1024.00,2.B.5.d,Management of Personnel Resources,LV,2.5,08/2023,Analyst
+ui_ux_designer,15-1254.00,1.A.1.a.4,Written Expression,IM,3.12,07/2017,Analyst
+ui_ux_designer,15-1254.00,1.A.1.a.4,Written Expression,LV,3.62,07/2017,Analyst
+ui_ux_designer,15-1254.00,1.A.1.b.1,Fluency of Ideas,IM,3.25,07/2017,Analyst
+ui_ux_designer,15-1254.00,1.A.1.b.1,Fluency of Ideas,LV,3.62,07/2017,Analyst
+ui_ux_designer,15-1254.00,1.A.1.b.2,Originality,IM,3.12,07/2017,Analyst
+ui_ux_designer,15-1254.00,1.A.1.b.2,Originality,LV,3.62,07/2017,Analyst
+ui_ux_designer,27-1024.00,1.A.1.a.4,Written Expression,IM,3.5,08/2023,Analyst
+ui_ux_designer,27-1024.00,1.A.1.a.4,Written Expression,LV,3.62,08/2023,Analyst
+ui_ux_designer,27-1024.00,1.A.1.b.1,Fluency of Ideas,IM,3.88,08/2023,Analyst
+ui_ux_designer,27-1024.00,1.A.1.b.1,Fluency of Ideas,LV,4.0,08/2023,Analyst
+ui_ux_designer,27-1024.00,1.A.1.b.2,Originality,IM,4.0,08/2023,Analyst
+ui_ux_designer,27-1024.00,1.A.1.b.2,Originality,LV,4.0,08/2023,Analyst
+ui_ux_designer,15-1254.00,2.C.3.a,Computers and Electronics,IM,4.38,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,2.C.3.a,Computers and Electronics,LV,5.75,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,2.C.4.a,Mathematics,IM,3.35,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,2.C.4.a,Mathematics,LV,3.91,07/2017,Occupational Expert
+ui_ux_designer,27-1024.00,2.C.3.a,Computers and Electronics,IM,4.4,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,2.C.3.a,Computers and Electronics,LV,4.95,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,2.C.4.a,Mathematics,IM,2.26,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,2.C.4.a,Mathematics,LV,2.74,08/2023,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.1.a.1,Getting Information,IM,4.48,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.1.a.1,Getting Information,LV,4.35,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.2.a.2,Processing Information,IM,4.13,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.2.a.2,Processing Information,LV,5.17,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.2.a.4,Analyzing Data or Information,IM,3.54,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.2.a.4,Analyzing Data or Information,LV,4.25,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.2.b.1,Making Decisions and Solving Problems,IM,4.25,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.2.b.1,Making Decisions and Solving Problems,LV,4.96,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.2.b.2,Thinking Creatively,IM,4.38,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.2.b.2,Thinking Creatively,LV,5.75,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.2.b.3,Updating and Using Relevant Knowledge,IM,4.29,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.2.b.3,Updating and Using Relevant Knowledge,LV,5.5,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.3.b.1,Working with Computers,IM,4.88,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.3.b.1,Working with Computers,LV,4.79,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.3.b.6,Documenting/Recording Information,IM,3.46,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.3.b.6,Documenting/Recording Information,LV,3.62,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",IM,3.88,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",LV,4.38,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,IM,3.54,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,LV,4.62,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.4.b.1,Coordinating the Work and Activities of Others,IM,2.79,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.4.b.1,Coordinating the Work and Activities of Others,LV,3.42,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.4.b.2,Developing and Building Teams,IM,3.25,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.4.b.2,Developing and Building Teams,LV,3.21,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",IM,2.67,07/2017,Occupational Expert
+ui_ux_designer,15-1254.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",LV,3.25,07/2017,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.1.a.1,Getting Information,IM,4.6,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.1.a.1,Getting Information,LV,4.55,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.2.a.2,Processing Information,IM,3.45,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.2.a.2,Processing Information,LV,3.6,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.2.a.4,Analyzing Data or Information,IM,2.65,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.2.a.4,Analyzing Data or Information,LV,2.55,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.2.b.1,Making Decisions and Solving Problems,IM,4.21,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.2.b.1,Making Decisions and Solving Problems,LV,4.45,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.2.b.2,Thinking Creatively,IM,4.9,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.2.b.2,Thinking Creatively,LV,5.85,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.2.b.3,Updating and Using Relevant Knowledge,IM,4.0,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.2.b.3,Updating and Using Relevant Knowledge,LV,5.05,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.3.b.1,Working with Computers,IM,4.75,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.3.b.1,Working with Computers,LV,4.3,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.3.b.6,Documenting/Recording Information,IM,3.0,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.3.b.6,Documenting/Recording Information,LV,2.7,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",IM,4.2,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",LV,4.7,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,IM,4.2,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,LV,5.0,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.4.b.1,Coordinating the Work and Activities of Others,IM,3.25,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.4.b.1,Coordinating the Work and Activities of Others,LV,4.0,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.4.b.2,Developing and Building Teams,IM,3.15,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.4.b.2,Developing and Building Teams,LV,3.05,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",IM,3.0,08/2023,Occupational Expert
+ui_ux_designer,27-1024.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",LV,3.4,08/2023,Occupational Expert
+qa_engineer,15-1253.00,2.A.1.b,Active Listening,IM,3.88,08/2022,Analyst
+qa_engineer,15-1253.00,2.A.1.b,Active Listening,LV,4.0,08/2022,Analyst
+qa_engineer,15-1253.00,2.A.1.c,Writing,IM,3.75,08/2022,Analyst
+qa_engineer,15-1253.00,2.A.1.c,Writing,LV,3.88,08/2022,Analyst
+qa_engineer,15-1253.00,2.A.1.d,Speaking,IM,3.88,08/2022,Analyst
+qa_engineer,15-1253.00,2.A.1.d,Speaking,LV,4.0,08/2022,Analyst
+qa_engineer,15-1253.00,2.A.1.e,Mathematics,IM,2.75,08/2022,Analyst
+qa_engineer,15-1253.00,2.A.1.e,Mathematics,LV,2.75,08/2022,Analyst
+qa_engineer,15-1253.00,2.A.2.a,Critical Thinking,IM,3.88,08/2022,Analyst
+qa_engineer,15-1253.00,2.A.2.a,Critical Thinking,LV,3.88,08/2022,Analyst
+qa_engineer,15-1253.00,2.A.2.b,Active Learning,IM,3.12,08/2022,Analyst
+qa_engineer,15-1253.00,2.A.2.b,Active Learning,LV,3.12,08/2022,Analyst
+qa_engineer,15-1253.00,2.B.1.b,Coordination,IM,3.0,08/2022,Analyst
+qa_engineer,15-1253.00,2.B.1.b,Coordination,LV,3.0,08/2022,Analyst
+qa_engineer,15-1253.00,2.B.2.i,Complex Problem Solving,IM,3.38,08/2022,Analyst
+qa_engineer,15-1253.00,2.B.2.i,Complex Problem Solving,LV,3.12,08/2022,Analyst
+qa_engineer,15-1253.00,2.B.5.d,Management of Personnel Resources,IM,2.12,08/2022,Analyst
+qa_engineer,15-1253.00,2.B.5.d,Management of Personnel Resources,LV,2.0,08/2022,Analyst
+qa_engineer,15-1253.00,1.A.1.a.4,Written Expression,IM,3.88,08/2022,Analyst
+qa_engineer,15-1253.00,1.A.1.a.4,Written Expression,LV,3.88,08/2022,Analyst
+qa_engineer,15-1253.00,1.A.1.b.1,Fluency of Ideas,IM,3.0,08/2022,Analyst
+qa_engineer,15-1253.00,1.A.1.b.1,Fluency of Ideas,LV,3.12,08/2022,Analyst
+qa_engineer,15-1253.00,1.A.1.b.2,Originality,IM,3.0,08/2022,Analyst
+qa_engineer,15-1253.00,1.A.1.b.2,Originality,LV,3.0,08/2022,Analyst
+qa_engineer,15-1253.00,2.C.3.a,Computers and Electronics,IM,4.41,08/2022,Occupational Expert
+qa_engineer,15-1253.00,2.C.3.a,Computers and Electronics,LV,5.47,08/2022,Occupational Expert
+qa_engineer,15-1253.00,2.C.4.a,Mathematics,IM,3.29,08/2022,Occupational Expert
+qa_engineer,15-1253.00,2.C.4.a,Mathematics,LV,4.24,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.1.a.1,Getting Information,IM,4.65,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.1.a.1,Getting Information,LV,4.85,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.2.a.2,Processing Information,IM,4.38,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.2.a.2,Processing Information,LV,5.18,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.2.a.4,Analyzing Data or Information,IM,4.26,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.2.a.4,Analyzing Data or Information,LV,5.0,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.2.b.1,Making Decisions and Solving Problems,IM,3.85,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.2.b.1,Making Decisions and Solving Problems,LV,4.56,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.2.b.2,Thinking Creatively,IM,3.85,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.2.b.2,Thinking Creatively,LV,4.94,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.2.b.3,Updating and Using Relevant Knowledge,IM,4.36,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.2.b.3,Updating and Using Relevant Knowledge,LV,5.68,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.3.b.1,Working with Computers,IM,4.94,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.3.b.1,Working with Computers,LV,5.06,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.3.b.6,Documenting/Recording Information,IM,4.06,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.3.b.6,Documenting/Recording Information,LV,4.5,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",IM,4.44,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",LV,5.12,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,IM,4.0,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,LV,4.88,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.4.b.1,Coordinating the Work and Activities of Others,IM,3.48,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.4.b.1,Coordinating the Work and Activities of Others,LV,4.09,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.4.b.2,Developing and Building Teams,IM,3.45,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.4.b.2,Developing and Building Teams,LV,3.67,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",IM,2.88,08/2022,Occupational Expert
+qa_engineer,15-1253.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",LV,3.47,08/2022,Occupational Expert
+cybersecurity_analyst,15-1212.00,2.A.1.b,Active Listening,IM,3.75,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.A.1.b,Active Listening,LV,3.88,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.A.1.c,Writing,IM,3.5,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.A.1.c,Writing,LV,3.75,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.A.1.d,Speaking,IM,3.62,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.A.1.d,Speaking,LV,3.75,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.A.1.e,Mathematics,IM,2.25,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.A.1.e,Mathematics,LV,2.38,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.A.2.a,Critical Thinking,IM,3.88,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.A.2.a,Critical Thinking,LV,4.12,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.A.2.b,Active Learning,IM,3.25,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.A.2.b,Active Learning,LV,3.88,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.B.1.b,Coordination,IM,3.0,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.B.1.b,Coordination,LV,3.0,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.B.2.i,Complex Problem Solving,IM,3.75,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.B.2.i,Complex Problem Solving,LV,3.62,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.B.5.d,Management of Personnel Resources,IM,2.88,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.B.5.d,Management of Personnel Resources,LV,2.88,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,1.A.1.a.4,Written Expression,IM,3.88,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,1.A.1.a.4,Written Expression,LV,4.0,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,1.A.1.b.1,Fluency of Ideas,IM,3.0,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,1.A.1.b.1,Fluency of Ideas,LV,3.75,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,1.A.1.b.2,Originality,IM,3.0,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,1.A.1.b.2,Originality,LV,3.25,08/2018,Analyst
+cybersecurity_analyst,15-1212.00,2.C.3.a,Computers and Electronics,IM,4.35,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,2.C.3.a,Computers and Electronics,LV,5.97,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,2.C.4.a,Mathematics,IM,2.87,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,2.C.4.a,Mathematics,LV,3.53,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.1.a.1,Getting Information,IM,4.5,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.1.a.1,Getting Information,LV,4.7,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.2.a.2,Processing Information,IM,4.09,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.2.a.2,Processing Information,LV,5.21,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.2.a.4,Analyzing Data or Information,IM,4.08,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.2.a.4,Analyzing Data or Information,LV,4.84,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.2.b.1,Making Decisions and Solving Problems,IM,3.94,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.2.b.1,Making Decisions and Solving Problems,LV,4.62,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.2.b.2,Thinking Creatively,IM,3.56,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.2.b.2,Thinking Creatively,LV,4.7,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.2.b.3,Updating and Using Relevant Knowledge,IM,4.05,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.2.b.3,Updating and Using Relevant Knowledge,LV,5.73,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.3.b.1,Working with Computers,IM,4.7,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.3.b.1,Working with Computers,LV,5.26,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.3.b.6,Documenting/Recording Information,IM,4.03,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.3.b.6,Documenting/Recording Information,LV,4.48,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",IM,4.0,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",LV,5.28,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,IM,3.45,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,LV,4.7,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.4.b.1,Coordinating the Work and Activities of Others,IM,2.85,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.4.b.1,Coordinating the Work and Activities of Others,LV,3.49,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.4.b.2,Developing and Building Teams,IM,2.83,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.4.b.2,Developing and Building Teams,LV,2.82,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",IM,2.42,08/2018,Incumbent
+cybersecurity_analyst,15-1212.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",LV,2.6,08/2018,Incumbent
+network_engineer,15-1241.00,2.A.1.b,Active Listening,IM,3.75,08/2024,Analyst
+network_engineer,15-1241.00,2.A.1.b,Active Listening,LV,3.88,08/2024,Analyst
+network_engineer,15-1241.00,2.A.1.c,Writing,IM,3.62,08/2024,Analyst
+network_engineer,15-1241.00,2.A.1.c,Writing,LV,3.75,08/2024,Analyst
+network_engineer,15-1241.00,2.A.1.d,Speaking,IM,3.5,08/2024,Analyst
+network_engineer,15-1241.00,2.A.1.d,Speaking,LV,3.88,08/2024,Analyst
+network_engineer,15-1241.00,2.A.1.e,Mathematics,IM,3.0,08/2024,Analyst
+network_engineer,15-1241.00,2.A.1.e,Mathematics,LV,3.5,08/2024,Analyst
+network_engineer,15-1241.00,2.A.2.a,Critical Thinking,IM,4.12,08/2024,Analyst
+network_engineer,15-1241.00,2.A.2.a,Critical Thinking,LV,4.12,08/2024,Analyst
+network_engineer,15-1241.00,2.A.2.b,Active Learning,IM,3.25,08/2024,Analyst
+network_engineer,15-1241.00,2.A.2.b,Active Learning,LV,3.88,08/2024,Analyst
+network_engineer,15-1241.00,2.B.1.b,Coordination,IM,3.5,08/2024,Analyst
+network_engineer,15-1241.00,2.B.1.b,Coordination,LV,3.62,08/2024,Analyst
+network_engineer,15-1241.00,2.B.2.i,Complex Problem Solving,IM,3.88,08/2024,Analyst
+network_engineer,15-1241.00,2.B.2.i,Complex Problem Solving,LV,4.12,08/2024,Analyst
+network_engineer,15-1241.00,2.B.5.d,Management of Personnel Resources,IM,2.75,08/2024,Analyst
+network_engineer,15-1241.00,2.B.5.d,Management of Personnel Resources,LV,3.0,08/2024,Analyst
+network_engineer,15-1244.00,2.A.1.b,Active Listening,IM,3.75,07/2017,Analyst
+network_engineer,15-1244.00,2.A.1.b,Active Listening,LV,3.88,07/2017,Analyst
+network_engineer,15-1244.00,2.A.1.c,Writing,IM,3.12,07/2017,Analyst
+network_engineer,15-1244.00,2.A.1.c,Writing,LV,3.75,07/2017,Analyst
+network_engineer,15-1244.00,2.A.1.d,Speaking,IM,3.38,07/2017,Analyst
+network_engineer,15-1244.00,2.A.1.d,Speaking,LV,3.88,07/2017,Analyst
+network_engineer,15-1244.00,2.A.1.e,Mathematics,IM,3.0,07/2017,Analyst
+network_engineer,15-1244.00,2.A.1.e,Mathematics,LV,3.38,07/2017,Analyst
+network_engineer,15-1244.00,2.A.2.a,Critical Thinking,IM,3.88,07/2017,Analyst
+network_engineer,15-1244.00,2.A.2.a,Critical Thinking,LV,3.88,07/2017,Analyst
+network_engineer,15-1244.00,2.A.2.b,Active Learning,IM,3.12,07/2017,Analyst
+network_engineer,15-1244.00,2.A.2.b,Active Learning,LV,3.75,07/2017,Analyst
+network_engineer,15-1244.00,2.B.1.b,Coordination,IM,3.0,07/2017,Analyst
+network_engineer,15-1244.00,2.B.1.b,Coordination,LV,3.0,07/2017,Analyst
+network_engineer,15-1244.00,2.B.2.i,Complex Problem Solving,IM,3.75,07/2017,Analyst
+network_engineer,15-1244.00,2.B.2.i,Complex Problem Solving,LV,4.0,07/2017,Analyst
+network_engineer,15-1244.00,2.B.5.d,Management of Personnel Resources,IM,3.0,07/2017,Analyst
+network_engineer,15-1244.00,2.B.5.d,Management of Personnel Resources,LV,3.0,07/2017,Analyst
+network_engineer,15-1241.00,1.A.1.a.4,Written Expression,IM,4.0,08/2024,Analyst
+network_engineer,15-1241.00,1.A.1.a.4,Written Expression,LV,4.12,08/2024,Analyst
+network_engineer,15-1241.00,1.A.1.b.1,Fluency of Ideas,IM,3.12,08/2024,Analyst
+network_engineer,15-1241.00,1.A.1.b.1,Fluency of Ideas,LV,3.88,08/2024,Analyst
+network_engineer,15-1241.00,1.A.1.b.2,Originality,IM,3.0,08/2024,Analyst
+network_engineer,15-1241.00,1.A.1.b.2,Originality,LV,3.62,08/2024,Analyst
+network_engineer,15-1244.00,1.A.1.a.4,Written Expression,IM,3.25,07/2017,Analyst
+network_engineer,15-1244.00,1.A.1.a.4,Written Expression,LV,3.75,07/2017,Analyst
+network_engineer,15-1244.00,1.A.1.b.1,Fluency of Ideas,IM,3.25,07/2017,Analyst
+network_engineer,15-1244.00,1.A.1.b.1,Fluency of Ideas,LV,3.75,07/2017,Analyst
+network_engineer,15-1244.00,1.A.1.b.2,Originality,IM,3.12,07/2017,Analyst
+network_engineer,15-1244.00,1.A.1.b.2,Originality,LV,3.62,07/2017,Analyst
+network_engineer,15-1241.00,2.C.3.a,Computers and Electronics,IM,4.68,08/2024,Occupational Expert
+network_engineer,15-1241.00,2.C.3.a,Computers and Electronics,LV,6.05,08/2024,Occupational Expert
+network_engineer,15-1241.00,2.C.4.a,Mathematics,IM,3.05,08/2024,Occupational Expert
+network_engineer,15-1241.00,2.C.4.a,Mathematics,LV,3.7,08/2024,Occupational Expert
+network_engineer,15-1244.00,2.C.3.a,Computers and Electronics,IM,4.92,07/2017,Incumbent
+network_engineer,15-1244.00,2.C.3.a,Computers and Electronics,LV,6.74,07/2017,Incumbent
+network_engineer,15-1244.00,2.C.4.a,Mathematics,IM,3.19,07/2017,Incumbent
+network_engineer,15-1244.00,2.C.4.a,Mathematics,LV,3.77,07/2017,Incumbent
+network_engineer,15-1241.00,4.A.1.a.1,Getting Information,IM,4.4,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.1.a.1,Getting Information,LV,4.95,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.2.a.2,Processing Information,IM,3.85,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.2.a.2,Processing Information,LV,4.9,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.2.a.4,Analyzing Data or Information,IM,3.9,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.2.a.4,Analyzing Data or Information,LV,4.5,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.2.b.1,Making Decisions and Solving Problems,IM,4.05,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.2.b.1,Making Decisions and Solving Problems,LV,4.7,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.2.b.2,Thinking Creatively,IM,3.45,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.2.b.2,Thinking Creatively,LV,4.4,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.2.b.3,Updating and Using Relevant Knowledge,IM,4.3,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.2.b.3,Updating and Using Relevant Knowledge,LV,5.6,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.3.b.1,Working with Computers,IM,4.75,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.3.b.1,Working with Computers,LV,5.8,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.3.b.6,Documenting/Recording Information,IM,3.9,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.3.b.6,Documenting/Recording Information,LV,4.45,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",IM,4.0,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",LV,5.05,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,IM,3.26,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,LV,4.6,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.4.b.1,Coordinating the Work and Activities of Others,IM,3.25,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.4.b.1,Coordinating the Work and Activities of Others,LV,3.8,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.4.b.2,Developing and Building Teams,IM,2.85,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.4.b.2,Developing and Building Teams,LV,3.1,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",IM,2.85,08/2024,Occupational Expert
+network_engineer,15-1241.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",LV,3.55,08/2024,Occupational Expert
+network_engineer,15-1244.00,4.A.1.a.1,Getting Information,IM,4.17,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.1.a.1,Getting Information,LV,4.36,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.2.a.2,Processing Information,IM,3.8,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.2.a.2,Processing Information,LV,4.68,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.2.a.4,Analyzing Data or Information,IM,3.59,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.2.a.4,Analyzing Data or Information,LV,3.86,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.2.b.1,Making Decisions and Solving Problems,IM,4.3,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.2.b.1,Making Decisions and Solving Problems,LV,4.79,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.2.b.2,Thinking Creatively,IM,3.53,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.2.b.2,Thinking Creatively,LV,4.52,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.2.b.3,Updating and Using Relevant Knowledge,IM,4.24,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.2.b.3,Updating and Using Relevant Knowledge,LV,5.47,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.3.b.1,Working with Computers,IM,4.86,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.3.b.1,Working with Computers,LV,6.09,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.3.b.6,Documenting/Recording Information,IM,3.62,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.3.b.6,Documenting/Recording Information,LV,3.76,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",IM,3.71,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",LV,4.56,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,IM,2.95,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,LV,4.23,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.4.b.1,Coordinating the Work and Activities of Others,IM,2.52,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.4.b.1,Coordinating the Work and Activities of Others,LV,3.22,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.4.b.2,Developing and Building Teams,IM,2.4,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.4.b.2,Developing and Building Teams,LV,2.56,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",IM,1.99,07/2017,Incumbent
+network_engineer,15-1244.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",LV,2.13,07/2017,Incumbent
+database_administrator,15-1242.00,2.A.1.b,Active Listening,IM,3.75,08/2023,Analyst
+database_administrator,15-1242.00,2.A.1.b,Active Listening,LV,3.88,08/2023,Analyst
+database_administrator,15-1242.00,2.A.1.c,Writing,IM,3.25,08/2023,Analyst
+database_administrator,15-1242.00,2.A.1.c,Writing,LV,3.88,08/2023,Analyst
+database_administrator,15-1242.00,2.A.1.d,Speaking,IM,3.38,08/2023,Analyst
+database_administrator,15-1242.00,2.A.1.d,Speaking,LV,3.88,08/2023,Analyst
+database_administrator,15-1242.00,2.A.1.e,Mathematics,IM,3.0,08/2023,Analyst
+database_administrator,15-1242.00,2.A.1.e,Mathematics,LV,3.5,08/2023,Analyst
+database_administrator,15-1242.00,2.A.2.a,Critical Thinking,IM,3.88,08/2023,Analyst
+database_administrator,15-1242.00,2.A.2.a,Critical Thinking,LV,4.0,08/2023,Analyst
+database_administrator,15-1242.00,2.A.2.b,Active Learning,IM,3.5,08/2023,Analyst
+database_administrator,15-1242.00,2.A.2.b,Active Learning,LV,4.12,08/2023,Analyst
+database_administrator,15-1242.00,2.B.1.b,Coordination,IM,3.0,08/2023,Analyst
+database_administrator,15-1242.00,2.B.1.b,Coordination,LV,3.12,08/2023,Analyst
+database_administrator,15-1242.00,2.B.2.i,Complex Problem Solving,IM,3.88,08/2023,Analyst
+database_administrator,15-1242.00,2.B.2.i,Complex Problem Solving,LV,4.12,08/2023,Analyst
+database_administrator,15-1242.00,2.B.5.d,Management of Personnel Resources,IM,2.75,08/2023,Analyst
+database_administrator,15-1242.00,2.B.5.d,Management of Personnel Resources,LV,3.0,08/2023,Analyst
+database_administrator,15-1242.00,1.A.1.a.4,Written Expression,IM,3.38,08/2023,Analyst
+database_administrator,15-1242.00,1.A.1.a.4,Written Expression,LV,4.12,08/2023,Analyst
+database_administrator,15-1242.00,1.A.1.b.1,Fluency of Ideas,IM,3.12,08/2023,Analyst
+database_administrator,15-1242.00,1.A.1.b.1,Fluency of Ideas,LV,3.62,08/2023,Analyst
+database_administrator,15-1242.00,1.A.1.b.2,Originality,IM,3.0,08/2023,Analyst
+database_administrator,15-1242.00,1.A.1.b.2,Originality,LV,3.5,08/2023,Analyst
+database_administrator,15-1242.00,2.C.3.a,Computers and Electronics,IM,4.79,08/2023,Incumbent
+database_administrator,15-1242.00,2.C.3.a,Computers and Electronics,LV,6.11,08/2023,Incumbent
+database_administrator,15-1242.00,2.C.4.a,Mathematics,IM,3.55,08/2023,Incumbent
+database_administrator,15-1242.00,2.C.4.a,Mathematics,LV,4.63,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.1.a.1,Getting Information,IM,4.12,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.1.a.1,Getting Information,LV,4.69,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.2.a.2,Processing Information,IM,3.92,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.2.a.2,Processing Information,LV,5.13,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.2.a.4,Analyzing Data or Information,IM,4.0,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.2.a.4,Analyzing Data or Information,LV,5.19,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.2.b.1,Making Decisions and Solving Problems,IM,4.18,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.2.b.1,Making Decisions and Solving Problems,LV,5.39,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.2.b.2,Thinking Creatively,IM,3.73,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.2.b.2,Thinking Creatively,LV,5.01,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.2.b.3,Updating and Using Relevant Knowledge,IM,3.68,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.2.b.3,Updating and Using Relevant Knowledge,LV,4.98,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.3.b.1,Working with Computers,IM,4.83,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.3.b.1,Working with Computers,LV,5.95,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.3.b.6,Documenting/Recording Information,IM,3.61,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.3.b.6,Documenting/Recording Information,LV,4.4,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",IM,3.84,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",LV,4.95,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,IM,3.86,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,LV,5.49,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.4.b.1,Coordinating the Work and Activities of Others,IM,3.08,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.4.b.1,Coordinating the Work and Activities of Others,LV,4.27,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.4.b.2,Developing and Building Teams,IM,2.9,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.4.b.2,Developing and Building Teams,LV,3.16,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",IM,2.12,08/2023,Incumbent
+database_administrator,15-1242.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",LV,2.49,08/2023,Incumbent
+project_manager,15-1299.09,2.A.1.b,Active Listening,IM,4.0,08/2019,Analyst
+project_manager,15-1299.09,2.A.1.b,Active Listening,LV,4.0,08/2019,Analyst
+project_manager,15-1299.09,2.A.1.c,Writing,IM,4.0,08/2019,Analyst
+project_manager,15-1299.09,2.A.1.c,Writing,LV,4.0,08/2019,Analyst
+project_manager,15-1299.09,2.A.1.d,Speaking,IM,3.88,08/2019,Analyst
+project_manager,15-1299.09,2.A.1.d,Speaking,LV,4.0,08/2019,Analyst
+project_manager,15-1299.09,2.A.1.e,Mathematics,IM,2.88,08/2019,Analyst
+project_manager,15-1299.09,2.A.1.e,Mathematics,LV,3.12,08/2019,Analyst
+project_manager,15-1299.09,2.A.2.a,Critical Thinking,IM,4.12,08/2019,Analyst
+project_manager,15-1299.09,2.A.2.a,Critical Thinking,LV,4.25,08/2019,Analyst
+project_manager,15-1299.09,2.A.2.b,Active Learning,IM,3.38,08/2019,Analyst
+project_manager,15-1299.09,2.A.2.b,Active Learning,LV,3.88,08/2019,Analyst
+project_manager,15-1299.09,2.B.1.b,Coordination,IM,4.0,08/2019,Analyst
+project_manager,15-1299.09,2.B.1.b,Coordination,LV,4.12,08/2019,Analyst
+project_manager,15-1299.09,2.B.2.i,Complex Problem Solving,IM,3.38,08/2019,Analyst
+project_manager,15-1299.09,2.B.2.i,Complex Problem Solving,LV,4.0,08/2019,Analyst
+project_manager,15-1299.09,2.B.5.d,Management of Personnel Resources,IM,3.88,08/2019,Analyst
+project_manager,15-1299.09,2.B.5.d,Management of Personnel Resources,LV,4.0,08/2019,Analyst
+project_manager,15-1299.09,1.A.1.a.4,Written Expression,IM,4.0,08/2019,Analyst
+project_manager,15-1299.09,1.A.1.a.4,Written Expression,LV,4.0,08/2019,Analyst
+project_manager,15-1299.09,1.A.1.b.1,Fluency of Ideas,IM,3.62,08/2019,Analyst
+project_manager,15-1299.09,1.A.1.b.1,Fluency of Ideas,LV,3.88,08/2019,Analyst
+project_manager,15-1299.09,1.A.1.b.2,Originality,IM,3.25,08/2019,Analyst
+project_manager,15-1299.09,1.A.1.b.2,Originality,LV,3.25,08/2019,Analyst
+project_manager,15-1299.09,2.C.3.a,Computers and Electronics,IM,4.19,08/2019,Occupational Expert
+project_manager,15-1299.09,2.C.3.a,Computers and Electronics,LV,5.48,08/2019,Occupational Expert
+project_manager,15-1299.09,2.C.4.a,Mathematics,IM,3.14,08/2019,Occupational Expert
+project_manager,15-1299.09,2.C.4.a,Mathematics,LV,3.95,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.1.a.1,Getting Information,IM,4.67,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.1.a.1,Getting Information,LV,5.0,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.2.a.2,Processing Information,IM,4.14,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.2.a.2,Processing Information,LV,5.33,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.2.a.4,Analyzing Data or Information,IM,4.16,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.2.a.4,Analyzing Data or Information,LV,4.95,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.2.b.1,Making Decisions and Solving Problems,IM,4.4,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.2.b.1,Making Decisions and Solving Problems,LV,5.3,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.2.b.2,Thinking Creatively,IM,3.75,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.2.b.2,Thinking Creatively,LV,5.05,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.2.b.3,Updating and Using Relevant Knowledge,IM,4.4,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.2.b.3,Updating and Using Relevant Knowledge,LV,5.62,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.3.b.1,Working with Computers,IM,4.52,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.3.b.1,Working with Computers,LV,5.19,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.3.b.6,Documenting/Recording Information,IM,4.19,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.3.b.6,Documenting/Recording Information,LV,4.95,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",IM,4.7,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",LV,5.81,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,IM,4.33,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,LV,5.67,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.4.b.1,Coordinating the Work and Activities of Others,IM,4.86,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.4.b.1,Coordinating the Work and Activities of Others,LV,6.14,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.4.b.2,Developing and Building Teams,IM,4.43,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.4.b.2,Developing and Building Teams,LV,5.52,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",IM,4.29,08/2019,Occupational Expert
+project_manager,15-1299.09,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",LV,5.43,08/2019,Occupational Expert
+digital_marketing_executive,13-1161.00,2.A.1.b,Active Listening,IM,3.88,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.A.1.b,Active Listening,LV,4.0,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.A.1.c,Writing,IM,4.0,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.A.1.c,Writing,LV,4.12,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.A.1.d,Speaking,IM,3.88,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.A.1.d,Speaking,LV,4.0,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.A.1.e,Mathematics,IM,3.25,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.A.1.e,Mathematics,LV,3.38,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.A.2.a,Critical Thinking,IM,4.0,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.A.2.a,Critical Thinking,LV,4.0,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.A.2.b,Active Learning,IM,3.5,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.A.2.b,Active Learning,LV,4.0,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.B.1.b,Coordination,IM,3.0,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.B.1.b,Coordination,LV,3.12,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.B.2.i,Complex Problem Solving,IM,3.88,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.B.2.i,Complex Problem Solving,LV,3.75,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.B.5.d,Management of Personnel Resources,IM,2.75,08/2018,Analyst
+digital_marketing_executive,13-1161.00,2.B.5.d,Management of Personnel Resources,LV,2.88,08/2018,Analyst
+digital_marketing_executive,13-1161.01,2.A.1.b,Active Listening,IM,3.75,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.A.1.b,Active Listening,LV,4.0,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.A.1.c,Writing,IM,3.5,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.A.1.c,Writing,LV,3.75,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.A.1.d,Speaking,IM,3.62,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.A.1.d,Speaking,LV,3.75,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.A.1.e,Mathematics,IM,2.75,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.A.1.e,Mathematics,LV,2.88,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.A.2.a,Critical Thinking,IM,3.75,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.A.2.a,Critical Thinking,LV,3.88,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.A.2.b,Active Learning,IM,3.75,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.A.2.b,Active Learning,LV,3.88,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.B.1.b,Coordination,IM,3.25,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.B.1.b,Coordination,LV,3.62,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.B.2.i,Complex Problem Solving,IM,3.88,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.B.2.i,Complex Problem Solving,LV,4.12,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.B.5.d,Management of Personnel Resources,IM,2.62,08/2021,Analyst
+digital_marketing_executive,13-1161.01,2.B.5.d,Management of Personnel Resources,LV,3.0,08/2021,Analyst
+digital_marketing_executive,13-1161.00,1.A.1.a.4,Written Expression,IM,4.0,08/2018,Analyst
+digital_marketing_executive,13-1161.00,1.A.1.a.4,Written Expression,LV,4.5,08/2018,Analyst
+digital_marketing_executive,13-1161.00,1.A.1.b.1,Fluency of Ideas,IM,4.0,08/2018,Analyst
+digital_marketing_executive,13-1161.00,1.A.1.b.1,Fluency of Ideas,LV,4.0,08/2018,Analyst
+digital_marketing_executive,13-1161.00,1.A.1.b.2,Originality,IM,3.38,08/2018,Analyst
+digital_marketing_executive,13-1161.00,1.A.1.b.2,Originality,LV,3.38,08/2018,Analyst
+digital_marketing_executive,13-1161.01,1.A.1.a.4,Written Expression,IM,3.88,08/2021,Analyst
+digital_marketing_executive,13-1161.01,1.A.1.a.4,Written Expression,LV,4.12,08/2021,Analyst
+digital_marketing_executive,13-1161.01,1.A.1.b.1,Fluency of Ideas,IM,3.88,08/2021,Analyst
+digital_marketing_executive,13-1161.01,1.A.1.b.1,Fluency of Ideas,LV,3.88,08/2021,Analyst
+digital_marketing_executive,13-1161.01,1.A.1.b.2,Originality,IM,3.25,08/2021,Analyst
+digital_marketing_executive,13-1161.01,1.A.1.b.2,Originality,LV,3.88,08/2021,Analyst
+digital_marketing_executive,13-1161.00,2.C.3.a,Computers and Electronics,IM,3.24,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,2.C.3.a,Computers and Electronics,LV,4.45,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,2.C.4.a,Mathematics,IM,4.04,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,2.C.4.a,Mathematics,LV,5.13,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.01,2.C.3.a,Computers and Electronics,IM,4.3,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,2.C.3.a,Computers and Electronics,LV,4.91,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,2.C.4.a,Mathematics,IM,3.52,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,2.C.4.a,Mathematics,LV,4.3,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.1.a.1,Getting Information,IM,4.86,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.1.a.1,Getting Information,LV,5.35,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.2.a.2,Processing Information,IM,4.64,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.2.a.2,Processing Information,LV,5.91,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.2.a.4,Analyzing Data or Information,IM,4.78,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.2.a.4,Analyzing Data or Information,LV,6.22,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.2.b.1,Making Decisions and Solving Problems,IM,4.55,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.2.b.1,Making Decisions and Solving Problems,LV,5.39,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.2.b.2,Thinking Creatively,IM,4.14,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.2.b.2,Thinking Creatively,LV,5.09,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.2.b.3,Updating and Using Relevant Knowledge,IM,4.14,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.2.b.3,Updating and Using Relevant Knowledge,LV,5.78,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.3.b.1,Working with Computers,IM,4.61,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.3.b.1,Working with Computers,LV,4.3,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.3.b.6,Documenting/Recording Information,IM,3.87,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.3.b.6,Documenting/Recording Information,LV,4.26,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",IM,4.09,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",LV,5.17,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,IM,4.22,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,LV,5.48,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.4.b.1,Coordinating the Work and Activities of Others,IM,3.48,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.4.b.1,Coordinating the Work and Activities of Others,LV,4.87,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.4.b.2,Developing and Building Teams,IM,3.35,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.4.b.2,Developing and Building Teams,LV,3.87,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",IM,3.0,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.00,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",LV,3.83,08/2018,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.1.a.1,Getting Information,IM,4.48,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.1.a.1,Getting Information,LV,5.26,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.2.a.2,Processing Information,IM,4.48,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.2.a.2,Processing Information,LV,4.91,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.2.a.4,Analyzing Data or Information,IM,4.65,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.2.a.4,Analyzing Data or Information,LV,4.87,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.2.b.1,Making Decisions and Solving Problems,IM,4.61,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.2.b.1,Making Decisions and Solving Problems,LV,5.04,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.2.b.2,Thinking Creatively,IM,4.36,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.2.b.2,Thinking Creatively,LV,4.7,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.2.b.3,Updating and Using Relevant Knowledge,IM,4.64,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.2.b.3,Updating and Using Relevant Knowledge,LV,5.65,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.3.b.1,Working with Computers,IM,4.83,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.3.b.1,Working with Computers,LV,3.83,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.3.b.6,Documenting/Recording Information,IM,3.43,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.3.b.6,Documenting/Recording Information,LV,3.3,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",IM,4.3,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.4.a.2,"Communicating with Supervisors, Peers, or Subordinates",LV,4.65,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,IM,3.91,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.4.a.4,Establishing and Maintaining Interpersonal Relationships,LV,4.65,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.4.b.1,Coordinating the Work and Activities of Others,IM,2.87,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.4.b.1,Coordinating the Work and Activities of Others,LV,3.45,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.4.b.2,Developing and Building Teams,IM,3.0,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.4.b.2,Developing and Building Teams,LV,3.09,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",IM,3.0,08/2021,Occupational Expert
+digital_marketing_executive,13-1161.01,4.A.4.b.4,"Guiding, Directing, and Motivating Subordinates",LV,3.48,08/2021,Occupational Expert

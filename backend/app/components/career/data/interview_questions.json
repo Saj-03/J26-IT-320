@@ -1,0 +1,339 @@
+{
+  "_note": "Keywords may list alternatives separated by '|' (e.g. British/American spelling). The first alternative is shown to students.",
+  "general": {
+    "introduction": [
+      {
+        "id": "gen_intro_1",
+        "question": "Tell me about yourself.",
+        "tip": "Cover your degree, 2-3 key skills, one project, and why you want this role. Keep it under 2 minutes.",
+        "model_answer": "I am a final-year undergraduate studying my degree programme. My key skills include problem solving, teamwork and the technical tools used in this field. In my recent project I worked with a team to design and build a working system, where I was responsible for an important part and we delivered it on time. I enjoy learning new tools and I am now looking for a role where I can apply my skills, grow professionally and contribute to the team.",
+        "keywords": ["degree|undergraduate|university", "skill", "project", "team", "learn", "goal|career|role"]
+      },
+      {
+        "id": "gen_intro_2",
+        "question": "Why are you interested in this career?",
+        "tip": "Link your interest to real experiences (a module, project or internship) and to what the role actually involves.",
+        "model_answer": "I became interested in this career during my degree when I worked on a project that involved the main tasks of this role. I enjoyed solving the problems and seeing the impact of the result. I have since improved my skills through courses and practice, and I am motivated because this career lets me keep learning, work with a team and create value for users and the organisation.",
+        "keywords": ["project", "interest|enjoy|passion", "skill", "learn", "impact|value", "experience|internship|module"]
+      }
+    ],
+    "behavioural": [
+      {
+        "id": "gen_beh_1",
+        "question": "Describe a time you had a conflict in a team. How did you handle it?",
+        "tip": "Use the STAR method: Situation, Task, Action, Result. Focus on what YOU did and what you learned.",
+        "model_answer": "During a group project in my third year, two team members disagreed about which technology to use, and the work was getting delayed. My task as a member was to help the team reach a decision before the deadline. I arranged a short meeting, asked each person to explain their reasons, and suggested we compare the options against our requirements. As a result we chose one option together, finished the project on time, and I learned that listening and using clear criteria helps resolve conflict.",
+        "keywords": ["team", "conflict|disagree", "listen", "meeting|discuss", "decision|agree", "result|outcome", "learn"]
+      },
+      {
+        "id": "gen_beh_2",
+        "question": "Tell me about a difficult problem you solved.",
+        "tip": "Use the STAR method and include a measurable result if possible (time saved, error fixed, score improved).",
+        "model_answer": "In my final-year project our system was running very slowly when loading reports. My task was to find the cause and fix it before the demo. I measured each step, found that one database query was repeated many times, and rewrote it with proper indexing and caching. As a result the page loaded about five times faster, and I learned to measure a problem before trying to fix it.",
+        "keywords": ["problem", "task|responsible", "analys|investigat|measur", "solution|fix|solve", "result|improv", "learn"]
+      }
+    ]
+  },
+  "careers": {
+    "software_engineer": [
+      {
+        "id": "se_1",
+        "question": "Explain the four main principles of object-oriented programming.",
+        "tip": "Name each principle and give a short example for each.",
+        "model_answer": "The four principles are encapsulation, inheritance, polymorphism and abstraction. Encapsulation hides an object's data behind methods. Inheritance lets a class reuse and extend another class. Polymorphism lets the same method call behave differently for different object types, for example through method overriding. Abstraction exposes only the essential features through interfaces or abstract classes.",
+        "keywords": ["encapsulation", "inheritance", "polymorphism", "abstraction", "class", "interface|abstract class"]
+      },
+      {
+        "id": "se_2",
+        "question": "What is the difference between an array and a linked list? When would you use each?",
+        "tip": "Compare access time, insertion/deletion cost and memory layout.",
+        "model_answer": "An array stores elements in contiguous memory, so accessing an element by index is O(1), but inserting or deleting in the middle is O(n) because elements must shift. A linked list stores nodes connected by pointers, so insertion and deletion are O(1) once you have the node, but access by index is O(n). Use an array when you need fast random access, and a linked list when you insert and delete often.",
+        "keywords": ["contiguous|memory", "index", "O(1)|constant", "O(n)|linear", "pointer|node", "insert", "delete"]
+      },
+      {
+        "id": "se_3",
+        "question": "How do you use Git when working in a team?",
+        "tip": "Mention branches, commits, pull requests, code review and resolving merge conflicts.",
+        "model_answer": "I create a separate feature branch for each task, make small commits with clear messages, and push the branch to the remote repository. Then I open a pull request so teammates can review the code before it is merged into the main branch. If there is a merge conflict, I pull the latest changes, resolve the conflict locally, test, and push again.",
+        "keywords": ["branch", "commit", "pull request|merge request", "review", "merge", "conflict"]
+      },
+      {
+        "id": "se_4",
+        "question": "How do you make sure your code is good quality?",
+        "tip": "Talk about testing, code reviews, readability and design principles.",
+        "model_answer": "I write unit tests for important logic and run them before every commit. I keep functions small with clear names, follow the team's coding standards, and apply principles like SOLID and DRY. I ask for code reviews, fix issues found by linters, and refactor code when it becomes hard to read or maintain.",
+        "keywords": ["unit test|testing", "review", "readab|clean", "SOLID|DRY|principle", "refactor", "standard|lint"]
+      }
+    ],
+    "data_analyst": [
+      {
+        "id": "da_1",
+        "question": "How do you clean a messy dataset before analysis?",
+        "tip": "Mention missing values, duplicates, data types, outliers and validation.",
+        "model_answer": "First I explore the data to understand its structure. Then I handle missing values by removing or imputing them, remove duplicate rows, fix incorrect data types and inconsistent formats, and check for outliers to decide whether they are errors or real values. Finally I validate the cleaned data with summary statistics before analysis.",
+        "keywords": ["missing", "duplicate", "data type|format", "outlier", "impute", "validat|check"]
+      },
+      {
+        "id": "da_2",
+        "question": "Explain the difference between INNER JOIN and LEFT JOIN in SQL.",
+        "tip": "Describe which rows each join returns and give a simple example.",
+        "model_answer": "An INNER JOIN returns only the rows that have matching values in both tables. A LEFT JOIN returns all rows from the left table and the matching rows from the right table; where there is no match, the right-side columns are NULL. For example, a LEFT JOIN of customers to orders also shows customers who have never placed an order.",
+        "keywords": ["inner join", "left join", "match", "both tables", "all rows", "null"]
+      },
+      {
+        "id": "da_3",
+        "question": "How would you build a dashboard for a manager?",
+        "tip": "Start from the business question, then KPIs, visuals and clarity.",
+        "model_answer": "I would first meet the manager to understand the business questions and decisions the dashboard should support. Then I would define the key KPIs, prepare and model the data, and choose simple visualisations such as trend lines and bar charts. I keep the layout clean with filters for drill-down, and I review it with the manager to make sure the insights are clear.",
+        "keywords": ["business question|requirement|stakeholder", "KPI", "visuali", "filter|drill", "insight", "chart"]
+      },
+      {
+        "id": "da_4",
+        "question": "What is the difference between correlation and causation?",
+        "tip": "Define both and give an example of a misleading correlation.",
+        "model_answer": "Correlation means two variables move together, while causation means one variable directly causes a change in the other. Correlation does not prove causation because a third confounding variable may affect both. For example, ice cream sales and drowning incidents are correlated because both increase in hot weather. To show causation you need controlled experiments such as A/B tests.",
+        "keywords": ["correlation", "causation|cause", "variable", "confound|third factor", "experiment|A/B test", "example"]
+      }
+    ],
+    "business_analyst": [
+      {
+        "id": "ba_1",
+        "question": "How do you gather requirements from stakeholders?",
+        "tip": "Name several techniques and how you confirm requirements.",
+        "model_answer": "I first identify all the stakeholders and then use techniques such as interviews, workshops, questionnaires, observation and document analysis. I write the requirements as clear user stories or use cases, prioritise them with the stakeholders, and validate them through reviews and prototypes so everyone agrees before development starts.",
+        "keywords": ["stakeholder", "interview", "workshop", "user stor|use case", "prioriti", "validat|review|sign-off"]
+      },
+      {
+        "id": "ba_2",
+        "question": "What is the difference between functional and non-functional requirements?",
+        "tip": "Define both and give one example each.",
+        "model_answer": "Functional requirements describe what the system should do, for example the user can reset their password. Non-functional requirements describe how well the system should do it, such as performance, security, usability and availability, for example pages must load within two seconds.",
+        "keywords": ["functional", "non-functional", "what the system", "performance", "security", "usability"]
+      },
+      {
+        "id": "ba_3",
+        "question": "How do you handle a stakeholder who keeps changing requirements?",
+        "tip": "Show calm communication, impact analysis and change control.",
+        "model_answer": "I listen to understand the reason for the change, then analyse its impact on scope, time and cost. I document the change request, discuss the trade-offs with the stakeholder and the project manager, and follow the change control process so the decision is agreed and recorded. Regular communication and early prototypes reduce later changes.",
+        "keywords": ["impact", "scope", "change request|change control", "document", "communicat", "prioriti|trade-off"]
+      },
+      {
+        "id": "ba_4",
+        "question": "What is a gap analysis and how do you perform one?",
+        "tip": "Explain current state, future state and the gap between them.",
+        "model_answer": "A gap analysis compares the current state of a process or system with the desired future state. I document the as-is process, define the to-be process with the stakeholders, identify the gaps between them, and recommend actions to close each gap, including priorities, owners and timelines.",
+        "keywords": ["current state|as-is", "future state|to-be", "gap", "process", "recommend|action", "stakeholder"]
+      }
+    ],
+    "ui_ux_designer": [
+      {
+        "id": "ux_1",
+        "question": "Walk me through your design process.",
+        "tip": "Research, define, ideate, prototype, test, iterate.",
+        "model_answer": "I start with user research such as interviews and surveys to understand user needs. Then I define the problem with personas and user journeys, sketch ideas, create wireframes, and build an interactive prototype in Figma. I run usability tests with real users and iterate on the design based on their feedback.",
+        "keywords": ["user research|research", "persona", "wireframe", "prototype", "usability test|testing", "iterat|feedback"]
+      },
+      {
+        "id": "ux_2",
+        "question": "What is the difference between UI and UX?",
+        "tip": "UX is the overall experience; UI is the visual and interactive layer.",
+        "model_answer": "UX, or user experience, is about how easy and satisfying a product is to use overall, including research, information architecture and user flows. UI, or user interface, is the visual layer the user interacts with, such as layout, colours, typography and buttons. Good UX solves the right problem, and good UI makes the solution clear and attractive.",
+        "keywords": ["user experience", "user interface", "flow|journey", "visual", "typography|colour|color|layout", "usab"]
+      },
+      {
+        "id": "ux_3",
+        "question": "How do you make a design accessible?",
+        "tip": "Mention contrast, keyboard navigation, screen readers and WCAG.",
+        "model_answer": "I follow WCAG guidelines: I use sufficient colour contrast, readable font sizes, and never rely on colour alone to show meaning. I make sure everything works with keyboard navigation and screen readers by using clear labels and alt text, and I test with accessibility tools and, where possible, with users who have disabilities.",
+        "keywords": ["WCAG", "contrast", "keyboard", "screen reader", "alt text|label", "test"]
+      },
+      {
+        "id": "ux_4",
+        "question": "How do you respond when users dislike your design?",
+        "tip": "Show openness to feedback and a data-driven approach.",
+        "model_answer": "I treat it as useful feedback rather than criticism. I try to understand exactly what is not working by observing users and asking open questions, look for patterns across several users, and then iterate on the design and test again. Usability testing data helps me separate personal preferences from real usability problems.",
+        "keywords": ["feedback", "understand|listen", "observe|usability test", "pattern|data", "iterat", "test"]
+      }
+    ],
+    "qa_engineer": [
+      {
+        "id": "qa_1",
+        "question": "What is the difference between verification and validation?",
+        "tip": "Verification: built right? Validation: built the right thing?",
+        "model_answer": "Verification checks whether the product is being built correctly according to the specification, using reviews, walkthroughs and inspections. Validation checks whether we built the right product that meets user needs, mainly by executing tests such as system and acceptance testing.",
+        "keywords": ["verification", "validation", "specification|requirement", "review|inspection", "user need", "acceptance test"]
+      },
+      {
+        "id": "qa_2",
+        "question": "How do you write a good test case?",
+        "tip": "List the fields of a test case and qualities like clarity and traceability.",
+        "model_answer": "A good test case has a unique ID, a clear title, preconditions, test data, step-by-step actions and an expected result. It tests one thing, is easy for someone else to repeat, is traceable to a requirement, and covers both positive and negative scenarios as well as boundary values.",
+        "keywords": ["precondition", "test data", "steps", "expected result", "requirement|traceab", "negative|boundary"]
+      },
+      {
+        "id": "qa_3",
+        "question": "Explain the bug life cycle.",
+        "tip": "Walk through the statuses from New to Closed.",
+        "model_answer": "A bug starts as New when a tester reports it. It is then Assigned to a developer, who marks it Open while working and Fixed when done. The tester retests it; if it works the bug is Verified and Closed, otherwise it is Reopened. A bug can also be Rejected, marked Duplicate or Deferred to a later release.",
+        "keywords": ["new", "assigned", "fixed", "retest", "closed", "reopen"]
+      },
+      {
+        "id": "qa_4",
+        "question": "When should tests be automated and when should they stay manual?",
+        "tip": "Consider repetition, stability and the type of testing.",
+        "model_answer": "Tests that are repetitive, stable and run often, such as regression, smoke and data-driven tests, are good candidates for automation with tools like Selenium or Cypress. Exploratory testing, usability testing and features that change frequently are better done manually because they need human judgement or would make automated scripts expensive to maintain.",
+        "keywords": ["regression", "repetitive|repeat", "Selenium|Cypress|automation tool", "exploratory", "usability", "maintain|maintenance"]
+      }
+    ],
+    "cybersecurity_analyst": [
+      {
+        "id": "cy_1",
+        "question": "What is the CIA triad?",
+        "tip": "Define confidentiality, integrity and availability with examples of controls.",
+        "model_answer": "The CIA triad is the core model of information security. Confidentiality means only authorised people can access data, using controls like encryption and access control. Integrity means data is accurate and not altered without permission, using hashing and digital signatures. Availability means systems and data are accessible when needed, using backups and redundancy.",
+        "keywords": ["confidentiality", "integrity", "availability", "encryption", "hash", "backup|redundancy"]
+      },
+      {
+        "id": "cy_2",
+        "question": "How would you respond to a suspected phishing incident?",
+        "tip": "Follow the incident response steps.",
+        "model_answer": "I would follow the incident response process: identify and confirm the phishing email, contain it by blocking the sender and links and removing the email from mailboxes, reset any compromised credentials, and check logs in the SIEM for further activity. Then I would eradicate and recover, document the incident, and use lessons learned for user awareness training.",
+        "keywords": ["identify", "contain", "credential|password", "log|SIEM", "recover|eradicat", "awareness|training"]
+      },
+      {
+        "id": "cy_3",
+        "question": "What is the difference between symmetric and asymmetric encryption?",
+        "tip": "Compare keys, speed and typical uses.",
+        "model_answer": "Symmetric encryption uses the same secret key to encrypt and decrypt, for example AES, and it is fast, so it is used for bulk data. Asymmetric encryption uses a public key and a private key pair, for example RSA; it is slower but solves key exchange and supports digital signatures. TLS uses asymmetric encryption to exchange a symmetric session key.",
+        "keywords": ["same key|single key|secret key", "public key", "private key", "AES", "RSA", "TLS|key exchange"]
+      },
+      {
+        "id": "cy_4",
+        "question": "Explain SQL injection and how to prevent it.",
+        "tip": "Describe the attack and at least two defences.",
+        "model_answer": "SQL injection happens when user input is inserted directly into a SQL query, letting an attacker change the query to read or modify data. It is prevented by using parameterised queries or prepared statements, validating input, using least-privilege database accounts, and adding a web application firewall.",
+        "keywords": ["user input|input", "query", "parameteri|prepared statement", "validat", "least privilege", "firewall|WAF"]
+      }
+    ],
+    "network_engineer": [
+      {
+        "id": "ne_1",
+        "question": "Explain the layers of the OSI model.",
+        "tip": "List all seven layers with an example protocol or device for some.",
+        "model_answer": "The OSI model has seven layers: physical, data link, network, transport, session, presentation and application. For example, switches work at the data link layer with MAC addresses, routers work at the network layer with IP addresses, TCP and UDP are transport layer protocols, and HTTP is an application layer protocol.",
+        "keywords": ["physical", "data link", "network layer", "transport", "application", "TCP|UDP|IP"]
+      },
+      {
+        "id": "ne_2",
+        "question": "What is the difference between TCP and UDP?",
+        "tip": "Compare reliability, connection and use cases.",
+        "model_answer": "TCP is connection-oriented and reliable: it uses a three-way handshake, acknowledgements and retransmission, and delivers data in order, so it is used for web and email. UDP is connectionless and faster with lower overhead but does not guarantee delivery or order, so it is used for streaming, gaming and DNS.",
+        "keywords": ["connection-oriented|connection", "reliab", "handshake", "acknowledg|retransmi", "connectionless", "streaming|DNS|gaming"]
+      },
+      {
+        "id": "ne_3",
+        "question": "What is subnetting and why is it used?",
+        "tip": "Explain the subnet mask and give a small example.",
+        "model_answer": "Subnetting divides a large IP network into smaller networks using a subnet mask, which separates the network part from the host part of an address. For example, 192.168.1.0/24 can be split into four /26 subnets with 62 usable hosts each. It improves security, reduces broadcast traffic and uses IP addresses efficiently.",
+        "keywords": ["subnet mask|mask", "network", "host", "IP address|IP", "broadcast", "efficien|security"]
+      },
+      {
+        "id": "ne_4",
+        "question": "A user cannot access the internet. How do you troubleshoot it?",
+        "tip": "Work layer by layer from the physical connection upwards.",
+        "model_answer": "I troubleshoot layer by layer. First I check the physical connection or Wi-Fi, then whether the device has a valid IP address from DHCP. I ping the default gateway, then an external IP address, then a domain name to test DNS. I use tools like ipconfig, ping and traceroute, and check the router, firewall and switch configuration if needed.",
+        "keywords": ["physical|cable", "IP address|DHCP", "gateway", "ping", "DNS", "traceroute|ipconfig"]
+      }
+    ],
+    "database_administrator": [
+      {
+        "id": "db_1",
+        "question": "What is database normalisation? Explain the first three normal forms.",
+        "tip": "Define 1NF, 2NF and 3NF and why normalisation matters.",
+        "model_answer": "Normalisation organises tables to reduce redundancy and update anomalies. First normal form requires atomic values and no repeating groups. Second normal form also requires every non-key column to depend on the whole primary key, removing partial dependency. Third normal form also removes transitive dependency, so non-key columns depend only on the key.",
+        "keywords": ["normalisation|normalization", "redundan", "atomic", "partial dependency", "transitive", "primary key"]
+      },
+      {
+        "id": "db_2",
+        "question": "What are ACID properties?",
+        "tip": "Explain each letter with a short example.",
+        "model_answer": "ACID describes reliable transactions. Atomicity means a transaction completes fully or not at all. Consistency means the database moves from one valid state to another. Isolation means concurrent transactions do not interfere with each other. Durability means committed data survives crashes. A bank transfer is the classic example.",
+        "keywords": ["atomicity", "consistency", "isolation", "durability", "transaction", "commit"]
+      },
+      {
+        "id": "db_3",
+        "question": "How do indexes improve query performance, and what are their costs?",
+        "tip": "Explain how lookups work and the trade-offs.",
+        "model_answer": "An index is a data structure, usually a B-tree, that lets the database find rows without scanning the whole table, which speeds up WHERE, JOIN and ORDER BY queries. The costs are extra storage and slower inserts, updates and deletes, because the index must be updated too. So I index columns that are frequently searched and check query plans.",
+        "keywords": ["B-tree", "scan", "where|join", "storage", "insert|update", "query plan|execution plan"]
+      },
+      {
+        "id": "db_4",
+        "question": "What is your backup and recovery strategy for a production database?",
+        "tip": "Mention backup types, schedules, testing restores and RPO/RTO.",
+        "model_answer": "I combine full, differential or incremental backups and transaction log backups on a schedule that meets the business RPO and RTO. Backups are stored securely off-site or in the cloud, encrypted, and monitored. Most importantly, I regularly test restoring backups so recovery is proven to work.",
+        "keywords": ["full backup|full", "incremental|differential", "transaction log", "RPO|RTO", "off-site|cloud", "test restor|restore"]
+      }
+    ],
+    "project_manager": [
+      {
+        "id": "pm_1",
+        "question": "What is the difference between Agile and Waterfall?",
+        "tip": "Compare planning, delivery and when each fits.",
+        "model_answer": "Waterfall is a sequential approach where requirements, design, development and testing happen in fixed phases, which suits projects with stable requirements. Agile is iterative: work is delivered in short sprints, with frequent customer feedback and changing priorities, as in Scrum. Agile suits projects where requirements are expected to change.",
+        "keywords": ["sequential|phase", "iterative", "sprint", "feedback", "Scrum", "requirement"]
+      },
+      {
+        "id": "pm_2",
+        "question": "How do you manage project risks?",
+        "tip": "Identify, assess, plan responses, monitor.",
+        "model_answer": "I identify risks early with the team and record them in a risk register. I assess each risk by probability and impact, then plan a response: avoid, mitigate, transfer or accept, with an owner for each risk. I monitor risks regularly in team meetings and update the plan as the project changes.",
+        "keywords": ["identify", "risk register", "probability", "impact", "mitigat", "monitor|owner"]
+      },
+      {
+        "id": "pm_3",
+        "question": "How do you handle a team member who is consistently missing deadlines?",
+        "tip": "Show empathy, find the cause, agree on a plan, follow up.",
+        "model_answer": "I would talk to the team member privately to understand the reason, such as workload, unclear tasks or personal issues. Then we would agree on a realistic plan, for example breaking tasks into smaller pieces, adjusting priorities or providing support or training. I would follow up regularly and recognise improvement, and escalate only if the problem continues.",
+        "keywords": ["private|one-on-one|talk", "understand|reason", "plan", "support|training", "follow up|check-in", "deadline|priorit"]
+      },
+      {
+        "id": "pm_4",
+        "question": "How do you keep stakeholders informed about project progress?",
+        "tip": "Mention a communication plan, reports, meetings and tools.",
+        "model_answer": "I create a communication plan that defines who needs what information and how often. I share regular status reports showing progress, risks and issues, use dashboards in tools like Jira, and hold review meetings or sprint demos. I communicate problems early and honestly together with a proposed solution.",
+        "keywords": ["communication plan", "status report|report", "risk|issue", "dashboard|Jira", "meeting|demo", "early|transparen"]
+      }
+    ],
+    "digital_marketing_executive": [
+      {
+        "id": "dm_1",
+        "question": "How would you plan a social media campaign for a new product?",
+        "tip": "Goals, audience, channels, content, budget, measurement.",
+        "model_answer": "I would start by setting SMART goals and defining the target audience with personas. Then I would choose the right channels, create a content calendar with engaging posts and videos, and set a budget for paid ads. During the campaign I would monitor KPIs such as reach, engagement and conversions and optimise the content based on the results.",
+        "keywords": ["goal|SMART", "target audience|audience", "channel|platform", "content calendar|content", "budget", "KPI|engagement|conversion"]
+      },
+      {
+        "id": "dm_2",
+        "question": "What is SEO and how do you improve a website's ranking?",
+        "tip": "Cover keywords, on-page, technical and off-page SEO.",
+        "model_answer": "SEO, or search engine optimisation, improves a website's organic visibility in search results. I research keywords, optimise on-page elements like titles, meta descriptions and headings, publish quality content, improve technical aspects such as page speed and mobile friendliness, and build quality backlinks.",
+        "keywords": ["search engine", "keyword", "meta|title", "content", "page speed|mobile|technical", "backlink"]
+      },
+      {
+        "id": "dm_3",
+        "question": "Which metrics would you use to measure campaign success?",
+        "tip": "Link metrics to the campaign goal.",
+        "model_answer": "It depends on the goal. For awareness I track reach and impressions; for engagement, likes, shares and click-through rate; for sales, conversion rate, cost per acquisition and return on ad spend. I use Google Analytics and platform insights, and I compare results with the targets set at the start.",
+        "keywords": ["reach|impression", "click-through|CTR", "conversion", "cost per|CPA|CPC", "ROI|ROAS|return", "Google Analytics|analytics"]
+      },
+      {
+        "id": "dm_4",
+        "question": "How do you respond to negative comments about the brand online?",
+        "tip": "Respond quickly, politely and move the issue to a private channel.",
+        "model_answer": "I respond quickly and politely, acknowledge the customer's concern and apologise where appropriate, without arguing. I move detailed issues to a private message or email, work with the relevant team to solve the problem, and follow up. I also monitor sentiment to spot recurring issues the business should fix.",
+        "keywords": ["respond quickly|quick", "polite|professional", "acknowledg|apolog", "private|direct message", "solve|resolve", "monitor|sentiment"]
+      }
+    ]
+  }
+}

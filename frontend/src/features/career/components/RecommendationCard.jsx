@@ -34,6 +34,12 @@ export default function RecommendationCard({ rec, rank, onSelect, busy }) {
             <p className={`text-xs font-bold ${ui.accentText}`}>#{rank} · {rec.career_area}</p>
             <h3 className="text-lg font-extrabold text-charcoal">{rec.career_name}</h3>
             <p className="text-sm text-charcoal-muted">{rec.description}</p>
+            {/* Score breakdown: shown when the trained model contributed to the match */}
+            {rec.model_probability != null && (
+              <p className="text-xs font-semibold text-charcoal-muted mt-1">
+                Skill match {Math.round(rec.skill_match_percentage)}% · Trained model {Math.round(rec.model_probability)}%
+              </p>
+            )}
           </div>
           <p className={`text-sm text-charcoal-light ${ui.highlight} rounded-2xl p-3`}>{rec.explanation}</p>
           <div className="grid sm:grid-cols-2 gap-3">

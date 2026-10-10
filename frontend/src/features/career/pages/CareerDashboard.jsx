@@ -62,19 +62,21 @@ export default function CareerDashboard() {
         ))}
       </div>
 
-      {/* Interview simulator is planned - placeholder only in this MVP (no camera/mic access) */}
-      <Card padding="lg" className="border-dashed border-2 border-[#9EB2DB] shadow-none bg-[#D0F2F7]/40">
+      {/* Step 5: AI Interview Simulator (available any time) */}
+      <Card padding="lg" className="border-2 border-[#9EB2DB] bg-[#D0F2F7]/40">
         <div className="flex items-center gap-3 mb-2">
           <span className="w-10 h-10 rounded-2xl bg-[#FFFBF0] text-[#34477A] flex items-center justify-center">
             <MicIcon size={20} />
           </span>
           <div>
+            <p className="text-xs font-bold text-charcoal-muted">Step 5</p>
             <h3 className="font-bold text-charcoal">AI Interview Simulator</h3>
-            <p className="text-xs font-bold uppercase tracking-wide text-[#34477A]">Interview Practice Coming Soon</p>
           </div>
         </div>
         <p className="text-sm text-charcoal-muted mb-3">
-          Practise career-specific interview questions and get feedback on answer content, speaking pace and presentation.
+          Practise career-specific interview questions by typing, speaking or on camera, and get feedback on answer
+          content, speaking pace and presentation.
+          {flow.interviewReport && ` Last score: ${Math.round(flow.interviewReport.overall_score)}/100 (${flow.interviewReport.readiness_band}).`}
         </p>
         <ul className="space-y-1">
           {ETHICS_NOTES.map((note) => (
@@ -83,6 +85,9 @@ export default function CareerDashboard() {
             </li>
           ))}
         </ul>
+        <Button className="mt-4" size="sm" onClick={() => navigate("/app/career/interview")}>
+          <MicIcon size={16} /> Start interview practice
+        </Button>
       </Card>
     </CareerPage>
   );

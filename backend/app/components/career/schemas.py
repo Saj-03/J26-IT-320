@@ -4,7 +4,7 @@ ACRDS request/response schemas.
 VIVA: "Pydantic validates every request before it reaches the logic, so a
 skill rating of 7 or a confidence of 0 is rejected with a clear 422 error."
 """
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -92,6 +92,8 @@ class CareerRecommendation(BaseModel):
     career_area: str
     description: str
     match_percentage: float
+    skill_match_percentage: Optional[float] = None   # cosine skill match only
+    model_probability: Optional[float] = None        # trained model's P(career family), if loaded
     explanation: str
     matching_skills: list[str]
     missing_skills: list[str]
@@ -102,6 +104,7 @@ class CareerRecommendation(BaseModel):
 
 class RecommendationResponse(BaseModel):
     student_id: Optional[str] = None
+    scoring_method: str = "cosine"
     recommendations: list[CareerRecommendation]
 
 
@@ -136,6 +139,130 @@ class RoadmapResponse(BaseModel):
     readiness_percentage: float
     roadmap: list[RoadmapItem]
     message: str
+
+
+# ---------------------------------------------------------------------------
+# AI Interview Simulator
+# ---------------------------------------------------------------------------
+class InterviewQuestionOut(BaseModel):
+    id: str
+    category: str  # Introduction | Technical | Behavioural
+    question: str
+    tip: str
+
+
+class InterviewQuestionSet(BaseModel):
+    career_id: str
+    career_name: str
+    variant: int
+    questions: list[InterviewQuestionOut]
+    privacy_notes: list[str]
+
+
+class InterviewAnswerRequest(BaseModel):
+    """Only text and numbers are accepted - never audio or video."""
+    career_id: str
+    question_id: str
+    answer_text: str = Field(..., min_length=1, max_length=5000)
+    mode: Literal["text", "voice"] = "text"
+    speaking_seconds: Optional[float] = Field(None, ge=0, le=1800)
+    # Computed in the browser by MediaPipe face detection (camera mode only)
+    face_presence_ratio: Optional[float] = Field(None, ge=0, le=1)
+    facing_camera_ratio: Optional[float] = Field(None, ge=0, le=1)
+    frames_analyzed: Optional[int] = Field(None, ge=0)
+    # Student opt-out: False keeps the answer text on our server (rule-based feedback only)
+    use_llm: bool = True
+
+
+class StarStructure(BaseModel):
+    situation: bool
+    task: bool
+    action: bool
+    result: bool
+    score: float
+
+
+class ContentScore(BaseModel):
+    score: float
+    semantic_similarity: float
+    keyword_coverage: float
+    matched_keywords: list[str]
+    missing_keywords: list[str]
+    structure: Optional[StarStructure] = None
+    word_count: int
+    scoring_method: str
+
+
+class DeliveryScore(BaseModel):
+    score: float
+    words_per_minute: float
+    speaking_seconds: float
+    filler_count: int
+    filler_words: list[str]
+    pace_feedback: str
+
+
+class PresentationScore(BaseModel):
+    score: float
+    face_presence_ratio: float
+    facing_camera_ratio: float
+    frames_analyzed: int
+    feedback: list[str]
+
+
+class LLMFeedback(BaseModel):
+    """Optional coach-style feedback written by an LLM after normal scoring."""
+    strengths: list[str]
+    improvements: list[str]
+    suggested_answer: str
+    final_tip: str
+    provider: str
+    model: str
+
+
+class InterviewFeedback(BaseModel):
+    question_id: str
+    question: str
+    category: str
+    mode: str
+    overall_score: float
+    content: ContentScore
+    delivery: Optional[DeliveryScore] = None
+    presentation: Optional[PresentationScore] = None
+    strengths: list[str]
+    improvements: list[str]
+    sample_answer: str
+    disclaimer: str
+    llm_feedback: Optional[LLMFeedback] = None   # None = rule-based feedback only
+    feedback_source: str = "rule-based"
+
+
+class InterviewResultSummary(BaseModel):
+    """One answered question, as sent back by the frontend for the report."""
+    category: str
+    overall_score: float = Field(..., ge=0, le=100)
+    content_score: float = Field(..., ge=0, le=100)
+    delivery_score: Optional[float] = Field(None, ge=0, le=100)
+    presentation_score: Optional[float] = Field(None, ge=0, le=100)
+    improvements: list[str] = []
+
+
+class InterviewReportRequest(BaseModel):
+    career_id: str
+    results: list[InterviewResultSummary] = Field(..., min_length=1)
+
+
+class InterviewReport(BaseModel):
+    career_name: str
+    questions_answered: int
+    overall_score: float
+    readiness_band: str
+    dimension_scores: dict[str, Optional[float]]
+    category_scores: dict[str, Optional[float]]
+    strongest_area: str
+    weakest_area: str
+    focus_tips: list[str]
+    disclaimer: str
 
 
 # ---------------------------------------------------------------------------
