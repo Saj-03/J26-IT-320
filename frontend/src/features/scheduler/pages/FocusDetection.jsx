@@ -44,7 +44,7 @@ export function FocusDetection() {
         <div>
           <p className="font-bold text-emerald-800">No images, videos, or screenshots are stored.</p>
           <p className="text-sm text-emerald-700/80 mt-0.5">
-            Everything is processed on your device in real time. IHSD only keeps the numerical signals below.
+            Everything is processed on your device in real time. ThriveU only keeps the numerical signals below.
           </p>
         </div>
       </div>
@@ -53,7 +53,7 @@ export function FocusDetection() {
         {/* Gauge + states */}
         <Card padding="lg" className="lg:col-span-1 flex flex-col items-center text-center">
           <h3 className="font-bold text-charcoal mb-4 self-start">Live Focus Score</h3>
-          <ProgressRing value={82} size={180} stroke={14} color="#7FB998">
+          <ProgressRing value={82} size={180} stroke={14} color="#5FC0AB">
             <span className="text-4xl font-extrabold text-charcoal">82</span>
             <span className="text-xs font-semibold text-charcoal-muted">Focus score</span>
           </ProgressRing>

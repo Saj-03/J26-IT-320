@@ -52,7 +52,7 @@ export function WeeklyCheckin() {
         <div className="space-y-6">
           <Card padding="lg" className="flex flex-col items-center text-center">
             <p className="text-xs font-semibold text-charcoal-muted mb-3">Life Pressure Score</p>
-            <ProgressRing value={pressure} size={140} stroke={12} color={pressure >= 66 ? '#F2B857' : '#F5811E'}>
+            <ProgressRing value={pressure} size={140} stroke={12} color={pressure >= 66 ? '#F2B857' : '#2E9C88'}>
               <span className="text-3xl font-extrabold text-charcoal">{pressure}%</span>
               <span className="text-xs font-semibold text-charcoal-muted mt-0.5">{band}</span>
             </ProgressRing>
@@ -63,7 +63,7 @@ export function WeeklyCheckin() {
               <span className="w-7 h-7 rounded-xl bg-brand-500 text-white flex items-center justify-center">
                 <SparklesIcon size={14}/>
               </span>
-              <span className="font-bold text-brand-700 text-sm">IHSD notes</span>
+              <span className="font-bold text-brand-700 text-sm">ThriveU notes</span>
             </div>
             <p className="text-sm text-charcoal-light leading-relaxed">
               Your workload and sleep are currently creating the most pressure. Next week’s schedule will include more
