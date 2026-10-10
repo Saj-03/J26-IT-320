@@ -6,7 +6,7 @@ import { Button } from '../shared/components/ui/Button';
 import { ToggleRow } from '../shared/components/ui/SettingsRow';
 export function Privacy() {
     return (<div className="space-y-6 max-w-3xl mx-auto">
-      <PageHeader title="Your Data, Your Control" subtitle="Full transparency over what IHSD collects — and complete control to change it."/>
+      <PageHeader title="Your Data, Your Control" subtitle="Full transparency over what ThriveU collects — and complete control to change it."/>
 
       {/* Key promise */}
       <div className="bg-sage-light border border-emerald-100 rounded-3xl p-5 flex items-start gap-3">

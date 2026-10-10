@@ -33,7 +33,7 @@ export default function PlannedTasks() {
     <Card padding="lg">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>
-          <h3 className="font-bold text-charcoal">Planned by IHSD</h3>
+          <h3 className="font-bold text-charcoal">Planned by ThriveU</h3>
           <p className="text-sm text-charcoal-muted">
             Peak hours: {peakHours.label} · {session.focus} min focus / {session.breakMins} min break
           </p>
@@ -48,7 +48,7 @@ export default function PlannedTasks() {
       </div>
 
       {!tasks.length ? (
-          <EmptyState title="No tasks to plan yet" desc="Add a task and IHSD will place it in your best focus hours."
+          <EmptyState title="No tasks to plan yet" desc="Add a task and ThriveU will place it in your best focus hours."
             actionLabel="Add a task" onAction={() => navigate("/app/add-task")} />
         ) : (
           <ul className="space-y-2">

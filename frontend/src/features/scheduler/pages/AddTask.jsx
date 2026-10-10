@@ -65,7 +65,7 @@ export function AddTask() {
         setTimeout(() => navigate('/app/tasks/breakdown'), 1600);
     };
     return (<div className="space-y-6 max-w-3xl mx-auto">
-      <PageHeader title="What do you need to get done?" subtitle="Describe it in plain language — IHSD turns it into a scheduled task."/>
+      <PageHeader title="What do you need to get done?" subtitle="Describe it in plain language — ThriveU turns it into a scheduled task."/>
 
       {/* Mode toggle */}
       <div className="flex bg-white rounded-full p-1 border border-black/[0.05] shadow-soft w-fit">

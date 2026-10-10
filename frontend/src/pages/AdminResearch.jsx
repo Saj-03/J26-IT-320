@@ -15,10 +15,10 @@ const kpis = [
     { icon: HeartPulseIcon, label: 'Avg stress score', value: '46%', bg: 'bg-amber-light', color: 'text-amber-600' }
 ];
 const focusDist = [
-    { label: 'Focused', value: 62, color: '#7FB998' },
+    { label: 'Focused', value: 62, color: '#5FC0AB' },
     { label: 'Distracted', value: 22, color: '#F2B857' },
-    { label: 'Phone', value: 11, color: '#7CB8E8' },
-    { label: 'Sleeping', value: 5, color: '#B69CE0' }
+    { label: 'Phone', value: 11, color: '#7FCFDD' },
+    { label: 'Sleeping', value: 5, color: '#9EB2DB' }
 ];
 const trendIcon = { rising: TrendingUpIcon, falling: TrendingDownIcon, stable: MinusIcon };
 const trendColor = { rising: 'text-emerald-600', falling: 'text-brand-600', stable: 'text-charcoal-muted' };
@@ -45,7 +45,7 @@ export function AdminResearch() {
         <Card padding="lg" className="lg:col-span-2">
           <h3 className="font-bold text-charcoal mb-1">Average stress over time</h3>
           <p className="text-xs text-charcoal-muted mb-4">Cohort mean, past 7 days</p>
-          <LineChart data={stressData.map((d) => ({ label: d.day, value: d.value }))} color="#F2B857"/>
+          <LineChart data={stressData.map((d) => ({ label: d.day, value: d.value }))} color="#7F95CC"/>
         </Card>
         <Card padding="lg">
           <h3 className="font-bold text-charcoal mb-4">Focus state distribution</h3>

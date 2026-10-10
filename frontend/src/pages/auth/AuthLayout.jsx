@@ -11,7 +11,7 @@ const copy = {
   login: {
     quote: 'Progress is not about doing everything. It is about doing the right things at the right time.',
     note: <>Same path<br />A brighter you</>,
-    switchText: 'New to IHUSD?',
+    switchText: 'New to ThriveU?',
     switchLink: { to: '/register', label: 'Create an account' },
   },
   register: {
@@ -113,7 +113,7 @@ export function AuthLayout({ variant = 'login', children }) {
       <aside className="relative hidden lg:sticky lg:top-0 lg:block lg:h-screen">
         <div className="absolute inset-0 [clip-path:url(#blob-auth)]">
           <HeroScene mode="intro" studentsClass="h-[50%] xl:h-[56%]" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[42%] bg-gradient-to-t from-[#1F2A2E]/75 via-[#1F2A2E]/25 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[42%] bg-gradient-to-t from-[#1F2840]/75 via-[#1F2840]/25 to-transparent" />
         </div>
 
         <Link
@@ -121,7 +121,8 @@ export function AuthLayout({ variant = 'login', children }) {
           data-auth-in
           className="absolute left-10 top-8 z-20 flex items-center gap-2.5 rounded-full bg-white/80 py-2 pl-4 pr-5 shadow-soft backdrop-blur transition hover:bg-white"
         >
-          <span className="font-serif text-xl font-bold tracking-tight text-charcoal">IHUSD</span>
+          <img src="/img/logo/logo-mark.png" alt="" className="h-8 w-8 object-contain" />
+          <span className="font-serif text-xl font-bold tracking-tight text-charcoal"><span className="text-charcoal">Thrive</span><span className="bg-gradient-to-br from-brand-500 to-[#4CC764] bg-clip-text text-transparent">U</span></span>
           <span className="text-[9px] leading-[1.2] text-charcoal-light">
             Immersive Holistic
             <br />
@@ -146,7 +147,7 @@ export function AuthLayout({ variant = 'login', children }) {
           <path
             d="M30 -2 C 95 18, 5 38, 62 55 S 30 88, 96 104"
             fill="none"
-            stroke="#F5811E"
+            stroke="#2E9C88"
             strokeWidth="6"
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
@@ -160,8 +161,9 @@ export function AuthLayout({ variant = 'login', children }) {
         <div className="relative h-56 overflow-hidden rounded-b-[40px] lg:hidden">
           <img src={MOBILE_IMG} alt="" className="h-full w-full object-cover object-[35%_40%]" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/30" />
-          <Link to="/" className="absolute left-5 top-5 rounded-full bg-white/85 px-4 py-1.5 font-serif text-lg font-bold backdrop-blur">
-            IHUSD
+          <Link to="/" className="absolute left-5 top-5 flex items-center gap-2 rounded-full bg-white/85 py-1.5 pl-2 pr-4 font-serif text-lg font-bold backdrop-blur">
+            <img src="/img/logo/logo-mark.png" alt="" className="h-7 w-7 object-contain" />
+            <span><span className="text-charcoal">Thrive</span><span className="bg-gradient-to-br from-brand-500 to-[#4CC764] bg-clip-text text-transparent">U</span></span>
           </Link>
           <p className="absolute bottom-5 right-6 rotate-[-6deg] font-hand text-2xl leading-none text-white drop-shadow">{c.note}</p>
         </div>
@@ -220,7 +222,7 @@ export function AuthField({ label, icon: Icon, type = 'text', id, name, hint, cl
           id={fieldId}
           name={name}
           type={isPw && show ? 'text' : type}
-          className={`w-full rounded-xl border border-black/10 bg-white py-3.5 text-sm text-charcoal shadow-[0_1px_2px_rgba(42,42,40,0.04)] outline-none transition placeholder:text-charcoal-muted focus:border-brand-400 focus:ring-4 focus:ring-brand-400/15 ${
+          className={`w-full rounded-xl border border-black/10 bg-white py-3.5 text-sm text-charcoal shadow-[0_1px_2px_rgba(37,46,72,0.04)] outline-none transition placeholder:text-charcoal-muted focus:border-brand-400 focus:ring-4 focus:ring-brand-400/15 ${
             Icon ? 'pl-11' : 'pl-4'
           } ${isPw ? 'pr-11' : 'pr-4'}`}
           {...props}

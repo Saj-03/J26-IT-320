@@ -97,7 +97,7 @@ export function Focus() {
       <h1 className="text-2xl font-extrabold text-charcoal mt-1">{taskTitle}</h1>
 
       <div className="my-10 relative">
-        <ProgressRing value={pct} size={264} stroke={16} color="#F5811E">
+        <ProgressRing value={pct} size={264} stroke={16} color="#2E9C88">
           <motion.span animate={running ? { scale: [1, 1.02, 1] } : {}} transition={{ duration: 2, repeat: Infinity }} className="text-5xl font-extrabold text-charcoal tracking-tight tabular-nums">
             {fmt(elapsed)}
           </motion.span>

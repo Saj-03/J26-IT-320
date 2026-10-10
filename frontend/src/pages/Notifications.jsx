@@ -31,7 +31,7 @@ export function Notifications() {
     const [cat, setCat] = useState('All');
     const list = cat === 'All' ? notifications : notifications.filter((n) => n.category === cat);
     return <div className="space-y-6 max-w-3xl mx-auto">
-      <PageHeader title="Notifications" subtitle="Gentle updates from IHSD — nothing noisy."/>
+      <PageHeader title="Notifications" subtitle="Gentle updates from ThriveU — nothing noisy."/>
 
       <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
         {cats.map((c) => <button key={c} onClick={() => setCat(c)} className={cn('shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-colors', cat === c ? 'bg-charcoal text-white' : 'bg-white text-charcoal-light border border-black/[0.05]')}>

@@ -115,7 +115,7 @@ export function Wellbeing() {
           <Card>
             <h3 className="font-bold text-charcoal mb-1">Weekly stress</h3>
             <p className="text-xs text-charcoal-muted mb-3">Gently trending down over the weekend</p>
-            <LineChart data={stressData.map((d) => ({ label: d.day, value: d.value }))} color="#F2B857"/>
+            <LineChart data={stressData.map((d) => ({ label: d.day, value: d.value }))} color="#7F95CC"/>
           </Card>
         </div>
       </div>
@@ -129,7 +129,7 @@ function StressAwareScheduling() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>
           <h3 className="font-bold text-charcoal">Schedule Adaptation</h3>
-          <p className="text-sm text-charcoal-muted">How IHSD lightened your day — automatically.</p>
+          <p className="text-sm text-charcoal-muted">How ThriveU lightened your day — automatically.</p>
         </div>
         <div className="flex gap-2">
           <span className="text-xs font-bold bg-amber-light text-amber-700 rounded-full px-3 py-1.5">Signal: Elevated</span>
