@@ -30,7 +30,7 @@ def start(db, user):
 def test_no_pauses_focus_time_is_time_passed(env):
     _, db, current, _ = env
     s = start(db, current["user"])
-    s = fs.end_session(db, current["user"], s.id, FocusEndIn(), now=at(25))
+    s = fs.end_session(db, current["user"], s.id, FocusEndIn(), now=at(25))["session"]
     assert (s.actual_minutes, s.ended_at) == (25, at(25))
 
 
@@ -40,7 +40,7 @@ def test_pause_time_is_removed(env):
     s = start(db, me)
     fs.pause_session(db, me, s.id, now=at(10))
     fs.resume_session(db, me, s.id, now=at(15))              # 5 min pause
-    s = fs.end_session(db, me, s.id, FocusEndIn(), now=at(30))
+    s = fs.end_session(db, me, s.id, FocusEndIn(), now=at(30))["session"]
     assert s.actual_minutes == 25                             # 30 passed - 5 paused
 
 
@@ -49,14 +49,14 @@ def test_ending_while_paused_closes_the_pause(env):
     me = current["user"]
     s = start(db, me)
     fs.pause_session(db, me, s.id, now=at(20))
-    s = fs.end_session(db, me, s.id, FocusEndIn(), now=at(30))   # still paused at the end
+    s = fs.end_session(db, me, s.id, FocusEndIn(), now=at(30))["session"]   # still paused at the end
     assert (s.actual_minutes, s.paused_minutes, s.paused_at) == (20, 10, None)
 
 
 def test_ending_early_gives_short_time(env):
     _, db, current, _ = env
     s = start(db, current["user"])
-    s = fs.end_session(db, current["user"], s.id, FocusEndIn(), now=at(7, 40))
+    s = fs.end_session(db, current["user"], s.id, FocusEndIn(), now=at(7, 40))["session"]
     assert (s.planned_minutes, s.actual_minutes) == (25, 8)   # rounded to nearest minute
 
 
@@ -66,7 +66,7 @@ def test_ending_early_gives_short_time(env):
 def test_rating_given_at_end(env):
     _, db, current, _ = env
     s = start(db, current["user"])
-    s = fs.end_session(db, current["user"], s.id, FocusEndIn(focus_rating=4), now=at(25))
+    s = fs.end_session(db, current["user"], s.id, FocusEndIn(focus_rating=4), now=at(25))["session"]
     assert s.focus_rating == 4
 
 
@@ -74,7 +74,7 @@ def test_rating_is_optional(env):
     client, *_ = env
     sid = client.post(f"{URL}/start", json={}).json()["session"]["id"]
     r = client.post(f"{URL}/{sid}/end")                       # no body at all
-    assert r.status_code == 200 and r.json()["focus_rating"] is None
+    assert r.status_code == 200 and r.json()["session"]["focus_rating"] is None
 
 
 def test_rate_after_ending(env):

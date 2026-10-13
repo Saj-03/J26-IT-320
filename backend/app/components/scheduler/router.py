@@ -139,10 +139,10 @@ def resume_focus(session_id: str, db: Session = Depends(get_db), user=Depends(ge
     return focus_service.resume_session(db, user, session_id)
 
 
-@router.post("/focus/{session_id}/end", response_model=schemas.FocusSessionOut)
+@router.post("/focus/{session_id}/end", response_model=schemas.FocusEndOut)
 def end_focus(session_id: str, data: schemas.FocusEndIn | None = None,
               db: Session = Depends(get_db), user=Depends(get_current_user)):
-    """Stop the session: works out the real focus time (pauses removed). Rating is optional."""
+    """Stop the session: real focus time, completed or not, XP. Rating is optional."""
     return focus_service.end_session(db, user, session_id, data or schemas.FocusEndIn())
 
 

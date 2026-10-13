@@ -9,6 +9,8 @@ Component 3 - FOCUS SESSIONS (FR-05, FR-15).
        (number of pauses + total pause time are saved)
     5. Student presses "End"                      -> end_session()
        (real focus time = time passed - pause time, optional 1..5 rating)
+    6. System decides "completed" or not           -> is_completed()
+       (completed sessions earn XP, focus minutes are added to the task)
 
 Every session saves the context at that moment (task load, mode, was the
 timer changed?) so it can be used later as training data for M1.
@@ -16,16 +18,18 @@ timer changed?) so it can be used later as training data for M1.
 from datetime import datetime
 
 from fastapi import HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.components.scheduler.engine import attention_model
-from app.components.scheduler.models import FocusSession, SchedulerSettings, Task
+from app.components.scheduler.engine import attention_model, gamification
+from app.components.scheduler.models import FocusSession, RewardEvent, SchedulerSettings, Task
 from app.components.scheduler.schemas import FocusEndIn, FocusStartIn
 from app.components.scheduler.task_service import audit, get_own_task
 
 DEFAULT_FOCUS = 25            # classic Pomodoro
 DEFAULT_BREAK = 5
 MIN_HISTORY_SESSIONS = 5      # completed sessions needed before we trust the student's history
+COMPLETION_THRESHOLD = 0.8    # focused >= 80% of the planned time -> "completed"
 
 
 # ---------------------------------------------------------------------------
@@ -207,7 +211,7 @@ def resume_session(db: Session, user, session_id: str, now: datetime | None = No
 # 4. End
 # ---------------------------------------------------------------------------
 def end_session(db: Session, user, session_id: str, data: FocusEndIn,
-                now: datetime | None = None) -> FocusSession:
+                now: datetime | None = None) -> dict:
     """
     Stop the session and work out how long the student really focused:
 
@@ -215,6 +219,9 @@ def end_session(db: Session, user, session_id: str, data: FocusEndIn,
 
     If the student presses End while paused, that last pause is closed first
     (the paused minutes are not counted as focus).
+
+    Then: completed or not, task minutes, XP.
+    Returns {session, xp_awarded, total_xp, level}.
     """
     now = now or datetime.utcnow()
     session = get_own_running_session(db, user, session_id)
@@ -235,13 +242,48 @@ def end_session(db: Session, user, session_id: str, data: FocusEndIn,
     if data.focus_rating is not None:
         session.focus_rating = data.focus_rating
 
-    # TODO (part 4): decide "completed" (the M1 label), give XP, add minutes to the task
+    # 4. Completed or not? (this is the label M1 learns to predict)
+    session.completed = is_completed(session.actual_minutes, session.planned_minutes)
+
+    # 5. Add the focused minutes to the task
+    if session.task_id:
+        task = db.get(Task, session.task_id)
+        task.actual_minutes = (task.actual_minutes or 0) + session.actual_minutes
+
+    # 6. XP - only for completed sessions (no penalty for stopping early)
+    xp = award_focus_xp(db, user, session) if session.completed else 0
 
     audit(db, user.id, "focus_ended", session_id=session.id, planned=session.planned_minutes,
-          actual=session.actual_minutes, pauses=session.pause_count, rated=data.focus_rating is not None)
+          actual=session.actual_minutes, pauses=session.pause_count, completed=session.completed,
+          xp=xp, rated=data.focus_rating is not None)
     db.commit()
     db.refresh(session)
-    return session
+    return {"session": session, "xp_awarded": xp, **xp_status(db, user)}
+
+
+def is_completed(actual_minutes: int, planned_minutes: int) -> bool:
+    """A session counts as completed when the student focused for at least 80% of the plan."""
+    return actual_minutes >= COMPLETION_THRESHOLD * planned_minutes
+
+
+def award_focus_xp(db: Session, user, session: FocusSession) -> int:
+    """
+    Give XP for a completed session.
+    The reward id "focus-<session id>" makes it impossible to get XP twice for one session.
+    """
+    key = f"focus-{session.id}"
+    if db.get(RewardEvent, key):
+        return 0
+    xp = gamification.xp_for_focus(session.actual_minutes, session.task_load)
+    db.add(RewardEvent(id=key, user_id=user.id, kind="xp", amount=xp, label="Focus session completed"))
+    return xp
+
+
+def xp_status(db: Session, user) -> dict:
+    """Total XP and level (shown after the session ends)."""
+    db.flush()                                       # include XP added in this request
+    total = db.query(func.sum(RewardEvent.amount)).filter(RewardEvent.user_id == user.id).scalar() or 0
+    return {"total_xp": total, "level": gamification.level_from_xp(total)}
 
 
 def rate_session(db: Session, user, session_id: str, rating: int) -> FocusSession:

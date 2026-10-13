@@ -301,6 +301,14 @@ class FocusSessionOut(BaseModel):
     timer_overridden: bool
 
 
+class FocusEndOut(BaseModel):
+    """Response of POST /focus/{id}/end: the finished session + rewards."""
+    session: FocusSessionOut
+    xp_awarded: int          # 0 if the session was not completed
+    total_xp: int
+    level: int
+
+
 class FocusStartOut(BaseModel):
     """Response of POST /focus/start: the new session + what we had suggested."""
     session: FocusSessionOut
