@@ -11,6 +11,7 @@ Component 3 - FOCUS SESSIONS (FR-05, FR-15).
        (real focus time = time passed - pause time, optional 1..5 rating)
     6. System decides "completed" or not           -> is_completed()
        (completed sessions earn XP, focus minutes are added to the task)
+    7. History list + dashboard numbers           -> focus_history()
 
 Every session saves the context at that moment (task load, mode, was the
 timer changed?) so it can be used later as training data for M1.
@@ -299,3 +300,52 @@ def rate_session(db: Session, user, session_id: str, rating: int) -> FocusSessio
     db.commit()
     db.refresh(session)
     return session
+
+
+# ---------------------------------------------------------------------------
+# 5. History (dashboard + data for M1)
+# ---------------------------------------------------------------------------
+def focus_history(db: Session, user, date_from: datetime | None = None, date_to: datetime | None = None,
+                  task_id: str | None = None, completed: bool | None = None,
+                  limit: int = 50, offset: int = 0) -> dict:
+    """
+    Finished sessions, newest first, plus summary numbers.
+
+    Filters are optional:
+        date_from / date_to  -> only sessions that started in this range
+        task_id              -> only sessions for one task
+        completed            -> only completed (true) or only stopped early (false)
+
+    The summary is calculated over ALL matching sessions, not just this page.
+    """
+    query = db.query(FocusSession).filter(FocusSession.user_id == user.id,
+                                          FocusSession.ended_at.isnot(None))   # running ones are not history
+    if date_from:
+        query = query.filter(FocusSession.started_at >= date_from)
+    if date_to:
+        query = query.filter(FocusSession.started_at < date_to)
+    if task_id:
+        query = query.filter(FocusSession.task_id == task_id)
+    if completed is not None:
+        query = query.filter(FocusSession.completed.is_(completed))
+
+    matching = query.order_by(FocusSession.started_at.desc()).all()
+    page = matching[offset: offset + limit]
+    return {"items": page, "total": len(matching), "summary": summarise(matching)}
+
+
+def summarise(sessions: list[FocusSession]) -> dict:
+    """Simple totals and averages for the dashboard."""
+    count = len(sessions)
+    done = sum(1 for s in sessions if s.completed)
+    minutes = sum(s.actual_minutes for s in sessions)
+    ratings = [s.focus_rating for s in sessions if s.focus_rating is not None]
+    return {
+        "sessions": count,
+        "completed": done,
+        "completion_rate": round(done / count, 3) if count else None,
+        "total_focus_minutes": minutes,
+        "average_focus_minutes": round(minutes / count, 1) if count else None,
+        "total_pauses": sum(s.pause_count for s in sessions),
+        "average_rating": round(sum(ratings) / len(ratings), 2) if ratings else None,
+    }

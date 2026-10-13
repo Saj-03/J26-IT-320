@@ -301,6 +301,24 @@ class FocusSessionOut(BaseModel):
     timer_overridden: bool
 
 
+class FocusSummaryOut(BaseModel):
+    """Numbers for the dashboard, over ALL sessions that match the filters."""
+    sessions: int
+    completed: int
+    completion_rate: float | None      # 0..1, None if there are no sessions
+    total_focus_minutes: int
+    average_focus_minutes: float | None
+    total_pauses: int
+    average_rating: float | None       # only sessions that were rated
+
+
+class FocusHistoryOut(BaseModel):
+    """Response of GET /focus/history"""
+    items: list[FocusSessionOut]       # one page, newest first
+    total: int                         # how many sessions match (all pages)
+    summary: FocusSummaryOut
+
+
 class FocusEndOut(BaseModel):
     """Response of POST /focus/{id}/end: the finished session + rewards."""
     session: FocusSessionOut

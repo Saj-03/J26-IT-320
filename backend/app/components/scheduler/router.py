@@ -127,6 +127,22 @@ def active_focus(db: Session = Depends(get_db), user=Depends(get_current_user)):
     return focus_service.get_active_session(db, user)
 
 
+@router.get("/focus/history", response_model=schemas.FocusHistoryOut)
+def focus_history(
+    date_from: datetime | None = Query(None, alias="from", description="sessions started on/after this time"),
+    date_to: datetime | None = Query(None, alias="to", description="sessions started before this time"),
+    task_id: str | None = Query(None),
+    completed: bool | None = Query(None, description="true = completed only, false = stopped early only"),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    """My finished focus sessions (newest first) + dashboard summary."""
+    return focus_service.focus_history(db, user, schemas.to_utc_naive(date_from), schemas.to_utc_naive(date_to),
+                                       task_id, completed, limit, offset)
+
+
 @router.post("/focus/{session_id}/pause", response_model=schemas.FocusSessionOut)
 def pause_focus(session_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Pause the running session (counts the pause)."""
