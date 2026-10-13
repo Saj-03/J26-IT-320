@@ -1,25 +1,60 @@
+"""
+Component 3 - HTTP endpoints, all under /api/scheduler.
+
+Routers stay thin: read the request -> call a service function -> return the result.
+Every endpoint needs a logged-in student (get_current_user).
+"""
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.core.dependencies import get_current_user
-from app.components.scheduler import schemas, service
+from app.components.scheduler import schemas, service, task_service
 from app.components.scheduler.models import Task, FocusSession, ScheduleChange
 from app.components.scheduler.engine import stress_rules
 
 router = APIRouter()
 
 
-@router.post("/tasks")
-def add_task(data: schemas.TaskIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    t = Task(user_id=user.id, **data.model_dump()); db.add(t); db.commit()
-    return {"id": t.id}
+# ===========================================================================
+# TASKS  (FR-01, FR-03)
+# ===========================================================================
+@router.post("/tasks", response_model=schemas.TaskOut, status_code=status.HTTP_201_CREATED)
+def create_task(data: schemas.TaskCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Add a task (or a subtask, by sending parent_id)."""
+    return task_service.create_task(db, user, data)
 
 
-@router.get("/tasks")
-def list_tasks(db: Session = Depends(get_db), user=Depends(get_current_user)):
-    return db.query(Task).filter_by(user_id=user.id).order_by(Task.deadline).all()
+@router.get("/tasks", response_model=list[schemas.TaskOut])
+def list_tasks(
+    status_filter: schemas.TaskStatus | None = Query(None, alias="status", description="e.g. pending"),
+    top_level_only: bool = Query(False, description="true = hide subtasks"),
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    """All my tasks, earliest deadline first."""
+    return task_service.list_tasks(db, user, status_filter, top_level_only)
+
+
+@router.get("/tasks/{task_id}", response_model=schemas.TaskDetailOut)
+def get_task(task_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """One task with its subtasks."""
+    return task_service.get_task_detail(db, user, task_id)
+
+
+@router.patch("/tasks/{task_id}", response_model=schemas.TaskOut)
+def update_task(task_id: str, data: schemas.TaskUpdate,
+                db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Change some fields of a task (send only what changed)."""
+    return task_service.update_task(db, user, task_id, data)
+
+
+@router.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_task(task_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Delete a task and its subtasks (focus history is kept)."""
+    task_service.delete_task(db, user, task_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/plan")
