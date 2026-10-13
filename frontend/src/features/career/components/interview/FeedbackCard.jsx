@@ -1,4 +1,4 @@
-import { CheckIcon, TrendingUpIcon, BookOpenIcon, SparklesIcon } from "lucide-react";
+import { CheckIcon, TrendingUpIcon, BookOpenIcon, SparklesIcon, LoaderCircleIcon } from "lucide-react";
 import { ProgressRing } from "../../../../shared/components/ui/ProgressRing";
 import Card from "../CareerCard";
 import ScoreBar from "./ScoreBar";
@@ -26,7 +26,7 @@ function List({ title, items, icon: Icon, tone }) {
 }
 
 // Feedback for one answered question.
-export default function FeedbackCard({ feedback }) {
+export default function FeedbackCard({ feedback, coachLoading = false }) {
   const { content, delivery, presentation } = feedback;
   const star = content.structure;
   const coach = feedback.llm_feedback; // null when no LLM is configured, it failed, or the student opted out
@@ -68,6 +68,11 @@ export default function FeedbackCard({ feedback }) {
         <List title="How to improve" items={feedback.improvements} icon={TrendingUpIcon} tone={ui.gap} />
       </div>
 
+      {coachLoading && !coach && (
+        <p className="flex items-center gap-2 text-sm font-semibold text-[#34477A] bg-[#D0F2F7]/40 rounded-2xl px-4 py-3">
+          <LoaderCircleIcon size={16} className="animate-spin" /> AI coach is writing your feedback… (usually 5-30 seconds)
+        </p>
+      )}
       {coach && (
         <div className="rounded-2xl border border-[#9EB2DB] bg-[#D0F2F7]/40 p-4 space-y-4">
           <p className="text-sm font-bold text-charcoal flex items-center gap-2">

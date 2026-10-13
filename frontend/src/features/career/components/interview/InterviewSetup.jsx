@@ -5,6 +5,7 @@ import Card from "../CareerCard";
 import Button from "../CareerButton";
 import { ETHICS_NOTES } from "../../constants";
 import { ui } from "../../theme";
+import MicCheck from "./MicCheck";
 
 const MODES = [
   { id: "text", icon: KeyboardIcon, title: "Typed answers", desc: "Type your answers. Scores content only.", needsSpeech: false },
@@ -14,7 +15,7 @@ const MODES = [
 
 const PROVIDER_NAME = { gemini: "Google Gemini", openai: "OpenAI", claude: "Anthropic Claude" };
 
-export default function InterviewSetup({ careers, settings, onChange, onStart, speechSupported, llm, busy, error }) {
+export default function InterviewSetup({ careers, settings, onChange, onStart, speechSupported, speechProblem, llm, busy, error }) {
   const set = (key, value) => onChange({ ...settings, [key]: value });
   const usesMedia = settings.mode !== "text";
 
@@ -49,10 +50,11 @@ export default function InterviewSetup({ careers, settings, onChange, onStart, s
             })}
           </div>
           {!speechSupported && (
-            <p className="text-xs text-charcoal-muted mt-2">
-              Voice modes need Chrome or Microsoft Edge (Web Speech API). Typed answers work in every browser.
+            <p className="text-xs font-semibold text-red-600 mt-2">
+              Voice modes are unavailable: {speechProblem} Typed answers still work.
             </p>
           )}
+          {usesMedia && <div className="mt-3"><MicCheck /></div>}
         </div>
       </Card>
 

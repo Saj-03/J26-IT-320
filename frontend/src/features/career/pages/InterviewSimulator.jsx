@@ -12,7 +12,8 @@ import FeedbackCard from "../components/interview/FeedbackCard";
 import InterviewReport from "../components/interview/InterviewReport";
 import useSpeechRecognition from "../hooks/useSpeechRecognition";
 import useFaceMetrics from "../hooks/useFaceMetrics";
-import { evaluateInterviewAnswer, getCareers, getInterviewQuestions, getInterviewReport, health } from "../api/careerApi";
+import { evaluateInterviewAnswer, getCareers, getCoachFeedback, getInterviewQuestions, getInterviewReport, health,
+  saveInterviewReport } from "../api/careerApi";
 import { careerSession } from "../utils/careerSession";
 
 const QUESTION_SETS = 4;
@@ -33,6 +34,7 @@ export default function InterviewSimulator() {
     };
   });
   const [llm, setLlm] = useState({ enabled: false }); // is an LLM provider configured on the server?
+  const [coachLoading, setCoachLoading] = useState({}); // question index -> waiting for AI coach feedback
   const [stage, setStage] = useState("setup");
   const [session, setSession] = useState(null);
   const [index, setIndex] = useState(0);
@@ -84,21 +86,39 @@ export default function InterviewSimulator() {
     speech.stop();
     setBusy(true);
     setError("");
+    const qIndex = index;
+    const payload = {
+      career_id: session.career_id,
+      question_id: question.id,
+      answer_text: text,
+      mode: voice ? "voice" : "text",
+      speaking_seconds: voice ? speech.speakingSeconds() : null,
+      ...(settings.mode === "camera" ? camera.getMetrics() : {}),
+    };
     try {
-      const result = await evaluateInterviewAnswer({
-        career_id: session.career_id,
-        question_id: question.id,
-        answer_text: text,
-        mode: voice ? "voice" : "text",
-        speaking_seconds: voice ? speech.speakingSeconds() : null,
-        use_llm: llm.enabled && settings.useLlm,
-        ...(settings.mode === "camera" ? camera.getMetrics() : {}),
-      });
-      setResults((prev) => Object.assign([...prev], { [index]: result }));
+      // 1) Scores and rule-based feedback come back quickly - show them straight away.
+      const result = await evaluateInterviewAnswer({ ...payload, use_llm: false });
+      setResults((prev) => Object.assign([...prev], { [qIndex]: result }));
     } catch (err) {
       setError(apiErrorMessage(err));
+      return;
     } finally {
       setBusy(false);
+    }
+    // 2) AI coach feedback (optional, slower) is added to the same result when it arrives.
+    if (!(llm.enabled && settings.useLlm)) return;
+    setCoachLoading((prev) => ({ ...prev, [qIndex]: true }));
+    try {
+      const { llm_feedback: coach } = await getCoachFeedback({ ...payload, use_llm: true });
+      if (coach) {
+        setResults((prev) => prev[qIndex]?.question_id === payload.question_id
+          ? Object.assign([...prev], { [qIndex]: { ...prev[qIndex], llm_feedback: coach } })
+          : prev);
+      }
+    } catch {
+      /* the rule-based feedback is already shown */
+    } finally {
+      setCoachLoading((prev) => ({ ...prev, [qIndex]: false }));
     }
   };
 
@@ -126,6 +146,7 @@ export default function InterviewSimulator() {
       setReport(summary);
       setStage("report");
       careerSession.update({ interviewReport: summary });
+      saveInterviewReport(session.career_id, summary).catch(() => {}); // practice history in the database
     } catch (err) {
       setError(apiErrorMessage(err));
     } finally {
@@ -153,7 +174,7 @@ export default function InterviewSimulator() {
 
       {stage === "setup" && (
         <InterviewSetup careers={careers} settings={settings} onChange={setSettings} onStart={() => start()}
-          speechSupported={speech.supported} llm={llm} busy={busy} error={error} />
+          speechSupported={speech.supported} speechProblem={speech.problem} llm={llm} busy={busy} error={error} />
       )}
 
       {stage === "interview" && question && (
@@ -166,7 +187,7 @@ export default function InterviewSimulator() {
 
             {feedback && (
               <>
-                <FeedbackCard feedback={feedback} />
+                <FeedbackCard feedback={feedback} coachLoading={!!coachLoading[index]} />
                 <div className="flex flex-wrap gap-3">
                   <Button onClick={next} disabled={busy}>
                     {isLast ? "Finish and see report" : "Next question"} <ArrowRightIcon size={16} />

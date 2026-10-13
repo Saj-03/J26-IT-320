@@ -6,19 +6,20 @@ import Card from "../components/CareerCard";
 import CareerPage from "../components/CareerPage";
 import Button from "../components/CareerButton";
 import { ProgressRing } from "../../../shared/components/ui/ProgressRing";
-import { EmptyState } from "../../../shared/components/ui/States";
+import { EmptyState, LoadingState } from "../../../shared/components/ui/States";
 import { apiErrorMessage } from "../../../shared/api/client";
 import { generateRoadmap } from "../api/careerApi";
-import { careerSession } from "../utils/careerSession";
+import { careerSession, useCareerFlow } from "../utils/careerSession";
 import GapTable from "../components/GapTable";
 import { INK, PALETTE } from "../theme";
 
 export default function SkillGapAnalysis() {
   const navigate = useNavigate();
-  const { profile, gapAnalysis } = careerSession.get();
+  const { flow: { profile, gapAnalysis }, ready } = useCareerFlow();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
+  if (!ready && !gapAnalysis) return <LoadingState label="Loading your saved results…" />;
   if (!profile || !gapAnalysis) {
     return (
       <Card>

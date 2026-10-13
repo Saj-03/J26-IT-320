@@ -27,3 +27,15 @@ export const evaluateInterviewAnswer = (payload) => api.post("/career/interview/
 
 /** payload: { career_id, results: [{ category, overall_score, content_score, delivery_score?, presentation_score?, improvements }] } */
 export const getInterviewReport = (payload) => api.post("/career/interview/report", payload).then(data);
+
+/** Optional AI coach feedback (slow: called after the scores are shown). -> { llm_feedback } */
+export const getCoachFeedback = (payload) =>
+  api.post("/career/interview/coach-feedback", payload, { timeout: 75000 }).then(data); // backend: 2 attempts x 30 s
+
+// ---- Saved progress (requires login; each student only sees their own data) ----
+export const getSavedState = () => api.get("/career/me/state").then(data);           // -> { user_id, data, updated_at }
+export const saveSavedState = (flow) => api.put("/career/me/state", { data: flow }).then(data);
+export const clearSavedState = () => api.delete("/career/me/state");
+export const saveInterviewReport = (careerId, report) =>
+  api.post("/career/me/interviews", { career_id: careerId, report }).then(data);
+export const getInterviewHistory = (limit = 5) => api.get("/career/me/interviews", { params: { limit } }).then(data);

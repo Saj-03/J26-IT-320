@@ -52,11 +52,20 @@ export default function AnswerPanel({ question, index, total, voice, speech, ans
           )}
           {speech.listening && (
             <span className="flex items-center gap-2 text-sm font-semibold text-[#1F5F53]">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" /> Listening…
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+              {{ starting: "Starting microphone…", "mic-on": "Microphone on - start speaking",
+                 hearing: "Hearing you - words appear below" }[speech.stage] || "Listening…"}
             </span>
           )}
-          {speech.error && <span className="text-sm font-semibold text-red-600">{speech.error}</span>}
         </div>
+      )}
+      {voice && speech.hint && !speech.error && (
+        <p className="text-sm text-[#34477A] bg-[#D0F2F7]/60 rounded-2xl px-4 py-2">{speech.hint}</p>
+      )}
+      {voice && speech.error && (
+        <p className="text-sm font-semibold text-red-700 bg-red-50 rounded-2xl px-4 py-3">
+          {speech.error} You can also type your answer in the box below.
+        </p>
       )}
 
       <textarea
@@ -64,7 +73,9 @@ export default function AnswerPanel({ question, index, total, voice, speech, ans
         value={preview}
         readOnly={locked || (voice && speech.listening)}
         onChange={(e) => (voice ? speech.setTranscript(e.target.value) : setAnswer(e.target.value))}
-        placeholder={voice ? "Your spoken answer will appear here. You can correct recognition mistakes after you stop." : "Type your answer as you would say it in an interview…"}
+        placeholder={voice
+          ? (speech.listening ? "Listening… start speaking." : "Press Start speaking, then talk. Your words appear here, and you can correct them after you stop.")
+          : "Type your answer as you would say it in an interview…"}
         className="w-full rounded-2xl border border-[#9ADBCC]/60 bg-white px-4 py-3.5 text-sm text-charcoal placeholder:text-charcoal-muted outline-none focus:border-[#5DBFA9] focus:ring-2 focus:ring-[#9ADBCC]/40 resize-none"
       />
 

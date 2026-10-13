@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRightIcon, WandSparklesIcon } from "lucide-react";
 import { PageHeader } from "../../../shared/components/layout/PageHeader";
@@ -9,19 +9,19 @@ import { Field, SelectField } from "../../../shared/components/ui/Field";
 import { apiErrorMessage } from "../../../shared/api/client";
 import { cn } from "../../../shared/lib/cn";
 import { recommendCareers } from "../api/careerApi";
-import { careerSession } from "../utils/careerSession";
-import { DEMO_PROFILE, EMPTY_PROFILE, OPTIONS, SKILLS } from "../constants";
+import { careerSession, useCareerFlow } from "../utils/careerSession";
+import { DEMO_PROFILE, EMPTY_PROFILE, FACULTY_CAREER_OPTIONS, OPTIONS, SKILLS } from "../constants";
 import { ui } from "../theme";
 
 const pretty = (name) => name.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 
-// Dropdown bound to one profile field; options come from constants.OPTIONS.
-function Select({ name, label, form, set }) {
+// Dropdown bound to one profile field. Options come from constants.OPTIONS unless passed in.
+function Select({ name, label, form, set, options = OPTIONS[name], placeholder = "Select…", disabled = false }) {
   return (
     <SelectField name={name} label={label || pretty(name)} value={form[name]}
-      onChange={(e) => set(name, e.target.value)} required>
-      <option value="" disabled>Select…</option>
-      {OPTIONS[name].map((o) => <option key={o} value={o}>{o}</option>)}
+      onChange={(e) => set(name, e.target.value)} required disabled={disabled}>
+      <option value="" disabled>{placeholder}</option>
+      {options.map((o) => <option key={o} value={o}>{o}</option>)}
     </SelectField>
   );
 }
@@ -77,10 +77,25 @@ function Section({ title, children }) {
 export default function CareerSurveyForm() {
   const navigate = useNavigate();
   const [form, setForm] = useState(() => careerSession.get().profile || EMPTY_PROFILE);
+  const { flow: saved, ready } = useCareerFlow();
+  // Show the student's saved answers once they load (only if they have not started typing).
+  useEffect(() => {
+    if (ready && saved.profile) setForm((current) => (current === EMPTY_PROFILE ? saved.profile : current));
+  }, [ready, saved.profile]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [demoFilled, setDemoFilled] = useState(false);
 
   const set = (name, value) => setForm((f) => ({ ...f, [name]: value }));
+  // First click fills the demo profile; second click resets the whole form (even after manual edits).
+  const toggleDemo = () => {
+    setForm(demoFilled ? EMPTY_PROFILE : DEMO_PROFILE);
+    setDemoFilled(!demoFilled);
+  };
+  // Faculty controls the career dropdowns: changing it clears the previous area and role.
+  const setFaculty = (_, faculty) =>
+    setForm((f) => ({ ...f, faculty_field: faculty, career_area_interest: "", preferred_career_role: "" }));
+  const facultyOptions = FACULTY_CAREER_OPTIONS[form.faculty_field];
   const setSkill = (key, value) => setForm((f) => ({ ...f, skills: { ...f.skills, [key]: value } }));
   // Multi-select answers are stored as "A, B, C" strings, like the survey export.
   const toggleText = (name) => (item) => set(name, toggle(toList(form[name]), item).join(", "));
@@ -95,7 +110,7 @@ export default function CareerSurveyForm() {
       const profile = joins ? form : { ...form, extracurricular_type: "", highest_extracurricular_role: "" };
       const result = await recommendCareers({ ...profile, student_id: form.student_id || null });
       // A new profile invalidates any earlier gap analysis / roadmap.
-      careerSession.update({ profile, recommendations: result.recommendations,
+      careerSession.update({ profile, recommendations: result.recommendations, persona: result.persona,
                              selectedCareer: null, gapAnalysis: null, roadmap: null });
       navigate("/app/career/recommendations");
     } catch (err) {
@@ -111,8 +126,8 @@ export default function CareerSurveyForm() {
         title="Career Profile Survey"
         subtitle="Your answers are used only to recommend careers and build your development roadmap."
         action={
-          <Button variant="outline" onClick={() => setForm(DEMO_PROFILE)}>
-            <WandSparklesIcon size={16} /> Fill demo profile
+          <Button variant="outline" onClick={toggleDemo}>
+            <WandSparklesIcon size={16} /> {demoFilled ? "Clear demo profile" : "Fill demo profile"}
           </Button>
         }
       />
@@ -121,15 +136,22 @@ export default function CareerSurveyForm() {
         <Section title="Academic details">
           <Select name="academic_status" form={form} set={set} />
           <Select name="employment_status" form={form} set={set} />
-          <Select name="faculty_field" label="Faculty / field" form={form} set={set} />
+          <Select name="faculty_field" label="Faculty / field" form={form} set={setFaculty} />
           <Field name="degree_programme" label="Degree programme" value={form.degree_programme}
             onChange={(e) => set("degree_programme", e.target.value)} placeholder="Information Technology" required />
-          <Select name="academic_performance_trend" form={form} set={set} />
+          <Select name="academic_performance_trend" label="Academic performance trend" form={form} set={set} />
         </Section>
 
         <Section title="Career details">
-          <Select name="career_area_interest" label="Career area of interest" form={form} set={set} />
-          <Select name="preferred_career_role" form={form} set={set} />
+          <p className="sm:col-span-2 text-xs text-charcoal-muted -mb-2">
+            Career options are filtered based on your selected faculty field.
+          </p>
+          <Select name="career_area_interest" label="Career area of interest" form={form} set={set}
+            options={facultyOptions?.careerAreas || []} disabled={!facultyOptions}
+            placeholder={facultyOptions ? "Select…" : "Select faculty first"} />
+          <Select name="preferred_career_role" label="Preferred career role" form={form} set={set}
+            options={facultyOptions?.roles || []} disabled={!facultyOptions}
+            placeholder={facultyOptions ? "Select…" : "Select faculty first"} />
           <Select name="previous_career_preference" label="Did you prefer a different career before?" form={form} set={set} />
           <div className="sm:col-span-2">
             <Rating label="Confidence in your career choice (1–5)" value={form.career_confidence}

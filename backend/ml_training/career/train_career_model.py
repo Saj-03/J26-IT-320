@@ -374,6 +374,8 @@ def main():
         "metrics": {"macro_f1": best["scores"]["macro_f1"], "top3_accuracy": best["scores"]["top3_accuracy"],
                     "ranking_selected_alpha": ranking[alpha], "ranking_cosine_only": ranking[0.0]},
         "n_samples": int(len(y)),
+        # Used by the API to decide for which faculties the model may be applied.
+        "faculty_counts": {k: int(v) for k, v in df["faculty_field"].value_counts().items()},
         "trained_at": trained_at,
     }
     MODEL_OUT.parent.mkdir(parents=True, exist_ok=True)

@@ -4,9 +4,10 @@ ACRDS request/response schemas.
 VIVA: "Pydantic validates every request before it reaches the logic, so a
 skill rating of 7 or a confidence of 0 is rejected with a clear 422 error."
 """
+from datetime import datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 # Fixed skill order - used for both the student vector and the career vector.
 SKILL_KEYS = [
@@ -87,6 +88,9 @@ class CareerSelectionRequest(BaseModel):
 # Responses
 # ---------------------------------------------------------------------------
 class CareerRecommendation(BaseModel):
+    # Allow the field name 'model_probability' (Pydantic reserves the 'model_' prefix by default)
+    model_config = ConfigDict(protected_namespaces=())
+
     career_id: str
     career_name: str
     career_area: str
@@ -100,11 +104,22 @@ class CareerRecommendation(BaseModel):
     recommended_courses: list[str]
     recommended_projects: list[str]
     recommended_certifications: list[str]
+    faculties: list[str] = []     # faculties this career suits
+    faculty_match: bool = True   # False = outside the student's faculty (shown only to fill the list)
+
+
+class Persona(BaseModel):
+    """Skill-readiness group from the K-Means model (guidance only, not used for ranking)."""
+    name: str                  # Developing | Progressing | Advanced
+    description: str
+    advice: str
+    average_skill_level: float
 
 
 class RecommendationResponse(BaseModel):
     student_id: Optional[str] = None
     scoring_method: str = "cosine"
+    persona: Optional[Persona] = None
     recommendations: list[CareerRecommendation]
 
 
@@ -237,6 +252,10 @@ class InterviewFeedback(BaseModel):
     feedback_source: str = "rule-based"
 
 
+class CoachFeedbackResponse(BaseModel):
+    llm_feedback: Optional[LLMFeedback] = None   # None = no provider, opted out, or the call failed
+
+
 class InterviewResultSummary(BaseModel):
     """One answered question, as sent back by the frontend for the report."""
     category: str
@@ -263,6 +282,34 @@ class InterviewReport(BaseModel):
     weakest_area: str
     focus_tips: list[str]
     disclaimer: str
+
+
+# ---------------------------------------------------------------------------
+# Saved progress (per logged-in student)
+# ---------------------------------------------------------------------------
+class SavedStateIn(BaseModel):
+    data: dict
+
+
+class SavedStateOut(BaseModel):
+    user_id: str
+    data: dict
+    updated_at: Optional[datetime] = None
+
+
+class InterviewHistoryIn(BaseModel):
+    career_id: str
+    report: InterviewReport
+
+
+class InterviewHistoryItem(BaseModel):
+    id: str
+    career_id: str
+    career_name: str
+    overall_score: float
+    readiness_band: str
+    questions_answered: int
+    created_at: datetime
 
 
 # ---------------------------------------------------------------------------

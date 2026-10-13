@@ -21,6 +21,7 @@ import json
 import logging
 import os
 import re
+import time
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional
@@ -30,13 +31,17 @@ import httpx
 logger = logging.getLogger(__name__)
 
 ENV_FILE = Path(__file__).resolve().parents[4] / ".env"
-TIMEOUT_SECONDS = 25
+TIMEOUT_SECONDS = 30  # per attempt; free-tier replies usually take 6-25 s
+ATTEMPTS = 2          # free tiers sometimes answer "high demand" (503) or stall - try once more
+RETRY_DELAY = 1.0
+RETRYABLE_STATUS = {429, 500, 502, 503, 504}
 MAX_ITEMS = 4
 MAX_ANSWER_CHARS = 4000
 
 # provider -> accepted key names (first non-empty wins), default model, model-name prefixes
 PROVIDERS = {
-    "gemini": {"keys": ["GEMINI_API_KEY"], "model": "gemini-3.5-flash-lite", "prefixes": ("gemini",)},
+    # gemini-3.1-flash-lite: fastest reliable option in our test (6-22 s; 3.5-flash-lite took 40-90 s).
+    "gemini": {"keys": ["GEMINI_API_KEY"], "model": "gemini-3.1-flash-lite", "prefixes": ("gemini",)},
     "openai": {"keys": ["OPENAI_API_KEY"], "model": "gpt-6-luna", "prefixes": ("gpt", "o1", "o3", "o4")},
     # LLM_API_KEY is the team's existing Claude key (used by the burnout chat).
     "claude": {"keys": ["ANTHROPIC_API_KEY", "LLM_API_KEY"], "model": "claude-haiku-5-5", "prefixes": ("claude",)},
@@ -237,18 +242,29 @@ def generate_llm_feedback(question: dict, answer: str, result: dict,
         return None
     own_client = client is None
     client = client or httpx.Client(timeout=TIMEOUT_SECONDS)
+    prompt = build_prompt(question, answer, result)
     try:
-        raw = CALLERS[config["provider"]](client, config, build_prompt(question, answer, result))
-        feedback = parse_feedback(raw)
-        if feedback is None:
-            logger.warning("LLM feedback ignored: %s returned an unusable reply", config["provider"])
-            return None
-        return {**feedback, "provider": config["provider"], "model": config["model"]}
-    except httpx.HTTPStatusError as exc:
-        # Log the status only - never the request (it carries the API key header).
-        logger.warning("LLM feedback failed: %s returned HTTP %s", config["provider"], exc.response.status_code)
-    except Exception as exc:
-        logger.warning("LLM feedback failed (%s): %s", config["provider"], type(exc).__name__)
+        for attempt in range(1, ATTEMPTS + 1):
+            retry = False
+            try:
+                feedback = parse_feedback(CALLERS[config["provider"]](client, config, prompt))
+                if feedback is not None:
+                    return {**feedback, "provider": config["provider"], "model": config["model"]}
+                logger.warning("LLM feedback ignored: %s returned an unusable reply", config["provider"])
+                return None
+            except httpx.HTTPStatusError as exc:
+                # Log the status only - never the request (it carries the API key header).
+                status = exc.response.status_code
+                logger.warning("LLM feedback failed: %s returned HTTP %s (attempt %s)", config["provider"], status, attempt)
+                retry = status in RETRYABLE_STATUS
+            except httpx.TimeoutException as exc:
+                logger.warning("LLM feedback failed (%s): %s (attempt %s)", config["provider"], type(exc).__name__, attempt)
+                retry = True
+            except Exception as exc:
+                logger.warning("LLM feedback failed (%s): %s", config["provider"], type(exc).__name__)
+            if not retry or attempt == ATTEMPTS:
+                return None
+            time.sleep(RETRY_DELAY)
     finally:
         if own_client:
             client.close()

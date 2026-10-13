@@ -49,7 +49,7 @@ def test_config_from_env_file_and_shared_model_guard(monkeypatch, tmp_path):
     monkeypatch.setattr(llm_feedback, "ENV_FILE", env)
     llm_feedback.load_config.cache_clear()
     cfg = llm_feedback.load_config()
-    assert cfg == {"provider": "gemini", "api_key": "abc", "model": "gemini-3.5-flash-lite"}
+    assert cfg == {"provider": "gemini", "api_key": "abc", "model": "gemini-3.1-flash-lite"}
     assert "api_key" not in llm_feedback.llm_status()  # the key is never exposed
     llm_feedback.load_config.cache_clear()
 
@@ -83,7 +83,8 @@ def test_each_provider_request_and_reply():
     assert "hiring decision" in claude_body["system"] and "personality" in claude_body["system"]
 
 
-def test_failures_fall_back_to_rule_based():
+def test_failures_fall_back_to_rule_based(monkeypatch):
+    monkeypatch.setattr(llm_feedback, "RETRY_DELAY", 0)
     cases = [
         lambda r: httpx.Response(500, json={"error": "boom"}),                       # provider error
         lambda r: httpx.Response(401, json={"error": "bad key"}),                    # wrong key
@@ -99,6 +100,25 @@ def test_failures_fall_back_to_rule_based():
 
     refusal = lambda r: httpx.Response(200, json={"stop_reason": "refusal", "content": []})  # noqa: E731
     assert llm_feedback.generate_llm_feedback(QUESTION, ANSWER, RESULT, config("claude"), mock_client(refusal)) is None
+
+
+def test_retries_once_when_provider_is_busy(monkeypatch):
+    monkeypatch.setattr(llm_feedback, "RETRY_DELAY", 0)
+    calls = []
+
+    def busy_then_ok(request):
+        calls.append(1)
+        if len(calls) == 1:
+            return httpx.Response(503, json={"error": "high demand"})
+        return httpx.Response(200, json={"candidates": [{"content": {"parts": [{"text": json.dumps(GOOD)}]}}]})
+
+    out = llm_feedback.generate_llm_feedback(QUESTION, ANSWER, RESULT, config("gemini"), mock_client(busy_then_ok))
+    assert out is not None and len(calls) == 2
+
+    calls.clear()
+    bad_key = lambda r: (calls.append(1), httpx.Response(401, json={}))[1]  # noqa: E731 - not retried
+    assert llm_feedback.generate_llm_feedback(QUESTION, ANSWER, RESULT, config("gemini"), mock_client(bad_key)) is None
+    assert len(calls) == 1
 
 
 def test_parse_feedback_tolerates_code_fences_and_trims():

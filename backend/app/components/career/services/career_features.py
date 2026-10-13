@@ -16,13 +16,20 @@ import re
 from app.components.career.schemas import SKILL_KEYS
 
 # Career families predicted by the model, and the ACRDS careers in each family.
+# The model was trained on these 6 families; every career must belong to one of them.
+# Non-computing careers (engineering, health, law, education, ...) sit in "other", the family
+# the model predicts for students whose preferred role is outside computing and business.
 FAMILY_CAREERS = {
     "software": ["software_engineer", "qa_engineer", "network_engineer"],
     "data": ["data_analyst", "database_administrator"],
     "cybersecurity": ["cybersecurity_analyst"],
-    "business": ["business_analyst", "project_manager", "digital_marketing_executive"],
-    "design": ["ui_ux_designer"],
-    "other": [],  # careers outside the ACRDS catalogue (health, law, teaching, ...)
+    "business": ["business_analyst", "project_manager", "digital_marketing_executive",
+                 "finance_analyst", "hr_executive", "public_relations_executive", "content_writer"],
+    "design": ["ui_ux_designer", "graphic_designer", "content_creator"],
+    "other": ["civil_engineer", "mechanical_engineer", "electrical_engineer", "research_assistant",
+              "laboratory_technician", "public_health_assistant", "health_administrator", "teacher",
+              "education_coordinator", "legal_assistant", "compliance_officer",
+              "community_development_officer", "counselling_assistant"],
 }
 CAREER_FAMILY = {career: fam for fam, careers in FAMILY_CAREERS.items() for career in careers}
 

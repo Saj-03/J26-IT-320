@@ -7,14 +7,28 @@
         "question": "Tell me about yourself.",
         "tip": "Cover your degree, 2-3 key skills, one project, and why you want this role. Keep it under 2 minutes.",
         "model_answer": "I am a final-year undergraduate studying my degree programme. My key skills include problem solving, teamwork and the technical tools used in this field. In my recent project I worked with a team to design and build a working system, where I was responsible for an important part and we delivered it on time. I enjoy learning new tools and I am now looking for a role where I can apply my skills, grow professionally and contribute to the team.",
-        "keywords": ["degree|undergraduate|university", "skill", "project", "team", "learn", "goal|career|role"]
+        "keywords": [
+          "degree|undergraduate|university",
+          "skill",
+          "project",
+          "team",
+          "learn",
+          "goal|career|role"
+        ]
       },
       {
         "id": "gen_intro_2",
         "question": "Why are you interested in this career?",
         "tip": "Link your interest to real experiences (a module, project or internship) and to what the role actually involves.",
         "model_answer": "I became interested in this career during my degree when I worked on a project that involved the main tasks of this role. I enjoyed solving the problems and seeing the impact of the result. I have since improved my skills through courses and practice, and I am motivated because this career lets me keep learning, work with a team and create value for users and the organisation.",
-        "keywords": ["project", "interest|enjoy|passion", "skill", "learn", "impact|value", "experience|internship|module"]
+        "keywords": [
+          "project",
+          "interest|enjoy|passion",
+          "skill",
+          "learn",
+          "impact|value",
+          "experience|internship|module"
+        ]
       }
     ],
     "behavioural": [
@@ -23,14 +37,29 @@
         "question": "Describe a time you had a conflict in a team. How did you handle it?",
         "tip": "Use the STAR method: Situation, Task, Action, Result. Focus on what YOU did and what you learned.",
         "model_answer": "During a group project in my third year, two team members disagreed about which technology to use, and the work was getting delayed. My task as a member was to help the team reach a decision before the deadline. I arranged a short meeting, asked each person to explain their reasons, and suggested we compare the options against our requirements. As a result we chose one option together, finished the project on time, and I learned that listening and using clear criteria helps resolve conflict.",
-        "keywords": ["team", "conflict|disagree", "listen", "meeting|discuss", "decision|agree", "result|outcome", "learn"]
+        "keywords": [
+          "team",
+          "conflict|disagree",
+          "listen",
+          "meeting|discuss",
+          "decision|agree",
+          "result|outcome",
+          "learn"
+        ]
       },
       {
         "id": "gen_beh_2",
         "question": "Tell me about a difficult problem you solved.",
         "tip": "Use the STAR method and include a measurable result if possible (time saved, error fixed, score improved).",
         "model_answer": "In my final-year project our system was running very slowly when loading reports. My task was to find the cause and fix it before the demo. I measured each step, found that one database query was repeated many times, and rewrote it with proper indexing and caching. As a result the page loaded about five times faster, and I learned to measure a problem before trying to fix it.",
-        "keywords": ["problem", "task|responsible", "analys|investigat|measur", "solution|fix|solve", "result|improv", "learn"]
+        "keywords": [
+          "problem",
+          "task|responsible",
+          "analys|investigat|measur",
+          "solution|fix|solve",
+          "result|improv",
+          "learn"
+        ]
       }
     ]
   },
@@ -41,28 +70,57 @@
         "question": "Explain the four main principles of object-oriented programming.",
         "tip": "Name each principle and give a short example for each.",
         "model_answer": "The four principles are encapsulation, inheritance, polymorphism and abstraction. Encapsulation hides an object's data behind methods. Inheritance lets a class reuse and extend another class. Polymorphism lets the same method call behave differently for different object types, for example through method overriding. Abstraction exposes only the essential features through interfaces or abstract classes.",
-        "keywords": ["encapsulation", "inheritance", "polymorphism", "abstraction", "class", "interface|abstract class"]
+        "keywords": [
+          "encapsulation",
+          "inheritance",
+          "polymorphism",
+          "abstraction",
+          "class",
+          "interface|abstract class"
+        ]
       },
       {
         "id": "se_2",
         "question": "What is the difference between an array and a linked list? When would you use each?",
         "tip": "Compare access time, insertion/deletion cost and memory layout.",
         "model_answer": "An array stores elements in contiguous memory, so accessing an element by index is O(1), but inserting or deleting in the middle is O(n) because elements must shift. A linked list stores nodes connected by pointers, so insertion and deletion are O(1) once you have the node, but access by index is O(n). Use an array when you need fast random access, and a linked list when you insert and delete often.",
-        "keywords": ["contiguous|memory", "index", "O(1)|constant", "O(n)|linear", "pointer|node", "insert", "delete"]
+        "keywords": [
+          "contiguous|memory",
+          "index",
+          "O(1)|constant",
+          "O(n)|linear",
+          "pointer|node",
+          "insert",
+          "delete"
+        ]
       },
       {
         "id": "se_3",
         "question": "How do you use Git when working in a team?",
         "tip": "Mention branches, commits, pull requests, code review and resolving merge conflicts.",
         "model_answer": "I create a separate feature branch for each task, make small commits with clear messages, and push the branch to the remote repository. Then I open a pull request so teammates can review the code before it is merged into the main branch. If there is a merge conflict, I pull the latest changes, resolve the conflict locally, test, and push again.",
-        "keywords": ["branch", "commit", "pull request|merge request", "review", "merge", "conflict"]
+        "keywords": [
+          "branch",
+          "commit",
+          "pull request|merge request",
+          "review",
+          "merge",
+          "conflict"
+        ]
       },
       {
         "id": "se_4",
         "question": "How do you make sure your code is good quality?",
         "tip": "Talk about testing, code reviews, readability and design principles.",
         "model_answer": "I write unit tests for important logic and run them before every commit. I keep functions small with clear names, follow the team's coding standards, and apply principles like SOLID and DRY. I ask for code reviews, fix issues found by linters, and refactor code when it becomes hard to read or maintain.",
-        "keywords": ["unit test|testing", "review", "readab|clean", "SOLID|DRY|principle", "refactor", "standard|lint"]
+        "keywords": [
+          "unit test|testing",
+          "review",
+          "readab|clean",
+          "SOLID|DRY|principle",
+          "refactor",
+          "standard|lint"
+        ]
       }
     ],
     "data_analyst": [
@@ -71,28 +129,56 @@
         "question": "How do you clean a messy dataset before analysis?",
         "tip": "Mention missing values, duplicates, data types, outliers and validation.",
         "model_answer": "First I explore the data to understand its structure. Then I handle missing values by removing or imputing them, remove duplicate rows, fix incorrect data types and inconsistent formats, and check for outliers to decide whether they are errors or real values. Finally I validate the cleaned data with summary statistics before analysis.",
-        "keywords": ["missing", "duplicate", "data type|format", "outlier", "impute", "validat|check"]
+        "keywords": [
+          "missing",
+          "duplicate",
+          "data type|format",
+          "outlier",
+          "impute",
+          "validat|check"
+        ]
       },
       {
         "id": "da_2",
         "question": "Explain the difference between INNER JOIN and LEFT JOIN in SQL.",
         "tip": "Describe which rows each join returns and give a simple example.",
         "model_answer": "An INNER JOIN returns only the rows that have matching values in both tables. A LEFT JOIN returns all rows from the left table and the matching rows from the right table; where there is no match, the right-side columns are NULL. For example, a LEFT JOIN of customers to orders also shows customers who have never placed an order.",
-        "keywords": ["inner join", "left join", "match", "both tables", "all rows", "null"]
+        "keywords": [
+          "inner join",
+          "left join",
+          "match",
+          "both tables",
+          "all rows",
+          "null"
+        ]
       },
       {
         "id": "da_3",
         "question": "How would you build a dashboard for a manager?",
         "tip": "Start from the business question, then KPIs, visuals and clarity.",
         "model_answer": "I would first meet the manager to understand the business questions and decisions the dashboard should support. Then I would define the key KPIs, prepare and model the data, and choose simple visualisations such as trend lines and bar charts. I keep the layout clean with filters for drill-down, and I review it with the manager to make sure the insights are clear.",
-        "keywords": ["business question|requirement|stakeholder", "KPI", "visuali", "filter|drill", "insight", "chart"]
+        "keywords": [
+          "business question|requirement|stakeholder",
+          "KPI",
+          "visuali",
+          "filter|drill",
+          "insight",
+          "chart"
+        ]
       },
       {
         "id": "da_4",
         "question": "What is the difference between correlation and causation?",
         "tip": "Define both and give an example of a misleading correlation.",
         "model_answer": "Correlation means two variables move together, while causation means one variable directly causes a change in the other. Correlation does not prove causation because a third confounding variable may affect both. For example, ice cream sales and drowning incidents are correlated because both increase in hot weather. To show causation you need controlled experiments such as A/B tests.",
-        "keywords": ["correlation", "causation|cause", "variable", "confound|third factor", "experiment|A/B test", "example"]
+        "keywords": [
+          "correlation",
+          "causation|cause",
+          "variable",
+          "confound|third factor",
+          "experiment|A/B test",
+          "example"
+        ]
       }
     ],
     "business_analyst": [
@@ -101,28 +187,56 @@
         "question": "How do you gather requirements from stakeholders?",
         "tip": "Name several techniques and how you confirm requirements.",
         "model_answer": "I first identify all the stakeholders and then use techniques such as interviews, workshops, questionnaires, observation and document analysis. I write the requirements as clear user stories or use cases, prioritise them with the stakeholders, and validate them through reviews and prototypes so everyone agrees before development starts.",
-        "keywords": ["stakeholder", "interview", "workshop", "user stor|use case", "prioriti", "validat|review|sign-off"]
+        "keywords": [
+          "stakeholder",
+          "interview",
+          "workshop",
+          "user stor|use case",
+          "prioriti",
+          "validat|review|sign-off"
+        ]
       },
       {
         "id": "ba_2",
         "question": "What is the difference between functional and non-functional requirements?",
         "tip": "Define both and give one example each.",
         "model_answer": "Functional requirements describe what the system should do, for example the user can reset their password. Non-functional requirements describe how well the system should do it, such as performance, security, usability and availability, for example pages must load within two seconds.",
-        "keywords": ["functional", "non-functional", "what the system", "performance", "security", "usability"]
+        "keywords": [
+          "functional",
+          "non-functional",
+          "what the system",
+          "performance",
+          "security",
+          "usability"
+        ]
       },
       {
         "id": "ba_3",
         "question": "How do you handle a stakeholder who keeps changing requirements?",
         "tip": "Show calm communication, impact analysis and change control.",
         "model_answer": "I listen to understand the reason for the change, then analyse its impact on scope, time and cost. I document the change request, discuss the trade-offs with the stakeholder and the project manager, and follow the change control process so the decision is agreed and recorded. Regular communication and early prototypes reduce later changes.",
-        "keywords": ["impact", "scope", "change request|change control", "document", "communicat", "prioriti|trade-off"]
+        "keywords": [
+          "impact",
+          "scope",
+          "change request|change control",
+          "document",
+          "communicat",
+          "prioriti|trade-off"
+        ]
       },
       {
         "id": "ba_4",
         "question": "What is a gap analysis and how do you perform one?",
         "tip": "Explain current state, future state and the gap between them.",
         "model_answer": "A gap analysis compares the current state of a process or system with the desired future state. I document the as-is process, define the to-be process with the stakeholders, identify the gaps between them, and recommend actions to close each gap, including priorities, owners and timelines.",
-        "keywords": ["current state|as-is", "future state|to-be", "gap", "process", "recommend|action", "stakeholder"]
+        "keywords": [
+          "current state|as-is",
+          "future state|to-be",
+          "gap",
+          "process",
+          "recommend|action",
+          "stakeholder"
+        ]
       }
     ],
     "ui_ux_designer": [
@@ -131,28 +245,56 @@
         "question": "Walk me through your design process.",
         "tip": "Research, define, ideate, prototype, test, iterate.",
         "model_answer": "I start with user research such as interviews and surveys to understand user needs. Then I define the problem with personas and user journeys, sketch ideas, create wireframes, and build an interactive prototype in Figma. I run usability tests with real users and iterate on the design based on their feedback.",
-        "keywords": ["user research|research", "persona", "wireframe", "prototype", "usability test|testing", "iterat|feedback"]
+        "keywords": [
+          "user research|research",
+          "persona",
+          "wireframe",
+          "prototype",
+          "usability test|testing",
+          "iterat|feedback"
+        ]
       },
       {
         "id": "ux_2",
         "question": "What is the difference between UI and UX?",
         "tip": "UX is the overall experience; UI is the visual and interactive layer.",
         "model_answer": "UX, or user experience, is about how easy and satisfying a product is to use overall, including research, information architecture and user flows. UI, or user interface, is the visual layer the user interacts with, such as layout, colours, typography and buttons. Good UX solves the right problem, and good UI makes the solution clear and attractive.",
-        "keywords": ["user experience", "user interface", "flow|journey", "visual", "typography|colour|color|layout", "usab"]
+        "keywords": [
+          "user experience",
+          "user interface",
+          "flow|journey",
+          "visual",
+          "typography|colour|color|layout",
+          "usab"
+        ]
       },
       {
         "id": "ux_3",
         "question": "How do you make a design accessible?",
         "tip": "Mention contrast, keyboard navigation, screen readers and WCAG.",
         "model_answer": "I follow WCAG guidelines: I use sufficient colour contrast, readable font sizes, and never rely on colour alone to show meaning. I make sure everything works with keyboard navigation and screen readers by using clear labels and alt text, and I test with accessibility tools and, where possible, with users who have disabilities.",
-        "keywords": ["WCAG", "contrast", "keyboard", "screen reader", "alt text|label", "test"]
+        "keywords": [
+          "WCAG",
+          "contrast",
+          "keyboard",
+          "screen reader",
+          "alt text|label",
+          "test"
+        ]
       },
       {
         "id": "ux_4",
         "question": "How do you respond when users dislike your design?",
         "tip": "Show openness to feedback and a data-driven approach.",
         "model_answer": "I treat it as useful feedback rather than criticism. I try to understand exactly what is not working by observing users and asking open questions, look for patterns across several users, and then iterate on the design and test again. Usability testing data helps me separate personal preferences from real usability problems.",
-        "keywords": ["feedback", "understand|listen", "observe|usability test", "pattern|data", "iterat", "test"]
+        "keywords": [
+          "feedback",
+          "understand|listen",
+          "observe|usability test",
+          "pattern|data",
+          "iterat",
+          "test"
+        ]
       }
     ],
     "qa_engineer": [
@@ -161,28 +303,56 @@
         "question": "What is the difference between verification and validation?",
         "tip": "Verification: built right? Validation: built the right thing?",
         "model_answer": "Verification checks whether the product is being built correctly according to the specification, using reviews, walkthroughs and inspections. Validation checks whether we built the right product that meets user needs, mainly by executing tests such as system and acceptance testing.",
-        "keywords": ["verification", "validation", "specification|requirement", "review|inspection", "user need", "acceptance test"]
+        "keywords": [
+          "verification",
+          "validation",
+          "specification|requirement",
+          "review|inspection",
+          "user need",
+          "acceptance test"
+        ]
       },
       {
         "id": "qa_2",
         "question": "How do you write a good test case?",
         "tip": "List the fields of a test case and qualities like clarity and traceability.",
         "model_answer": "A good test case has a unique ID, a clear title, preconditions, test data, step-by-step actions and an expected result. It tests one thing, is easy for someone else to repeat, is traceable to a requirement, and covers both positive and negative scenarios as well as boundary values.",
-        "keywords": ["precondition", "test data", "steps", "expected result", "requirement|traceab", "negative|boundary"]
+        "keywords": [
+          "precondition",
+          "test data",
+          "steps",
+          "expected result",
+          "requirement|traceab",
+          "negative|boundary"
+        ]
       },
       {
         "id": "qa_3",
         "question": "Explain the bug life cycle.",
         "tip": "Walk through the statuses from New to Closed.",
         "model_answer": "A bug starts as New when a tester reports it. It is then Assigned to a developer, who marks it Open while working and Fixed when done. The tester retests it; if it works the bug is Verified and Closed, otherwise it is Reopened. A bug can also be Rejected, marked Duplicate or Deferred to a later release.",
-        "keywords": ["new", "assigned", "fixed", "retest", "closed", "reopen"]
+        "keywords": [
+          "new",
+          "assigned",
+          "fixed",
+          "retest",
+          "closed",
+          "reopen"
+        ]
       },
       {
         "id": "qa_4",
         "question": "When should tests be automated and when should they stay manual?",
         "tip": "Consider repetition, stability and the type of testing.",
         "model_answer": "Tests that are repetitive, stable and run often, such as regression, smoke and data-driven tests, are good candidates for automation with tools like Selenium or Cypress. Exploratory testing, usability testing and features that change frequently are better done manually because they need human judgement or would make automated scripts expensive to maintain.",
-        "keywords": ["regression", "repetitive|repeat", "Selenium|Cypress|automation tool", "exploratory", "usability", "maintain|maintenance"]
+        "keywords": [
+          "regression",
+          "repetitive|repeat",
+          "Selenium|Cypress|automation tool",
+          "exploratory",
+          "usability",
+          "maintain|maintenance"
+        ]
       }
     ],
     "cybersecurity_analyst": [
@@ -191,28 +361,56 @@
         "question": "What is the CIA triad?",
         "tip": "Define confidentiality, integrity and availability with examples of controls.",
         "model_answer": "The CIA triad is the core model of information security. Confidentiality means only authorised people can access data, using controls like encryption and access control. Integrity means data is accurate and not altered without permission, using hashing and digital signatures. Availability means systems and data are accessible when needed, using backups and redundancy.",
-        "keywords": ["confidentiality", "integrity", "availability", "encryption", "hash", "backup|redundancy"]
+        "keywords": [
+          "confidentiality",
+          "integrity",
+          "availability",
+          "encryption",
+          "hash",
+          "backup|redundancy"
+        ]
       },
       {
         "id": "cy_2",
         "question": "How would you respond to a suspected phishing incident?",
         "tip": "Follow the incident response steps.",
         "model_answer": "I would follow the incident response process: identify and confirm the phishing email, contain it by blocking the sender and links and removing the email from mailboxes, reset any compromised credentials, and check logs in the SIEM for further activity. Then I would eradicate and recover, document the incident, and use lessons learned for user awareness training.",
-        "keywords": ["identify", "contain", "credential|password", "log|SIEM", "recover|eradicat", "awareness|training"]
+        "keywords": [
+          "identify",
+          "contain",
+          "credential|password",
+          "log|SIEM",
+          "recover|eradicat",
+          "awareness|training"
+        ]
       },
       {
         "id": "cy_3",
         "question": "What is the difference between symmetric and asymmetric encryption?",
         "tip": "Compare keys, speed and typical uses.",
         "model_answer": "Symmetric encryption uses the same secret key to encrypt and decrypt, for example AES, and it is fast, so it is used for bulk data. Asymmetric encryption uses a public key and a private key pair, for example RSA; it is slower but solves key exchange and supports digital signatures. TLS uses asymmetric encryption to exchange a symmetric session key.",
-        "keywords": ["same key|single key|secret key", "public key", "private key", "AES", "RSA", "TLS|key exchange"]
+        "keywords": [
+          "same key|single key|secret key",
+          "public key",
+          "private key",
+          "AES",
+          "RSA",
+          "TLS|key exchange"
+        ]
       },
       {
         "id": "cy_4",
         "question": "Explain SQL injection and how to prevent it.",
         "tip": "Describe the attack and at least two defences.",
         "model_answer": "SQL injection happens when user input is inserted directly into a SQL query, letting an attacker change the query to read or modify data. It is prevented by using parameterised queries or prepared statements, validating input, using least-privilege database accounts, and adding a web application firewall.",
-        "keywords": ["user input|input", "query", "parameteri|prepared statement", "validat", "least privilege", "firewall|WAF"]
+        "keywords": [
+          "user input|input",
+          "query",
+          "parameteri|prepared statement",
+          "validat",
+          "least privilege",
+          "firewall|WAF"
+        ]
       }
     ],
     "network_engineer": [
@@ -221,28 +419,56 @@
         "question": "Explain the layers of the OSI model.",
         "tip": "List all seven layers with an example protocol or device for some.",
         "model_answer": "The OSI model has seven layers: physical, data link, network, transport, session, presentation and application. For example, switches work at the data link layer with MAC addresses, routers work at the network layer with IP addresses, TCP and UDP are transport layer protocols, and HTTP is an application layer protocol.",
-        "keywords": ["physical", "data link", "network layer", "transport", "application", "TCP|UDP|IP"]
+        "keywords": [
+          "physical",
+          "data link",
+          "network layer",
+          "transport",
+          "application",
+          "TCP|UDP|IP"
+        ]
       },
       {
         "id": "ne_2",
         "question": "What is the difference between TCP and UDP?",
         "tip": "Compare reliability, connection and use cases.",
         "model_answer": "TCP is connection-oriented and reliable: it uses a three-way handshake, acknowledgements and retransmission, and delivers data in order, so it is used for web and email. UDP is connectionless and faster with lower overhead but does not guarantee delivery or order, so it is used for streaming, gaming and DNS.",
-        "keywords": ["connection-oriented|connection", "reliab", "handshake", "acknowledg|retransmi", "connectionless", "streaming|DNS|gaming"]
+        "keywords": [
+          "connection-oriented|connection",
+          "reliab",
+          "handshake",
+          "acknowledg|retransmi",
+          "connectionless",
+          "streaming|DNS|gaming"
+        ]
       },
       {
         "id": "ne_3",
         "question": "What is subnetting and why is it used?",
         "tip": "Explain the subnet mask and give a small example.",
         "model_answer": "Subnetting divides a large IP network into smaller networks using a subnet mask, which separates the network part from the host part of an address. For example, 192.168.1.0/24 can be split into four /26 subnets with 62 usable hosts each. It improves security, reduces broadcast traffic and uses IP addresses efficiently.",
-        "keywords": ["subnet mask|mask", "network", "host", "IP address|IP", "broadcast", "efficien|security"]
+        "keywords": [
+          "subnet mask|mask",
+          "network",
+          "host",
+          "IP address|IP",
+          "broadcast",
+          "efficien|security"
+        ]
       },
       {
         "id": "ne_4",
         "question": "A user cannot access the internet. How do you troubleshoot it?",
         "tip": "Work layer by layer from the physical connection upwards.",
         "model_answer": "I troubleshoot layer by layer. First I check the physical connection or Wi-Fi, then whether the device has a valid IP address from DHCP. I ping the default gateway, then an external IP address, then a domain name to test DNS. I use tools like ipconfig, ping and traceroute, and check the router, firewall and switch configuration if needed.",
-        "keywords": ["physical|cable", "IP address|DHCP", "gateway", "ping", "DNS", "traceroute|ipconfig"]
+        "keywords": [
+          "physical|cable",
+          "IP address|DHCP",
+          "gateway",
+          "ping",
+          "DNS",
+          "traceroute|ipconfig"
+        ]
       }
     ],
     "database_administrator": [
@@ -251,28 +477,56 @@
         "question": "What is database normalisation? Explain the first three normal forms.",
         "tip": "Define 1NF, 2NF and 3NF and why normalisation matters.",
         "model_answer": "Normalisation organises tables to reduce redundancy and update anomalies. First normal form requires atomic values and no repeating groups. Second normal form also requires every non-key column to depend on the whole primary key, removing partial dependency. Third normal form also removes transitive dependency, so non-key columns depend only on the key.",
-        "keywords": ["normalisation|normalization", "redundan", "atomic", "partial dependency", "transitive", "primary key"]
+        "keywords": [
+          "normalisation|normalization",
+          "redundan",
+          "atomic",
+          "partial dependency",
+          "transitive",
+          "primary key"
+        ]
       },
       {
         "id": "db_2",
         "question": "What are ACID properties?",
         "tip": "Explain each letter with a short example.",
         "model_answer": "ACID describes reliable transactions. Atomicity means a transaction completes fully or not at all. Consistency means the database moves from one valid state to another. Isolation means concurrent transactions do not interfere with each other. Durability means committed data survives crashes. A bank transfer is the classic example.",
-        "keywords": ["atomicity", "consistency", "isolation", "durability", "transaction", "commit"]
+        "keywords": [
+          "atomicity",
+          "consistency",
+          "isolation",
+          "durability",
+          "transaction",
+          "commit"
+        ]
       },
       {
         "id": "db_3",
         "question": "How do indexes improve query performance, and what are their costs?",
         "tip": "Explain how lookups work and the trade-offs.",
         "model_answer": "An index is a data structure, usually a B-tree, that lets the database find rows without scanning the whole table, which speeds up WHERE, JOIN and ORDER BY queries. The costs are extra storage and slower inserts, updates and deletes, because the index must be updated too. So I index columns that are frequently searched and check query plans.",
-        "keywords": ["B-tree", "scan", "where|join", "storage", "insert|update", "query plan|execution plan"]
+        "keywords": [
+          "B-tree",
+          "scan",
+          "where|join",
+          "storage",
+          "insert|update",
+          "query plan|execution plan"
+        ]
       },
       {
         "id": "db_4",
         "question": "What is your backup and recovery strategy for a production database?",
         "tip": "Mention backup types, schedules, testing restores and RPO/RTO.",
         "model_answer": "I combine full, differential or incremental backups and transaction log backups on a schedule that meets the business RPO and RTO. Backups are stored securely off-site or in the cloud, encrypted, and monitored. Most importantly, I regularly test restoring backups so recovery is proven to work.",
-        "keywords": ["full backup|full", "incremental|differential", "transaction log", "RPO|RTO", "off-site|cloud", "test restor|restore"]
+        "keywords": [
+          "full backup|full",
+          "incremental|differential",
+          "transaction log",
+          "RPO|RTO",
+          "off-site|cloud",
+          "test restor|restore"
+        ]
       }
     ],
     "project_manager": [
@@ -281,28 +535,56 @@
         "question": "What is the difference between Agile and Waterfall?",
         "tip": "Compare planning, delivery and when each fits.",
         "model_answer": "Waterfall is a sequential approach where requirements, design, development and testing happen in fixed phases, which suits projects with stable requirements. Agile is iterative: work is delivered in short sprints, with frequent customer feedback and changing priorities, as in Scrum. Agile suits projects where requirements are expected to change.",
-        "keywords": ["sequential|phase", "iterative", "sprint", "feedback", "Scrum", "requirement"]
+        "keywords": [
+          "sequential|phase",
+          "iterative",
+          "sprint",
+          "feedback",
+          "Scrum",
+          "requirement"
+        ]
       },
       {
         "id": "pm_2",
         "question": "How do you manage project risks?",
         "tip": "Identify, assess, plan responses, monitor.",
         "model_answer": "I identify risks early with the team and record them in a risk register. I assess each risk by probability and impact, then plan a response: avoid, mitigate, transfer or accept, with an owner for each risk. I monitor risks regularly in team meetings and update the plan as the project changes.",
-        "keywords": ["identify", "risk register", "probability", "impact", "mitigat", "monitor|owner"]
+        "keywords": [
+          "identify",
+          "risk register",
+          "probability",
+          "impact",
+          "mitigat",
+          "monitor|owner"
+        ]
       },
       {
         "id": "pm_3",
         "question": "How do you handle a team member who is consistently missing deadlines?",
         "tip": "Show empathy, find the cause, agree on a plan, follow up.",
         "model_answer": "I would talk to the team member privately to understand the reason, such as workload, unclear tasks or personal issues. Then we would agree on a realistic plan, for example breaking tasks into smaller pieces, adjusting priorities or providing support or training. I would follow up regularly and recognise improvement, and escalate only if the problem continues.",
-        "keywords": ["private|one-on-one|talk", "understand|reason", "plan", "support|training", "follow up|check-in", "deadline|priorit"]
+        "keywords": [
+          "private|one-on-one|talk",
+          "understand|reason",
+          "plan",
+          "support|training",
+          "follow up|check-in",
+          "deadline|priorit"
+        ]
       },
       {
         "id": "pm_4",
         "question": "How do you keep stakeholders informed about project progress?",
         "tip": "Mention a communication plan, reports, meetings and tools.",
         "model_answer": "I create a communication plan that defines who needs what information and how often. I share regular status reports showing progress, risks and issues, use dashboards in tools like Jira, and hold review meetings or sprint demos. I communicate problems early and honestly together with a proposed solution.",
-        "keywords": ["communication plan", "status report|report", "risk|issue", "dashboard|Jira", "meeting|demo", "early|transparen"]
+        "keywords": [
+          "communication plan",
+          "status report|report",
+          "risk|issue",
+          "dashboard|Jira",
+          "meeting|demo",
+          "early|transparen"
+        ]
       }
     ],
     "digital_marketing_executive": [
@@ -311,28 +593,626 @@
         "question": "How would you plan a social media campaign for a new product?",
         "tip": "Goals, audience, channels, content, budget, measurement.",
         "model_answer": "I would start by setting SMART goals and defining the target audience with personas. Then I would choose the right channels, create a content calendar with engaging posts and videos, and set a budget for paid ads. During the campaign I would monitor KPIs such as reach, engagement and conversions and optimise the content based on the results.",
-        "keywords": ["goal|SMART", "target audience|audience", "channel|platform", "content calendar|content", "budget", "KPI|engagement|conversion"]
+        "keywords": [
+          "goal|SMART",
+          "target audience|audience",
+          "channel|platform",
+          "content calendar|content",
+          "budget",
+          "KPI|engagement|conversion"
+        ]
       },
       {
         "id": "dm_2",
         "question": "What is SEO and how do you improve a website's ranking?",
         "tip": "Cover keywords, on-page, technical and off-page SEO.",
         "model_answer": "SEO, or search engine optimisation, improves a website's organic visibility in search results. I research keywords, optimise on-page elements like titles, meta descriptions and headings, publish quality content, improve technical aspects such as page speed and mobile friendliness, and build quality backlinks.",
-        "keywords": ["search engine", "keyword", "meta|title", "content", "page speed|mobile|technical", "backlink"]
+        "keywords": [
+          "search engine",
+          "keyword",
+          "meta|title",
+          "content",
+          "page speed|mobile|technical",
+          "backlink"
+        ]
       },
       {
         "id": "dm_3",
         "question": "Which metrics would you use to measure campaign success?",
         "tip": "Link metrics to the campaign goal.",
         "model_answer": "It depends on the goal. For awareness I track reach and impressions; for engagement, likes, shares and click-through rate; for sales, conversion rate, cost per acquisition and return on ad spend. I use Google Analytics and platform insights, and I compare results with the targets set at the start.",
-        "keywords": ["reach|impression", "click-through|CTR", "conversion", "cost per|CPA|CPC", "ROI|ROAS|return", "Google Analytics|analytics"]
+        "keywords": [
+          "reach|impression",
+          "click-through|CTR",
+          "conversion",
+          "cost per|CPA|CPC",
+          "ROI|ROAS|return",
+          "Google Analytics|analytics"
+        ]
       },
       {
         "id": "dm_4",
         "question": "How do you respond to negative comments about the brand online?",
         "tip": "Respond quickly, politely and move the issue to a private channel.",
         "model_answer": "I respond quickly and politely, acknowledge the customer's concern and apologise where appropriate, without arguing. I move detailed issues to a private message or email, work with the relevant team to solve the problem, and follow up. I also monitor sentiment to spot recurring issues the business should fix.",
-        "keywords": ["respond quickly|quick", "polite|professional", "acknowledg|apolog", "private|direct message", "solve|resolve", "monitor|sentiment"]
+        "keywords": [
+          "respond quickly|quick",
+          "polite|professional",
+          "acknowledg|apolog",
+          "private|direct message",
+          "solve|resolve",
+          "monitor|sentiment"
+        ]
+      }
+    ],
+    "civil_engineer": [
+      {
+        "id": "ce_1",
+        "question": "How do you make sure a construction project is safe on site?",
+        "tip": "Mention risk assessment, PPE, supervision and standards.",
+        "model_answer": "I start with a risk assessment for each activity and make sure everyone has the right PPE such as helmets and safety boots. I check that work follows the approved drawings and building codes, hold short toolbox talks before work, keep the site clean and barricaded, and report and investigate any incident so it does not happen again.",
+        "keywords": [
+          "risk assessment",
+          "PPE|protective equipment|helmet",
+          "codes|standards",
+          "toolbox talk|briefing",
+          "supervis",
+          "incident|report"
+        ]
+      },
+      {
+        "id": "ce_2",
+        "question": "How would you estimate the cost of a small building project?",
+        "tip": "Explain quantities, rates, and contingency.",
+        "model_answer": "I would take off quantities from the drawings, such as concrete, steel, brickwork and finishes, and prepare a bill of quantities. Then I apply current rates for materials, labour and equipment, add preliminaries and overheads, and include a contingency for risks. Finally I review the estimate against similar past projects.",
+        "keywords": [
+          "quantit",
+          "bill of quantities|BOQ",
+          "rate",
+          "labour",
+          "material",
+          "contingency"
+        ]
+      }
+    ],
+    "mechanical_engineer": [
+      {
+        "id": "me_1",
+        "question": "How do you choose a material for a mechanical part?",
+        "tip": "Link the choice to load, environment, cost and manufacturing.",
+        "model_answer": "I start from the requirements: the loads and stresses, temperature, corrosion environment and expected life. Then I compare materials by strength, stiffness, weight, cost and how easily they can be manufactured. I check the design with calculations or simulation and include a safety factor before finalising the choice.",
+        "keywords": [
+          "load|stress",
+          "strength",
+          "cost",
+          "corrosion|temperature|environment",
+          "manufactur",
+          "safety factor"
+        ]
+      },
+      {
+        "id": "me_2",
+        "question": "A machine on the production line keeps breaking down. How would you handle it?",
+        "tip": "Use a structured problem-solving method and think about maintenance.",
+        "model_answer": "I would first collect data on when and how the breakdowns happen, then find the root cause using methods such as 5 Whys or a fishbone diagram. After fixing the cause, I would set up preventive maintenance, train the operators and monitor downtime to confirm the problem is solved.",
+        "keywords": [
+          "data",
+          "root cause",
+          "5 whys|fishbone",
+          "preventive maintenance|maintenance plan",
+          "downtime",
+          "monitor"
+        ]
+      }
+    ],
+    "electrical_engineer": [
+      {
+        "id": "ee_1",
+        "question": "What safety steps do you follow before working on electrical equipment?",
+        "tip": "Mention isolation, lockout/tagout and testing.",
+        "model_answer": "I isolate the power supply and apply lockout/tagout so no one can switch it on. Then I test that the circuit is dead using a proper voltage tester, use insulated tools and PPE, follow the permit-to-work procedure, and never work alone on high-risk equipment.",
+        "keywords": [
+          "isolat",
+          "lockout|tagout",
+          "test",
+          "PPE|insulated",
+          "permit",
+          "procedure"
+        ]
+      },
+      {
+        "id": "ee_2",
+        "question": "How would you troubleshoot a circuit that is not working?",
+        "tip": "Work systematically from supply to load.",
+        "model_answer": "I check the drawings first, then test systematically from the supply to the load. I measure voltage, current and continuity with a multimeter, check fuses, breakers and connections, and isolate sections to find the fault. After the repair I test the circuit and document what I found.",
+        "keywords": [
+          "drawing|diagram",
+          "multimeter",
+          "voltage",
+          "continuity",
+          "fuse|breaker",
+          "document"
+        ]
+      }
+    ],
+    "research_assistant": [
+      {
+        "id": "ra_1",
+        "question": "How would you design a small survey study?",
+        "tip": "Cover the research question, sampling, questionnaire, ethics and analysis.",
+        "model_answer": "I would start with a clear research question and objectives, then choose the target population and a sampling method. I would design and pilot the questionnaire, get ethical approval and informed consent, collect the data, clean it, and analyse it with suitable statistics before writing up the findings.",
+        "keywords": [
+          "research question",
+          "sampl",
+          "questionnaire",
+          "pilot",
+          "ethic|consent",
+          "analys"
+        ]
+      },
+      {
+        "id": "ra_2",
+        "question": "How do you make sure research data is accurate and reliable?",
+        "tip": "Talk about checks, documentation and bias.",
+        "model_answer": "I use clear data collection procedures, check entries for errors and missing values, and keep a record of every cleaning step. I use validated instruments where possible, reduce bias in sampling and questions, and ask a colleague to double-check important results before reporting them.",
+        "keywords": [
+          "procedure",
+          "missing|error",
+          "clean",
+          "validat",
+          "bias",
+          "document|record"
+        ]
+      }
+    ],
+    "laboratory_technician": [
+      {
+        "id": "lt_1",
+        "question": "How do you ensure your laboratory test results are accurate?",
+        "tip": "Mention calibration, controls, SOPs and documentation.",
+        "model_answer": "I follow the standard operating procedure for every test, calibrate and maintain the instruments, and run quality-control samples with each batch. I label samples carefully, record results immediately and accurately, and repeat or report any result that falls outside the control limits.",
+        "keywords": [
+          "SOP|standard operating procedure",
+          "calibrat",
+          "quality control|control sample",
+          "label",
+          "record",
+          "repeat|report"
+        ]
+      },
+      {
+        "id": "lt_2",
+        "question": "What would you do if you spilled a hazardous sample in the lab?",
+        "tip": "Show safety awareness and correct procedure.",
+        "model_answer": "I would warn people nearby and keep them away, wear the right PPE, and use the spill kit following the lab's procedure for that type of material. Then I would dispose of the waste correctly, disinfect the area, and report the incident to my supervisor so it is recorded.",
+        "keywords": [
+          "warn|alert",
+          "PPE|gloves",
+          "spill kit",
+          "dispos",
+          "disinfect|decontaminat",
+          "report"
+        ]
+      }
+    ],
+    "finance_analyst": [
+      {
+        "id": "fa_1",
+        "question": "What are the three main financial statements and how are they connected?",
+        "tip": "Name each statement and explain the links.",
+        "model_answer": "The three statements are the income statement, the balance sheet and the cash flow statement. Net profit from the income statement flows into retained earnings on the balance sheet, and the cash flow statement explains how cash on the balance sheet changed through operating, investing and financing activities.",
+        "keywords": [
+          "income statement|profit and loss",
+          "balance sheet",
+          "cash flow",
+          "retained earnings",
+          "operating",
+          "financing|investing"
+        ]
+      },
+      {
+        "id": "fa_2",
+        "question": "How would you prepare a budget for a department?",
+        "tip": "Cover past data, assumptions, stakeholders and monitoring.",
+        "model_answer": "I would review past spending and income, agree the goals and assumptions with the department head, and estimate each cost and revenue line. I would build the budget in Excel, review it with stakeholders, and then compare actual results against the budget every month to explain variances.",
+        "keywords": [
+          "past|historical",
+          "assumption",
+          "Excel",
+          "stakeholder|manager",
+          "variance",
+          "monitor|compare"
+        ]
+      }
+    ],
+    "hr_executive": [
+      {
+        "id": "hr_1",
+        "question": "Walk me through how you would recruit for a new position.",
+        "tip": "Cover job description, sourcing, selection and onboarding.",
+        "model_answer": "I would agree the job description and requirements with the hiring manager, then advertise the role and source candidates through job portals and referrals. I would shortlist CVs fairly, arrange interviews, check references, make the offer, and plan the onboarding so the new employee settles in well.",
+        "keywords": [
+          "job description",
+          "advertis|source",
+          "shortlist",
+          "interview",
+          "reference",
+          "onboard"
+        ]
+      },
+      {
+        "id": "hr_2",
+        "question": "How would you handle a complaint from an employee about their manager?",
+        "tip": "Show fairness, confidentiality and following policy.",
+        "model_answer": "I would listen carefully, take notes and keep the matter confidential. I would follow the company's grievance policy, gather facts from both sides fairly, and involve senior management if needed. Then I would communicate the outcome and follow up to make sure the issue is resolved.",
+        "keywords": [
+          "listen",
+          "confidential",
+          "policy|grievance",
+          "fair|both sides",
+          "fact|investigat",
+          "follow up"
+        ]
+      }
+    ],
+    "public_health_assistant": [
+      {
+        "id": "ph_1",
+        "question": "How would you plan a health awareness programme for a community?",
+        "tip": "Cover needs assessment, target group, message, delivery and evaluation.",
+        "model_answer": "I would first assess the community's main health needs using data and talking to local leaders. Then I would choose the target group, prepare simple and culturally suitable messages, and deliver them through sessions, posters or social media. Finally I would evaluate the programme by measuring changes in knowledge or behaviour.",
+        "keywords": [
+          "needs assessment|needs",
+          "target",
+          "message",
+          "community|leaders",
+          "evaluat",
+          "behaviour|knowledge"
+        ]
+      },
+      {
+        "id": "ph_2",
+        "question": "Why is data collection important in public health work?",
+        "tip": "Link data to decisions and monitoring.",
+        "model_answer": "Data shows which health problems are most common, who is most affected and whether programmes are working. Accurate data helps plan resources, detect outbreaks early and evaluate interventions. It must be collected ethically, kept confidential and checked for quality.",
+        "keywords": [
+          "decision|plan",
+          "outbreak|surveillance",
+          "evaluat",
+          "accura|quality",
+          "confidential",
+          "ethic"
+        ]
+      }
+    ],
+    "health_administrator": [
+      {
+        "id": "ha_1",
+        "question": "How would you reduce patient waiting times in a clinic?",
+        "tip": "Use data, process mapping and staff coordination.",
+        "model_answer": "I would collect data on waiting times and patient flow, map the process to find bottlenecks, and then improve scheduling, staff allocation and registration steps, for example with an appointment system. I would involve the staff in changes and keep monitoring waiting times to check the improvement.",
+        "keywords": [
+          "data",
+          "patient flow|process",
+          "bottleneck",
+          "schedul|appointment",
+          "staff",
+          "monitor"
+        ]
+      },
+      {
+        "id": "ha_2",
+        "question": "What are the main responsibilities of a health administrator?",
+        "tip": "Cover operations, people, finance and quality.",
+        "model_answer": "A health administrator coordinates daily operations, manages staff schedules, prepares budgets and controls costs, keeps patient records secure, and makes sure the service follows health regulations and quality standards. They also communicate between clinical staff, management and patients.",
+        "keywords": [
+          "operation",
+          "staff",
+          "budget|cost",
+          "record",
+          "regulation|compliance",
+          "quality"
+        ]
+      }
+    ],
+    "graphic_designer": [
+      {
+        "id": "gd_1",
+        "question": "Walk me through how you design a logo for a client.",
+        "tip": "Show a clear design process from brief to final files.",
+        "model_answer": "I start with a brief to understand the brand, audience and competitors, then research and sketch many ideas. I develop the best concepts digitally, choose colours and typography that suit the brand, present options to the client, refine them from feedback, and deliver final files in the right formats.",
+        "keywords": [
+          "brief",
+          "audience",
+          "sketch",
+          "typography|font",
+          "colour|color",
+          "feedback"
+        ]
+      },
+      {
+        "id": "gd_2",
+        "question": "How do you handle a client who does not like your design?",
+        "tip": "Show professionalism and a feedback process.",
+        "model_answer": "I stay calm and ask specific questions to understand what is not working and why. I connect the feedback back to the original brief, suggest options, and make revisions. I keep clear records of changes and agree the number of revisions at the start so expectations are clear.",
+        "keywords": [
+          "listen|ask",
+          "feedback",
+          "brief",
+          "revision",
+          "option",
+          "expectation"
+        ]
+      }
+    ],
+    "content_creator": [
+      {
+        "id": "cc_1",
+        "question": "How do you plan content for a social media channel?",
+        "tip": "Mention audience, goals, calendar and analytics.",
+        "model_answer": "I define the goal and target audience, research what they care about, and choose the right platforms. Then I create a content calendar with a mix of formats, keep a consistent style, and use analytics such as reach and engagement to see what works and improve the next posts.",
+        "keywords": [
+          "audience",
+          "goal",
+          "content calendar|calendar",
+          "platform",
+          "engagement",
+          "analytics"
+        ]
+      },
+      {
+        "id": "cc_2",
+        "question": "Describe your process for producing a short video.",
+        "tip": "Cover planning, shooting, editing and publishing.",
+        "model_answer": "I start with an idea and a short script or storyboard, then plan the shots, location and equipment. I shoot with good lighting and sound, edit the video with clear pacing, captions and music, export it in the right format for the platform, and check its performance after publishing.",
+        "keywords": [
+          "script|storyboard",
+          "plan",
+          "lighting|sound",
+          "edit",
+          "caption",
+          "platform"
+        ]
+      }
+    ],
+    "content_writer": [
+      {
+        "id": "cw_1",
+        "question": "How do you write content for a specific audience?",
+        "tip": "Talk about research, tone and structure.",
+        "model_answer": "I first find out who the readers are and what they need, then research the topic from reliable sources. I choose a suitable tone, use clear headings and short paragraphs, and include examples. Finally I edit for accuracy, grammar and clarity, and check that the content meets its goal.",
+        "keywords": [
+          "audience|reader",
+          "research",
+          "tone",
+          "structure|heading",
+          "edit",
+          "accura"
+        ]
+      },
+      {
+        "id": "cw_2",
+        "question": "How do you make sure your writing is accurate?",
+        "tip": "Explain fact-checking and sources.",
+        "model_answer": "I use reliable and up-to-date sources, check facts against more than one source, and keep notes of where each fact came from. I quote people accurately, avoid copying, and ask an editor or expert to review important content before it is published.",
+        "keywords": [
+          "source",
+          "fact-check|check",
+          "note|reference",
+          "quote",
+          "plagiari|copying",
+          "review"
+        ]
+      }
+    ],
+    "public_relations_executive": [
+      {
+        "id": "pr_1",
+        "question": "How would you write a press release for a new event?",
+        "tip": "Mention structure and key information.",
+        "model_answer": "I would start with a clear headline and a first paragraph that answers who, what, when, where and why. Then I add supporting details and a quote from a key person, keep it short and factual, add contact details, and send it to the right journalists at the right time.",
+        "keywords": [
+          "headline",
+          "who, what|5 ws|who what when",
+          "quote",
+          "contact",
+          "journalist|media",
+          "factual|short"
+        ]
+      },
+      {
+        "id": "pr_2",
+        "question": "How would you handle negative news about your organisation?",
+        "tip": "Show calm crisis communication.",
+        "model_answer": "I would gather the facts quickly, agree a clear message with management, and respond honestly and on time. I would keep communication consistent across all channels, show what the organisation is doing to fix the issue, and monitor media and social media reactions.",
+        "keywords": [
+          "facts",
+          "message",
+          "honest|transparen",
+          "consistent",
+          "action|fix",
+          "monitor"
+        ]
+      }
+    ],
+    "teacher": [
+      {
+        "id": "te_1",
+        "question": "How do you plan an effective lesson?",
+        "tip": "Mention objectives, activities and assessment.",
+        "model_answer": "I start with clear learning objectives, then plan an engaging introduction, activities that let students practise, and examples suited to different abilities. I include a short assessment to check understanding and end with a summary, then reflect on what to improve next time.",
+        "keywords": [
+          "objective|outcome",
+          "activit",
+          "engag",
+          "different abilit|differentiat",
+          "assess",
+          "reflect"
+        ]
+      },
+      {
+        "id": "te_2",
+        "question": "How would you manage a classroom where students are disruptive?",
+        "tip": "Show calm, fair and positive strategies.",
+        "model_answer": "I set clear rules and routines from the start and apply them fairly. I keep lessons active and engaging, use positive reinforcement, speak to disruptive students privately to understand the cause, and involve parents or senior staff if the problem continues.",
+        "keywords": [
+          "rules|routine",
+          "fair",
+          "engag",
+          "positive",
+          "private|talk",
+          "parent"
+        ]
+      }
+    ],
+    "education_coordinator": [
+      {
+        "id": "ec_1",
+        "question": "How would you design a curriculum for a new short course?",
+        "tip": "Cover learning outcomes, content, delivery and assessment.",
+        "model_answer": "I would define the learning outcomes based on learners' needs, then organise the content into modules, choose teaching methods and resources, and plan assessments that match the outcomes. I would review it with teachers, pilot it, and improve it using feedback.",
+        "keywords": [
+          "learning outcome|objective",
+          "needs",
+          "module",
+          "assessment",
+          "pilot",
+          "feedback"
+        ]
+      },
+      {
+        "id": "ec_2",
+        "question": "How can technology improve learning in a school or institute?",
+        "tip": "Give practical examples and mention training.",
+        "model_answer": "Technology such as a learning management system can share materials, run quizzes and track progress. Online tools support collaboration and self-paced learning. To work well, teachers need training, students need access, and we should evaluate whether it actually improves learning.",
+        "keywords": [
+          "learning management|LMS",
+          "quiz|assessment",
+          "progress",
+          "collaborat",
+          "training",
+          "evaluat"
+        ]
+      }
+    ],
+    "legal_assistant": [
+      {
+        "id": "la_1",
+        "question": "How would you research a legal question for a lawyer?",
+        "tip": "Explain sources and how you report findings.",
+        "model_answer": "I would clarify the exact question, then search legislation, case law and reliable legal databases. I would read the relevant judgments, note the key principles and citations, check that the law is still current, and write a short, clear memo summarising my findings for the lawyer.",
+        "keywords": [
+          "legislation|statute",
+          "case law|judgment",
+          "database",
+          "citation",
+          "current|up to date",
+          "memo|summary"
+        ]
+      },
+      {
+        "id": "la_2",
+        "question": "Why is confidentiality important in legal work, and how do you protect it?",
+        "tip": "Mention client trust, rules and practical steps.",
+        "model_answer": "Confidentiality protects the client and their trust in the firm, and it is a professional and legal duty. I keep files secure, share information only with authorised people, avoid discussing cases in public, and follow the firm's data protection procedures.",
+        "keywords": [
+          "client",
+          "trust",
+          "duty|professional",
+          "secure",
+          "authori",
+          "data protection"
+        ]
+      }
+    ],
+    "compliance_officer": [
+      {
+        "id": "co_1",
+        "question": "How would you check whether a company is following a new regulation?",
+        "tip": "Mention gap analysis, controls and reporting.",
+        "model_answer": "I would study the regulation and list its requirements, then compare them with the company's current policies and processes in a gap analysis. I would recommend controls to close the gaps, train staff, monitor compliance with regular checks, and report the results to management.",
+        "keywords": [
+          "requirement",
+          "gap analysis|gap",
+          "policy|policies",
+          "control",
+          "train",
+          "report"
+        ]
+      },
+      {
+        "id": "co_2",
+        "question": "What would you do if you found that a manager was breaking company policy?",
+        "tip": "Show integrity and correct escalation.",
+        "model_answer": "I would collect the facts and evidence objectively, keep the matter confidential, and follow the company's reporting procedure by escalating it to the right authority. I would document everything and make sure the issue is investigated fairly and that corrective action is taken.",
+        "keywords": [
+          "evidence|fact",
+          "confidential",
+          "escalat|report",
+          "procedure",
+          "document",
+          "corrective action|investigat"
+        ]
+      }
+    ],
+    "community_development_officer": [
+      {
+        "id": "cd_1",
+        "question": "How would you identify the needs of a community before starting a project?",
+        "tip": "Mention participation and data.",
+        "model_answer": "I would carry out a needs assessment using surveys, interviews and community meetings, and review existing data. I would involve community leaders and members in deciding priorities, so the project is based on real needs and the community feels ownership of it.",
+        "keywords": [
+          "needs assessment",
+          "survey|interview",
+          "meeting",
+          "leaders",
+          "priorit",
+          "participat|ownership"
+        ]
+      },
+      {
+        "id": "cd_2",
+        "question": "How would you measure whether a community project was successful?",
+        "tip": "Talk about indicators and monitoring and evaluation.",
+        "model_answer": "I would set clear goals and measurable indicators at the start, collect baseline data, and monitor progress during the project. At the end I would evaluate the results against the baseline, gather feedback from the community, and share lessons learned.",
+        "keywords": [
+          "indicator",
+          "baseline",
+          "monitor",
+          "evaluat",
+          "feedback",
+          "lessons learned"
+        ]
+      }
+    ],
+    "counselling_assistant": [
+      {
+        "id": "ca_1",
+        "question": "How do you build trust with a student who comes for support?",
+        "tip": "Mention listening, empathy and confidentiality limits.",
+        "model_answer": "I listen actively without judging, show empathy and give the student time to explain. I explain confidentiality and its limits clearly at the start, respect their choices, and refer them to a qualified counsellor or other services when the issue is beyond my role.",
+        "keywords": [
+          "listen",
+          "empath",
+          "non-judg|without judg",
+          "confidential",
+          "respect",
+          "refer"
+        ]
+      },
+      {
+        "id": "ca_2",
+        "question": "What would you do if a student shared that they were at risk of harm?",
+        "tip": "Show you know the safeguarding procedure.",
+        "model_answer": "I would stay calm, take the student seriously and make sure they are safe. I would explain that I cannot keep this confidential, follow the institution's safeguarding procedure, inform the responsible counsellor or authority immediately, and record the facts accurately.",
+        "keywords": [
+          "calm",
+          "safe",
+          "confidential",
+          "safeguarding|procedure",
+          "inform|refer",
+          "record"
+        ]
       }
     ]
   }

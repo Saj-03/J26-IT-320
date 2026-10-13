@@ -5,16 +5,67 @@
     "career_area": "Technology/Software",
     "description": "Designs, builds, tests and maintains software applications and systems.",
     "required_skills": {
-      "digital_literacy": 5, "communication": 3, "problem_solving": 5, "leadership": 2, "teamwork": 4,
-      "research": 3, "data_analysis": 3, "documentation": 4, "creativity": 3
+      "digital_literacy": 5,
+      "communication": 3,
+      "problem_solving": 5,
+      "leadership": 2,
+      "teamwork": 4,
+      "research": 3,
+      "data_analysis": 3,
+      "documentation": 4,
+      "creativity": 3
     },
-    "required_tools": ["Git/GitHub", "VS Code", "Java/Python/JavaScript", "SQL", "Docker"],
-    "main_tasks": ["Write clean and testable code", "Design software components", "Review code and fix bugs", "Collaborate in agile sprints"],
-    "recommended_courses": ["Data Structures and Algorithms", "Object-Oriented Design Patterns", "Full-Stack Web Development"],
-    "recommended_projects": ["Build a full-stack web app with authentication", "Contribute to an open-source repository"],
-    "recommended_certifications": ["AWS Certified Developer - Associate", "Oracle Certified Professional: Java SE Developer"],
-    "interview_focus_areas": ["Data structures and algorithms", "OOP principles", "System design basics", "Version control workflow"],
-    "expected_keywords": ["algorithm", "complexity", "OOP", "API", "testing", "git", "design pattern"]
+    "required_tools": [
+      "Git/GitHub",
+      "VS Code",
+      "Java/Python/JavaScript",
+      "SQL",
+      "Docker"
+    ],
+    "main_tasks": [
+      "Write clean and testable code",
+      "Design software components",
+      "Review code and fix bugs",
+      "Collaborate in agile sprints"
+    ],
+    "recommended_courses": [
+      "Data Structures and Algorithms",
+      "Object-Oriented Design Patterns",
+      "Full-Stack Web Development"
+    ],
+    "recommended_projects": [
+      "Build a full-stack web app with authentication",
+      "Contribute to an open-source repository"
+    ],
+    "recommended_certifications": [
+      "AWS Certified Developer - Associate",
+      "Oracle Certified Professional: Java SE Developer"
+    ],
+    "interview_focus_areas": [
+      "Data structures and algorithms",
+      "OOP principles",
+      "System design basics",
+      "Version control workflow"
+    ],
+    "expected_keywords": [
+      "algorithm",
+      "complexity",
+      "OOP",
+      "API",
+      "testing",
+      "git",
+      "design pattern"
+    ],
+    "faculties": [
+      "Computing",
+      "Other"
+    ],
+    "related_areas": [],
+    "related_roles": [
+      "Software Engineer"
+    ],
+    "required_skills_source": "Hand-set; validated against O*NET 30.2 (see ml_training/career/reports/onet_requirements_report.md)",
+    "cross_disciplinary": false
   },
   {
     "career_id": "data_analyst",
@@ -22,16 +73,70 @@
     "career_area": "Data/Analytics",
     "description": "Collects, cleans and analyses data to produce insights and dashboards for decision-making.",
     "required_skills": {
-      "digital_literacy": 4, "communication": 4, "problem_solving": 4, "leadership": 2, "teamwork": 3,
-      "research": 4, "data_analysis": 5, "documentation": 3, "creativity": 3
+      "digital_literacy": 4,
+      "communication": 4,
+      "problem_solving": 4,
+      "leadership": 2,
+      "teamwork": 3,
+      "research": 4,
+      "data_analysis": 5,
+      "documentation": 3,
+      "creativity": 3
     },
-    "required_tools": ["Excel", "SQL", "Power BI/Tableau", "Python (pandas)"],
-    "main_tasks": ["Clean and prepare datasets", "Build dashboards and reports", "Identify trends and patterns", "Present insights to stakeholders"],
-    "recommended_courses": ["SQL for Data Analysis", "Statistics for Data Science", "Power BI Data Visualization"],
-    "recommended_projects": ["Build a sales dashboard from a public dataset", "Exploratory data analysis notebook on a Kaggle dataset"],
-    "recommended_certifications": ["Google Data Analytics Professional Certificate", "Microsoft Certified: Power BI Data Analyst Associate"],
-    "interview_focus_areas": ["SQL queries and joins", "Data cleaning", "Data visualization", "Explaining insights"],
-    "expected_keywords": ["SQL", "dashboard", "insight", "trend", "visualization", "KPI", "cleaning"]
+    "required_tools": [
+      "Excel",
+      "SQL",
+      "Power BI/Tableau",
+      "Python (pandas)"
+    ],
+    "main_tasks": [
+      "Clean and prepare datasets",
+      "Build dashboards and reports",
+      "Identify trends and patterns",
+      "Present insights to stakeholders"
+    ],
+    "recommended_courses": [
+      "SQL for Data Analysis",
+      "Statistics for Data Science",
+      "Power BI Data Visualization"
+    ],
+    "recommended_projects": [
+      "Build a sales dashboard from a public dataset",
+      "Exploratory data analysis notebook on a Kaggle dataset"
+    ],
+    "recommended_certifications": [
+      "Google Data Analytics Professional Certificate",
+      "Microsoft Certified: Power BI Data Analyst Associate"
+    ],
+    "interview_focus_areas": [
+      "SQL queries and joins",
+      "Data cleaning",
+      "Data visualization",
+      "Explaining insights"
+    ],
+    "expected_keywords": [
+      "SQL",
+      "dashboard",
+      "insight",
+      "trend",
+      "visualization",
+      "KPI",
+      "cleaning"
+    ],
+    "faculties": [
+      "Computing",
+      "Business/Management",
+      "Science"
+    ],
+    "related_areas": [
+      "Health Informatics"
+    ],
+    "related_roles": [
+      "Data Analyst",
+      "Health Data Analyst"
+    ],
+    "required_skills_source": "Hand-set; validated against O*NET 30.2 (see ml_training/career/reports/onet_requirements_report.md)",
+    "cross_disciplinary": false
   },
   {
     "career_id": "business_analyst",
@@ -39,16 +144,67 @@
     "career_area": "Business/Management",
     "description": "Bridges business needs and technical teams by gathering requirements and improving processes.",
     "required_skills": {
-      "digital_literacy": 3, "communication": 5, "problem_solving": 4, "leadership": 3, "teamwork": 4,
-      "research": 4, "data_analysis": 4, "documentation": 5, "creativity": 3
+      "digital_literacy": 3,
+      "communication": 5,
+      "problem_solving": 4,
+      "leadership": 3,
+      "teamwork": 4,
+      "research": 4,
+      "data_analysis": 4,
+      "documentation": 5,
+      "creativity": 3
     },
-    "required_tools": ["Excel", "Jira/Confluence", "Visio/Draw.io", "SQL basics"],
-    "main_tasks": ["Elicit and document requirements", "Model business processes", "Write BRDs and user stories", "Coordinate between stakeholders and developers"],
-    "recommended_courses": ["Business Analysis Fundamentals", "Requirements Engineering", "Business Process Modelling (BPMN)"],
-    "recommended_projects": ["Write a BRD for a university system", "Model an as-is/to-be process with BPMN"],
-    "recommended_certifications": ["IIBA ECBA", "PMI-PBA (later career)"],
-    "interview_focus_areas": ["Requirement gathering techniques", "Stakeholder management", "Use cases and user stories", "Process improvement"],
-    "expected_keywords": ["requirements", "stakeholder", "BRD", "user story", "process", "gap analysis"]
+    "required_tools": [
+      "Excel",
+      "Jira/Confluence",
+      "Visio/Draw.io",
+      "SQL basics"
+    ],
+    "main_tasks": [
+      "Elicit and document requirements",
+      "Model business processes",
+      "Write BRDs and user stories",
+      "Coordinate between stakeholders and developers"
+    ],
+    "recommended_courses": [
+      "Business Analysis Fundamentals",
+      "Requirements Engineering",
+      "Business Process Modelling (BPMN)"
+    ],
+    "recommended_projects": [
+      "Write a BRD for a university system",
+      "Model an as-is/to-be process with BPMN"
+    ],
+    "recommended_certifications": [
+      "IIBA ECBA",
+      "PMI-PBA (later career)"
+    ],
+    "interview_focus_areas": [
+      "Requirement gathering techniques",
+      "Stakeholder management",
+      "Use cases and user stories",
+      "Process improvement"
+    ],
+    "expected_keywords": [
+      "requirements",
+      "stakeholder",
+      "BRD",
+      "user story",
+      "process",
+      "gap analysis"
+    ],
+    "faculties": [
+      "Computing",
+      "Business/Management",
+      "Other"
+    ],
+    "related_areas": [],
+    "related_roles": [
+      "Business Analyst",
+      "Management Trainee"
+    ],
+    "required_skills_source": "Hand-set; validated against O*NET 30.2 (see ml_training/career/reports/onet_requirements_report.md)",
+    "cross_disciplinary": true
   },
   {
     "career_id": "ui_ux_designer",
@@ -56,16 +212,67 @@
     "career_area": "Design/Creative",
     "description": "Designs user-friendly, accessible and visually appealing digital experiences.",
     "required_skills": {
-      "digital_literacy": 4, "communication": 4, "problem_solving": 3, "leadership": 2, "teamwork": 4,
-      "research": 4, "data_analysis": 2, "documentation": 3, "creativity": 5
+      "digital_literacy": 4,
+      "communication": 4,
+      "problem_solving": 3,
+      "leadership": 2,
+      "teamwork": 4,
+      "research": 4,
+      "data_analysis": 2,
+      "documentation": 3,
+      "creativity": 5
     },
-    "required_tools": ["Figma", "Adobe XD", "Miro", "Maze/usability testing tools"],
-    "main_tasks": ["Conduct user research", "Create wireframes and prototypes", "Run usability tests", "Maintain design systems"],
-    "recommended_courses": ["Google UX Design Course", "Interaction Design Foundations", "Accessibility in Design"],
-    "recommended_projects": ["Redesign a mobile app with a case study", "Build a clickable Figma prototype and test it with 5 users"],
-    "recommended_certifications": ["Google UX Design Professional Certificate", "NN/g UX Certification"],
-    "interview_focus_areas": ["Design process", "Portfolio walkthrough", "User research methods", "Accessibility"],
-    "expected_keywords": ["user research", "persona", "wireframe", "prototype", "usability", "accessibility"]
+    "required_tools": [
+      "Figma",
+      "Adobe XD",
+      "Miro",
+      "Maze/usability testing tools"
+    ],
+    "main_tasks": [
+      "Conduct user research",
+      "Create wireframes and prototypes",
+      "Run usability tests",
+      "Maintain design systems"
+    ],
+    "recommended_courses": [
+      "Google UX Design Course",
+      "Interaction Design Foundations",
+      "Accessibility in Design"
+    ],
+    "recommended_projects": [
+      "Redesign a mobile app with a case study",
+      "Build a clickable Figma prototype and test it with 5 users"
+    ],
+    "recommended_certifications": [
+      "Google UX Design Professional Certificate",
+      "NN/g UX Certification"
+    ],
+    "interview_focus_areas": [
+      "Design process",
+      "Portfolio walkthrough",
+      "User research methods",
+      "Accessibility"
+    ],
+    "expected_keywords": [
+      "user research",
+      "persona",
+      "wireframe",
+      "prototype",
+      "usability",
+      "accessibility"
+    ],
+    "faculties": [
+      "Computing",
+      "Design/Creative Studies"
+    ],
+    "related_areas": [
+      "UI/UX Design"
+    ],
+    "related_roles": [
+      "UI/UX Designer"
+    ],
+    "required_skills_source": "Hand-set; validated against O*NET 30.2 (see ml_training/career/reports/onet_requirements_report.md)",
+    "cross_disciplinary": false
   },
   {
     "career_id": "qa_engineer",
@@ -73,16 +280,65 @@
     "career_area": "Technology/Software",
     "description": "Ensures software quality through manual and automated testing.",
     "required_skills": {
-      "digital_literacy": 4, "communication": 3, "problem_solving": 4, "leadership": 2, "teamwork": 4,
-      "research": 3, "data_analysis": 3, "documentation": 5, "creativity": 3
+      "digital_literacy": 4,
+      "communication": 3,
+      "problem_solving": 4,
+      "leadership": 2,
+      "teamwork": 4,
+      "research": 3,
+      "data_analysis": 3,
+      "documentation": 5,
+      "creativity": 3
     },
-    "required_tools": ["Selenium", "Postman", "Jira", "JUnit/PyTest", "Cypress"],
-    "main_tasks": ["Write test plans and test cases", "Automate regression tests", "Report and track defects", "Perform API testing"],
-    "recommended_courses": ["Software Testing Fundamentals", "Test Automation with Selenium", "API Testing with Postman"],
-    "recommended_projects": ["Automate test cases for a demo web app", "Create a full test plan for a sample system"],
-    "recommended_certifications": ["ISTQB Foundation Level", "Certified Selenium Professional"],
-    "interview_focus_areas": ["Testing types and levels", "Writing test cases", "Bug life cycle", "Automation frameworks"],
-    "expected_keywords": ["test case", "regression", "automation", "defect", "test plan", "coverage"]
+    "required_tools": [
+      "Selenium",
+      "Postman",
+      "Jira",
+      "JUnit/PyTest",
+      "Cypress"
+    ],
+    "main_tasks": [
+      "Write test plans and test cases",
+      "Automate regression tests",
+      "Report and track defects",
+      "Perform API testing"
+    ],
+    "recommended_courses": [
+      "Software Testing Fundamentals",
+      "Test Automation with Selenium",
+      "API Testing with Postman"
+    ],
+    "recommended_projects": [
+      "Automate test cases for a demo web app",
+      "Create a full test plan for a sample system"
+    ],
+    "recommended_certifications": [
+      "ISTQB Foundation Level",
+      "Certified Selenium Professional"
+    ],
+    "interview_focus_areas": [
+      "Testing types and levels",
+      "Writing test cases",
+      "Bug life cycle",
+      "Automation frameworks"
+    ],
+    "expected_keywords": [
+      "test case",
+      "regression",
+      "automation",
+      "defect",
+      "test plan",
+      "coverage"
+    ],
+    "faculties": [
+      "Computing"
+    ],
+    "related_areas": [],
+    "related_roles": [
+      "QA Engineer"
+    ],
+    "required_skills_source": "Hand-set; validated against O*NET 30.2 (see ml_training/career/reports/onet_requirements_report.md)",
+    "cross_disciplinary": false
   },
   {
     "career_id": "cybersecurity_analyst",
@@ -90,16 +346,65 @@
     "career_area": "Security/Networking",
     "description": "Monitors, detects and responds to security threats to protect an organisation's systems and data.",
     "required_skills": {
-      "digital_literacy": 5, "communication": 3, "problem_solving": 5, "leadership": 2, "teamwork": 3,
-      "research": 4, "data_analysis": 4, "documentation": 4, "creativity": 3
+      "digital_literacy": 5,
+      "communication": 3,
+      "problem_solving": 5,
+      "leadership": 2,
+      "teamwork": 3,
+      "research": 4,
+      "data_analysis": 4,
+      "documentation": 4,
+      "creativity": 3
     },
-    "required_tools": ["Wireshark", "Nmap", "SIEM (Splunk)", "Kali Linux", "Burp Suite"],
-    "main_tasks": ["Monitor security alerts", "Investigate incidents", "Run vulnerability assessments", "Write incident reports"],
-    "recommended_courses": ["Network Security Fundamentals", "Ethical Hacking Basics", "Security Operations (SOC) Fundamentals"],
-    "recommended_projects": ["Set up a home SOC lab with a SIEM", "Complete beginner CTF challenges and write-ups"],
-    "recommended_certifications": ["CompTIA Security+", "Cisco CyberOps Associate"],
-    "interview_focus_areas": ["CIA triad", "Common attacks and defences", "Incident response process", "Network protocols"],
-    "expected_keywords": ["threat", "vulnerability", "incident", "firewall", "SIEM", "encryption"]
+    "required_tools": [
+      "Wireshark",
+      "Nmap",
+      "SIEM (Splunk)",
+      "Kali Linux",
+      "Burp Suite"
+    ],
+    "main_tasks": [
+      "Monitor security alerts",
+      "Investigate incidents",
+      "Run vulnerability assessments",
+      "Write incident reports"
+    ],
+    "recommended_courses": [
+      "Network Security Fundamentals",
+      "Ethical Hacking Basics",
+      "Security Operations (SOC) Fundamentals"
+    ],
+    "recommended_projects": [
+      "Set up a home SOC lab with a SIEM",
+      "Complete beginner CTF challenges and write-ups"
+    ],
+    "recommended_certifications": [
+      "CompTIA Security+",
+      "Cisco CyberOps Associate"
+    ],
+    "interview_focus_areas": [
+      "CIA triad",
+      "Common attacks and defences",
+      "Incident response process",
+      "Network protocols"
+    ],
+    "expected_keywords": [
+      "threat",
+      "vulnerability",
+      "incident",
+      "firewall",
+      "SIEM",
+      "encryption"
+    ],
+    "faculties": [
+      "Computing"
+    ],
+    "related_areas": [],
+    "related_roles": [
+      "Cybersecurity Analyst"
+    ],
+    "required_skills_source": "Hand-set; validated against O*NET 30.2 (see ml_training/career/reports/onet_requirements_report.md)",
+    "cross_disciplinary": false
   },
   {
     "career_id": "network_engineer",
@@ -107,16 +412,64 @@
     "career_area": "Security/Networking",
     "description": "Designs, configures and maintains computer networks and their infrastructure.",
     "required_skills": {
-      "digital_literacy": 5, "communication": 3, "problem_solving": 4, "leadership": 2, "teamwork": 4,
-      "research": 3, "data_analysis": 3, "documentation": 4, "creativity": 2
+      "digital_literacy": 5,
+      "communication": 3,
+      "problem_solving": 4,
+      "leadership": 2,
+      "teamwork": 4,
+      "research": 3,
+      "data_analysis": 3,
+      "documentation": 4,
+      "creativity": 2
     },
-    "required_tools": ["Cisco Packet Tracer", "GNS3", "Wireshark", "Routers/Switches CLI"],
-    "main_tasks": ["Configure routers and switches", "Troubleshoot connectivity issues", "Plan network capacity", "Document network topology"],
-    "recommended_courses": ["Computer Networking (CCNA track)", "Routing and Switching Essentials", "Cloud Networking Basics"],
-    "recommended_projects": ["Design a campus network in Packet Tracer", "Configure VLANs and routing in a lab"],
-    "recommended_certifications": ["Cisco CCNA", "CompTIA Network+"],
-    "interview_focus_areas": ["OSI and TCP/IP models", "Subnetting", "Routing protocols", "Troubleshooting approach"],
-    "expected_keywords": ["subnet", "VLAN", "routing", "OSI", "TCP/IP", "switch"]
+    "required_tools": [
+      "Cisco Packet Tracer",
+      "GNS3",
+      "Wireshark",
+      "Routers/Switches CLI"
+    ],
+    "main_tasks": [
+      "Configure routers and switches",
+      "Troubleshoot connectivity issues",
+      "Plan network capacity",
+      "Document network topology"
+    ],
+    "recommended_courses": [
+      "Computer Networking (CCNA track)",
+      "Routing and Switching Essentials",
+      "Cloud Networking Basics"
+    ],
+    "recommended_projects": [
+      "Design a campus network in Packet Tracer",
+      "Configure VLANs and routing in a lab"
+    ],
+    "recommended_certifications": [
+      "Cisco CCNA",
+      "CompTIA Network+"
+    ],
+    "interview_focus_areas": [
+      "OSI and TCP/IP models",
+      "Subnetting",
+      "Routing protocols",
+      "Troubleshooting approach"
+    ],
+    "expected_keywords": [
+      "subnet",
+      "VLAN",
+      "routing",
+      "OSI",
+      "TCP/IP",
+      "switch"
+    ],
+    "faculties": [
+      "Computing"
+    ],
+    "related_areas": [],
+    "related_roles": [
+      "Network Engineer"
+    ],
+    "required_skills_source": "Hand-set; validated against O*NET 30.2 (see ml_training/career/reports/onet_requirements_report.md)",
+    "cross_disciplinary": false
   },
   {
     "career_id": "database_administrator",
@@ -124,16 +477,64 @@
     "career_area": "Data/Analytics",
     "description": "Manages, secures, tunes and backs up databases to keep data available and reliable.",
     "required_skills": {
-      "digital_literacy": 5, "communication": 3, "problem_solving": 4, "leadership": 2, "teamwork": 3,
-      "research": 3, "data_analysis": 4, "documentation": 4, "creativity": 2
+      "digital_literacy": 5,
+      "communication": 3,
+      "problem_solving": 4,
+      "leadership": 2,
+      "teamwork": 3,
+      "research": 3,
+      "data_analysis": 4,
+      "documentation": 4,
+      "creativity": 2
     },
-    "required_tools": ["MySQL/PostgreSQL", "Oracle DB", "SQL Server", "MongoDB"],
-    "main_tasks": ["Design database schemas", "Optimise queries and indexes", "Manage backups and recovery", "Control database access"],
-    "recommended_courses": ["Database Design and Normalisation", "Advanced SQL and Query Optimisation", "Database Administration Fundamentals"],
-    "recommended_projects": ["Design and normalise a database for a library system", "Set up automated backups and restore tests"],
-    "recommended_certifications": ["Oracle Database SQL Certified Associate", "Microsoft Azure Database Administrator Associate"],
-    "interview_focus_areas": ["Normalisation", "Indexing", "Transactions and ACID", "Backup strategies"],
-    "expected_keywords": ["normalisation", "index", "ACID", "backup", "query", "transaction"]
+    "required_tools": [
+      "MySQL/PostgreSQL",
+      "Oracle DB",
+      "SQL Server",
+      "MongoDB"
+    ],
+    "main_tasks": [
+      "Design database schemas",
+      "Optimise queries and indexes",
+      "Manage backups and recovery",
+      "Control database access"
+    ],
+    "recommended_courses": [
+      "Database Design and Normalisation",
+      "Advanced SQL and Query Optimisation",
+      "Database Administration Fundamentals"
+    ],
+    "recommended_projects": [
+      "Design and normalise a database for a library system",
+      "Set up automated backups and restore tests"
+    ],
+    "recommended_certifications": [
+      "Oracle Database SQL Certified Associate",
+      "Microsoft Azure Database Administrator Associate"
+    ],
+    "interview_focus_areas": [
+      "Normalisation",
+      "Indexing",
+      "Transactions and ACID",
+      "Backup strategies"
+    ],
+    "expected_keywords": [
+      "normalisation",
+      "index",
+      "ACID",
+      "backup",
+      "query",
+      "transaction"
+    ],
+    "faculties": [
+      "Computing"
+    ],
+    "related_areas": [],
+    "related_roles": [
+      "Database Administrator"
+    ],
+    "required_skills_source": "Hand-set; validated against O*NET 30.2 (see ml_training/career/reports/onet_requirements_report.md)",
+    "cross_disciplinary": false
   },
   {
     "career_id": "project_manager",
@@ -141,16 +542,76 @@
     "career_area": "Business/Management",
     "description": "Plans, leads and delivers projects on time, within scope and within budget.",
     "required_skills": {
-      "digital_literacy": 3, "communication": 5, "problem_solving": 4, "leadership": 5, "teamwork": 5,
-      "research": 3, "data_analysis": 3, "documentation": 4, "creativity": 3
+      "digital_literacy": 3,
+      "communication": 5,
+      "problem_solving": 4,
+      "leadership": 5,
+      "teamwork": 5,
+      "research": 3,
+      "data_analysis": 3,
+      "documentation": 4,
+      "creativity": 3
     },
-    "required_tools": ["Jira", "MS Project", "Trello", "Confluence", "Excel"],
-    "main_tasks": ["Plan project scope and schedule", "Lead and coordinate the team", "Manage risks and stakeholders", "Track progress and report status"],
-    "recommended_courses": ["Project Management Fundamentals", "Agile and Scrum Essentials", "Risk Management"],
-    "recommended_projects": ["Manage a university group project using Scrum", "Create a full project plan with Gantt chart and risk register"],
-    "recommended_certifications": ["PMI CAPM", "Professional Scrum Master I (PSM I)"],
-    "interview_focus_areas": ["Leadership examples", "Handling conflict", "Agile vs waterfall", "Risk and scope management"],
-    "expected_keywords": ["stakeholder", "scope", "risk", "sprint", "deadline", "delegation"]
+    "required_tools": [
+      "Jira",
+      "MS Project",
+      "Trello",
+      "Confluence",
+      "Excel"
+    ],
+    "main_tasks": [
+      "Plan project scope and schedule",
+      "Lead and coordinate the team",
+      "Manage risks and stakeholders",
+      "Track progress and report status"
+    ],
+    "recommended_courses": [
+      "Project Management Fundamentals",
+      "Agile and Scrum Essentials",
+      "Risk Management"
+    ],
+    "recommended_projects": [
+      "Manage a university group project using Scrum",
+      "Create a full project plan with Gantt chart and risk register"
+    ],
+    "recommended_certifications": [
+      "PMI CAPM",
+      "Professional Scrum Master I (PSM I)"
+    ],
+    "interview_focus_areas": [
+      "Leadership examples",
+      "Handling conflict",
+      "Agile vs waterfall",
+      "Risk and scope management"
+    ],
+    "expected_keywords": [
+      "stakeholder",
+      "scope",
+      "risk",
+      "sprint",
+      "deadline",
+      "delegation"
+    ],
+    "faculties": [
+      "Computing",
+      "Business/Management",
+      "Engineering",
+      "Other"
+    ],
+    "related_areas": [
+      "IT Project Management",
+      "Operations/Project Management",
+      "Engineering Project Management"
+    ],
+    "related_roles": [
+      "Project Manager",
+      "IT Project Manager",
+      "Operations Executive",
+      "Management Trainee",
+      "Project Engineer"
+    ],
+    "required_skills_source": "Hand-set; validated against O*NET 30.2 (see ml_training/career/reports/onet_requirements_report.md)",
+    "cross_disciplinary": true
   },
   {
     "career_id": "digital_marketing_executive",
@@ -158,15 +619,1384 @@
     "career_area": "Marketing/Communication",
     "description": "Plans and runs online marketing campaigns across social media, search and email.",
     "required_skills": {
-      "digital_literacy": 4, "communication": 5, "problem_solving": 3, "leadership": 3, "teamwork": 4,
-      "research": 3, "data_analysis": 4, "documentation": 3, "creativity": 5
+      "digital_literacy": 4,
+      "communication": 5,
+      "problem_solving": 3,
+      "leadership": 3,
+      "teamwork": 4,
+      "research": 3,
+      "data_analysis": 4,
+      "documentation": 3,
+      "creativity": 5
     },
-    "required_tools": ["Google Analytics", "Meta Ads Manager", "Canva", "Mailchimp", "SEO tools"],
-    "main_tasks": ["Plan social media content", "Run paid ad campaigns", "Optimise for search (SEO)", "Analyse campaign performance"],
-    "recommended_courses": ["Digital Marketing Fundamentals", "SEO and Content Marketing", "Social Media Advertising"],
-    "recommended_projects": ["Run a social media campaign for a student club", "Build an SEO-optimised blog and track its analytics"],
-    "recommended_certifications": ["Google Digital Marketing & E-commerce Certificate", "HubSpot Content Marketing Certification"],
-    "interview_focus_areas": ["Campaign planning", "Marketing metrics", "Content strategy", "Creativity examples"],
-    "expected_keywords": ["campaign", "SEO", "engagement", "conversion", "content", "analytics"]
+    "required_tools": [
+      "Google Analytics",
+      "Meta Ads Manager",
+      "Canva",
+      "Mailchimp",
+      "SEO tools"
+    ],
+    "main_tasks": [
+      "Plan social media content",
+      "Run paid ad campaigns",
+      "Optimise for search (SEO)",
+      "Analyse campaign performance"
+    ],
+    "recommended_courses": [
+      "Digital Marketing Fundamentals",
+      "SEO and Content Marketing",
+      "Social Media Advertising"
+    ],
+    "recommended_projects": [
+      "Run a social media campaign for a student club",
+      "Build an SEO-optimised blog and track its analytics"
+    ],
+    "recommended_certifications": [
+      "Google Digital Marketing & E-commerce Certificate",
+      "HubSpot Content Marketing Certification"
+    ],
+    "interview_focus_areas": [
+      "Campaign planning",
+      "Marketing metrics",
+      "Content strategy",
+      "Creativity examples"
+    ],
+    "expected_keywords": [
+      "campaign",
+      "SEO",
+      "engagement",
+      "conversion",
+      "content",
+      "analytics"
+    ],
+    "faculties": [
+      "Business/Management",
+      "Design/Creative Studies",
+      "Arts/Humanities",
+      "Other"
+    ],
+    "related_areas": [
+      "Content Creation"
+    ],
+    "related_roles": [
+      "Digital Marketing Executive"
+    ],
+    "required_skills_source": "Hand-set; validated against O*NET 30.2 (see ml_training/career/reports/onet_requirements_report.md)",
+    "cross_disciplinary": true
+  },
+  {
+    "career_id": "civil_engineer",
+    "career_name": "Civil Engineer",
+    "career_area": "Civil/Construction Engineering",
+    "description": "Plans, designs and supervises the construction of buildings, roads, bridges and water systems.",
+    "required_skills": {
+      "digital_literacy": 3,
+      "communication": 4,
+      "problem_solving": 4,
+      "leadership": 3,
+      "teamwork": 3,
+      "research": 4,
+      "data_analysis": 4,
+      "documentation": 3,
+      "creativity": 3
+    },
+    "required_tools": [
+      "AutoCAD",
+      "Civil 3D / Revit",
+      "MS Project",
+      "Structural analysis software (e.g. SAP2000, ETABS)"
+    ],
+    "main_tasks": [
+      "Prepare designs and drawings",
+      "Estimate quantities and costs",
+      "Supervise site work",
+      "Check work against codes and standards"
+    ],
+    "recommended_courses": [
+      "Structural Analysis and Design",
+      "Construction Project Management",
+      "AutoCAD and BIM Fundamentals"
+    ],
+    "recommended_projects": [
+      "Design and cost a small two-storey building",
+      "Prepare a site supervision report from an internship"
+    ],
+    "recommended_certifications": [
+      "Engineering Council membership pathway (e.g. IESL in Sri Lanka)",
+      "Autodesk Certified User - AutoCAD"
+    ],
+    "interview_focus_areas": [
+      "Structural fundamentals",
+      "Site safety",
+      "Estimating and quantities",
+      "Teamwork on site"
+    ],
+    "expected_keywords": [
+      "load",
+      "design",
+      "estimate",
+      "site",
+      "safety",
+      "standards"
+    ],
+    "faculties": [
+      "Engineering"
+    ],
+    "related_areas": [
+      "Engineering Project Management"
+    ],
+    "related_roles": [
+      "Civil Engineer",
+      "Project Engineer"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 17-2051.00 Civil Engineers",
+    "cross_disciplinary": false
+  },
+  {
+    "career_id": "mechanical_engineer",
+    "career_name": "Mechanical Engineer",
+    "career_area": "Mechanical Engineering",
+    "description": "Designs, builds, tests and maintains machines, manufacturing systems and mechanical equipment.",
+    "required_skills": {
+      "digital_literacy": 4,
+      "communication": 3,
+      "problem_solving": 4,
+      "leadership": 2,
+      "teamwork": 2,
+      "research": 4,
+      "data_analysis": 3,
+      "documentation": 3,
+      "creativity": 3
+    },
+    "required_tools": [
+      "SolidWorks / AutoCAD",
+      "MATLAB",
+      "ANSYS (simulation)",
+      "Lean / Six Sigma tools"
+    ],
+    "main_tasks": [
+      "Design mechanical parts and systems",
+      "Test and improve equipment",
+      "Plan maintenance",
+      "Improve production quality"
+    ],
+    "recommended_courses": [
+      "Engineering Design with CAD",
+      "Thermodynamics and Fluid Mechanics Review",
+      "Lean Manufacturing and Six Sigma"
+    ],
+    "recommended_projects": [
+      "Design and simulate a simple machine part in CAD",
+      "Analyse downtime data and propose a maintenance plan"
+    ],
+    "recommended_certifications": [
+      "Six Sigma Yellow/Green Belt",
+      "Certified SolidWorks Associate (CSWA)"
+    ],
+    "interview_focus_areas": [
+      "Design process",
+      "Materials",
+      "Quality and maintenance",
+      "Problem solving"
+    ],
+    "expected_keywords": [
+      "design",
+      "CAD",
+      "material",
+      "tolerance",
+      "maintenance",
+      "efficiency"
+    ],
+    "faculties": [
+      "Engineering"
+    ],
+    "related_areas": [
+      "Industrial/Manufacturing Engineering"
+    ],
+    "related_roles": [
+      "Mechanical Engineer",
+      "Industrial Engineer",
+      "Quality Engineer",
+      "Maintenance Engineer"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 17-2141.00 Mechanical Engineers",
+    "cross_disciplinary": false
+  },
+  {
+    "career_id": "electrical_engineer",
+    "career_name": "Electrical Engineer",
+    "career_area": "Electrical/Electronic Engineering",
+    "description": "Designs, installs and maintains electrical and electronic systems, from power to control circuits.",
+    "required_skills": {
+      "digital_literacy": 5,
+      "communication": 4,
+      "problem_solving": 4,
+      "leadership": 2,
+      "teamwork": 3,
+      "research": 4,
+      "data_analysis": 4,
+      "documentation": 4,
+      "creativity": 3
+    },
+    "required_tools": [
+      "MATLAB / Simulink",
+      "PLC programming tools",
+      "Circuit simulation (e.g. Multisim, LTspice)",
+      "AutoCAD Electrical"
+    ],
+    "main_tasks": [
+      "Design electrical circuits and systems",
+      "Test and troubleshoot equipment",
+      "Ensure electrical safety",
+      "Prepare technical documentation"
+    ],
+    "recommended_courses": [
+      "Power Systems Fundamentals",
+      "PLC and Industrial Automation",
+      "Circuit Design and Simulation"
+    ],
+    "recommended_projects": [
+      "Build and document a small PLC-controlled system",
+      "Design and simulate a power supply circuit"
+    ],
+    "recommended_certifications": [
+      "Engineering Council membership pathway (e.g. IESL in Sri Lanka)",
+      "PLC programming certificate"
+    ],
+    "interview_focus_areas": [
+      "Circuit fundamentals",
+      "Electrical safety",
+      "Troubleshooting",
+      "Automation"
+    ],
+    "expected_keywords": [
+      "circuit",
+      "voltage",
+      "safety",
+      "PLC",
+      "testing",
+      "load"
+    ],
+    "faculties": [
+      "Engineering"
+    ],
+    "related_areas": [],
+    "related_roles": [
+      "Electrical Engineer",
+      "Electronics Engineer",
+      "Maintenance Engineer"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 17-2071.00 Electrical Engineers; 17-2072.00 Electronics Engineers, Except Computer",
+    "cross_disciplinary": false
+  },
+  {
+    "career_id": "research_assistant",
+    "career_name": "Research Assistant",
+    "career_area": "Research",
+    "description": "Supports research projects by collecting and analysing data, reviewing literature and writing reports.",
+    "required_skills": {
+      "digital_literacy": 4,
+      "communication": 3,
+      "problem_solving": 3,
+      "leadership": 2,
+      "teamwork": 2,
+      "research": 3,
+      "data_analysis": 3,
+      "documentation": 4,
+      "creativity": 2
+    },
+    "required_tools": [
+      "Excel",
+      "SPSS / R",
+      "Reference managers (Zotero, Mendeley)",
+      "Survey tools (Google Forms, Qualtrics)"
+    ],
+    "main_tasks": [
+      "Review literature",
+      "Collect and clean data",
+      "Run basic statistical analysis",
+      "Write research summaries"
+    ],
+    "recommended_courses": [
+      "Research Methods",
+      "Statistics with SPSS or R",
+      "Academic Writing"
+    ],
+    "recommended_projects": [
+      "Run a small survey study and write up the results",
+      "Write a literature review on a topic in your field"
+    ],
+    "recommended_certifications": [
+      "Research ethics training (e.g. CITI Program)",
+      "Statistics course certificate (e.g. SPSS or R)"
+    ],
+    "interview_focus_areas": [
+      "Research process",
+      "Data handling",
+      "Ethics",
+      "Academic writing"
+    ],
+    "expected_keywords": [
+      "literature",
+      "data",
+      "method",
+      "analysis",
+      "ethics",
+      "report"
+    ],
+    "faculties": [
+      "Science",
+      "Arts/Humanities",
+      "Social Sciences",
+      "Other"
+    ],
+    "related_areas": [
+      "Research/Laboratory Science",
+      "Environmental Science"
+    ],
+    "related_roles": [
+      "Research Assistant",
+      "Social Research Assistant",
+      "Environmental Analyst",
+      "Legal Researcher"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 19-4061.00 Social Science Research Assistants",
+    "cross_disciplinary": true
+  },
+  {
+    "career_id": "laboratory_technician",
+    "career_name": "Laboratory Technician",
+    "career_area": "Research/Laboratory Science",
+    "description": "Performs laboratory tests and analyses samples accurately, following quality and safety procedures.",
+    "required_skills": {
+      "digital_literacy": 3,
+      "communication": 3,
+      "problem_solving": 3,
+      "leadership": 2,
+      "teamwork": 2,
+      "research": 4,
+      "data_analysis": 3,
+      "documentation": 3,
+      "creativity": 2
+    },
+    "required_tools": [
+      "Lab instruments (microscopes, centrifuges, analysers)",
+      "Laboratory Information Systems (LIS)",
+      "Excel",
+      "QC charts"
+    ],
+    "main_tasks": [
+      "Prepare and test samples",
+      "Record results accurately",
+      "Calibrate and maintain equipment",
+      "Follow quality and safety procedures"
+    ],
+    "recommended_courses": [
+      "Good Laboratory Practice (GLP)",
+      "Laboratory Quality Control",
+      "Biosafety and Lab Safety"
+    ],
+    "recommended_projects": [
+      "Write a standard operating procedure (SOP) for a lab test",
+      "Create a quality-control chart from sample data"
+    ],
+    "recommended_certifications": [
+      "Good Laboratory Practice certificate",
+      "Biosafety training certificate"
+    ],
+    "interview_focus_areas": [
+      "Lab safety",
+      "Accuracy and quality control",
+      "Sample handling",
+      "Documentation"
+    ],
+    "expected_keywords": [
+      "sample",
+      "accuracy",
+      "safety",
+      "calibration",
+      "quality control",
+      "SOP"
+    ],
+    "faculties": [
+      "Science",
+      "Health Science/Medicine"
+    ],
+    "related_areas": [
+      "Biotechnology",
+      "Quality Assurance",
+      "Medical Laboratory"
+    ],
+    "related_roles": [
+      "Laboratory Technician",
+      "Medical Laboratory Technician",
+      "Biotech Assistant",
+      "Quality Assurance Analyst"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 29-2012.00 Medical and Clinical Laboratory Technicians; 19-4021.00 Biological Technicians",
+    "cross_disciplinary": false
+  },
+  {
+    "career_id": "finance_analyst",
+    "career_name": "Finance Analyst",
+    "career_area": "Finance/Accounting",
+    "description": "Analyses financial data, prepares budgets and reports, and supports business decisions.",
+    "required_skills": {
+      "digital_literacy": 3,
+      "communication": 4,
+      "problem_solving": 3,
+      "leadership": 2,
+      "teamwork": 3,
+      "research": 3,
+      "data_analysis": 4,
+      "documentation": 3,
+      "creativity": 2
+    },
+    "required_tools": [
+      "Excel (advanced)",
+      "Accounting software (e.g. QuickBooks, SAP)",
+      "Power BI",
+      "Financial statements"
+    ],
+    "main_tasks": [
+      "Prepare budgets and forecasts",
+      "Analyse financial statements",
+      "Build financial models",
+      "Report results to managers"
+    ],
+    "recommended_courses": [
+      "Financial Accounting",
+      "Financial Modelling in Excel",
+      "Corporate Finance Fundamentals"
+    ],
+    "recommended_projects": [
+      "Build a budget and forecast model for a small business",
+      "Analyse a listed company's annual report"
+    ],
+    "recommended_certifications": [
+      "ACCA / CIMA / CA (foundation level)",
+      "Microsoft Office Specialist - Excel"
+    ],
+    "interview_focus_areas": [
+      "Financial statements",
+      "Budgeting",
+      "Excel modelling",
+      "Communicating numbers"
+    ],
+    "expected_keywords": [
+      "budget",
+      "forecast",
+      "cash flow",
+      "variance",
+      "ratio",
+      "report"
+    ],
+    "faculties": [
+      "Business/Management"
+    ],
+    "related_areas": [],
+    "related_roles": [
+      "Finance Analyst"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 13-2011.00 Accountants and Auditors; 13-2031.00 Budget Analysts",
+    "cross_disciplinary": false
+  },
+  {
+    "career_id": "hr_executive",
+    "career_name": "HR Executive",
+    "career_area": "Human Resources",
+    "description": "Supports recruitment, employee relations, training and HR administration.",
+    "required_skills": {
+      "digital_literacy": 3,
+      "communication": 4,
+      "problem_solving": 3,
+      "leadership": 2,
+      "teamwork": 3,
+      "research": 3,
+      "data_analysis": 2,
+      "documentation": 4,
+      "creativity": 2
+    },
+    "required_tools": [
+      "HR information systems (HRIS)",
+      "Excel",
+      "LinkedIn Recruiter / job portals",
+      "MS Office"
+    ],
+    "main_tasks": [
+      "Recruit and onboard staff",
+      "Maintain employee records",
+      "Organise training",
+      "Handle employee queries"
+    ],
+    "recommended_courses": [
+      "Human Resource Management",
+      "Recruitment and Selection",
+      "Employment Law Basics"
+    ],
+    "recommended_projects": [
+      "Design a recruitment and onboarding plan for a new role",
+      "Create a staff training needs analysis"
+    ],
+    "recommended_certifications": [
+      "CIPM / CIPD foundation certificate",
+      "SHRM-CP (later career)"
+    ],
+    "interview_focus_areas": [
+      "Recruitment",
+      "Employee relations",
+      "Confidentiality",
+      "Communication"
+    ],
+    "expected_keywords": [
+      "recruitment",
+      "onboarding",
+      "policy",
+      "employee",
+      "training",
+      "confidential"
+    ],
+    "faculties": [
+      "Business/Management",
+      "Social Sciences"
+    ],
+    "related_areas": [],
+    "related_roles": [
+      "HR Executive",
+      "Human Resources Executive"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 13-1071.00 Human Resources Specialists",
+    "cross_disciplinary": true
+  },
+  {
+    "career_id": "public_health_assistant",
+    "career_name": "Public Health Assistant",
+    "career_area": "Public Health",
+    "description": "Supports health education, community health programmes and health data collection.",
+    "required_skills": {
+      "digital_literacy": 3,
+      "communication": 4,
+      "problem_solving": 3,
+      "leadership": 3,
+      "teamwork": 4,
+      "research": 4,
+      "data_analysis": 3,
+      "documentation": 4,
+      "creativity": 3
+    },
+    "required_tools": [
+      "Excel",
+      "Survey tools",
+      "DHIS2 or similar health information systems",
+      "Presentation tools"
+    ],
+    "main_tasks": [
+      "Run health awareness sessions",
+      "Collect community health data",
+      "Support health programmes",
+      "Prepare reports"
+    ],
+    "recommended_courses": [
+      "Introduction to Public Health",
+      "Health Promotion and Education",
+      "Epidemiology Basics"
+    ],
+    "recommended_projects": [
+      "Plan a health awareness campaign for your campus",
+      "Analyse a public health dataset and present findings"
+    ],
+    "recommended_certifications": [
+      "First Aid / Basic Life Support certificate",
+      "Public health course certificate (e.g. epidemiology basics)"
+    ],
+    "interview_focus_areas": [
+      "Health promotion",
+      "Community engagement",
+      "Data collection",
+      "Ethics"
+    ],
+    "expected_keywords": [
+      "community",
+      "awareness",
+      "prevention",
+      "data",
+      "programme",
+      "health education"
+    ],
+    "faculties": [
+      "Health Science/Medicine",
+      "Social Sciences"
+    ],
+    "related_areas": [
+      "Clinical/Healthcare"
+    ],
+    "related_roles": [
+      "Public Health Assistant",
+      "Healthcare Assistant"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 21-1091.00 Health Education Specialists; 21-1094.00 Community Health Workers",
+    "cross_disciplinary": false
+  },
+  {
+    "career_id": "health_administrator",
+    "career_name": "Health Administrator",
+    "career_area": "Health Administration",
+    "description": "Coordinates health services, staff, budgets and records in hospitals or clinics.",
+    "required_skills": {
+      "digital_literacy": 4,
+      "communication": 4,
+      "problem_solving": 4,
+      "leadership": 4,
+      "teamwork": 4,
+      "research": 4,
+      "data_analysis": 3,
+      "documentation": 4,
+      "creativity": 3
+    },
+    "required_tools": [
+      "Hospital information systems",
+      "Excel",
+      "Scheduling tools",
+      "MS Office"
+    ],
+    "main_tasks": [
+      "Coordinate services and staff schedules",
+      "Manage records and budgets",
+      "Monitor service quality",
+      "Ensure policy compliance"
+    ],
+    "recommended_courses": [
+      "Healthcare Management",
+      "Health Information Systems",
+      "Quality in Healthcare"
+    ],
+    "recommended_projects": [
+      "Map and improve a patient flow process",
+      "Design a clinic staff schedule and budget"
+    ],
+    "recommended_certifications": [
+      "Healthcare management course certificate",
+      "PMI CAPM"
+    ],
+    "interview_focus_areas": [
+      "Healthcare operations",
+      "Leadership",
+      "Quality and compliance",
+      "Decision making"
+    ],
+    "expected_keywords": [
+      "patient",
+      "schedule",
+      "budget",
+      "quality",
+      "policy",
+      "coordination"
+    ],
+    "faculties": [
+      "Health Science/Medicine",
+      "Business/Management"
+    ],
+    "related_areas": [
+      "Health Informatics"
+    ],
+    "related_roles": [
+      "Health Administrator"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 11-9111.00 Medical and Health Services Managers",
+    "cross_disciplinary": false
+  },
+  {
+    "career_id": "graphic_designer",
+    "career_name": "Graphic Designer",
+    "career_area": "Design/Creative",
+    "description": "Creates visual designs for brands, marketing, print and digital media.",
+    "required_skills": {
+      "digital_literacy": 4,
+      "communication": 3,
+      "problem_solving": 3,
+      "leadership": 2,
+      "teamwork": 3,
+      "research": 4,
+      "data_analysis": 2,
+      "documentation": 3,
+      "creativity": 4
+    },
+    "required_tools": [
+      "Adobe Photoshop",
+      "Adobe Illustrator",
+      "Adobe InDesign",
+      "Figma / Canva"
+    ],
+    "main_tasks": [
+      "Create logos and brand assets",
+      "Design marketing materials",
+      "Work with clients on briefs",
+      "Prepare files for print and web"
+    ],
+    "recommended_courses": [
+      "Graphic Design Fundamentals",
+      "Typography and Layout",
+      "Brand Identity Design"
+    ],
+    "recommended_projects": [
+      "Design a full brand identity for a student club",
+      "Build an online design portfolio with 6 projects"
+    ],
+    "recommended_certifications": [
+      "Adobe Certified Professional (Photoshop / Illustrator)",
+      "Google UX Design Certificate (optional)"
+    ],
+    "interview_focus_areas": [
+      "Design process",
+      "Portfolio walkthrough",
+      "Client feedback",
+      "Typography and colour"
+    ],
+    "expected_keywords": [
+      "brief",
+      "typography",
+      "colour",
+      "brand",
+      "layout",
+      "portfolio"
+    ],
+    "faculties": [
+      "Design/Creative Studies"
+    ],
+    "related_areas": [
+      "Branding/Visual Communication"
+    ],
+    "related_roles": [
+      "Graphic Designer",
+      "Brand Designer"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 27-1024.00 Graphic Designers",
+    "cross_disciplinary": false
+  },
+  {
+    "career_id": "content_creator",
+    "career_name": "Content Creator",
+    "career_area": "Digital Media",
+    "description": "Produces videos, animations and social media content for brands or audiences.",
+    "required_skills": {
+      "digital_literacy": 5,
+      "communication": 3,
+      "problem_solving": 3,
+      "leadership": 2,
+      "teamwork": 3,
+      "research": 4,
+      "data_analysis": 2,
+      "documentation": 3,
+      "creativity": 4
+    },
+    "required_tools": [
+      "Adobe Premiere Pro / DaVinci Resolve",
+      "After Effects",
+      "Canva",
+      "Social media analytics"
+    ],
+    "main_tasks": [
+      "Plan and script content",
+      "Shoot and edit video",
+      "Publish on social platforms",
+      "Track engagement"
+    ],
+    "recommended_courses": [
+      "Video Editing and Production",
+      "Motion Graphics",
+      "Social Media Content Strategy"
+    ],
+    "recommended_projects": [
+      "Produce a 3-part video series for a cause or club",
+      "Grow and analyse a small social media channel for 2 months"
+    ],
+    "recommended_certifications": [
+      "Adobe Certified Professional (Premiere Pro)",
+      "Meta / HubSpot social media certificate"
+    ],
+    "interview_focus_areas": [
+      "Content planning",
+      "Storytelling",
+      "Editing workflow",
+      "Audience engagement"
+    ],
+    "expected_keywords": [
+      "storytelling",
+      "editing",
+      "audience",
+      "engagement",
+      "script",
+      "platform"
+    ],
+    "faculties": [
+      "Design/Creative Studies",
+      "Arts/Humanities"
+    ],
+    "related_areas": [
+      "Content Creation"
+    ],
+    "related_roles": [
+      "Content Creator",
+      "Motion Designer"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 27-1014.00 Special Effects Artists and Animators; 27-4032.00 Film and Video Editors",
+    "cross_disciplinary": false
+  },
+  {
+    "career_id": "content_writer",
+    "career_name": "Content Writer",
+    "career_area": "Content/Writing",
+    "description": "Researches and writes clear articles, web content, reports and documentation.",
+    "required_skills": {
+      "digital_literacy": 4,
+      "communication": 4,
+      "problem_solving": 3,
+      "leadership": 2,
+      "teamwork": 3,
+      "research": 3,
+      "data_analysis": 2,
+      "documentation": 4,
+      "creativity": 3
+    },
+    "required_tools": [
+      "Google Docs / MS Word",
+      "WordPress",
+      "Grammarly",
+      "SEO tools"
+    ],
+    "main_tasks": [
+      "Research topics",
+      "Write and edit articles",
+      "Optimise content for search",
+      "Meet deadlines and style guides"
+    ],
+    "recommended_courses": [
+      "Writing for the Web",
+      "Journalism and Reporting Basics",
+      "SEO Writing"
+    ],
+    "recommended_projects": [
+      "Write and publish 5 articles on a blog",
+      "Write a feature story based on interviews"
+    ],
+    "recommended_certifications": [
+      "HubSpot Content Marketing Certification",
+      "Google Digital Marketing certificate"
+    ],
+    "interview_focus_areas": [
+      "Writing samples",
+      "Research and fact-checking",
+      "Editing",
+      "Deadlines"
+    ],
+    "expected_keywords": [
+      "audience",
+      "research",
+      "edit",
+      "deadline",
+      "SEO",
+      "clarity"
+    ],
+    "faculties": [
+      "Arts/Humanities",
+      "Other"
+    ],
+    "related_areas": [
+      "Communication/Media"
+    ],
+    "related_roles": [
+      "Content Writer",
+      "Journalist"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 27-3043.00 Writers and Authors; 27-3042.00 Technical Writers",
+    "cross_disciplinary": true
+  },
+  {
+    "career_id": "public_relations_executive",
+    "career_name": "Public Relations Executive",
+    "career_area": "Public Relations",
+    "description": "Manages an organisation's public image through media relations, events and communication.",
+    "required_skills": {
+      "digital_literacy": 3,
+      "communication": 4,
+      "problem_solving": 4,
+      "leadership": 3,
+      "teamwork": 4,
+      "research": 4,
+      "data_analysis": 2,
+      "documentation": 3,
+      "creativity": 4
+    },
+    "required_tools": [
+      "MS Office",
+      "Social media tools",
+      "Media monitoring tools",
+      "Canva"
+    ],
+    "main_tasks": [
+      "Write press releases",
+      "Build media relationships",
+      "Organise events",
+      "Handle crisis communication"
+    ],
+    "recommended_courses": [
+      "Public Relations Fundamentals",
+      "Media Relations",
+      "Crisis Communication"
+    ],
+    "recommended_projects": [
+      "Plan a PR campaign for a university event",
+      "Write a press release and media kit"
+    ],
+    "recommended_certifications": [
+      "CIPR / PRSA foundation certificate",
+      "HubSpot social media certificate"
+    ],
+    "interview_focus_areas": [
+      "Communication skills",
+      "Media relations",
+      "Crisis handling",
+      "Creativity"
+    ],
+    "expected_keywords": [
+      "press release",
+      "media",
+      "audience",
+      "reputation",
+      "campaign",
+      "stakeholder"
+    ],
+    "faculties": [
+      "Arts/Humanities",
+      "Business/Management"
+    ],
+    "related_areas": [
+      "Communication/Media"
+    ],
+    "related_roles": [
+      "Public Relations Executive"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 27-3031.00 Public Relations Specialists",
+    "cross_disciplinary": false
+  },
+  {
+    "career_id": "teacher",
+    "career_name": "Teacher",
+    "career_area": "Teaching/Education",
+    "description": "Plans and delivers lessons, assesses learning and supports students' development.",
+    "required_skills": {
+      "digital_literacy": 4,
+      "communication": 4,
+      "problem_solving": 3,
+      "leadership": 3,
+      "teamwork": 4,
+      "research": 4,
+      "data_analysis": 3,
+      "documentation": 3,
+      "creativity": 3
+    },
+    "required_tools": [
+      "MS Office / Google Classroom",
+      "LMS (e.g. Moodle)",
+      "Presentation tools",
+      "Assessment tools (e.g. Kahoot)"
+    ],
+    "main_tasks": [
+      "Plan lessons",
+      "Teach and engage students",
+      "Assess and give feedback",
+      "Communicate with parents and staff"
+    ],
+    "recommended_courses": [
+      "Teaching Methods and Lesson Planning",
+      "Classroom Management",
+      "Educational Assessment"
+    ],
+    "recommended_projects": [
+      "Plan and deliver a 4-week mini course",
+      "Create an online course module on an LMS"
+    ],
+    "recommended_certifications": [
+      "Teaching qualification / PGDE (later)",
+      "Google Certified Educator Level 1"
+    ],
+    "interview_focus_areas": [
+      "Lesson planning",
+      "Classroom management",
+      "Assessment",
+      "Communication"
+    ],
+    "expected_keywords": [
+      "lesson",
+      "students",
+      "assessment",
+      "feedback",
+      "engagement",
+      "classroom"
+    ],
+    "faculties": [
+      "Education",
+      "Other"
+    ],
+    "related_areas": [
+      "Education"
+    ],
+    "related_roles": [
+      "Teacher",
+      "Instructor",
+      "Teacher/Instructor"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 25-2031.00 Secondary School Teachers, Except Special and Career/Technical Education",
+    "cross_disciplinary": false
+  },
+  {
+    "career_id": "education_coordinator",
+    "career_name": "Education Coordinator",
+    "career_area": "Curriculum Development",
+    "description": "Coordinates curricula, training programmes and educational technology in schools or institutes.",
+    "required_skills": {
+      "digital_literacy": 4,
+      "communication": 4,
+      "problem_solving": 4,
+      "leadership": 3,
+      "teamwork": 4,
+      "research": 4,
+      "data_analysis": 3,
+      "documentation": 4,
+      "creativity": 3
+    },
+    "required_tools": [
+      "LMS (Moodle, Google Classroom)",
+      "Excel",
+      "Project planning tools",
+      "Survey tools"
+    ],
+    "main_tasks": [
+      "Develop and review curriculum",
+      "Coordinate teachers and schedules",
+      "Introduce learning technology",
+      "Evaluate programme quality"
+    ],
+    "recommended_courses": [
+      "Curriculum Design",
+      "Instructional Design",
+      "Educational Technology"
+    ],
+    "recommended_projects": [
+      "Design a curriculum outline for a short course",
+      "Evaluate an online course and propose improvements"
+    ],
+    "recommended_certifications": [
+      "Instructional design certificate",
+      "Google Certified Educator"
+    ],
+    "interview_focus_areas": [
+      "Curriculum design",
+      "Coordination",
+      "Learning technology",
+      "Evaluation"
+    ],
+    "expected_keywords": [
+      "curriculum",
+      "learning outcomes",
+      "coordination",
+      "evaluation",
+      "technology",
+      "teachers"
+    ],
+    "faculties": [
+      "Education"
+    ],
+    "related_areas": [
+      "Educational Technology",
+      "Teaching/Education"
+    ],
+    "related_roles": [
+      "Education Coordinator",
+      "Curriculum Assistant",
+      "Academic Advisor"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 25-9031.00 Instructional Coordinators",
+    "cross_disciplinary": false
+  },
+  {
+    "career_id": "legal_assistant",
+    "career_name": "Legal Assistant",
+    "career_area": "Legal Practice",
+    "description": "Supports lawyers by researching law, drafting documents and managing case files.",
+    "required_skills": {
+      "digital_literacy": 4,
+      "communication": 4,
+      "problem_solving": 3,
+      "leadership": 1,
+      "teamwork": 2,
+      "research": 3,
+      "data_analysis": 2,
+      "documentation": 4,
+      "creativity": 2
+    },
+    "required_tools": [
+      "Legal research databases",
+      "MS Word",
+      "Case management software",
+      "PDF tools"
+    ],
+    "main_tasks": [
+      "Research laws and cases",
+      "Draft legal documents",
+      "Organise case files",
+      "Communicate with clients"
+    ],
+    "recommended_courses": [
+      "Legal Research and Writing",
+      "Contract Law",
+      "Legal Drafting"
+    ],
+    "recommended_projects": [
+      "Write a case brief on an important judgment",
+      "Draft a sample contract with notes"
+    ],
+    "recommended_certifications": [
+      "Paralegal studies certificate",
+      "Legal research and writing course certificate"
+    ],
+    "interview_focus_areas": [
+      "Legal research",
+      "Drafting",
+      "Confidentiality",
+      "Attention to detail"
+    ],
+    "expected_keywords": [
+      "case",
+      "research",
+      "contract",
+      "drafting",
+      "confidential",
+      "deadline"
+    ],
+    "faculties": [
+      "Law"
+    ],
+    "related_areas": [
+      "Corporate Law",
+      "Legal Research"
+    ],
+    "related_roles": [
+      "Legal Assistant",
+      "Legal Researcher",
+      "Corporate Legal Executive"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 23-2011.00 Paralegals and Legal Assistants",
+    "cross_disciplinary": false
+  },
+  {
+    "career_id": "compliance_officer",
+    "career_name": "Compliance Officer",
+    "career_area": "Compliance",
+    "description": "Makes sure an organisation follows laws, regulations and internal policies.",
+    "required_skills": {
+      "digital_literacy": 3,
+      "communication": 4,
+      "problem_solving": 3,
+      "leadership": 2,
+      "teamwork": 3,
+      "research": 3,
+      "data_analysis": 3,
+      "documentation": 4,
+      "creativity": 2
+    },
+    "required_tools": [
+      "MS Office",
+      "Risk registers",
+      "Audit checklists",
+      "Policy management tools"
+    ],
+    "main_tasks": [
+      "Review policies and processes",
+      "Monitor regulatory changes",
+      "Run compliance checks",
+      "Train staff on policies"
+    ],
+    "recommended_courses": [
+      "Regulatory Compliance Fundamentals",
+      "Risk Management",
+      "Business Ethics"
+    ],
+    "recommended_projects": [
+      "Create a compliance checklist for a small business",
+      "Analyse a data-protection law and its impact"
+    ],
+    "recommended_certifications": [
+      "Compliance / AML foundation certificate",
+      "Risk management course certificate"
+    ],
+    "interview_focus_areas": [
+      "Regulations",
+      "Risk assessment",
+      "Ethics",
+      "Communication"
+    ],
+    "expected_keywords": [
+      "regulation",
+      "policy",
+      "risk",
+      "audit",
+      "compliance",
+      "ethics"
+    ],
+    "faculties": [
+      "Law",
+      "Business/Management"
+    ],
+    "related_areas": [
+      "Corporate Law",
+      "Policy/Public Administration"
+    ],
+    "related_roles": [
+      "Compliance Officer",
+      "Policy Assistant"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 13-1041.00 Compliance Officers",
+    "cross_disciplinary": false
+  },
+  {
+    "career_id": "community_development_officer",
+    "career_name": "Community Development Officer",
+    "career_area": "Community Development",
+    "description": "Works with communities to plan, run and evaluate social development programmes.",
+    "required_skills": {
+      "digital_literacy": 3,
+      "communication": 4,
+      "problem_solving": 3,
+      "leadership": 2,
+      "teamwork": 3,
+      "research": 3,
+      "data_analysis": 2,
+      "documentation": 4,
+      "creativity": 3
+    },
+    "required_tools": [
+      "MS Office",
+      "Survey tools",
+      "Project planning tools",
+      "Presentation tools"
+    ],
+    "main_tasks": [
+      "Assess community needs",
+      "Plan and run programmes",
+      "Work with local partners",
+      "Monitor and report impact"
+    ],
+    "recommended_courses": [
+      "Community Development",
+      "Project Planning and Monitoring",
+      "Social Research Methods"
+    ],
+    "recommended_projects": [
+      "Run a needs assessment in a local community",
+      "Plan and evaluate a small volunteer programme"
+    ],
+    "recommended_certifications": [
+      "Project management certificate (e.g. PMI CAPM)",
+      "Monitoring and evaluation course certificate"
+    ],
+    "interview_focus_areas": [
+      "Community engagement",
+      "Programme planning",
+      "Teamwork",
+      "Ethics"
+    ],
+    "expected_keywords": [
+      "community",
+      "needs assessment",
+      "stakeholder",
+      "programme",
+      "impact",
+      "partnership"
+    ],
+    "faculties": [
+      "Social Sciences",
+      "Law"
+    ],
+    "related_areas": [
+      "Social Work",
+      "Public Policy",
+      "Policy/Public Administration"
+    ],
+    "related_roles": [
+      "Community Development Officer",
+      "Policy Assistant"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 21-1093.00 Social and Human Service Assistants",
+    "cross_disciplinary": false
+  },
+  {
+    "career_id": "counselling_assistant",
+    "career_name": "Counselling Assistant",
+    "career_area": "Counselling/Psychology",
+    "description": "Supports counsellors and advisers in helping students or clients with personal, academic or career issues.",
+    "required_skills": {
+      "digital_literacy": 3,
+      "communication": 4,
+      "problem_solving": 4,
+      "leadership": 2,
+      "teamwork": 3,
+      "research": 4,
+      "data_analysis": 2,
+      "documentation": 4,
+      "creativity": 3
+    },
+    "required_tools": [
+      "MS Office",
+      "Case note systems",
+      "Appointment scheduling tools",
+      "Assessment questionnaires"
+    ],
+    "main_tasks": [
+      "Support counselling sessions",
+      "Maintain confidential records",
+      "Run workshops",
+      "Refer clients to services"
+    ],
+    "recommended_courses": [
+      "Introduction to Counselling",
+      "Listening and Helping Skills",
+      "Ethics in Counselling"
+    ],
+    "recommended_projects": [
+      "Plan a student well-being or career workshop",
+      "Create a referral guide to support services"
+    ],
+    "recommended_certifications": [
+      "Counselling skills certificate",
+      "Mental health first aid certificate"
+    ],
+    "interview_focus_areas": [
+      "Listening skills",
+      "Confidentiality",
+      "Ethics",
+      "Empathy in practice"
+    ],
+    "expected_keywords": [
+      "listening",
+      "confidential",
+      "support",
+      "referral",
+      "ethics",
+      "wellbeing"
+    ],
+    "faculties": [
+      "Social Sciences",
+      "Education"
+    ],
+    "related_areas": [
+      "Student Support"
+    ],
+    "related_roles": [
+      "Counselling Assistant",
+      "Academic Advisor"
+    ],
+    "required_skills_source": "O*NET 30.2 importance ratings (linearly rescaled to 1-5): 21-1012.00 Educational, Guidance, and Career Counselors and Advisors",
+    "cross_disciplinary": false
   }
 ]

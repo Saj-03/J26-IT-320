@@ -31,8 +31,17 @@ export default function RecommendationCard({ rec, rank, onSelect, busy }) {
 
         <div className="flex-1 min-w-0 space-y-3">
           <div>
-            <p className={`text-xs font-bold ${ui.accentText}`}>#{rank} · {rec.career_area}</p>
+            <p className={`text-xs font-bold ${ui.accentText}`}>
+              #{rank} · {rec.career_area}
+              {/* Shown only when the list had to be filled with careers from other faculties */}
+              {rec.faculty_match === false && (
+                <span className="ml-2 rounded-full bg-[#9EB2DB]/35 text-[#34477A] px-2 py-0.5">Outside your faculty</span>
+              )}
+            </p>
             <h3 className="text-lg font-extrabold text-charcoal">{rec.career_name}</h3>
+            {rec.faculties?.length > 0 && (
+              <p className="text-xs text-charcoal-muted">Faculty: {rec.faculties.filter((f) => f !== "Other").join(", ")}</p>
+            )}
             <p className="text-sm text-charcoal-muted">{rec.description}</p>
             {/* Score breakdown: shown when the trained model contributed to the match */}
             {rec.model_probability != null && (

@@ -1,16 +1,22 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ClipboardListIcon, SparklesIcon, BarChart3Icon, MapIcon, MicIcon, ArrowRightIcon, ShieldCheckIcon } from "lucide-react";
 import { PageHeader } from "../../../shared/components/layout/PageHeader";
 import Card from "../components/CareerCard";
 import CareerPage from "../components/CareerPage";
 import Button from "../components/CareerButton";
-import { careerSession } from "../utils/careerSession";
+import { useCareerFlow } from "../utils/careerSession";
+import { getInterviewHistory } from "../api/careerApi";
 import { ETHICS_NOTES } from "../constants";
 import { ui } from "../theme";
 
 export default function CareerDashboard() {
   const navigate = useNavigate();
-  const flow = careerSession.get();
+  const { flow } = useCareerFlow();
+  const [history, setHistory] = useState([]);
+  useEffect(() => {
+    getInterviewHistory(5).then(setHistory).catch(() => {});
+  }, []);
 
   // Each step unlocks once the previous step has produced a result.
   const steps = [
@@ -85,6 +91,19 @@ export default function CareerDashboard() {
             </li>
           ))}
         </ul>
+        {history.length > 0 && (
+          <div className="mt-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-charcoal-muted mb-1.5">Your recent practice</p>
+            <ul className="space-y-1">
+              {history.map((h) => (
+                <li key={h.id} className="flex flex-wrap justify-between gap-2 text-sm text-charcoal-light">
+                  <span>{new Date(h.created_at).toLocaleDateString()} · {h.career_name}</span>
+                  <span className="font-semibold text-charcoal">{Math.round(h.overall_score)}/100</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <Button className="mt-4" size="sm" onClick={() => navigate("/app/career/interview")}>
           <MicIcon size={16} /> Start interview practice
         </Button>

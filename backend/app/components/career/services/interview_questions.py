@@ -13,6 +13,7 @@ from typing import Optional
 
 DATA_FILE = Path(__file__).resolve().parents[1] / "data" / "interview_questions.json"
 TECHNICAL_PER_SESSION = 3
+SESSION_SIZE = 5
 
 
 @lru_cache
@@ -54,13 +55,17 @@ def select_questions(career_id: str, variant: int = 0) -> list[dict]:
     bank = _bank()
     intro = bank["general"]["introduction"]
     behavioural = bank["general"]["behavioural"]
-    technical = bank["careers"][career_id]
+    technical = bank["careers"].get(career_id, [])
 
-    # Rotate technical questions by variant, then take the first 3.
-    start = variant % len(technical)
+    # Rotate technical questions by variant, then take up to 3.
+    start = variant % len(technical) if technical else 0
     rotated = technical[start:] + technical[:start]
 
     chosen_ids = ([intro[variant % len(intro)]["id"]]
                   + [q["id"] for q in rotated[:TECHNICAL_PER_SESSION]]
                   + [behavioural[variant % len(behavioural)]["id"]])
+    # Careers with fewer than 3 technical questions: fill the session with the other general questions.
+    spare = [q["id"] for q in behavioural + intro if q["id"] not in chosen_ids]
+    while len(chosen_ids) < SESSION_SIZE and spare:
+        chosen_ids.insert(-1, spare.pop(0))
     return [public_view(get_question(qid)) for qid in chosen_ids]

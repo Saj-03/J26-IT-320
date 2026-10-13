@@ -21,12 +21,18 @@ from app.components.career.services.career_data import load_careers, skill_label
 from app.components.career.services.career_features import CAREER_FAMILY, role_level, work_status_level
 from app.components.career.services.career_model import family_probabilities, load_bundle
 
-# Bonus points added on top of the cosine score (kept small so skills dominate).
+# Faculty comes first: the student's faculty is respected more strongly than the trained model,
+# which was trained mostly on computing students.
+FACULTY_BONUS = 10             # career belongs to the student's faculty
+OUTSIDE_FACULTY_PENALTY = 30   # career from another faculty (only used to fill a short list)
+
+# Bonus points added on top of the base score (kept small so skills and the model dominate).
 AREA_BONUS = 5
 ROLE_BONUS = 5
 WORK_BONUS = 3
 LEADERSHIP_BONUS = 3
 
+# "other" (non-computing careers) has no label: the family is too broad to describe usefully.
 FAMILY_LABEL = {"software": "software and infrastructure", "data": "data", "cybersecurity": "cybersecurity",
                 "business": "business and management", "design": "design"}
 
@@ -65,7 +71,35 @@ def _role_matches(preferred_role: str, career_name: str) -> bool:
     a, b = _norm(preferred_role), _norm(career_name)
     if not a:
         return False
-    return a in b or b in a or SequenceMatcher(None, a, b).ratio() >= 0.75
+    # High threshold: it only catches typos, so e.g. "Mechanical Engineer" never matches "Electrical Engineer".
+    return a in b or b in a or SequenceMatcher(None, a, b).ratio() >= 0.85
+
+
+def _in(value: str, options: list[str]) -> bool:
+    return _norm(value) in {_norm(o) for o in options}
+
+
+def _matches_area(area: str, career: dict) -> bool:
+    return bool(area) and _in(area, [career["career_area"]] + career.get("related_areas", []))
+
+
+def _matches_role(role: str, career: dict) -> bool:
+    """related_roles maps survey roles without their own profile to the nearest career
+    (e.g. "Electronics Engineer" -> Electrical Engineer)."""
+    return _role_matches(role, career["career_name"]) or _in(role, career.get("related_roles", []))
+
+
+def faculty_tier(profile: dict, career: dict) -> int:
+    """1 = career belongs to the student's faculty
+       2 = outside the faculty, but the student chose its area or role
+       3 = cross-disciplinary career ("cross_disciplinary": true), used to fill a short list
+       4 = unrelated to the student's faculty"""
+    if _in(profile.get("faculty_field", ""), career.get("faculties", [])):
+        return 1
+    if (_matches_area(profile.get("career_area_interest", ""), career)
+            or _matches_role(profile.get("preferred_career_role", ""), career)):
+        return 2
+    return 3 if career.get("cross_disciplinary") else 4
 
 
 def _has_career_work(profile: dict) -> bool:
@@ -83,10 +117,11 @@ def calculate_bonus(profile: dict, career: dict) -> tuple[int, list[str]]:
     required = career["required_skills"]
     bonus, reasons = 0, []
 
-    if _norm(profile.get("career_area_interest")) == _norm(career["career_area"]):
+    area = profile.get("career_area_interest", "")
+    if _matches_area(area, career):
         bonus += AREA_BONUS
-        reasons.append(f"it matches your interest in {career['career_area']}")
-    if _role_matches(profile.get("preferred_career_role", ""), career["career_name"]):
+        reasons.append(f"it matches your interest in {area}")
+    if _matches_role(profile.get("preferred_career_role", ""), career):
         bonus += ROLE_BONUS
         reasons.append("it matches your preferred career role")
     # "Practical" careers need strong hands-on problem solving or digital skills.
@@ -130,8 +165,8 @@ def build_explanation(career: dict, student_skills: dict, missing: list[str],
                 f"{_join([skill_label(k) for k in top_strengths])} skills are close to this career requirement.")
     else:
         text = f"{name} is a possible direction based on the overall shape of your skill profile."
-    if family_probability is not None and family_probability >= 0.35:
-        family = FAMILY_LABEL[CAREER_FAMILY[career["career_id"]]]
+    family = FAMILY_LABEL.get(CAREER_FAMILY[career["career_id"]])
+    if family and family_probability is not None and family_probability >= 0.35:
         text += (f" Students with a background similar to yours often prefer {family} careers "
                  f"(model estimate {family_probability:.0%}).")
     if bonus_reasons:
@@ -151,13 +186,23 @@ def recommend_careers(profile: dict, top_k: int = 5) -> list[dict]:
     alpha = load_bundle()["alpha"] if family_proba else 0.0
     results = []
 
-    for career in load_careers():
+    faculty = profile.get("faculty_field", "")
+    careers = list(load_careers())
+    by_id = {c["career_id"]: c for c in careers}
+    for career in careers:
         required = career["required_skills"]
         skill_match = adjusted_cosine_percentage(student_vec, skill_vector(required))
         p_family = family_proba.get(CAREER_FAMILY[career["career_id"]], 0.0) if family_proba else None
         base_score = skill_match if p_family is None else alpha * p_family * 100 + (1 - alpha) * skill_match
         bonus, bonus_reasons = calculate_bonus(profile, career)
-        match = min(base_score + bonus, 100.0)
+        # Without a faculty (e.g. old API clients) every career is treated as in-faculty, as before.
+        tier = faculty_tier(profile, career) if faculty else 1
+        if faculty and tier == 1:
+            bonus += FACULTY_BONUS
+            bonus_reasons.insert(0, f"it matches your {faculty} faculty field")
+        elif tier >= 3:
+            bonus -= OUTSIDE_FACULTY_PENALTY
+        match = max(0.0, min(base_score + bonus, 100.0))
         matching, missing = split_skills(student_skills, required)
 
         results.append({
@@ -174,8 +219,23 @@ def recommend_careers(profile: dict, top_k: int = 5) -> list[dict]:
             "recommended_courses": career["recommended_courses"],
             "recommended_projects": career["recommended_projects"],
             "recommended_certifications": career["recommended_certifications"],
+            "faculties": career.get("faculties", []),
+            "faculty_match": tier <= 2,
+            "_tier": tier,
         })
 
-    # Deterministic order: highest match first, then alphabetical on ties.
-    results.sort(key=lambda r: (-r["match_percentage"], r["career_name"]))
-    return results[:top_k]
+    # Faculty filter, then score. Order: in-faculty careers (and careers whose area/role the
+    # student chose), then cross-disciplinary careers only if the list is short, then the rest.
+    # Within each group: highest match first, alphabetical on ties (deterministic).
+    results.sort(key=lambda r: (min(r["_tier"], 2), r["_tier"] >= 4, -r["match_percentage"], r["career_name"]))
+    for r in results:
+        del r["_tier"]
+    top = results[:top_k]
+
+    # The student's preferred role is always shown, so they can compare it with the alternatives.
+    role = profile.get("preferred_career_role", "")
+    preferred = [r for r in results if _matches_role(role, by_id[r["career_id"]])]
+    if preferred and not any(r in top for r in preferred):
+        top[-1] = preferred[0]
+        top[-1]["explanation"] += " It is included because it is your preferred career role."
+    return top

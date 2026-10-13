@@ -25,3 +25,13 @@ class InterviewSession(Base):
     career: Mapped[str] = mapped_column(String)
     report: Mapped[dict] = mapped_column(JSON, default=dict)  # content + voice + face feedback
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class CareerFlowState(Base):
+    """ACRDS: the student's latest career flow (survey profile, recommendations, persona,
+    selected career, skill gap, roadmap) so it is still there after logging in again.
+    InterviewSession above stores each finished interview practice report."""
+    __tablename__ = "career_flow_states"
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    data: Mapped[dict] = mapped_column(JSON, default=dict)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

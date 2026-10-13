@@ -4,14 +4,15 @@ import { PageHeader } from "../../../shared/components/layout/PageHeader";
 import Card from "../components/CareerCard";
 import CareerPage from "../components/CareerPage";
 import Button from "../components/CareerButton";
-import { EmptyState } from "../../../shared/components/ui/States";
-import { careerSession } from "../utils/careerSession";
+import { EmptyState, LoadingState } from "../../../shared/components/ui/States";
+import { useCareerFlow } from "../utils/careerSession";
 import RoadmapItem from "../components/RoadmapItem";
 
 export default function Roadmap() {
   const navigate = useNavigate();
-  const { roadmap } = careerSession.get();
+  const { flow: { roadmap }, ready } = useCareerFlow();
 
+  if (!ready && !roadmap) return <LoadingState label="Loading your saved roadmap…" />;
   if (!roadmap) {
     return (
       <Card>

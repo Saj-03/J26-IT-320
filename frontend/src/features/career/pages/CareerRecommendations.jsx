@@ -1,22 +1,23 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ClipboardListIcon } from "lucide-react";
+import { ClipboardListIcon, GaugeIcon } from "lucide-react";
 import { PageHeader } from "../../../shared/components/layout/PageHeader";
 import Card from "../components/CareerCard";
 import CareerPage from "../components/CareerPage";
 import Button from "../components/CareerButton";
-import { EmptyState } from "../../../shared/components/ui/States";
+import { EmptyState, LoadingState } from "../../../shared/components/ui/States";
 import { apiErrorMessage } from "../../../shared/api/client";
 import { getGapAnalysis } from "../api/careerApi";
-import { careerSession } from "../utils/careerSession";
+import { careerSession, useCareerFlow } from "../utils/careerSession";
 import RecommendationCard from "../components/RecommendationCard";
 
 export default function CareerRecommendations() {
   const navigate = useNavigate();
-  const { profile, recommendations } = careerSession.get();
+  const { flow: { profile, recommendations, persona }, ready } = useCareerFlow();
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState("");
 
+  if (!ready && !recommendations?.length) return <LoadingState label="Loading your saved results…" />;
   if (!profile || !recommendations?.length) {
     return (
       <Card>
@@ -48,6 +49,21 @@ export default function CareerRecommendations() {
         subtitle="Ranked by how closely your skill profile matches each career, plus your interests and experience. Select one to see your skill gaps."
         action={<Button variant="outline" onClick={() => navigate("/app/career/survey")}>Edit profile</Button>}
       />
+      {/* Skill-readiness group from the trained K-Means model (guidance only) */}
+      {persona && (
+        <Card padding="md" className="flex items-start gap-3 bg-[#E3FFD6]/70">
+          <span className="w-10 h-10 rounded-2xl bg-[#C7F2D1] text-[#1F5F53] flex items-center justify-center shrink-0">
+            <GaugeIcon size={20} />
+          </span>
+          <div>
+            <p className="font-bold text-charcoal">
+              Your skill readiness: {persona.name}
+              <span className="ml-2 text-xs font-semibold text-charcoal-muted">average self-rating {persona.average_skill_level}/5</span>
+            </p>
+            <p className="text-sm text-charcoal-light">{persona.description} {persona.advice}</p>
+          </div>
+        </Card>
+      )}
       {error && <p className="text-sm font-semibold text-red-600 bg-red-50 rounded-2xl px-4 py-3">{error}</p>}
       {recommendations.map((rec, i) => (
         <RecommendationCard key={rec.career_id} rec={rec} rank={i + 1}
