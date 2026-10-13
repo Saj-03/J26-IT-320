@@ -12,11 +12,12 @@ Component 3 - FOCUS SESSIONS (FR-05, FR-15).
     6. System decides "completed" or not           -> is_completed()
        (completed sessions earn XP, focus minutes are added to the task)
     7. History list + dashboard numbers           -> focus_history()
+    8. Planned sessions that never started        -> check_missed_sessions()
 
 Every session saves the context at that moment (task load, mode, was the
 timer changed?) so it can be used later as training data for M1.
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import HTTPException, status
 from sqlalchemy import func
@@ -31,6 +32,8 @@ DEFAULT_FOCUS = 25            # classic Pomodoro
 DEFAULT_BREAK = 5
 MIN_HISTORY_SESSIONS = 5      # completed sessions needed before we trust the student's history
 COMPLETION_THRESHOLD = 0.8    # focused >= 80% of the planned time -> "completed"
+MISSED_GRACE_MINUTES = 30     # a planned session is "missed" if not started 30 min after its time
+EARLY_START_MINUTES = 60      # starting up to 1 hour early still counts as doing the planned session
 
 
 # ---------------------------------------------------------------------------
@@ -307,7 +310,7 @@ def rate_session(db: Session, user, session_id: str, rating: int) -> FocusSessio
 # ---------------------------------------------------------------------------
 def focus_history(db: Session, user, date_from: datetime | None = None, date_to: datetime | None = None,
                   task_id: str | None = None, completed: bool | None = None,
-                  limit: int = 50, offset: int = 0) -> dict:
+                  include_missed: bool = True, limit: int = 50, offset: int = 0) -> dict:
     """
     Finished sessions, newest first, plus summary numbers.
 
@@ -315,6 +318,7 @@ def focus_history(db: Session, user, date_from: datetime | None = None, date_to:
         date_from / date_to  -> only sessions that started in this range
         task_id              -> only sessions for one task
         completed            -> only completed (true) or only stopped early (false)
+        include_missed       -> false = hide sessions that were planned but never started
 
     The summary is calculated over ALL matching sessions, not just this page.
     """
@@ -328,6 +332,8 @@ def focus_history(db: Session, user, date_from: datetime | None = None, date_to:
         query = query.filter(FocusSession.task_id == task_id)
     if completed is not None:
         query = query.filter(FocusSession.completed.is_(completed))
+    if not include_missed:
+        query = query.filter(FocusSession.was_missed.is_(False))
 
     matching = query.order_by(FocusSession.started_at.desc()).all()
     page = matching[offset: offset + limit]
@@ -336,12 +342,15 @@ def focus_history(db: Session, user, date_from: datetime | None = None, date_to:
 
 def summarise(sessions: list[FocusSession]) -> dict:
     """Simple totals and averages for the dashboard."""
+    missed = sum(1 for s in sessions if s.was_missed)
+    sessions = [s for s in sessions if not s.was_missed]   # the rest is about STARTED sessions
     count = len(sessions)
     done = sum(1 for s in sessions if s.completed)
     minutes = sum(s.actual_minutes for s in sessions)
     ratings = [s.focus_rating for s in sessions if s.focus_rating is not None]
     return {
         "sessions": count,
+        "missed": missed,
         "completed": done,
         "completion_rate": round(done / count, 3) if count else None,
         "total_focus_minutes": minutes,
@@ -349,3 +358,66 @@ def summarise(sessions: list[FocusSession]) -> dict:
         "total_pauses": sum(s.pause_count for s in sessions),
         "average_rating": round(sum(ratings) / len(ratings), 2) if ratings else None,
     }
+
+
+# ---------------------------------------------------------------------------
+# 6. Missed sessions (planned but never started)
+# ---------------------------------------------------------------------------
+def check_missed_sessions(db: Session, user, now: datetime | None = None) -> list[FocusSession]:
+    """
+    Find planned sessions the student did not start, and record them.
+
+    A task's planned session is MISSED when:
+      * it has a planned time (scheduled_start) and 30 min have passed since then
+      * the task is not done / cancelled
+      * no session for this task was started from 1 hour before the planned time onwards
+      * it was not already recorded as missed
+
+    Missed sessions are saved as FocusSession rows with was_missed=True and 0 minutes,
+    so M1 also learns "the student did not manage to start at this time".
+    The app calls this when it opens; it is safe to call many times.
+    """
+    now = now or datetime.utcnow()
+
+    # Ethics: no tracking -> nothing recorded
+    s = get_settings(db, user)
+    if s and not s.focus_tracking_enabled:
+        return []
+
+    cutoff = now - timedelta(minutes=MISSED_GRACE_MINUTES)
+    planned_tasks = (db.query(Task)
+                       .filter(Task.user_id == user.id,
+                               Task.scheduled_start.isnot(None),
+                               Task.scheduled_start <= cutoff,
+                               Task.status.in_(("pending", "in_progress")))
+                       .all())
+
+    new_missed = []
+    for task in planned_tasks:
+        planned_at = task.scheduled_start
+
+        # Did the student start any session for this task around / after the planned time?
+        # (this also finds an earlier "missed" record, so nothing is recorded twice)
+        already = (db.query(FocusSession.id)
+                     .filter(FocusSession.task_id == task.id,
+                             FocusSession.started_at >= planned_at - timedelta(minutes=EARLY_START_MINUTES))
+                     .first())
+        if already:
+            continue
+
+        planned_minutes = recommend_timer(db, user)["focus_minutes"]
+        missed = FocusSession(
+            user_id=user.id, task_id=task.id,
+            started_at=planned_at, ended_at=planned_at,       # never ran -> zero length
+            planned_minutes=planned_minutes, actual_minutes=0,
+            completed=False, was_missed=True,
+            task_load=task.cognitive_load, mode=get_mode(db, user),
+        )
+        db.add(missed)
+        db.flush()
+        audit(db, user.id, "focus_missed", session_id=missed.id, task_id=task.id,
+              planned_at=planned_at.isoformat())
+        new_missed.append(missed)
+
+    db.commit()
+    return new_missed

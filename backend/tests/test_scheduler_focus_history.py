@@ -43,7 +43,7 @@ def test_summary_numbers(env):
     add_session(db, me, minutes=25, completed=True, rating=2)
     add_session(db, me, minutes=10, completed=False, pauses=3)       # not rated
     s = client.get(URL).json()["summary"]
-    assert s == {"sessions": 3, "completed": 2, "completion_rate": 0.667,
+    assert s == {"sessions": 3, "missed": 0, "completed": 2, "completion_rate": 0.667,
                  "total_focus_minutes": 60, "average_focus_minutes": 20.0,
                  "total_pauses": 4, "average_rating": 3.0}
 

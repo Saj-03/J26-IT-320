@@ -133,6 +133,7 @@ def focus_history(
     date_to: datetime | None = Query(None, alias="to", description="sessions started before this time"),
     task_id: str | None = Query(None),
     completed: bool | None = Query(None, description="true = completed only, false = stopped early only"),
+    include_missed: bool = Query(True, description="false = hide planned sessions that were never started"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
@@ -140,7 +141,13 @@ def focus_history(
 ):
     """My finished focus sessions (newest first) + dashboard summary."""
     return focus_service.focus_history(db, user, schemas.to_utc_naive(date_from), schemas.to_utc_naive(date_to),
-                                       task_id, completed, limit, offset)
+                                       task_id, completed, include_missed, limit, offset)
+
+
+@router.post("/focus/missed/check", response_model=schemas.MissedCheckOut)
+def check_missed(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Record planned sessions that were not started (call when the app opens - safe to repeat)."""
+    return {"new_missed": focus_service.check_missed_sessions(db, user)}
 
 
 @router.post("/focus/{session_id}/pause", response_model=schemas.FocusSessionOut)

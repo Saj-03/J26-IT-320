@@ -297,19 +297,30 @@ class FocusSessionOut(BaseModel):
     focus_rating: int | None
     task_load: str | None
     mode: str
+    was_missed: bool                 # planned but never started
     timer_recommended: bool
     timer_overridden: bool
 
 
 class FocusSummaryOut(BaseModel):
-    """Numbers for the dashboard, over ALL sessions that match the filters."""
-    sessions: int
+    """
+    Numbers for the dashboard, over ALL sessions that match the filters.
+    Missed sessions are counted separately - they are NOT in the completion rate
+    (completion rate = completed / sessions that were actually started).
+    """
+    sessions: int                      # started sessions
+    missed: int                        # planned sessions that were never started
     completed: int
     completion_rate: float | None      # 0..1, None if there are no sessions
     total_focus_minutes: int
     average_focus_minutes: float | None
     total_pauses: int
     average_rating: float | None       # only sessions that were rated
+
+
+class MissedCheckOut(BaseModel):
+    """Response of POST /focus/missed/check"""
+    new_missed: list[FocusSessionOut]  # missed sessions found in this check
 
 
 class FocusHistoryOut(BaseModel):
