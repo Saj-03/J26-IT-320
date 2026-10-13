@@ -245,7 +245,54 @@ class ConflictOut(BaseModel):
 
 
 # ===========================================================================
-# FOCUS SESSIONS / DECISIONS  (unchanged for now - rewritten in Step 2)
+# FOCUS SESSIONS  (FR-05, FR-15)
+# ===========================================================================
+TimerSource = Literal["student_fixed", "static_default", "history_rules", "survey", "default"]
+
+
+class TimerRecommendationOut(BaseModel):
+    """The timer length the system suggests before a session starts."""
+    focus_minutes: int
+    break_minutes: int
+    source: TimerSource      # where the number came from (shown to the student + kept for research)
+    reason: str              # plain-language explanation
+
+
+class FocusStartIn(BaseModel):
+    """Body of POST /focus/start"""
+    model_config = ConfigDict(extra="forbid")
+
+    task_id: str | None = None                                       # which task (optional)
+    planned_minutes: int | None = Field(default=None, ge=5, le=180)  # empty = accept the suggestion
+
+
+class FocusSessionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    task_id: str | None
+    started_at: datetime
+    ended_at: datetime | None
+    planned_minutes: int
+    actual_minutes: int
+    completed: bool
+    pause_count: int
+    paused_minutes: int
+    focus_rating: int | None
+    task_load: str | None
+    mode: str
+    timer_recommended: bool
+    timer_overridden: bool
+
+
+class FocusStartOut(BaseModel):
+    """Response of POST /focus/start: the new session + what we had suggested."""
+    session: FocusSessionOut
+    recommendation: TimerRecommendationOut
+
+
+# ===========================================================================
+# OLD ENDPOINTS (kept so the current frontend keeps working)
 # ===========================================================================
 class FocusIn(BaseModel):
     task_id: str | None = None
