@@ -127,6 +127,18 @@ def active_focus(db: Session = Depends(get_db), user=Depends(get_current_user)):
     return focus_service.get_active_session(db, user)
 
 
+@router.post("/focus/{session_id}/pause", response_model=schemas.FocusSessionOut)
+def pause_focus(session_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Pause the running session (counts the pause)."""
+    return focus_service.pause_session(db, user, session_id)
+
+
+@router.post("/focus/{session_id}/resume", response_model=schemas.FocusSessionOut)
+def resume_focus(session_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Continue after a pause (adds the pause time to the total)."""
+    return focus_service.resume_session(db, user, session_id)
+
+
 @router.get("/plan")
 def plan(adaptive: bool = True, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """adaptive=false gives the STATIC baseline used in the controlled pilot."""

@@ -277,6 +277,8 @@ class FocusSessionOut(BaseModel):
     actual_minutes: int
     completed: bool
     pause_count: int
+    paused_at: datetime | None       # not null = paused right now
+    paused_seconds: int
     paused_minutes: int
     focus_rating: int | None
     task_load: str | None

@@ -1,12 +1,12 @@
 """
 Component 3 - FOCUS SESSIONS (FR-05, FR-15).
 
-Part 1 (this file for now): starting a session.
-
     1. Student picks a task and presses "Start"
     2. System suggests a timer length            -> recommend_timer()
     3. Student can keep it or change it           -> start_session()
        (if they change it, timer_overridden = True is saved)
+    4. Student can pause and resume               -> pause_session() / resume_session()
+       (number of pauses + total pause time are saved)
 
 Every session saves the context at that moment (task load, mode, was the
 timer changed?) so it can be used later as training data for M1.
@@ -151,3 +151,51 @@ def start_session(db: Session, user, data: FocusStartIn, now: datetime | None = 
     db.commit()
     db.refresh(session)
     return {"session": session, "recommendation": rec}
+
+
+# ---------------------------------------------------------------------------
+# 3. Pause / resume
+# ---------------------------------------------------------------------------
+def get_own_running_session(db: Session, user, session_id: str) -> FocusSession:
+    """A session of this student that has not ended yet (else 404 / 409)."""
+    session = db.get(FocusSession, session_id)
+    if session is None or session.user_id != user.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Focus session not found")
+    if session.ended_at is not None or session.was_missed:
+        raise HTTPException(status.HTTP_409_CONFLICT, "This session has already ended")
+    return session
+
+
+def pause_session(db: Session, user, session_id: str, now: datetime | None = None) -> FocusSession:
+    """
+    Pause the timer.
+    Pauses are a signal for M1: many pauses = attention was harder to keep.
+    """
+    now = now or datetime.utcnow()
+    session = get_own_running_session(db, user, session_id)
+    if session.paused_at is not None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Session is already paused")
+
+    session.paused_at = now
+    session.pause_count += 1
+    audit(db, user.id, "focus_paused", session_id=session.id, pause_number=session.pause_count)
+    db.commit()
+    db.refresh(session)
+    return session
+
+
+def resume_session(db: Session, user, session_id: str, now: datetime | None = None) -> FocusSession:
+    """Continue the timer and add this pause's length to the total."""
+    now = now or datetime.utcnow()
+    session = get_own_running_session(db, user, session_id)
+    if session.paused_at is None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Session is not paused")
+
+    this_pause = max(int((now - session.paused_at).total_seconds()), 0)
+    session.paused_seconds += this_pause
+    session.paused_minutes = round(session.paused_seconds / 60)
+    session.paused_at = None
+    audit(db, user.id, "focus_resumed", session_id=session.id, pause_seconds=this_pause)
+    db.commit()
+    db.refresh(session)
+    return session
