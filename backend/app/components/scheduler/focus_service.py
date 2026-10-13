@@ -7,6 +7,8 @@ Component 3 - FOCUS SESSIONS (FR-05, FR-15).
        (if they change it, timer_overridden = True is saved)
     4. Student can pause and resume               -> pause_session() / resume_session()
        (number of pauses + total pause time are saved)
+    5. Student presses "End"                      -> end_session()
+       (real focus time = time passed - pause time, optional 1..5 rating)
 
 Every session saves the context at that moment (task load, mode, was the
 timer changed?) so it can be used later as training data for M1.
@@ -18,7 +20,7 @@ from sqlalchemy.orm import Session
 
 from app.components.scheduler.engine import attention_model
 from app.components.scheduler.models import FocusSession, SchedulerSettings, Task
-from app.components.scheduler.schemas import FocusStartIn
+from app.components.scheduler.schemas import FocusEndIn, FocusStartIn
 from app.components.scheduler.task_service import audit, get_own_task
 
 DEFAULT_FOCUS = 25            # classic Pomodoro
@@ -196,6 +198,62 @@ def resume_session(db: Session, user, session_id: str, now: datetime | None = No
     session.paused_minutes = round(session.paused_seconds / 60)
     session.paused_at = None
     audit(db, user.id, "focus_resumed", session_id=session.id, pause_seconds=this_pause)
+    db.commit()
+    db.refresh(session)
+    return session
+
+
+# ---------------------------------------------------------------------------
+# 4. End
+# ---------------------------------------------------------------------------
+def end_session(db: Session, user, session_id: str, data: FocusEndIn,
+                now: datetime | None = None) -> FocusSession:
+    """
+    Stop the session and work out how long the student really focused:
+
+        real focus time = (end - start) - all pause time
+
+    If the student presses End while paused, that last pause is closed first
+    (the paused minutes are not counted as focus).
+    """
+    now = now or datetime.utcnow()
+    session = get_own_running_session(db, user, session_id)
+
+    # 1. Close a pause that is still open
+    if session.paused_at is not None:
+        session.paused_seconds += max(int((now - session.paused_at).total_seconds()), 0)
+        session.paused_minutes = round(session.paused_seconds / 60)
+        session.paused_at = None
+
+    # 2. Real focus time
+    passed_seconds = (now - session.started_at).total_seconds()
+    focus_seconds = max(passed_seconds - session.paused_seconds, 0)
+    session.actual_minutes = round(focus_seconds / 60)
+    session.ended_at = now
+
+    # 3. Optional self-rating
+    if data.focus_rating is not None:
+        session.focus_rating = data.focus_rating
+
+    # TODO (part 4): decide "completed" (the M1 label), give XP, add minutes to the task
+
+    audit(db, user.id, "focus_ended", session_id=session.id, planned=session.planned_minutes,
+          actual=session.actual_minutes, pauses=session.pause_count, rated=data.focus_rating is not None)
+    db.commit()
+    db.refresh(session)
+    return session
+
+
+def rate_session(db: Session, user, session_id: str, rating: int) -> FocusSession:
+    """Add or change the 1..5 rating after the session has ended."""
+    session = db.get(FocusSession, session_id)
+    if session is None or session.user_id != user.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Focus session not found")
+    if session.ended_at is None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "End the session before rating it")
+
+    session.focus_rating = rating
+    audit(db, user.id, "focus_rated", session_id=session.id, rating=rating)
     db.commit()
     db.refresh(session)
     return session

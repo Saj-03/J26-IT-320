@@ -266,6 +266,20 @@ class FocusStartIn(BaseModel):
     planned_minutes: int | None = Field(default=None, ge=5, le=180)  # empty = accept the suggestion
 
 
+class FocusEndIn(BaseModel):
+    """Body of POST /focus/{id}/end - the rating is optional."""
+    model_config = ConfigDict(extra="forbid")
+
+    focus_rating: int | None = Field(default=None, ge=1, le=5)   # "How was your focus?" 1..5
+
+
+class FocusRatingIn(BaseModel):
+    """Body of POST /focus/{id}/rating - rate after the session ended."""
+    model_config = ConfigDict(extra="forbid")
+
+    focus_rating: int = Field(ge=1, le=5)
+
+
 class FocusSessionOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

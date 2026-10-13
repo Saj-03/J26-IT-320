@@ -139,6 +139,20 @@ def resume_focus(session_id: str, db: Session = Depends(get_db), user=Depends(ge
     return focus_service.resume_session(db, user, session_id)
 
 
+@router.post("/focus/{session_id}/end", response_model=schemas.FocusSessionOut)
+def end_focus(session_id: str, data: schemas.FocusEndIn | None = None,
+              db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Stop the session: works out the real focus time (pauses removed). Rating is optional."""
+    return focus_service.end_session(db, user, session_id, data or schemas.FocusEndIn())
+
+
+@router.post("/focus/{session_id}/rating", response_model=schemas.FocusSessionOut)
+def rate_focus(session_id: str, data: schemas.FocusRatingIn,
+               db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Give (or change) the 1-5 "how was your focus?" rating after ending."""
+    return focus_service.rate_session(db, user, session_id, data.focus_rating)
+
+
 @router.get("/plan")
 def plan(adaptive: bool = True, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """adaptive=false gives the STATIC baseline used in the controlled pilot."""
