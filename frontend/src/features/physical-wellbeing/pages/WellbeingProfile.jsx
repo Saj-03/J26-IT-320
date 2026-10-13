@@ -92,7 +92,7 @@ export function PhysicalProfile() {
         ) : !profile ? (
           <div className="py-4">
             <p className="text-sm text-charcoal-muted mb-3">No profile found. Complete the assessment to set your preferences.</p>
-            <Button size="sm" onClick={() => navigate('/physical-setup/assessment')}>Start Assessment</Button>
+            <Button size="sm" className="bg-white text-charcoal border border-black/10 hover:bg-gray-50" onClick={() => navigate('/physical-setup/assessment')}>Start Assessment</Button>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 gap-x-6 divide-y sm:divide-y-0 divide-black/[0.05]">
