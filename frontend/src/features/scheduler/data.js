@@ -1,8 +1,25 @@
 // Adaptive task breakdown & scheduling data — powers Schedule, Tasks and Focus.
+// [ITEM 8] SINGLE SOURCE OF TRUTH: every scheduler page (and the Overview page) reads its mock data
+// from this file, so task counts, focus/break lengths and peak hours are the same everywhere.
+// No backend is connected yet.
+
+// [ITEM 8] Greeting based on the current time (used instead of a fixed "Good morning")
+export function getGreeting(date = new Date()) {
+    const h = date.getHours();
+    if (h < 12)
+        return 'Good morning';
+    if (h < 18)
+        return 'Good afternoon';
+    return 'Good evening';
+}
+
+// [ITEM 8] The user's peak focus hours — one value used by every page
+export const peakHours = { start: 9, end: 11, label: '9 AM – 11 AM' };
 export const focusStudent = {
     name: 'Awantha',
     stress: 'High',
-    stressMessage: 'Your workload has been adjusted to make today more manageable.'
+    // [ITEM 2] Suggestion wording: the system suggests, the user decides
+    stressMessage: 'We suggest a lighter plan for today. You decide what to change.'
 };
 export const loadStyles = {
     Heavy: { bg: 'bg-brand-50', text: 'text-brand-700', dot: 'bg-brand-500' },
@@ -15,11 +32,16 @@ export const stressStyles = {
     Medium: { bg: 'bg-amber-light', border: 'border-amber-200/60', text: 'text-amber-700', dot: 'bg-amber-soft' },
     High: { bg: 'bg-brand-50', border: 'border-brand-100', text: 'text-brand-700', dot: 'bg-brand-500' }
 };
+// [ITEM 8] Today's plan — used by the Overview timeline, the Focus page and the "tasks today" count
 export const todaySessions = [
-    { id: 's1', start: '9:00 AM', end: '9:45 AM', title: 'Database Design', load: 'Heavy', day: 'Mon', status: 'todo' },
-    { id: 's2', start: '10:00 AM', end: '10:30 AM', title: 'Recovery Break', load: 'Break', day: 'Mon', status: 'todo' },
-    { id: 's3', start: '2:00 PM', end: '2:30 PM', title: 'Research Notes', load: 'Light', day: 'Mon', status: 'todo' }
+    { id: 's1', start: '9:00 AM', end: '9:45 AM', title: 'Database Design', load: 'Heavy', day: 'Mon', status: 'todo', minutes: 45, priority: 'high', category: 'academic', subtitle: 'Peak focus time' },
+    { id: 's2', start: '10:00 AM', end: '10:30 AM', title: 'Recovery Break', load: 'Break', day: 'Mon', status: 'todo', minutes: 30, priority: 'low', category: 'recovery', subtitle: 'Rest and recharge' },
+    { id: 's3', start: '2:00 PM', end: '2:30 PM', title: 'Research Notes', load: 'Light', day: 'Mon', status: 'todo', minutes: 30, priority: 'medium', category: 'academic', subtitle: 'Light work' }
 ];
+// Number of real tasks today (breaks are not tasks)
+export const todayTaskCount = todaySessions.filter((s) => s.load !== 'Break').length;
+// The first task of the day — shown on the Focus page
+export const nextFocusTask = todaySessions.find((s) => s.load !== 'Break');
 export const subtasks = [
     { id: 'st1', order: 1, title: 'Read Requirements', load: 'Light', minutes: 20, status: 'done' },
     { id: 'st2', order: 2, title: 'Create ER Diagram', load: 'Heavy', minutes: 45, status: 'done' },
@@ -37,7 +59,7 @@ export const dependencyChain = [
     'Testing'
 ];
 export const attentionBands = [
-    { range: '9 AM – 11 AM', level: 'High Attention', value: 92, load: 'Heavy' },
+    { range: peakHours.label, level: 'High Attention', value: 92, load: 'Heavy' },
     { range: '11 AM – 1 PM', level: 'Medium Attention', value: 64, load: 'Medium' },
     { range: '2 PM – 4 PM', level: 'Medium Attention', value: 71, load: 'Medium' },
     { range: '4 PM – 6 PM', level: 'Low Attention', value: 42, load: 'Light' },
@@ -54,7 +76,7 @@ export const attentionCurve = [
     { label: '9p', value: 24 }
 ];
 export const matchingRules = [
-    { load: 'Heavy', window: 'Peak Focus Time', example: '9 AM – 11 AM' },
+    { load: 'Heavy', window: 'Peak Focus Time', example: peakHours.label },
     { load: 'Medium', window: 'Normal Focus Time', example: '2 PM – 4 PM' },
     { load: 'Light', window: 'Low Focus Time', example: '7 PM – 9 PM' }
 ];
@@ -71,18 +93,26 @@ export const weekSchedule = [
     { id: 'w9', day: 'Thursday', start: '2:00', end: '2:30', title: 'Testing', load: 'Medium', status: 'todo' },
     { id: 'w10', day: 'Friday', start: '9:00', end: '9:40', title: 'Final Review', load: 'Light', status: 'todo' }
 ];
-export const stressAdjustment = {
-    before: [
-        { time: '9:00 – 11:00', title: 'Programming', load: 'Heavy' },
-        { time: '2:00 – 3:00', title: 'Research', load: 'Medium' },
-        { time: '4:00 – 5:00', title: 'Testing', load: 'Medium' }
+// [ITEM 2] STRESS SUGGESTIONS
+// The system only SUGGESTS changes. Each change has a short reason and the user accepts / edits / rejects it.
+// Tasks due within `protectDays` days are "Protected - due soon" and are never moved.
+export const stressSuggestion = {
+    protectDays: 2,
+    // Today's original plan (what the user planned)
+    original: [
+        { id: 'p1', time: '9:00 – 11:00', title: 'Programming', load: 'Heavy', dueInDays: 5 },
+        { id: 'p2', time: '11:30 – 12:30', title: 'SQL Queries', load: 'Heavy', dueInDays: 1 },
+        { id: 'p3', time: '2:00 – 3:00', title: 'Research', load: 'Medium', dueInDays: 4 },
+        { id: 'p4', time: '4:00 – 5:00', title: 'Testing', load: 'Medium', dueInDays: 4 }
     ],
-    after: [
-        { time: '9:00 – 10:00', title: 'Programming', load: 'Heavy' },
-        { time: '10:00 – 10:30', title: 'Recovery Break', load: 'Break' },
-        { time: '2:00 – 2:30', title: 'Light Research', load: 'Light' }
-    ],
-    moved: 'Testing has been moved to tomorrow.'
+    // Suggested changes. taskId = which task it changes (null = something new, like a break)
+    changes: [
+        { id: 'c1', taskId: 'p1', title: 'Programming', from: '9:00 – 11:00', to: '9:00 – 10:00', reason: 'Shortened to 1 hour - long heavy blocks are harder on a stressful day' },
+        { id: 'c2', taskId: null, title: 'Recovery Break', from: null, to: '10:00 – 10:30', reason: 'New 30 min break - a short rest helps lower stress' },
+        { id: 'c3', taskId: 'p2', title: 'SQL Queries', from: 'Today 11:30', to: 'Tomorrow 9:00', reason: 'Move to tomorrow to free up the morning' },
+        { id: 'c4', taskId: 'p3', title: 'Research', from: '2:00 – 3:00', to: '2:00 – 2:30', reason: 'Made lighter - only reading notes today' },
+        { id: 'c5', taskId: 'p4', title: 'Testing', from: 'Today 4:00', to: 'Tomorrow 2:00', reason: 'Testing moved to tomorrow - not due until Monday' }
+    ]
 };
 export const missedSession = {
     missed: { day: 'Wednesday', time: '9:00 AM', title: 'SQL Development' },
@@ -94,18 +124,30 @@ export const missedSession = {
         { day: 'Friday', time: '9:00 AM', note: 'Closer to your deadline', best: false }
     ]
 };
-export const pomodoroRecommendation = {
-    focus: 30,
-    breakMins: 7,
-    averageSession: 32,
-    reason: 'Based on your recent focus history'
-};
+// [ITEM 7] SESSION LENGTH
+// Lengths (in minutes) of the user's recent focus sessions.
+// Tip for demo: delete items so there are fewer than 5 to see the "still learning" fallback.
+export const focusSessionHistory = [28, 35, 30, 32, 26, 34, 31, 33, 29, 36];
+// We need at least this many sessions before we trust the user's own pattern
+export const MIN_SESSIONS_FOR_PATTERN = 5;
+// Standard Pomodoro used until we have enough sessions
+export const DEFAULT_SESSION = { focus: 25, breakMins: 5 };
+// Works out the focus / break length that every page should use
+export function getSessionPlan(history = focusSessionHistory) {
+    if (history.length < MIN_SESSIONS_FOR_PATTERN) {
+        // Not enough data yet -> fallback to 25 / 5
+        return { ...DEFAULT_SESSION, averageSession: null, sessionCount: history.length, learning: true };
+    }
+    const average = Math.round(history.reduce((sum, m) => sum + m, 0) / history.length);
+    const focus = Math.round(average / 5) * 5; // round to the nearest 5 minutes (31 -> 30)
+    const breakMins = Math.max(5, Math.floor(focus / 4)); // about a quarter of the focus time
+    return { focus, breakMins, averageSession: average, sessionCount: history.length, learning: false };
+}
 export const focusProgress = {
     completed: 8,
     total: 10,
     focusTime: '6h 40m',
-    bestPeriod: '9 AM – 11 AM',
-    averageSession: '31 minutes',
+    bestPeriod: peakHours.label,
     rescheduled: 2,
     stressAdjustments: 3,
     insight: 'You complete heavy tasks 24% faster during morning sessions.'
@@ -148,8 +190,64 @@ export const mainTask = {
     remaining: '2h 10m'
 };
 export const focusNotifications = [
-    { id: 'fn1', emoji: '⏰', title: 'Your Database Design session starts in 10 minutes', body: '30 minutes · 9:00 AM', time: 'Just now', unread: true },
+    { id: 'fn1', emoji: '⏰', title: 'Your Database Design session starts in 10 minutes', body: '45 minutes · 9:00 AM', time: 'Just now', unread: true },
     { id: 'fn2', emoji: '🔄', title: 'You missed your SQL session', body: 'We moved it to Thursday morning.', time: '2h ago', unread: true },
-    { id: 'fn3', emoji: '🌿', title: 'Your stress level is high', body: 'Today’s schedule has been lightened.', time: '5h ago', unread: false },
+    { id: 'fn3', emoji: '🌿', title: 'Your stress level is high', body: 'We suggest a lighter plan for today.', time: '5h ago', unread: false },
     { id: 'fn4', emoji: '🌅', title: 'You usually focus best around 9 AM', body: 'We scheduled your difficult task there.', time: 'Yesterday', unread: false }
+];
+// [ITEM 3] Research pilot: which scheduler each participant gets.
+// 'adaptive' = full adaptive scheduler, 'static' = static baseline (control group).
+// Only the researcher changes this on the AdminResearch page. Students never see it.
+export const schedulerModes = [
+    { value: 'adaptive', label: 'Adaptive' },
+    { value: 'static', label: 'Static baseline' }
+];
+export const participantSchedulerMode = {
+    'P-0142': 'adaptive',
+    'P-0138': 'static',
+    'P-0129': 'adaptive',
+    'P-0121': 'static',
+    'P-0117': 'adaptive',
+    'P-0109': 'static'
+};
+
+// [ITEM 8] Weekly calendar on the Scheduler page (moved here from Scheduler.jsx)
+// day: 0 = Mon … 6 = Sun, start: row in calendarHours, span: number of rows, focus: priority 1-5
+export const calendarDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+export const calendarHours = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'];
+export const calendarBlocks = [
+    { day: 2, start: 1, span: 1, title: 'Gym', category: 'personal', duration: '1h', focus: 1 },
+    { day: 2, start: 2, span: 1, title: 'Chemistry Lab Report', category: 'academic', duration: '2h', focus: 5 },
+    { day: 2, start: 4, span: 1, title: 'Math Assignment', category: 'academic', duration: '1.5h', focus: 4 },
+    { day: 0, start: 2, span: 1, title: 'Software Eng.', category: 'academic', duration: '2.5h', focus: 5 },
+    { day: 1, start: 5, span: 2, title: 'Work Shift', category: 'work', duration: '4h', focus: 2 },
+    { day: 3, start: 2, span: 1, title: 'Group Presentation', category: 'academic', duration: '1h', focus: 3 },
+    { day: 3, start: 3, span: 1, title: 'Recovery', category: 'recovery', duration: '45m', focus: 1 },
+    { day: 4, start: 2, span: 1, title: 'Software Eng.', category: 'academic', duration: '2.5h', focus: 5 },
+    { day: 5, start: 3, span: 1, title: 'Social Time', category: 'social', duration: '2h', focus: 1 },
+    { day: 3, start: 5, span: 2, title: 'Work Shift', category: 'work', duration: '4h', focus: 2 }
+];
+export const calendarLegend = [
+    { cat: 'academic', label: 'High priority' },
+    { cat: 'work', label: 'Work' },
+    { cat: 'recovery', label: 'Recovery' },
+    { cat: 'personal', label: 'Personal' },
+    { cat: 'social', label: 'Social' }
+];
+
+// [ITEM 8] Task list for the Tasks page and "Planned by IHSD" (same shape the backend will send later)
+// Dates are made relative to today so the Today / Upcoming / Overdue tabs always work.
+function daysFromNow(days, hour = 23, minute = 59) {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    d.setHours(hour, minute, 0, 0);
+    return d.toISOString();
+}
+export const schedulerTasks = [
+    { id: 't1', title: 'Database Design', cognitive_load: 'heavy', priority: 5, status: 'todo', estimated_minutes: 45, deadline: daysFromNow(3), scheduled_start: daysFromNow(0, peakHours.start, 0) },
+    { id: 't2', title: 'Research Notes', cognitive_load: 'low', priority: 3, status: 'todo', estimated_minutes: 30, deadline: daysFromNow(4), scheduled_start: daysFromNow(0, 14, 0) },
+    { id: 't3', title: 'SQL Queries', cognitive_load: 'heavy', priority: 4, status: 'todo', estimated_minutes: 60, deadline: daysFromNow(1), scheduled_start: daysFromNow(1, peakHours.start, 0) },
+    { id: 't4', title: 'Testing', cognitive_load: 'medium', priority: 3, status: 'todo', estimated_minutes: 30, deadline: daysFromNow(4), scheduled_start: daysFromNow(1, 14, 0) },
+    { id: 't5', title: 'ER Diagram', cognitive_load: 'heavy', priority: 4, status: 'done', estimated_minutes: 45, deadline: daysFromNow(-1), scheduled_start: daysFromNow(-2, peakHours.start, 0) },
+    { id: 't6', title: 'Documentation', cognitive_load: 'medium', priority: 2, status: 'missed', estimated_minutes: 30, deadline: daysFromNow(-1), scheduled_start: null }
 ];

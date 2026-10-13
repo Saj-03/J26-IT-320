@@ -7,7 +7,7 @@ import { Card } from '../../../../shared/components/ui/Card';
 import { Button } from '../../../../shared/components/ui/Button';
 import { Modal } from '../../../../shared/components/ui/Modal';
 import { Field, SelectField } from '../../../../shared/components/ui/Field';
-import { LoadBadge, SectionTitle } from '../../components/PlanPrimitives';
+import { LoadPicker, EstimatedTime, SectionTitle } from '../../components/PlanPrimitives';
 import { subtasks as seed, dependencyChain, mainTask } from '../../data';
 export function TaskBreakdown() {
     const navigate = useNavigate();
@@ -23,6 +23,8 @@ export function TaskBreakdown() {
         [next[index], next[target]] = [next[target], next[index]];
         setItems(next.map((s, i) => ({ ...s, order: i + 1 })));
     };
+    // [ITEM 4] Change the Heavy / Medium / Light level of one step from the dropdown
+    const changeLoad = (id, load) => setItems((xs) => xs.map((x) => x.id === id ? { ...x, load } : x));
     const remove = (id) => setItems((xs) => xs.filter((x) => x.id !== id).map((s, i) => ({ ...s, order: i + 1 })));
     const saveEdit = () => {
         if (!editing)
@@ -75,8 +77,9 @@ export function TaskBreakdown() {
                     <div className="min-w-0 flex-1">
                       <p className="font-bold text-charcoal text-sm leading-snug">{s.title}</p>
                       <div className="flex items-center gap-2 mt-1.5">
-                        <LoadBadge load={s.load}/>
-                        <span className="text-xs font-semibold text-charcoal-muted">{s.minutes} minutes</span>
+                        {/* [ITEM 4] Clickable load tag + estimated time */}
+                        <LoadPicker load={s.load} label={s.title} onChange={(l) => changeLoad(s.id, l)}/>
+                        <EstimatedTime minutes={s.minutes}/>
                       </div>
                     </div>
 

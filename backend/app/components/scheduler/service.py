@@ -31,6 +31,7 @@ def build_plan(db: Session, user, adaptive: bool = True):
 
 def complete_task(db: Session, user, task: Task) -> dict:
     task.status = "done"
+    task.completed_at = task.completed_at or datetime.utcnow()
     key = f"task-{task.id}"
     if not db.get(RewardEvent, key):
         db.add(RewardEvent(id=key, user_id=user.id, kind="xp", amount=gamification.xp_for_task(task.cognitive_load)))
