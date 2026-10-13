@@ -8,10 +8,10 @@ Component 3 - request / response shapes (Pydantic).
 Validation here means bad data never reaches the database
 (e.g. a deadline in the past, priority 9, a 0-minute task).
 """
-from datetime import datetime, timezone
+from datetime import datetime, time, timezone
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 # Allowed values - must match the constants in models.py
 CognitiveLoad = Literal["low", "medium", "heavy"]
@@ -125,6 +125,123 @@ class TaskDetailOut(TaskOut):
 
 # Old name kept so existing code/tests that import TaskIn still work.
 TaskIn = TaskCreate
+
+
+# ===========================================================================
+# COMMITMENTS  (FR-02) - lectures, work hours = time the scheduler can't use
+# ===========================================================================
+CommitmentKind = Literal["lecture", "work", "extracurricular", "personal", "protected_block"]
+
+
+class CommitmentCreate(BaseModel):
+    """
+    Body of POST /api/scheduler/commitments
+
+    Two types:
+      weekly   -> is_recurring=true,  weekday + start_time + end_time (Sri Lanka time)
+      one-off  -> is_recurring=false, start_at + end_at
+    """
+    model_config = ConfigDict(extra="forbid")
+
+    title: str = Field(min_length=1, max_length=200)
+    kind: CommitmentKind = "lecture"
+    is_recurring: bool = True
+
+    # weekly
+    weekday: int | None = Field(default=None, ge=0, le=6)   # 0 = Monday, 6 = Sunday
+    start_time: time | None = None                          # e.g. "08:30"
+    end_time: time | None = None                            # e.g. "10:30"
+
+    # one-off
+    start_at: datetime | None = None
+    end_at: datetime | None = None
+
+    # optional: only repeat inside this date range (e.g. this semester)
+    valid_from: datetime | None = None
+    valid_until: datetime | None = None
+
+    @field_validator("start_at", "end_at", "valid_from", "valid_until")
+    @classmethod
+    def utc(cls, v):
+        return to_utc_naive(v)
+
+    @model_validator(mode="after")
+    def check_times(self):
+        # Weekly: need day + start + end, and end after start
+        if self.is_recurring:
+            if self.weekday is None or self.start_time is None or self.end_time is None:
+                raise ValueError("weekly commitment needs weekday, start_time and end_time")
+            if self.end_time <= self.start_time:
+                raise ValueError("end_time must be after start_time (split overnight items in two)")
+        # One-off: need start + end, and end after start
+        else:
+            if self.start_at is None or self.end_at is None:
+                raise ValueError("one-off commitment needs start_at and end_at")
+            if self.end_at <= self.start_at:
+                raise ValueError("end_at must be after start_at")
+        if self.valid_from and self.valid_until and self.valid_until <= self.valid_from:
+            raise ValueError("valid_until must be after valid_from")
+        return self
+
+
+class CommitmentUpdate(BaseModel):
+    """Body of PATCH /commitments/{id} - send only what changed (checked again after merging)."""
+    model_config = ConfigDict(extra="forbid")
+
+    title: str | None = Field(default=None, min_length=1, max_length=200)
+    kind: CommitmentKind | None = None
+    is_recurring: bool | None = None
+    weekday: int | None = Field(default=None, ge=0, le=6)
+    start_time: time | None = None
+    end_time: time | None = None
+    start_at: datetime | None = None
+    end_at: datetime | None = None
+    valid_from: datetime | None = None
+    valid_until: datetime | None = None
+
+
+class CommitmentOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    title: str
+    kind: str
+    is_recurring: bool
+    weekday: int | None
+    start_time: time | None
+    end_time: time | None
+    start_at: datetime | None
+    end_at: datetime | None
+    valid_from: datetime | None
+    valid_until: datetime | None
+    created_at: datetime
+
+
+# ===========================================================================
+# AVAILABILITY + CONFLICTS
+# ===========================================================================
+class SlotOut(BaseModel):
+    """One block of free time (UTC)."""
+    start: datetime
+    end: datetime
+    minutes: int
+
+
+class DayAvailabilityOut(BaseModel):
+    date: str              # Sri Lanka date, e.g. "2026-10-14"
+    free_minutes: int
+    slots: list[SlotOut]
+
+
+class AvailabilityOut(BaseModel):
+    days: list[DayAvailabilityOut]
+    total_free_minutes: int
+
+
+class ConflictOut(BaseModel):
+    type: Literal["overlap", "impossible_deadline"]
+    message: str                 # plain-language explanation for the student
+    ids: list[str]               # commitment ids (overlap) or task ids (deadline)
 
 
 # ===========================================================================
