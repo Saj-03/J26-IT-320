@@ -13,6 +13,8 @@ import { BarChart } from '../shared/components/charts/Charts';
 import { weeklyTasksData, focusTimeData } from '../shared/lib/data';
 import useStudent from '../shared/hooks/useStudent';
 import { cn } from '../shared/lib/cn';
+// [ITEM 8] Scheduler numbers + greeting come from the scheduler data.js
+import { getGreeting, todayTaskCount, peakHours } from '../features/scheduler/data';
 const fade = {
     initial: { opacity: 0, y: 14 },
     animate: { opacity: 1, y: 0 }
@@ -28,9 +30,10 @@ export function Dashboard() {
           <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-brand-50" aria-hidden/>
           <div className="relative grid lg:grid-cols-[1fr_auto] gap-6 items-center">
             <div>
-              <p className="text-sm font-semibold text-brand-600">Good morning, {student.name} 👋</p>
+              {/* [ITEM 8] Greeting uses the current time */}
+              <p className="text-sm font-semibold text-brand-600">{getGreeting()}, {student.name} 👋</p>
               <h2 className="mt-1 text-xl sm:text-2xl font-extrabold text-charcoal leading-snug max-w-xl">
-                You have 3 important tasks today. Your schedule has been optimised around your peak focus hours.
+                You have {todayTaskCount} important tasks today. Your schedule has been planned around your peak focus hours.
               </h2>
               <div className="mt-5 flex flex-wrap gap-2">
                 <Button onClick={() => navigate('/app/focus')}>
@@ -55,7 +58,7 @@ export function Dashboard() {
       <div>
         <h3 className="text-lg font-bold text-charcoal mb-3">Today’s Overview</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <StatCard icon={ListTodoIcon} label="Tasks Today" value="4">
+          <StatCard icon={ListTodoIcon} label="Tasks Today" value={String(todayTaskCount)}>
             <span className="text-xs font-bold text-brand-600">75%</span>
           </StatCard>
           <StatCard icon={TimerIcon} iconBg="bg-sky-50" iconColor="text-sky-500" label="Focus Time" value="3h 25m" sub={<ProgressBar value={68} color="bg-sky-400" height={6}/>}>
@@ -89,7 +92,7 @@ export function Dashboard() {
         {/* Right column */}
         <div className="space-y-6">
           <AIInsightCard>
-            Your focus is strongest between <b>9 AM and 12 PM</b>. We scheduled your most difficult task during this window.
+            Your focus is strongest between <b>{peakHours.label}</b>. We scheduled your most difficult task during this window.
           </AIInsightCard>
 
           {/* Wellbeing */}
@@ -148,7 +151,7 @@ export function Dashboard() {
               <h4 className="font-bold text-charcoal">Completed Tasks</h4>
               <span className="text-xs font-semibold text-brand-600">+18% vs last week</span>
             </div>
-            <BarChart data={weeklyTasksData}/>
+            <BarChart data={weeklyTasksData.map((d) => ({ label: d.day, value: d.value }))}/>
           </Card>
           <Card>
             <div className="flex items-center justify-between mb-4">
