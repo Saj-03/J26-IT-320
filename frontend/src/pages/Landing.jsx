@@ -95,9 +95,9 @@ const week = [
 ];
 
 const faqs = [
-  ['Is IHUSD free for university students?', 'Yes. Every core feature — planning, career exploration, wellbeing check-ins and activity tracking — is free for enrolled undergraduates.'],
+  ['Is ThriveU free for university students?', 'Yes. Every core feature — planning, career exploration, wellbeing check-ins and activity tracking — is free for enrolled undergraduates.'],
   ['How is my data kept private?', 'Your check-ins and journal entries are encrypted and visible only to you. Research participation is opt-in, and anything shared is anonymised first.'],
-  ['Can I use IHUSD on my phone?', 'Yes. IHUSD works in any modern mobile browser, and your plan, goals and check-ins stay in sync across devices.'],
+  ['Can I use ThriveU on my phone?', 'Yes. ThriveU works in any modern mobile browser, and your plan, goals and check-ins stay in sync across devices.'],
 ];
 
 function Faq() {
@@ -164,7 +164,8 @@ export function Landing() {
         <header className="absolute inset-x-0 top-0 z-30">
           <div className="flex h-20 items-center justify-between px-5 lg:px-[clamp(2.5rem,5vw,6rem)]">
             <Link to="/" className="flex items-center gap-2.5">
-              <span className="font-serif text-2xl font-bold tracking-tight text-charcoal">IHUSD</span>
+              <img src="/img/logo/logo-mark.png" alt="" className="h-10 w-10 object-contain" />
+              <span className="font-serif text-2xl font-bold tracking-tight text-charcoal"><span className="text-charcoal">Thrive</span><span className="bg-gradient-to-br from-brand-500 to-[#4CC764] bg-clip-text text-transparent">U</span></span>
               <span className="hidden text-[9px] leading-[1.2] text-charcoal-light sm:block">
                 Immersive Holistic<br />Undergraduate<br />Student Development System
               </span>
@@ -191,7 +192,7 @@ export function Landing() {
             University life has more than one direction. <span className="text-brand-500">Find yours.</span>
           </h1>
           <p data-hero-in className="mt-6 max-w-sm text-[15px] leading-relaxed text-charcoal-light">
-            IHUSD helps you explore opportunities, plan smarter, stay balanced and build healthy habits — all in one place.
+            ThriveU helps you explore opportunities, plan smarter, stay balanced and build healthy habits — all in one place.
           </p>
           <div data-hero-in className="mt-8 flex flex-wrap gap-3">
             <button onClick={() => navigate('/register')} className="inline-flex items-center gap-2 rounded-full bg-brand-500 px-6 py-3 text-sm font-semibold text-white shadow-glow transition hover:bg-brand-600">
@@ -219,7 +220,7 @@ export function Landing() {
             data-draw
             d="M-20 640 C 120 720, 330 700, 470 618 S 700 520, 860 610 S 1160 720, 1270 560 S 1330 210, 1460 150"
             fill="none"
-            stroke="#F5811E"
+            stroke="#2E9C88"
             strokeWidth="7"
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
@@ -274,7 +275,7 @@ export function Landing() {
             <Eyebrow>Adaptive academic planning</Eyebrow>
             <h2 className="mt-3 font-serif text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl">A plan that<br />moves with you.</h2>
             <p className="mt-5 max-w-md text-[15px] leading-relaxed text-charcoal-light">
-              Build your timetable, set deadlines and let IHUSD adapt when life changes. Smarter planning, less stress, more freedom.
+              Build your timetable, set deadlines and let ThriveU adapt when life changes. Smarter planning, less stress, more freedom.
             </p>
             <TextLink to="/app/schedule">Plan your week</TextLink>
           </div>
@@ -337,7 +338,7 @@ export function Landing() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-charcoal-muted">Same student. A brighter week.</p>
         </div>
         <svg className="pointer-events-none absolute inset-x-0 bottom-2 hidden h-20 w-full md:block" viewBox="0 0 1440 100" preserveAspectRatio="none" aria-hidden>
-          <path d="M-10 40 C 160 10, 260 100, 480 70 S 800 20, 960 60 S 1260 110, 1450 30" fill="none" stroke="#F5811E" strokeWidth="5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          <path d="M-10 40 C 160 10, 260 100, 480 70 S 800 20, 960 60 S 1260 110, 1450 30" fill="none" stroke="#2E9C88" strokeWidth="5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
         </svg>
         <div className="relative mx-auto mt-12 grid max-w-7xl gap-10 px-5 md:grid-cols-3 lg:px-10">
           {week.map((w, i) => (
@@ -363,18 +364,18 @@ export function Landing() {
       </section>
 
       {/* ───────── CTA ───────── */}
-      <section className="relative overflow-hidden bg-[#1F2A2E] text-white">
+      <section className="relative overflow-hidden bg-[#1F2840] text-white">
         <div className="absolute inset-y-0 right-0 w-full lg:w-[68%]">
           <div data-parallax className="absolute inset-x-0 -top-[8%] h-[116%]">
             <img src={IMG.campus} alt="" loading="lazy" className="h-full w-full object-cover object-[50%_35%]" />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#1F2A2E] via-[#1F2A2E]/70 to-[#1F2A2E]/10 lg:via-[#1F2A2E]/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1F2840] via-[#1F2840]/70 to-[#1F2840]/10 lg:via-[#1F2840]/30" />
         </div>
         <div className="relative mx-auto max-w-7xl px-5 py-20 lg:px-10 lg:py-28">
           <div data-reveal className="max-w-md">
             <h2 className="font-serif text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl">Your next chapter<br />starts here.</h2>
             <p className="mt-5 text-[15px] leading-relaxed text-white/75">
-              University is more than a destination — it’s a journey. Let IHUSD help you make the most of it.
+              University is more than a destination — it’s a journey. Let ThriveU help you make the most of it.
             </p>
             <button onClick={() => navigate('/register')} className="mt-8 inline-flex items-center gap-2 rounded-full bg-brand-500 px-6 py-3 text-sm font-semibold text-white shadow-glow transition hover:bg-brand-600">
               Get started <ArrowRightIcon size={16} />
@@ -382,9 +383,14 @@ export function Landing() {
           </div>
           <p className="absolute right-[4%] top-[12%] hidden rotate-[-8deg] font-hand text-2xl leading-tight text-white/90 lg:block">More<br />Directions<br />A Brighter<br />You</p>
         </div>
-        <div className="relative border-t border-white/10 bg-[#1F2A2E]">
+        <div className="relative border-t border-white/10 bg-[#1F2840]">
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-5 py-6 text-xs text-white/60 sm:flex-row lg:px-10">
-            <span className="font-serif text-base font-bold text-white">IHUSD</span>
+            <span className="flex items-center gap-2 font-serif text-base font-bold text-white">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white p-0.5">
+                <img src="/img/logo/logo-mark.png" alt="" className="h-full w-full object-contain" />
+              </span>
+              <span>Thrive</span><span className="bg-gradient-to-br from-brand-300 to-[#7FE08F] bg-clip-text text-transparent">U</span>
+            </span>
             <span>Immersive Holistic Undergraduate Student Development System · © 2026</span>
           </div>
         </div>

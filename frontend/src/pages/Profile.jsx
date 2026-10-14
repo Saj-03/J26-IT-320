@@ -84,7 +84,7 @@ export function Profile() {
           </span>
           <div>
             <h3 className="font-bold text-charcoal">Privacy Controls</h3>
-            <p className="text-sm text-charcoal-muted">Manage what data IHSD collects and keeps.</p>
+            <p className="text-sm text-charcoal-muted">Manage what data ThriveU collects and keeps.</p>
           </div>
         </div>
         <Button variant="soft" onClick={() => navigate('/app/privacy')}>

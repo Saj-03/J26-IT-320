@@ -24,7 +24,7 @@ export function Settings() {
     const { logout } = useAuth();
     const navigate = useNavigate();
     return (<div className="space-y-6 max-w-3xl mx-auto">
-      <PageHeader title="Settings" subtitle="Tune IHSD to fit how you live and work."/>
+      <PageHeader title="Settings" subtitle="Tune ThriveU to fit how you live and work."/>
 
       <SectionCard icon={UserIcon} title="Account">
         <div className="space-y-4">

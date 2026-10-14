@@ -14,7 +14,7 @@ export default function ProfileRecommendations() {
   if (error) {
     return (
       <Card>
-        <EmptyState icon={ActivityIcon} title="Set up your wellbeing profile" desc="A 2-minute assessment lets IHSD pick exercise and meals that fit your week."
+        <EmptyState icon={ActivityIcon} title="Set up your wellbeing profile" desc="A 2-minute assessment lets ThriveU pick exercise and meals that fit your week."
           actionLabel="Start assessment" onAction={() => navigate("/physical-setup")} />
       </Card>
     );

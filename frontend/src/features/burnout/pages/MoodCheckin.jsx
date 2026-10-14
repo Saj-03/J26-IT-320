@@ -29,7 +29,7 @@ export function MoodCheckin() {
     return (<div className="min-h-[calc(100vh-8rem)] flex items-center justify-center max-w-lg mx-auto">
       <div className="w-full text-center">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-charcoal">How are you feeling today?</h1>
-        <p className="mt-2 text-charcoal-muted">Your answer helps IHSD adapt today’s schedule.</p>
+        <p className="mt-2 text-charcoal-muted">Your answer helps ThriveU adapt today’s schedule.</p>
 
         <div className="grid grid-cols-2 gap-3 mt-8">
           {moods.map((m, i) => <button key={m.label} onClick={() => setSelected(i)} className={cn('flex flex-col items-center gap-2 rounded-3xl py-7 border-2 transition-all', selected === i ? 'border-brand-500 bg-brand-50 scale-[1.02]' : 'border-black/[0.05] bg-white hover:border-brand-200')}>

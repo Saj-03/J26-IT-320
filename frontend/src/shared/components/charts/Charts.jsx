@@ -1,7 +1,7 @@
 import React from 'react';
 // Lightweight, dependency-free SVG charts tuned to the IHSD palette.
-const ORANGE = '#F5811E';
-export function BarChart({ data, color = ORANGE, height = 160, unit = '', highlightMax = true }) {
+const BRAND = '#2E9C88';
+export function BarChart({ data, color = BRAND, height = 160, unit = '', highlightMax = true }) {
     const max = Math.max(...data.map((d) => d.value), 1);
     const maxIdx = data.reduce((mi, d, i, arr) => d.value > arr[mi].value ? i : mi, 0);
     return (<div className="flex items-end justify-between gap-2" style={{ height }}>
@@ -14,7 +14,7 @@ export function BarChart({ data, color = ORANGE, height = 160, unit = '', highli
             </span>
             <div className="w-full rounded-full transition-all duration-500" style={{
                     height: `${d.value / max * (height - 34)}px`,
-                    background: isMax ? color : '#F1D9C1',
+                    background: isMax ? color : '#CDEEE5',
                     minHeight: 6
                 }}/>
             <span className="text-[11px] font-medium text-charcoal-muted">{d.label}</span>
@@ -22,7 +22,7 @@ export function BarChart({ data, color = ORANGE, height = 160, unit = '', highli
         })}
     </div>);
 }
-export function LineChart({ data, color = ORANGE, height = 160, fill = true }) {
+export function LineChart({ data, color = BRAND, height = 160, fill = true }) {
     const w = 320;
     const h = height;
     const pad = 14;
@@ -61,13 +61,13 @@ export function RadarChart({ data, size = 260 }) {
     };
     const poly = (key) => data.map((d, i) => point(i, (d[key] ?? 0))).map((p) => `${p.x},${p.y}`).join(' ');
     return (<svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[300px] mx-auto">
-      {[0.25, 0.5, 0.75, 1].map((f) => <polygon key={f} points={data.map((_, i) => point(i, f * 100)).map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke="#EBE3D8" strokeWidth={1}/>)}
+      {[0.25, 0.5, 0.75, 1].map((f) => <polygon key={f} points={data.map((_, i) => point(i, f * 100)).map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke="#E2EEE9" strokeWidth={1}/>)}
       {data.map((_, i) => {
             const p = point(i, 100);
-            return <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="#EBE3D8" strokeWidth={1}/>;
+            return <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="#E2EEE9" strokeWidth={1}/>;
         })}
-      <polygon points={poly('prev')} fill="#CBD5E1" fillOpacity={0.25} stroke="#94A3B8" strokeWidth={1.5} strokeDasharray="4 3"/>
-      <polygon points={poly('value')} fill={ORANGE} fillOpacity={0.18} stroke={ORANGE} strokeWidth={2.5}/>
+      <polygon points={poly('prev')} fill="#9EB2DB" fillOpacity={0.25} stroke="#7F95CC" strokeWidth={1.5} strokeDasharray="4 3"/>
+      <polygon points={poly('value')} fill={BRAND} fillOpacity={0.18} stroke={BRAND} strokeWidth={2.5}/>
       {data.map((d, i) => {
             const p = point(i, 116);
             return (<text key={d.name} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle" className="fill-charcoal-muted" style={{ fontSize: 9, fontWeight: 600 }}>

@@ -1,5 +1,5 @@
 import React from 'react';
-export function ProgressRing({ value, size = 120, stroke = 10, color = '#F5811E', track = '#F0EAE1', children, className }) {
+export function ProgressRing({ value, size = 120, stroke = 10, color = '#2E9C88', track = '#E6F4EF', children, className }) {
     const radius = (size - stroke) / 2;
     const circumference = 2 * Math.PI * radius;
     const clamped = Math.max(0, Math.min(100, value));

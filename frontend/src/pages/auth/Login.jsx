@@ -52,7 +52,7 @@ export function Login() {
       </form>
 
       <p data-auth-in className="mt-7 text-center text-sm text-charcoal-muted">
-        New to IHUSD?{' '}
+        New to ThriveU?{' '}
         <Link to="/register" className="font-semibold text-brand-600 underline decoration-brand-300 underline-offset-4 hover:decoration-brand-600">
           Create an account
         </Link>
