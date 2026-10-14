@@ -153,6 +153,8 @@ class FocusSession(Base):
     paused_seconds: Mapped[int] = mapped_column(Integer, default=0)   # total pause time (exact)
     paused_minutes: Mapped[int] = mapped_column(Integer, default=0)   # same, rounded (for reports / M1)
     was_missed: Mapped[bool] = mapped_column(Boolean, default=False)  # planned but never started
+    auto_closed: Mapped[bool] = mapped_column(Boolean, default=False)  # left open too long, closed by system
+    is_valid: Mapped[bool] = mapped_column(Boolean, default=True)      # False = do NOT use for M1 training
     focus_rating: Mapped[int | None] = mapped_column(Integer, nullable=True)  # optional 1..5 self-rating
 
     # --- Context copied at session time (so training data never changes later) ---

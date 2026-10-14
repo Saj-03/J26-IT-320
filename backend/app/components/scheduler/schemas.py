@@ -298,6 +298,8 @@ class FocusSessionOut(BaseModel):
     task_load: str | None
     mode: str
     was_missed: bool                 # planned but never started
+    auto_closed: bool                # left open too long -> closed by the system
+    is_valid: bool                   # False = not used for M1 training
     timer_recommended: bool
     timer_overridden: bool
 
@@ -310,6 +312,7 @@ class FocusSummaryOut(BaseModel):
     """
     sessions: int                      # started sessions
     missed: int                        # planned sessions that were never started
+    auto_closed: int                   # sessions left open too long (not in the numbers below)
     completed: int
     completion_rate: float | None      # 0..1, None if there are no sessions
     total_focus_minutes: int

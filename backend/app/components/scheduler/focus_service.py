@@ -13,6 +13,8 @@ Component 3 - FOCUS SESSIONS (FR-05, FR-15).
        (completed sessions earn XP, focus minutes are added to the task)
     7. History list + dashboard numbers           -> focus_history()
     8. Planned sessions that never started        -> check_missed_sessions()
+    9. Sessions left open too long                -> auto_close_stale_sessions()
+       (student forgot to press End -> closed + marked invalid, kept out of M1 training)
 
 Every session saves the context at that moment (task load, mode, was the
 timer changed?) so it can be used later as training data for M1.
@@ -34,6 +36,7 @@ MIN_HISTORY_SESSIONS = 5      # completed sessions needed before we trust the st
 COMPLETION_THRESHOLD = 0.8    # focused >= 80% of the planned time -> "completed"
 MISSED_GRACE_MINUTES = 30     # a planned session is "missed" if not started 30 min after its time
 EARLY_START_MINUTES = 60      # starting up to 1 hour early still counts as doing the planned session
+STALE_EXTRA_HOURS = 3         # open 3 hours longer than planned -> student forgot to press End
 
 
 # ---------------------------------------------------------------------------
@@ -51,6 +54,7 @@ def get_mode(db: Session, user) -> str:
 
 def get_active_session(db: Session, user) -> FocusSession | None:
     """The session that is running now (started, not ended), if any."""
+    auto_close_stale_sessions(db, user)              # a forgotten old session must not block the student
     return (db.query(FocusSession)
               .filter(FocusSession.user_id == user.id,
                       FocusSession.ended_at.is_(None),
@@ -171,6 +175,10 @@ def get_own_running_session(db: Session, user, session_id: str) -> FocusSession:
     session = db.get(FocusSession, session_id)
     if session is None or session.user_id != user.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Focus session not found")
+    auto_close_stale_sessions(db, user)              # pressing End 10 hours later must not count 10 hours
+    if session.auto_closed:
+        raise HTTPException(status.HTTP_409_CONFLICT,
+                            "This session was open too long and was closed automatically")
     if session.ended_at is not None or session.was_missed:
         raise HTTPException(status.HTTP_409_CONFLICT, "This session has already ended")
     return session
@@ -343,7 +351,9 @@ def focus_history(db: Session, user, date_from: datetime | None = None, date_to:
 def summarise(sessions: list[FocusSession]) -> dict:
     """Simple totals and averages for the dashboard."""
     missed = sum(1 for s in sessions if s.was_missed)
-    sessions = [s for s in sessions if not s.was_missed]   # the rest is about STARTED sessions
+    auto_closed = sum(1 for s in sessions if s.auto_closed)
+    # the numbers below are only about sessions that were started AND ended properly
+    sessions = [s for s in sessions if not s.was_missed and not s.auto_closed]
     count = len(sessions)
     done = sum(1 for s in sessions if s.completed)
     minutes = sum(s.actual_minutes for s in sessions)
@@ -351,6 +361,7 @@ def summarise(sessions: list[FocusSession]) -> dict:
     return {
         "sessions": count,
         "missed": missed,
+        "auto_closed": auto_closed,
         "completed": done,
         "completion_rate": round(done / count, 3) if count else None,
         "total_focus_minutes": minutes,
@@ -421,3 +432,45 @@ def check_missed_sessions(db: Session, user, now: datetime | None = None) -> lis
 
     db.commit()
     return new_missed
+
+
+# ---------------------------------------------------------------------------
+# 7. Auto-close sessions the student forgot to end
+# ---------------------------------------------------------------------------
+def auto_close_stale_sessions(db: Session, user, now: datetime | None = None) -> list[FocusSession]:
+    """
+    Close sessions that have been open 3 hours LONGER than planned
+    (e.g. a 25-min session still open after 3h 25m -> the student forgot to press End).
+
+    We do not know how long they really focused, so the session is:
+      * ended at start + planned time (when the timer would have finished)
+      * actual_minutes = 0, completed = False   -> no XP, nothing added to the task
+      * is_valid = False                        -> left out of M1 training and dashboard numbers
+    This is the "predeclared rule" for removing invalid sessions (proposal 3.2 / 3.2.3).
+    """
+    now = now or datetime.utcnow()
+    running = (db.query(FocusSession)
+                 .filter(FocusSession.user_id == user.id,
+                         FocusSession.ended_at.is_(None),
+                         FocusSession.was_missed.is_(False))
+                 .all())
+
+    closed = []
+    for session in running:
+        limit = session.started_at + timedelta(minutes=session.planned_minutes, hours=STALE_EXTRA_HOURS)
+        if now < limit:
+            continue                                   # still a normal running session
+
+        session.ended_at = session.started_at + timedelta(minutes=session.planned_minutes)
+        session.paused_at = None
+        session.actual_minutes = 0
+        session.completed = False
+        session.auto_closed = True
+        session.is_valid = False
+        audit(db, user.id, "focus_auto_closed", session_id=session.id,
+              open_hours=round((now - session.started_at).total_seconds() / 3600, 1))
+        closed.append(session)
+
+    if closed:
+        db.commit()
+    return closed
