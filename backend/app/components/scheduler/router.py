@@ -4,13 +4,15 @@ Component 3 - HTTP endpoints, all under /api/scheduler.
 Routers stay thin: read the request -> call a service function -> return the result.
 Every endpoint needs a logged-in student (get_current_user).
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.core.dependencies import get_current_user
-from app.components.scheduler import schemas, service, task_service
+from app.components.scheduler import (
+    schemas, service, task_service, commitment_service, focus_service, settings_service,
+)
 from app.components.scheduler.models import Task, FocusSession, ScheduleChange
 from app.components.scheduler.engine import stress_rules
 
@@ -57,6 +59,140 @@ def delete_task(task_id: str, db: Session = Depends(get_db), user=Depends(get_cu
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+# ===========================================================================
+# COMMITMENTS  (FR-02) - lectures, work, clubs = busy time
+# ===========================================================================
+@router.post("/commitments", response_model=schemas.CommitmentOut, status_code=status.HTTP_201_CREATED)
+def create_commitment(data: schemas.CommitmentCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Add a weekly (e.g. Monday lecture) or one-off busy time."""
+    return commitment_service.create_commitment(db, user, data)
+
+
+@router.get("/commitments", response_model=list[schemas.CommitmentOut])
+def list_commitments(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """All my commitments."""
+    return commitment_service.list_commitments(db, user)
+
+
+@router.get("/commitments/{commitment_id}", response_model=schemas.CommitmentOut)
+def get_commitment(commitment_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    return commitment_service.get_own_commitment(db, user, commitment_id)
+
+
+@router.patch("/commitments/{commitment_id}", response_model=schemas.CommitmentOut)
+def update_commitment(commitment_id: str, data: schemas.CommitmentUpdate,
+                      db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Change some fields (send only what changed)."""
+    return commitment_service.update_commitment(db, user, commitment_id, data)
+
+
+@router.delete("/commitments/{commitment_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_commitment(commitment_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    commitment_service.delete_commitment(db, user, commitment_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# ===========================================================================
+# FREE TIME + CONFLICTS
+# ===========================================================================
+@router.get("/availability", response_model=schemas.AvailabilityOut)
+def availability(days: int = Query(7, ge=1, le=28, description="how many days ahead"),
+                 db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """My free study time per day (study window minus commitments)."""
+    return commitment_service.get_availability(db, user, days)
+
+
+@router.get("/conflicts", response_model=list[schemas.ConflictOut])
+def conflicts(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Clashing commitments and deadlines I can't meet with my free time."""
+    return commitment_service.detect_conflicts(db, user)
+
+
+# ===========================================================================
+# FOCUS SESSIONS  (FR-05, FR-15)
+# ===========================================================================
+@router.get("/focus/recommendation", response_model=schemas.TimerRecommendationOut)
+def timer_recommendation(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Suggested timer length - show this before the student presses Start."""
+    return focus_service.recommend_timer(db, user)
+
+
+@router.post("/focus/start", response_model=schemas.FocusStartOut, status_code=status.HTTP_201_CREATED)
+def start_focus(data: schemas.FocusStartIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Start a session. Leave planned_minutes empty to accept the suggestion."""
+    return focus_service.start_session(db, user, data)
+
+
+@router.get("/focus/active", response_model=schemas.FocusSessionOut | None)
+def active_focus(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """The running session (null if none) - lets the app restore the timer after a refresh."""
+    return focus_service.get_active_session(db, user)
+
+
+@router.get("/focus/history", response_model=schemas.FocusHistoryOut)
+def focus_history(
+    date_from: datetime | None = Query(None, alias="from", description="sessions started on/after this time"),
+    date_to: datetime | None = Query(None, alias="to", description="sessions started before this time"),
+    task_id: str | None = Query(None),
+    completed: bool | None = Query(None, description="true = completed only, false = stopped early only"),
+    include_missed: bool = Query(True, description="false = hide planned sessions that were never started"),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    """My finished focus sessions (newest first) + dashboard summary."""
+    return focus_service.focus_history(db, user, schemas.to_utc_naive(date_from), schemas.to_utc_naive(date_to),
+                                       task_id, completed, include_missed, limit, offset)
+
+
+@router.post("/focus/missed/check", response_model=schemas.MissedCheckOut)
+def check_missed(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Record planned sessions that were not started (call when the app opens - safe to repeat)."""
+    return {"new_missed": focus_service.check_missed_sessions(db, user)}
+
+
+@router.post("/focus/{session_id}/pause", response_model=schemas.FocusSessionOut)
+def pause_focus(session_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Pause the running session (counts the pause)."""
+    return focus_service.pause_session(db, user, session_id)
+
+
+@router.post("/focus/{session_id}/resume", response_model=schemas.FocusSessionOut)
+def resume_focus(session_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Continue after a pause (adds the pause time to the total)."""
+    return focus_service.resume_session(db, user, session_id)
+
+
+@router.post("/focus/{session_id}/end", response_model=schemas.FocusEndOut)
+def end_focus(session_id: str, data: schemas.FocusEndIn | None = None,
+              db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Stop the session: real focus time, completed or not, XP. Rating is optional."""
+    return focus_service.end_session(db, user, session_id, data or schemas.FocusEndIn())
+
+
+@router.post("/focus/{session_id}/rating", response_model=schemas.FocusSessionOut)
+def rate_focus(session_id: str, data: schemas.FocusRatingIn,
+               db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Give (or change) the 1-5 "how was your focus?" rating after ending."""
+    return focus_service.rate_session(db, user, session_id, data.focus_rating)
+
+
+# ===========================================================================
+# SETTINGS
+# ===========================================================================
+@router.get("/settings", response_model=schemas.SettingsOut)
+def get_settings(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """My scheduler settings (defaults if I never changed anything)."""
+    return settings_service.get_settings(db, user)
+
+
+@router.patch("/settings", response_model=schemas.SettingsOut)
+def update_settings(data: schemas.SettingsUpdate, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Change my settings (send only what changed). Experiment mode can't be changed here."""
+    return settings_service.update_settings(db, user, data)
+
+
 @router.get("/plan")
 def plan(adaptive: bool = True, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """adaptive=false gives the STATIC baseline used in the controlled pilot."""
@@ -65,7 +201,9 @@ def plan(adaptive: bool = True, db: Session = Depends(get_db), user=Depends(get_
 
 @router.post("/focus")
 def log_focus(data: schemas.FocusIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    db.add(FocusSession(user_id=user.id, **data.model_dump())); db.commit()
+    """OLD endpoint: logs an already-finished session in one call (kept for the current frontend)."""
+    ended = data.started_at + timedelta(minutes=data.actual_minutes)   # finished -> never "active"
+    db.add(FocusSession(user_id=user.id, ended_at=ended, **data.model_dump())); db.commit()
     return {"ok": True}
 
 

@@ -1,49 +1,16 @@
 """
 API tests for Component 3 tasks (FR-01, FR-03).
 
-Uses a throw-away in-memory SQLite database and a fake logged-in student,
-so the real database is never touched.
+Uses the `env` fixture from conftest.py (in-memory database, fake student).
 """
 from datetime import datetime, timedelta
 
 import pytest
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
-import app.db.base  # noqa: F401  (registers every table)
-from app.db.session import Base, get_db
-from app.core.dependencies import get_current_user
-from app.shared.users.models import User
 from app.components.scheduler.models import FocusSession, SchedulerAuditLog
-from app.components.scheduler.router import router
 
 
-# ---------------------------------------------------------------------------
-# Test setup
-# ---------------------------------------------------------------------------
-@pytest.fixture()
-def env():
-    """Fresh database + two students (me and someone else) for every test."""
-    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
-    Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    db = Session()
-
-    me = User(email="me@test.lk", full_name="Me", hashed_password="x")
-    other = User(email="other@test.lk", full_name="Other", hashed_password="x")
-    db.add_all([me, other]); db.commit()
-
-    current = {"user": me}                       # tests can switch the logged-in student
-    api = FastAPI()
-    api.include_router(router, prefix="/api/scheduler")
-    api.dependency_overrides[get_db] = lambda: db
-    api.dependency_overrides[get_current_user] = lambda: current["user"]
-
-    yield TestClient(api), db, current, other
-    db.close()
+# The `env` fixture (test database + logged-in student) is in conftest.py
 
 
 def future(days=3) -> str:
