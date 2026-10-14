@@ -10,7 +10,9 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.core.dependencies import get_current_user
-from app.components.scheduler import schemas, service, task_service, commitment_service, focus_service
+from app.components.scheduler import (
+    schemas, service, task_service, commitment_service, focus_service, settings_service,
+)
 from app.components.scheduler.models import Task, FocusSession, ScheduleChange
 from app.components.scheduler.engine import stress_rules
 
@@ -174,6 +176,21 @@ def rate_focus(session_id: str, data: schemas.FocusRatingIn,
                db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Give (or change) the 1-5 "how was your focus?" rating after ending."""
     return focus_service.rate_session(db, user, session_id, data.focus_rating)
+
+
+# ===========================================================================
+# SETTINGS
+# ===========================================================================
+@router.get("/settings", response_model=schemas.SettingsOut)
+def get_settings(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """My scheduler settings (defaults if I never changed anything)."""
+    return settings_service.get_settings(db, user)
+
+
+@router.patch("/settings", response_model=schemas.SettingsOut)
+def update_settings(data: schemas.SettingsUpdate, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Change my settings (send only what changed). Experiment mode can't be changed here."""
+    return settings_service.update_settings(db, user, data)
 
 
 @router.get("/plan")

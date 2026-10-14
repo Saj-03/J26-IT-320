@@ -352,8 +352,9 @@ def summarise(sessions: list[FocusSession]) -> dict:
     """Simple totals and averages for the dashboard."""
     missed = sum(1 for s in sessions if s.was_missed)
     auto_closed = sum(1 for s in sessions if s.auto_closed)
-    # the numbers below are only about sessions that were started AND ended properly
-    sessions = [s for s in sessions if not s.was_missed and not s.auto_closed]
+    # the numbers below are only about VALID sessions that were really started
+    # (auto-closed or stopped-by-tracking-off sessions have is_valid = False)
+    sessions = [s for s in sessions if not s.was_missed and s.is_valid]
     count = len(sessions)
     done = sum(1 for s in sessions if s.completed)
     minutes = sum(s.actual_minutes for s in sessions)

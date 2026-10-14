@@ -348,6 +348,52 @@ class FocusStartOut(BaseModel):
 
 
 # ===========================================================================
+# SETTINGS - one row per student
+# ===========================================================================
+class SettingsOut(BaseModel):
+    """What GET /settings returns. mode / pilot_group are shown but the student can't change them."""
+    model_config = ConfigDict(from_attributes=True)
+
+    mode: str
+    pilot_group: str | None
+    day_start_hour: int
+    day_end_hour: int
+    max_study_minutes_per_day: int
+    preferred_hours: list[int]
+    usual_focus_minutes: int
+    focus_tracking_enabled: bool
+    stress_adaptation_enabled: bool
+    fixed_timer_minutes: int | None
+
+
+class SettingsUpdate(BaseModel):
+    """
+    Body of PATCH /settings - send only what changed.
+    mode and pilot_group are NOT here on purpose: only the researcher sets them
+    (if a student could change their own mode, the pilot experiment would break).
+    """
+    model_config = ConfigDict(extra="forbid")      # sending "mode" -> 422
+
+    day_start_hour: int | None = Field(default=None, ge=0, le=23)
+    day_end_hour: int | None = Field(default=None, ge=1, le=24)
+    max_study_minutes_per_day: int | None = Field(default=None, ge=60, le=16 * 60)
+    preferred_hours: list[int] | None = Field(default=None, max_length=24)
+    usual_focus_minutes: int | None = Field(default=None, ge=10, le=120)
+    focus_tracking_enabled: bool | None = None
+    stress_adaptation_enabled: bool | None = None
+    fixed_timer_minutes: int | None = Field(default=None, ge=5, le=180)   # send null to clear
+
+    @field_validator("preferred_hours")
+    @classmethod
+    def valid_hours(cls, v: list[int] | None) -> list[int] | None:
+        if v is None:
+            return v
+        if any(h < 0 or h > 23 for h in v):
+            raise ValueError("hours must be between 0 and 23")
+        return sorted(set(v))                         # remove duplicates, keep in order
+
+
+# ===========================================================================
 # OLD ENDPOINTS (kept so the current frontend keeps working)
 # ===========================================================================
 class FocusIn(BaseModel):
