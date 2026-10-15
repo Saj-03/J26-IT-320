@@ -30,13 +30,38 @@ def parse_numeric(val, default=0.0):
         return default
 
 def clean_student_survey():
-    raw_path = os.path.join(DATASET_DIR, "Responses 1 - Form responses 1.csv")
-    if not os.path.exists(raw_path):
-        print(f"File not found: {raw_path}")
-        return None
+    xlsx_path = os.path.join(DATASET_DIR, "survey_cleaned.xlsx")
+    csv_cleaned_path = os.path.join(DATASET_DIR, "survey_cleaned.csv")
 
-    df = pd.read_csv(raw_path)
+    if os.path.exists(xlsx_path):
+        print(f"Loading cleaned student survey from: {xlsx_path} (sheet 'Clean data')")
+        df = pd.read_excel(xlsx_path, sheet_name="Clean data")
+    elif os.path.exists(csv_cleaned_path):
+        print(f"Loading cleaned student survey from: {csv_cleaned_path}")
+        df = pd.read_csv(csv_cleaned_path)
+    else:
+        raise FileNotFoundError(f"survey_cleaned.xlsx or survey_cleaned.csv not found in {DATASET_DIR}")
+
     cleaned_records = []
+
+    LIKERT_STRESS_MAP = {
+        "never": 1.0, "almost never": 2.0, "sometimes": 3.0, "fairly often": 4.0, "very often": 5.0
+    }
+    LIKERT_BURNOUT_MAP = {
+        "never": 1.0, "seldom": 2.0, "sometimes": 3.0, "often": 4.0, "always": 5.0
+    }
+    STUDY_MAP = {
+        "less than 5 hours": 4.0, "5–10 hours": 7.5, "510 hours": 7.5, "5-10 hours": 7.5,
+        "10–20 hours": 15.0, "1020 hours": 15.0, "10-20 hours": 15.0, "more than 20 hours": 25.0
+    }
+    TASK_MAP = {
+        "1–2": 1.5, "12": 1.5, "1-2": 1.5, "3–5": 4.0, "35": 4.0, "3-5": 4.0, "more than 5": 6.0
+    }
+    TIME_MAP = {
+        "less than 15 minutes": 15.0, "15–30 minutes": 20.0, "1530 minutes": 20.0, "15-30 minutes": 20.0,
+        "30–45 minutes": 30.0, "3045 minutes": 30.0, "30-45 minutes": 30.0,
+        "45–60 minutes": 45.0, "4560 minutes": 45.0, "45-60 minutes": 45.0, "more than 60 minutes": 60.0
+    }
 
     for idx, row in df.iterrows():
         # Parse Demographics & Physical
@@ -47,36 +72,44 @@ def clean_student_survey():
         # Calculate BMI
         bmi = weight / ((height / 100.0) ** 2) if height > 0 else 22.0
         
-        # Sleep & Deficit
+        # Sleep & Deficit (Col 49)
         sleep_hours = parse_numeric(row.iloc[49], default=7.0)
         sleep_deficit = max(0.0, 7.5 - sleep_hours)
         
-        # Workload & Stress
-        study_hours = parse_numeric(row.iloc[44], default=15.0)
-        job_hours = parse_numeric(row.iloc[47], default=0.0)
-        task_count = parse_numeric(row.iloc[50], default=5.0)
+        # Workload (Cols 29, 32, 34)
+        study_str = str(row.iloc[29]).lower().strip()
+        study_hours = STUDY_MAP.get(study_str, parse_numeric(study_str, default=10.0))
 
-        # Calculate Workload Intensity Score (0 - 100 scale)
-        # Normalized by typical max study 40h + max job 30h + max tasks 15
-        workload_score = min(100.0, (study_hours * 1.5) + (job_hours * 1.2) + (task_count * 3.0))
+        job_hours = 0.0
+        if not pd.isna(row.iloc[32]):
+            job_hours = parse_numeric(row.iloc[32], default=0.0)
+
+        task_str = str(row.iloc[34]).lower().strip()
+        task_count = TASK_MAP.get(task_str, parse_numeric(task_str, default=3.0))
+
+        # Workload intensity score: 0 to 100
+        workload_score = min(100.0, (study_hours * 1.5) + (job_hours * 1.0) + (task_count * 4.0))
 
         # Stress scale: average of PSS items (cols 39-48, 1-5 rating)
         pss_vals = []
         for c in range(39, 49):
-            val = parse_numeric(row.iloc[c], default=3.0)
-            pss_vals.append(val)
-        stress_score = np.mean(pss_vals) if pss_vals else 3.0
+            val_str = str(row.iloc[c]).lower().strip()
+            score = LIKERT_STRESS_MAP.get(val_str, parse_numeric(row.iloc[c], default=3.0))
+            pss_vals.append(score)
+        stress_score = float(np.mean(pss_vals)) if pss_vals else 3.0
 
-        # Burnout scale (cols 69-78, 1-5 rating)
+        # Burnout scale: CBI items (cols 69-78, 1-5 rating)
         burnout_vals = []
         for c in range(69, 79):
-            val = parse_numeric(row.iloc[c], default=3.0)
-            burnout_vals.append(val)
-        burnout_score = np.mean(burnout_vals) if burnout_vals else 3.0
+            val_str = str(row.iloc[c]).lower().strip()
+            score = LIKERT_BURNOUT_MAP.get(val_str, parse_numeric(row.iloc[c], default=3.0))
+            burnout_vals.append(score)
+        burnout_score = float(np.mean(burnout_vals)) if burnout_vals else 3.0
 
         # Workout Preferences & Limitations
         exercise_freq = parse_numeric(row.iloc[57], default=2.0)
-        available_mins = parse_numeric(row.iloc[62], default=30.0)
+        time_str = str(row.iloc[62]).lower().strip()
+        available_mins = TIME_MAP.get(time_str, parse_numeric(time_str, default=20.0))
         motivation_score = parse_numeric(row.iloc[63], default=3.0)
 
         wellbeing_goal = str(row.iloc[55]) if not pd.isna(row.iloc[55]) else "General Fitness"

@@ -9,11 +9,18 @@ class WellbeingProfile(Base):
     __tablename__ = "wellbeing_profiles"
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
-    goal: Mapped[str] = mapped_column(String)                 # e.g. "fitness", "weight_loss"
-    activity_level: Mapped[str] = mapped_column(String)       # low / medium / high
+    goal: Mapped[str] = mapped_column(String, default="fitness")                 # primary goal
+    goals: Mapped[list] = mapped_column(JSON, default=list)                     # list of selected goals
+    activity_level: Mapped[str] = mapped_column(String, default="medium")       # low / medium / high
     available_minutes: Mapped[int] = mapped_column(Integer, default=20)
     equipment: Mapped[list] = mapped_column(JSON, default=list)
-    diet_pref: Mapped[str] = mapped_column(String, default="any")  # veg / non-veg
+    diet_pref: Mapped[str] = mapped_column(String, default="any")               # veg / non-veg / vegan
+    meal_style: Mapped[str] = mapped_column(String, default="both")             # sri_lankan / western / both
+    allergies: Mapped[str] = mapped_column(String, default="")
+    avoid_foods: Mapped[str] = mapped_column(String, default="")
+    favourite_foods: Mapped[str] = mapped_column(String, default="")
+    preferred_time: Mapped[str] = mapped_column(String, default="morning")     # morning / afternoon / evening
+    preferred_activities: Mapped[list] = mapped_column(JSON, default=list)
     sleep_hours: Mapped[float] = mapped_column(Float, default=7.0)
     workload_intensity_score: Mapped[float] = mapped_column(Float, default=50.0)
     stress_score: Mapped[float] = mapped_column(Float, default=3.0)

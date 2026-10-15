@@ -25,36 +25,127 @@ export const wellbeingProfile = {
     favourites: 'Rice & curry, fruit',
     streak: 7
 };
-export const fitnessLevels = [
-    { id: 'beginner', label: 'Beginner', desc: 'Little or no regular exercise', emoji: '🌱' },
-    { id: 'moderate', label: 'Moderate', desc: 'Active once or twice a week', emoji: '🚶' },
-    { id: 'active', label: 'Active', desc: 'Exercise 3–4 times a week', emoji: '🏃' },
-    { id: 'very', label: 'Very Active', desc: 'Training most days', emoji: '⚡' }
-];
+// Physical Wellbeing Goals (Survey Col 55)
 export const wellbeingGoals = [
-    { id: 'fitness', label: 'Improve Physical Fitness', emoji: '💪' },
-    { id: 'active', label: 'Become More Active', emoji: '🚶' },
-    { id: 'maintain', label: 'Maintain Healthy Weight', emoji: '⚖️' },
-    { id: 'lose', label: 'Lose Weight', emoji: '🎯' },
-    { id: 'eating', label: 'Build Better Eating Habits', emoji: '🥗' },
-    { id: 'consistency', label: 'Improve Exercise Consistency', emoji: '📅' },
-    { id: 'sedentary', label: 'Reduce Sedentary Time', emoji: '⏱️' },
-    { id: 'habits', label: 'Build Healthy Daily Habits', emoji: '✨' },
-    { id: 'overall', label: 'Improve Overall Wellbeing', emoji: '🌿' }
+    { id: 'Improve overall fitness', label: 'Improve Overall Fitness', emoji: '💪', desc: 'Build aerobic capacity and vitality' },
+    { id: 'Increase physical activity', label: 'Increase Physical Activity', emoji: '🚶', desc: 'Move more and reduce sedentary study hours' },
+    { id: 'Improve strength', label: 'Improve Strength', emoji: '🏋️', desc: 'Tone muscles, posture and core endurance' },
+    { id: 'Manage body weight', label: 'Manage Body Weight', emoji: '⚖️', desc: 'Healthy body mass management' },
+    { id: 'Improve flexibility / mobility', label: 'Flexibility & Mobility', emoji: '🧘', desc: 'Relieve stiff neck, shoulders and lower back' },
+    { id: 'Improve sleep', label: 'Improve Sleep Quality', emoji: '😴', desc: 'De-stress for deeper, restorative rest' },
+    { id: 'Maintain current wellbeing', label: 'Maintain Current Wellbeing', emoji: '🌿', desc: 'Sustain balanced daily health habits' }
 ];
+
+// Physical Activity Levels (Survey Col 56)
+export const activityLevels = [
+    { id: 'Very inactive', label: 'Very Inactive', desc: 'Sedentary study days, little to no exercise', emoji: '🪑' },
+    { id: 'Lightly active', label: 'Lightly Active', desc: 'Occasional light walking around campus', emoji: '🚶' },
+    { id: 'Moderately active', label: 'Moderately Active', desc: 'Regular exercise 1–2 times a week', emoji: '🏃' },
+    { id: 'Highly active', label: 'Highly Active', desc: 'Structured exercise 3–4 times a week', emoji: '⚡' },
+    { id: 'Very active', label: 'Very Active', desc: 'Intensive sports or training most days', emoji: '🔥' }
+];
+export const fitnessLevels = activityLevels; // Backwards compatibility alias
+
+// Willing Physical Activities (Survey Col 58)
+export const willingActivities = [
+    { id: 'Home workouts', label: 'Home Workouts', emoji: '🏠' },
+    { id: 'Gym / strength training', label: 'Gym / Strength', emoji: '🏋️' },
+    { id: 'Walking', label: 'Walking', emoji: '🚶' },
+    { id: 'Running / jogging', label: 'Running / Jogging', emoji: '🏃' },
+    { id: 'Stretching / mobility', label: 'Stretching / Mobility', emoji: '🧘' },
+    { id: 'Yoga', label: 'Yoga', emoji: '🕉️' },
+    { id: 'Cycling', label: 'Cycling', emoji: '🚴' },
+    { id: 'Sports', label: 'Sports (Badminton, etc.)', emoji: '🏸' },
+    { id: 'Dance / Zumba', label: 'Dance / Zumba', emoji: '💃' }
+];
+
+// Exercise Facilities & Equipment (Survey Col 61)
+export const equipmentFacilities = [
+    { id: 'No equipment', label: 'No Equipment (Bodyweight)', emoji: '🤸' },
+    { id: 'Exercise mat', label: 'Exercise Mat', emoji: '🧘' },
+    { id: 'Dumbbells / weights', label: 'Dumbbells / Weights', emoji: '🏋️' },
+    { id: 'Resistance bands', label: 'Resistance Bands', emoji: '🎗️' },
+    { id: 'Outdoor walking / running area', label: 'Outdoor Walking Area', emoji: '🌳' },
+    { id: 'Gym / fitness centre', label: 'Gym / Fitness Centre', emoji: '🏢' },
+    { id: 'Sports facilities', label: 'Sports Facilities', emoji: '🏟️' }
+];
+
+// Physical Limitations (Survey Col 59 & 60)
 export const limitationOptions = [
-    { id: 'none', label: 'No limitations', emoji: '✅' },
-    { id: 'knee', label: 'Knee discomfort', emoji: '🦵' },
-    { id: 'back', label: 'Back discomfort', emoji: '🧍' },
-    { id: 'joint', label: 'Joint limitations', emoji: '🔧' },
-    { id: 'mobility', label: 'Limited mobility', emoji: '♿' },
-    { id: 'other', label: 'Other', emoji: '📝' }
+    { id: 'none', label: 'No limitations', emoji: '✅', desc: 'Safe for all standard exercises' },
+    { id: 'lower_body', label: 'Lower-body (Knee / Ankle / Hip)', emoji: '🦵', desc: 'Excludes high-impact squats, lunges, and jumping' },
+    { id: 'upper_body', label: 'Upper-body (Back / Shoulder)', emoji: '🧍', desc: 'Excludes heavy overhead and spinal strain' },
+    { id: 'high_impact', label: 'High-impact activities', emoji: '👟', desc: 'Low-impact, joint-friendly cardio only' },
+    { id: 'flexibility', label: 'Limited flexibility / mobility', emoji: '🧘', desc: 'Gentle range-of-motion routines' }
 ];
+
+// Available Time per University Day (Survey Col 62)
+export const availableTimeOptions = [
+    { id: 'Less than 15 minutes', label: 'Less than 15 mins', desc: 'Quick desk stretch & micro-routine', minutes: 15 },
+    { id: '15–30 minutes', label: '15–30 mins', desc: 'Efficient university session', minutes: 20 },
+    { id: '31–45 minutes', label: '31–45 mins', desc: 'Balanced cardio & strength', minutes: 35 },
+    { id: '46–60 minutes', label: '46–60 mins', desc: 'Complete workout routine', minutes: 45 },
+    { id: 'More than 60 minutes', label: '60+ mins', desc: 'In-depth fitness training', minutes: 60 }
+];
+
+// Main Routine Difficulties / Barriers (Survey Col 64)
+export const barrierOptions = [
+    'Academic workload',
+    'Lack of time',
+    'Stress',
+    'Tiredness / lack of sleep',
+    'Lack of motivation',
+    'Lack of facilities / equipment',
+    'Lack of knowledge'
+];
+
+// Main Nutrition Goals (Survey Col 65)
+export const nutritionGoals = [
+    { id: 'Maintain healthy eating', label: 'Maintain Healthy Eating', emoji: '🥗' },
+    { id: 'Improve nutritional quality', label: 'Improve Food Quality', emoji: '🍎' },
+    { id: 'Manage body weight', label: 'Manage Body Weight', emoji: '⚖️' },
+    { id: 'Increase protein intake', label: 'Increase Protein Intake', emoji: '🍗' },
+    { id: 'Increase fruit and vegetable intake', label: 'More Fruits & Veggies', emoji: '🥦' },
+    { id: 'Support fitness', label: 'Fuel Workout & Energy', emoji: '⚡' }
+];
+
+// Meal Cuisine Style (Survey Col 66)
+export const mealStyles = [
+    { id: 'Sri Lankan meals', label: 'Sri Lankan Meals', emoji: '🍛', desc: 'Rice & curry, hoppers, dhal, sambol' },
+    { id: 'International meals', label: 'International Meals', emoji: '🥗', desc: 'Oats, grilled chicken, pasta, wraps' },
+    { id: 'Combination of both', label: 'Combination of Both', emoji: '🍽️', desc: 'Blend of local cuisine and quick global meals' }
+];
+
+// Dietary Preference (Survey Col 67)
 export const dietOptions = [
-    { id: 'veg', label: 'Vegetarian', emoji: '🥬' },
-    { id: 'nonveg', label: 'Non-Vegetarian', emoji: '🍗' },
-    { id: 'vegan', label: 'Vegan', emoji: '🌱' },
-    { id: 'none', label: 'No Preference', emoji: '🍽️' }
+    { id: 'Non-Vegetarian', label: 'Non-Vegetarian', emoji: '🍗', desc: 'Includes poultry, fish, eggs and dairy' },
+    { id: 'Vegetarian', label: 'Vegetarian', emoji: '🥬', desc: 'Plant-based with dairy and eggs' },
+    { id: 'Vegan', label: '100% Vegan', emoji: '🌱', desc: 'Purely plant-based, no animal products' },
+    { id: 'No specific preference', label: 'No Specific Preference', emoji: '🍽️', desc: 'Flexible with any balanced meal' }
+];
+
+// Meal Sources (Survey Col 68)
+export const mealSources = [
+    'Cook at home',
+    'Family-prepared meals',
+    'University cafeteria / canteen',
+    'Restaurants / takeaway',
+    'Combination'
+];
+
+// Academic Study Hours Outside Lectures (Survey Col 29)
+export const studyHourRanges = [
+    'Less than 5 hours',
+    '5–10 hours',
+    '10–20 hours',
+    'More than 20 hours'
+];
+
+// Weekly Academic Tasks (Survey Col 34)
+export const academicTaskRanges = [
+    '1–2 tasks',
+    '3–5 tasks',
+    'More than 5 tasks'
 ];
 export const todayRecommendation = {
     id: 'r1',

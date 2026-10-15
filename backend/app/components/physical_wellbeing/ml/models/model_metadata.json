@@ -17,10 +17,10 @@
         "equipment_match"
     ],
     "metrics": {
-        "rmse": 0.0169,
-        "mae": 0.0079,
-        "r2_score": 0.997
+        "rmse": 0.0227,
+        "mae": 0.0128,
+        "r2_score": 0.9944
     },
-    "training_samples": 10080,
-    "test_samples": 2520
+    "training_samples": 9456,
+    "test_samples": 2364
 }

@@ -14,8 +14,10 @@ router = APIRouter()
 def save_profile(data: schemas.ProfileIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
     p = db.query(WellbeingProfile).filter_by(user_id=user.id).first() or WellbeingProfile(user_id=user.id)
     for k, v in data.model_dump().items():
-        setattr(p, k, v)
-    db.add(p); db.commit()
+        if hasattr(p, k):
+            setattr(p, k, v)
+    db.add(p)
+    db.commit()
     return {"ok": True}
 
 
@@ -25,18 +27,49 @@ def get_profile(db: Session = Depends(get_db), user=Depends(get_current_user)):
     if not p:
         raise HTTPException(404, "No profile found. Complete the assessment first.")
     return {
-        "goal": p.goal,
-        "activity_level": p.activity_level,
-        "available_minutes": p.available_minutes,
-        "equipment": p.equipment,
-        "diet_pref": p.diet_pref,
-        "sleep_hours": p.sleep_hours,
-        "workload_intensity_score": p.workload_intensity_score,
-        "stress_score": p.stress_score,
-        "burnout_score": p.burnout_score,
-        "bmi": p.bmi,
-        "physical_limitations": p.physical_limitations,
-        "recovery_mode": p.recovery_mode,
+        "goal": p.goal or "fitness",
+        "goals": p.goals or ([p.goal] if p.goal else ["fitness"]),
+        "activity_level": p.activity_level or "medium",
+        "available_minutes": p.available_minutes or 20,
+        "equipment": p.equipment or [],
+        "diet_pref": p.diet_pref or "any",
+        "meal_style": getattr(p, "meal_style", "both") or "both",
+        "allergies": getattr(p, "allergies", "") or "",
+        "avoid_foods": getattr(p, "avoid_foods", "") or "",
+        "favourite_foods": getattr(p, "favourite_foods", "") or "",
+        "preferred_time": getattr(p, "preferred_time", "morning") or "morning",
+        "preferred_activities": getattr(p, "preferred_activities", []) or [],
+        "sleep_hours": p.sleep_hours or 7.0,
+        "workload_intensity_score": p.workload_intensity_score or 50.0,
+        "stress_score": p.stress_score or 3.0,
+        "burnout_score": p.burnout_score or 3.0,
+        "bmi": p.bmi or 22.0,
+        "physical_limitations": p.physical_limitations or "",
+        "recovery_mode": p.recovery_mode or False,
+    }
+
+
+def _profile_to_dict(p: WellbeingProfile) -> dict:
+    return {
+        "workload_intensity_score": p.workload_intensity_score or 50.0,
+        "stress_score": p.stress_score or 3.0,
+        "burnout_score": p.burnout_score or 3.0,
+        "bmi": p.bmi or 22.0,
+        "available_minutes": p.available_minutes or 20,
+        "physical_limitations": p.physical_limitations or "",
+        "equipment": p.equipment or [],
+        "equipment_access": " ".join(p.equipment) if p.equipment else "Home / Bodyweight",
+        "diet_pref": p.diet_pref or "any",
+        "dietary_preference": p.diet_pref or "any",
+        "meal_style": getattr(p, "meal_style", "both") or "both",
+        "allergies": getattr(p, "allergies", "") or "",
+        "avoid_foods": getattr(p, "avoid_foods", "") or "",
+        "favourite_foods": getattr(p, "favourite_foods", "") or "",
+        "preferred_time": getattr(p, "preferred_time", "morning") or "morning",
+        "preferred_activities": getattr(p, "preferred_activities", []) or [],
+        "goal": p.goal or "fitness",
+        "goals": p.goals or ([p.goal] if p.goal else ["fitness"]),
+        "sleep_deficit": max(0.0, 7.5 - (p.sleep_hours or 7.0))
     }
 
 
@@ -46,17 +79,7 @@ def recommendations(is_exam_period: bool = False, use_baseline: bool = False, db
     if not p:
         raise HTTPException(404, "Create your wellbeing profile first")
     
-    profile_dict = {
-        "workload_intensity_score": p.workload_intensity_score,
-        "stress_score": p.stress_score,
-        "burnout_score": p.burnout_score,
-        "bmi": p.bmi,
-        "available_minutes": p.available_minutes,
-        "physical_limitations": p.physical_limitations,
-        "equipment_access": " ".join(p.equipment) if p.equipment else "None",
-        "dietary_preference": p.diet_pref,
-        "sleep_deficit": max(0.0, 7.5 - p.sleep_hours)
-    }
+    profile_dict = _profile_to_dict(p)
 
     if use_baseline:
         res = recommender.get_baseline_recommendations(profile_dict)
@@ -66,24 +89,47 @@ def recommendations(is_exam_period: bool = False, use_baseline: bool = False, db
     formatted_exercises = []
     for w in res.get("recommended_workouts", []):
         w_dict = dict(w)
-        w_dict["name"] = w_dict.get("title") or w_dict.get("name") or "Workout Routine"
-        w_dict["minutes"] = int(w_dict.get("adapted_duration_mins") or w_dict.get("time_per_workout") or w_dict.get("duration_mins") or 20)
+        w_dict["name"] = w_dict.get("name") or w_dict.get("title") or "Workout Routine"
+        w_dict["minutes"] = int(w_dict.get("minutes") or w_dict.get("duration_mins") or w_dict.get("time_per_workout") or 20)
         formatted_exercises.append(w_dict)
 
     formatted_meals = []
     for m in res.get("recommended_meals", []):
         m_dict = dict(m)
-        m_dict["name"] = m_dict.get("meal_name") or m_dict.get("name") or m_dict.get("title") or "Healthy Meal"
-        m_dict["region"] = m_dict.get("cuisine") or m_dict.get("diet_category") or ("Vegetarian" if m_dict.get("vegetarian") else "Balanced")
+        m_dict["name"] = m_dict.get("name") or m_dict.get("meal_name") or "Healthy Meal"
+        m_dict["region"] = m_dict.get("cuisine") or m_dict.get("diet_category") or "Balanced"
         formatted_meals.append(m_dict)
 
     return {
-        "recovery_mode": p.recovery_mode,
+        "recovery_mode": p.recovery_mode or False,
         "model_version": res["model_version"],
         "context_aware": res["context_aware"],
+        "is_exam_period": res.get("is_exam_period", is_exam_period),
+        "effective_available_minutes": res.get("effective_available_minutes", p.available_minutes),
+        "user_preferences": profile_dict,
         "exercises": formatted_exercises,
-        "meals": formatted_meals
+        "meals": formatted_meals,
+        "today_slots": res.get("today_slots")
     }
+
+
+@router.get("/week-plan")
+def get_week_plan(
+    is_exam_period: bool = False,
+    use_baseline: bool = False,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    p = db.query(WellbeingProfile).filter_by(user_id=user.id).first()
+    if not p:
+        raise HTTPException(404, "Create your wellbeing profile first")
+    
+    profile_dict = _profile_to_dict(p)
+    return recommender.generate_week_plan(
+        profile_dict,
+        is_exam_period=is_exam_period,
+        use_baseline=use_baseline
+    )
 
 
 @router.post("/activity")

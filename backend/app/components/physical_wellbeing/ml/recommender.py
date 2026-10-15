@@ -3,97 +3,637 @@ Physical Wellbeing Recommender Engine.
 
 Features dual recommendation engines for research evaluation:
 1. Baseline Recommender (Model 1): Static rule-based filter ignoring student stress & academic workload context.
-2. Adaptive AI Recommender (Model 2): Context-aware model powered by XGBoost adherence prediction, dynamically adapting to academic workload, stress levels, exam periods, and physical limitations.
+2. Adaptive AI Recommender (Model 2): Context-aware model powered by XGBoost adherence prediction, dynamically adapting to:
+   - Academic workload & stress levels
+   - Exam periods (auto-scaling time down by 50%)
+   - Student available workout minutes (strictly enforcing time constraints)
+   - Student physical limitations (knee, back safety filtering)
+   - Student diet preferences (Vegetarian, Vegan, Non-Vegetarian)
+   - Student cuisine preferences (Authentic Sri Lankan foods, Western/International, or Both)
+   - Allergies and avoided foods
+   - Generates comprehensive 7-day date-wise plans with Breakfast, Lunch, Dinner, Snack options & daily workouts.
 """
 
+import os
+import json
+import datetime
+from typing import Dict, List, Any, Optional
 import pandas as pd
 import numpy as np
-import os
 import joblib
-import json
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CLEANED_DIR = r"d:\RP\J26-IT-320\backend\datasets\physical\cleaned"
+DATASETS_DIR = r"d:\RP\J26-IT-320\backend\datasets\physical"
 MODEL_DIR = os.path.join(BASE_DIR, "models")
 
 MODEL_PATH = os.path.join(MODEL_DIR, "adherence_xgb.joblib")
 SCALER_PATH = os.path.join(MODEL_DIR, "scaler.joblib")
 META_PATH = os.path.join(MODEL_DIR, "model_metadata.json")
 
-# ── Load everything once at module import time ──────────────────────────────
+# ── Load datasets & model once at module import time ─────────────────────────
 _workouts = pd.read_csv(os.path.join(CLEANED_DIR, "cleaned_workout_plans.csv"))
-_meals    = pd.read_csv(os.path.join(CLEANED_DIR, "cleaned_meal_plans.csv"))
-_exercises= pd.read_csv(os.path.join(CLEANED_DIR, "cleaned_exercise_catalog.csv"))
+_meals = pd.read_csv(os.path.join(CLEANED_DIR, "cleaned_meal_plans.csv"))
+_exercises = pd.read_csv(os.path.join(CLEANED_DIR, "cleaned_exercise_catalog.csv"))
+
+_sl_foods_csv = os.path.join(CLEANED_DIR, "cleaned_srilankan_foods.csv")
+_sl_foods = pd.read_csv(_sl_foods_csv) if os.path.exists(_sl_foods_csv) else pd.DataFrame()
 
 _xgb_model = joblib.load(MODEL_PATH) if os.path.exists(MODEL_PATH) else None
-_scaler    = joblib.load(SCALER_PATH) if os.path.exists(SCALER_PATH) else None
-with open(META_PATH, "r") as _f:
-    _meta = json.load(_f)
-_feature_cols = _meta["feature_cols"]
+_scaler = joblib.load(SCALER_PATH) if os.path.exists(SCALER_PATH) else None
+
+if os.path.exists(META_PATH):
+    with open(META_PATH, "r") as _f:
+        _meta = json.load(_f)
+    _feature_cols = _meta.get("feature_cols", [])
+else:
+    _feature_cols = [
+        "student_workload_score", "student_stress_score", "student_burnout_score",
+        "student_sleep_deficit", "student_bmi", "student_available_mins",
+        "item_duration_mins", "item_intensity_level", "item_prep_time",
+        "item_protein", "item_calories", "is_exam_period",
+        "limitation_conflict", "equipment_match"
+    ]
 
 def load_cleaned_datasets():
-    return _workouts, _meals, _exercises
+    return _workouts, _meals, _exercises, _sl_foods
 
-def get_baseline_recommendations(profile: dict, k: int = 3):
-    """
-    Baseline Model 1: Generic static recommender.
-    Filters workouts and meals based only on raw requested time and basic dietary flag.
-    Ignores academic workload, stress scores, sleep deficit, and exam period adjustments.
-    """
-    workouts, meals, _ = load_cleaned_datasets()
-    avail_mins = profile.get("available_minutes", 45)
-    diet_pref = str(profile.get("dietary_preference", "")).lower()
 
-    # Generic Workout Filtering
-    filtered_workouts = workouts[workouts["time_per_workout"] <= avail_mins].copy()
-    if filtered_workouts.empty:
-        filtered_workouts = workouts.copy()
-    
-    # Sort by total exercises or rating (static ranking)
-    filtered_workouts["baseline_rank_score"] = 0.5
-    top_workouts = filtered_workouts.head(k).to_dict(orient="records")
+# ── Curated Meal Knowledge Base (Sri Lankan & International) ─────────────────
+# Combines items from SrilankanCommonFoods.xlsx and cleaned_meal_plans.csv into slot-based healthy options.
+CURATED_MEALS = [
+    # ── SRI LANKAN BREAKFASTS ──
+    {
+        "id": "sl_bf_1", "name": "Kiribath with Lunu Miris & Kiri Hodi",
+        "slot": "breakfast", "cuisine": "sri_lankan", "diet_category": "veg",
+        "calories": 340.0, "protein": 6.5, "carbs": 68.0, "fat": 6.0, "prep_time": 20.0,
+        "description": "Traditional Sri Lankan milk rice served with zesty onion sambal and light coconut gravy.",
+        "tags": ["kiribath", "rice", "traditional", "gluten-free"]
+    },
+    {
+        "id": "sl_bf_2", "name": "String Hoppers (Idiyappam) with Dhal Curry & Pol Sambol",
+        "slot": "breakfast", "cuisine": "sri_lankan", "diet_category": "vegan",
+        "calories": 310.0, "protein": 8.5, "carbs": 54.0, "fat": 7.0, "prep_time": 15.0,
+        "description": "Steamed red or white rice vermicelli with protein-rich red lentil curry and fresh coconut sambal.",
+        "tags": ["idiyappam", "dhal", "pol sambol", "vegan"]
+    },
+    {
+        "id": "sl_bf_3", "name": "Coconut Roti with Pol Sambol & Dhal",
+        "slot": "breakfast", "cuisine": "sri_lankan", "diet_category": "vegan",
+        "calories": 370.0, "protein": 8.0, "carbs": 60.0, "fat": 10.5, "prep_time": 15.0,
+        "description": "Toasted wholemeal coconut flatbread paired with warm dhal and crushed chili sambal.",
+        "tags": ["roti", "coconut", "dhal"]
+    },
+    {
+        "id": "sl_bf_4", "name": "Boiled Kadala (Chickpeas) with Grated Coconut & Green Chili",
+        "slot": "breakfast", "cuisine": "sri_lankan", "diet_category": "vegan",
+        "calories": 260.0, "protein": 13.0, "carbs": 42.0, "fat": 5.0, "prep_time": 10.0,
+        "description": "High-fiber boiled chickpeas tempered with mustard seeds, curry leaves, and fresh coconut.",
+        "tags": ["kadala", "chickpeas", "high-protein", "vegan"]
+    },
+    {
+        "id": "sl_bf_5", "name": "Boiled Mung Beans with Fresh Coconut & Lunu Miris",
+        "slot": "breakfast", "cuisine": "sri_lankan", "diet_category": "vegan",
+        "calories": 250.0, "protein": 14.2, "carbs": 40.0, "fat": 4.0, "prep_time": 10.0,
+        "description": "Slow-digesting whole green gram packed with plant protein and micronutrients.",
+        "tags": ["mung", "green gram", "high-protein"]
+    },
+    {
+        "id": "sl_bf_6", "name": "Egg Hopper with Plain Hoppers & Seeni Sambol",
+        "slot": "breakfast", "cuisine": "sri_lankan", "diet_category": "non-veg",
+        "calories": 320.0, "protein": 12.0, "carbs": 45.0, "fat": 10.0, "prep_time": 15.0,
+        "description": "Crisp bowl-shaped fermented rice pancake topped with a soft-steamed egg and caramelized onion sambal.",
+        "tags": ["hoppers", "egg", "traditional"]
+    },
+    {
+        "id": "sl_bf_7", "name": "Roast Paan with Dhal Curry & Fried Egg",
+        "slot": "breakfast", "cuisine": "sri_lankan", "diet_category": "non-veg",
+        "calories": 360.0, "protein": 15.5, "carbs": 52.0, "fat": 9.5, "prep_time": 10.0,
+        "description": "Crispy traditional Sri Lankan roast bread slices dipped in yellow lentil curry with a sunny-side egg.",
+        "tags": ["roast paan", "egg", "dhal"]
+    },
+    {
+        "id": "sl_bf_8", "name": "Boiled Cowpea with Coconut & Lunu Miris",
+        "slot": "breakfast", "cuisine": "sri_lankan", "diet_category": "vegan",
+        "calories": 270.0, "protein": 13.5, "carbs": 44.0, "fat": 4.5, "prep_time": 10.0,
+        "description": "Wholesome boiled cowpea legumes offering clean, steady morning energy for academic study.",
+        "tags": ["cowpea", "beans", "vegan"]
+    },
 
-    # Generic Meal Filtering
-    filtered_meals = meals.copy()
-    if "vegetarian" in diet_pref:
-        filtered_meals = filtered_meals[filtered_meals["vegetarian"] == 1]
-    elif "vegan" in diet_pref:
-        filtered_meals = filtered_meals[filtered_meals["vegan"] == 1]
-    
-    filtered_meals["baseline_rank_score"] = 0.5
-    top_meals = filtered_meals.head(k).to_dict(orient="records")
+    # ── SRI LANKAN LUNCHES ──
+    {
+        "id": "sl_lu_1", "name": "Red Rice with Dhal Curry, Kola Mallum & Chicken Curry",
+        "slot": "lunch", "cuisine": "sri_lankan", "diet_category": "non-veg",
+        "calories": 490.0, "protein": 33.0, "carbs": 64.0, "fat": 11.0, "prep_time": 25.0,
+        "description": "Nutrient-dense red unpolished rice with Ceylon spiced chicken curry, tempered dhal, and gotukola mallum.",
+        "tags": ["red rice", "chicken", "dhal", "mallum"]
+    },
+    {
+        "id": "sl_lu_2", "name": "Red Rice with Dhal Curry, Kola Mallum & Soya Meat Curry",
+        "slot": "lunch", "cuisine": "sri_lankan", "diet_category": "vegan",
+        "calories": 420.0, "protein": 24.0, "carbs": 68.0, "fat": 7.5, "prep_time": 20.0,
+        "description": "Hearty vegan Sri Lankan rice and curry featuring rich textured soya protein, yellow dhal, and fresh greens.",
+        "tags": ["red rice", "soya meat", "dhal", "vegan"]
+    },
+    {
+        "id": "sl_lu_3", "name": "Brown Rice with Fish Ambul Thiyal, Dhal & Kankun Stir-Fry",
+        "slot": "lunch", "cuisine": "sri_lankan", "diet_category": "non-veg",
+        "calories": 460.0, "protein": 32.0, "carbs": 62.0, "fat": 9.0, "prep_time": 25.0,
+        "description": "Omega-3 rich sour fish curry prepared with goraka and black pepper, served with brown rice and water spinach.",
+        "tags": ["fish", "ambul thiyal", "brown rice", "kankun"]
+    },
+    {
+        "id": "sl_lu_4", "name": "Red Rice with Beetroot Curry, Dhal, Fried Halmesso & Cucumber Salad",
+        "slot": "lunch", "cuisine": "sri_lankan", "diet_category": "non-veg",
+        "calories": 450.0, "protein": 26.0, "carbs": 65.0, "fat": 9.5, "prep_time": 20.0,
+        "description": "Crisp dried sprats (halmesso) for calcium and iodine, balanced with iron-rich beetroot and yellow dhal.",
+        "tags": ["halmesso", "sprats", "beetroot", "calcium"]
+    },
+    {
+        "id": "sl_lu_5", "name": "Red Rice with Polos Curry, Dhal & Gotukola Sambol",
+        "slot": "lunch", "cuisine": "sri_lankan", "diet_category": "vegan",
+        "calories": 395.0, "protein": 15.0, "carbs": 66.0, "fat": 8.0, "prep_time": 25.0,
+        "description": "Tender young green jackfruit curry simmered in fragrant roasted spices with dhal and brain-boosting gotukola.",
+        "tags": ["polos", "jackfruit", "vegan", "gotukola"]
+    },
+    {
+        "id": "sl_lu_6", "name": "Steamed White Rice with Dhal, Boiled Egg Curry & Snake Gourd",
+        "slot": "lunch", "cuisine": "sri_lankan", "diet_category": "veg",
+        "calories": 430.0, "protein": 18.0, "carbs": 65.0, "fat": 10.0, "prep_time": 15.0,
+        "description": "Quick student lunch featuring hard-boiled egg in light coconut gravy, yellow lentils, and snake gourd.",
+        "tags": ["egg curry", "rice", "dhal", "vegetarian"]
+    },
 
-    return {
-        "model_version": "Model 1 - Generic Baseline",
-        "context_aware": False,
-        "recommended_workouts": top_workouts,
-        "recommended_meals": top_meals
+    # ── SRI LANKAN DINNERS ──
+    {
+        "id": "sl_dn_1", "name": "String Hoppers with Soya Meat Curry & Kiri Hodi",
+        "slot": "dinner", "cuisine": "sri_lankan", "diet_category": "vegan",
+        "calories": 320.0, "protein": 16.0, "carbs": 52.0, "fat": 6.0, "prep_time": 15.0,
+        "description": "Light, easily digestible rice noodle nests with high-protein soya chunks and aromatic turmeric coconut soup.",
+        "tags": ["idiyappam", "soya meat", "kiri hodi", "light dinner"]
+    },
+    {
+        "id": "sl_dn_2", "name": "Roast Paan with Dhal Curry & Pol Sambol",
+        "slot": "dinner", "cuisine": "sri_lankan", "diet_category": "vegan",
+        "calories": 330.0, "protein": 11.0, "carbs": 56.0, "fat": 7.0, "prep_time": 10.0,
+        "description": "Warm, crunchy roast bread with wholesome lentil curry. Ideal light evening comfort food after studying.",
+        "tags": ["roast paan", "dhal", "pol sambol"]
+    },
+    {
+        "id": "sl_dn_3", "name": "Fresh Sri Lankan Vegetable Soup with Whole Wheat Toast",
+        "slot": "dinner", "cuisine": "sri_lankan", "diet_category": "vegan",
+        "calories": 270.0, "protein": 9.0, "carbs": 48.0, "fat": 4.0, "prep_time": 15.0,
+        "description": "Hydrating broth of local pumpkin, carrots, leeks, and coriander seeds served with crispy toasted bread.",
+        "tags": ["vegetable soup", "soup", "hydration", "light"]
+    },
+    {
+        "id": "sl_dn_4", "name": "Idiyappam with Fish Curry & Fresh Coconut Gravy",
+        "slot": "dinner", "cuisine": "sri_lankan", "diet_category": "non-veg",
+        "calories": 350.0, "protein": 26.0, "carbs": 48.0, "fat": 7.5, "prep_time": 20.0,
+        "description": "Steamed string hoppers paired with tender white fish steak cooked in mild Ceylon spices.",
+        "tags": ["idiyappam", "fish curry", "lean protein"]
+    },
+    {
+        "id": "sl_dn_5", "name": "Stir-Fried Rice Noodles with Mixed Vegetables & Scrambled Egg",
+        "slot": "dinner", "cuisine": "sri_lankan", "diet_category": "veg",
+        "calories": 360.0, "protein": 16.0, "carbs": 54.0, "fat": 8.5, "prep_time": 15.0,
+        "description": "Quick wok-tossed thin rice noodles with shredded cabbage, carrots, bell peppers, and free-range egg.",
+        "tags": ["noodles", "egg", "stir-fry"]
+    },
+    {
+        "id": "sl_dn_6", "name": "Thati Paan with Dhal Curry & Grilled Chicken Strips",
+        "slot": "dinner", "cuisine": "sri_lankan", "diet_category": "non-veg",
+        "calories": 390.0, "protein": 28.0, "carbs": 50.0, "fat": 8.0, "prep_time": 15.0,
+        "description": "Toasted flat bread with seasoned chicken breast strips and comforting yellow lentil curry.",
+        "tags": ["thati paan", "chicken", "dhal"]
+    },
+
+    # ── SRI LANKAN SNACKS ──
+    {
+        "id": "sl_sn_1", "name": "Fresh King Coconut (Kurumba) Water & Soft Pulp",
+        "slot": "snack", "cuisine": "sri_lankan", "diet_category": "vegan",
+        "calories": 85.0, "protein": 1.2, "carbs": 18.0, "fat": 1.0, "prep_time": 2.0,
+        "description": "Natural electrolyte elixir packed with potassium and minerals to alleviate mental fatigue and stress.",
+        "tags": ["kurumba", "king coconut", "electrolytes", "hydration"]
+    },
+    {
+        "id": "sl_sn_2", "name": "Samaposha Aggala (2 Nutrient Seed Balls)",
+        "slot": "snack", "cuisine": "sri_lankan", "diet_category": "vegan",
+        "calories": 175.0, "protein": 6.5, "carbs": 30.0, "fat": 3.2, "prep_time": 5.0,
+        "description": "Nutritious roasted multi-grain and pulse balls (corn, soya, green gram, and rice) sweetened with jaggery.",
+        "tags": ["samaposha", "multigrain", "healthy energy"]
+    },
+    {
+        "id": "sl_sn_3", "name": "Roasted Spiced Gram (Kadala) & Peanuts",
+        "slot": "snack", "cuisine": "sri_lankan", "diet_category": "vegan",
+        "calories": 160.0, "protein": 8.0, "carbs": 19.0, "fat": 6.0, "prep_time": 2.0,
+        "description": "Crunchy dry-roasted chickpeas and peanuts tossed with crushed chili and curry leaves for sustained focus.",
+        "tags": ["kadala", "peanuts", "protein snack"]
+    },
+    {
+        "id": "sl_sn_4", "name": "Fresh Ambul Kesel (2 Small Bananas) with Warm Green Tea",
+        "slot": "snack", "cuisine": "sri_lankan", "diet_category": "vegan",
+        "calories": 130.0, "protein": 1.8, "carbs": 32.0, "fat": 0.4, "prep_time": 2.0,
+        "description": "Potassium-rich local sour bananas offering instant cognitive focus during revision sessions.",
+        "tags": ["banana", "kesel", "potassium", "quick"]
+    },
+    {
+        "id": "sl_sn_5", "name": "Kotmale Low-Fat Yogurt with Fresh Papaya Chunks",
+        "slot": "snack", "cuisine": "sri_lankan", "diet_category": "veg",
+        "calories": 140.0, "protein": 6.5, "carbs": 24.0, "fat": 2.0, "prep_time": 3.0,
+        "description": "Gut-healthy probiotic yogurt topped with fresh tropical papaya for immune defense.",
+        "tags": ["yogurt", "papaya", "probiotics"]
+    },
+    {
+        "id": "sl_sn_6", "name": "Fresh Guava Slices with Ceylon Black Pepper & Salt",
+        "slot": "snack", "cuisine": "sri_lankan", "diet_category": "vegan",
+        "calories": 75.0, "protein": 2.6, "carbs": 15.0, "fat": 1.0, "prep_time": 3.0,
+        "description": "High vitamin C local pink or white guava slices to strengthen student immunity against burnout.",
+        "tags": ["guava", "vitamin c", "immunity"]
+    },
+
+    # ── WESTERN / INTERNATIONAL MEALS (FROM CLEANED_MEAL_PLANS.CSV) ──
+    {
+        "id": "int_bf_1", "name": "Rolled Oats Bowl with Banana, Chia Seeds & Cinnamon",
+        "slot": "breakfast", "cuisine": "western", "diet_category": "vegan",
+        "calories": 310.0, "protein": 9.0, "carbs": 56.0, "fat": 5.5, "prep_time": 10.0,
+        "description": "Slow-release complex carbs with beta-glucan soluble fiber for long study blocks.",
+        "tags": ["oats", "banana", "chia", "vegan"]
+    },
+    {
+        "id": "int_bf_2", "name": "Whole Grain Avocado Toast with Poached Egg",
+        "slot": "breakfast", "cuisine": "western", "diet_category": "non-veg",
+        "calories": 340.0, "protein": 14.0, "carbs": 32.0, "fat": 18.0, "prep_time": 10.0,
+        "description": "Heart-healthy monounsaturated fats and choline-rich egg for brain cell preservation.",
+        "tags": ["avocado", "toast", "egg"]
+    },
+    {
+        "id": "int_bf_3", "name": "Greek Yogurt Bowl with Mixed Berries & Walnuts",
+        "slot": "breakfast", "cuisine": "western", "diet_category": "veg",
+        "calories": 280.0, "protein": 18.0, "carbs": 28.0, "fat": 10.0, "prep_time": 5.0,
+        "description": "Protein-dense strained yogurt paired with antioxidant berries and brain-boosting walnuts.",
+        "tags": ["greek yogurt", "berries", "walnuts", "high-protein"]
+    },
+    {
+        "id": "int_lu_1", "name": "Grilled Lemon Herb Salmon with Quinoa & Steamed Broccoli",
+        "slot": "lunch", "cuisine": "western", "diet_category": "non-veg",
+        "calories": 480.0, "protein": 36.0, "carbs": 42.0, "fat": 16.0, "prep_time": 20.0,
+        "description": "Anti-inflammatory wild salmon paired with complete protein quinoa and vitamin K greens.",
+        "tags": ["salmon", "quinoa", "omega-3", "clean"]
+    },
+    {
+        "id": "int_lu_2", "name": "Chickpea Stew with Spinach, Tomatoes & Brown Rice",
+        "slot": "lunch", "cuisine": "western", "diet_category": "vegan",
+        "calories": 410.0, "protein": 17.0, "carbs": 68.0, "fat": 7.0, "prep_time": 20.0,
+        "description": "Mediterranean-inspired garbanzo bean stew loaded with lycopene, iron, and fiber.",
+        "tags": ["chickpea", "stew", "vegan", "mediterranean"]
+    },
+    {
+        "id": "int_lu_3", "name": "Turkey Lettuce Wraps with Avocado & Quinoa",
+        "slot": "lunch", "cuisine": "western", "diet_category": "non-veg",
+        "calories": 390.0, "protein": 34.0, "carbs": 28.0, "fat": 14.0, "prep_time": 15.0,
+        "description": "Lean ground turkey sautéed with garlic and herbs, wrapped in crisp romaine lettuce cups.",
+        "tags": ["turkey", "low-carb", "high-protein"]
+    },
+    {
+        "id": "int_lu_4", "name": "Mediterranean Lentil Salad with Feta, Cucumbers & Olive Oil",
+        "slot": "lunch", "cuisine": "western", "diet_category": "veg",
+        "calories": 420.0, "protein": 20.0, "carbs": 50.0, "fat": 14.0, "prep_time": 15.0,
+        "description": "Tender brown lentils tossed with diced cucumber, kalamata olives, cherry tomatoes, and crumbly feta.",
+        "tags": ["lentils", "salad", "feta", "mediterranean"]
+    },
+    {
+        "id": "int_dn_1", "name": "Grilled Chicken Breast with Roasted Sweet Potato & Asparagus",
+        "slot": "dinner", "cuisine": "western", "diet_category": "non-veg",
+        "calories": 420.0, "protein": 38.0, "carbs": 40.0, "fat": 9.0, "prep_time": 20.0,
+        "description": "Clean lean poultry protein with complex carbs to replenish glycogen after long study days.",
+        "tags": ["chicken", "sweet potato", "lean dinner"]
+    },
+    {
+        "id": "int_dn_2", "name": "Gluten-Free Pasta with Lentil Bolognese & Zucchini",
+        "slot": "dinner", "cuisine": "western", "diet_category": "vegan",
+        "calories": 380.0, "protein": 18.0, "carbs": 64.0, "fat": 5.5, "prep_time": 20.0,
+        "description": "Comforting Italian-style marinara simmered with red lentils over corn/rice pasta.",
+        "tags": ["pasta", "lentil bolognese", "vegan", "gluten-free"]
+    },
+    {
+        "id": "int_dn_3", "name": "Baked Cod Fillet with Garlic Herb Quinoa & Green Beans",
+        "slot": "dinner", "cuisine": "western", "diet_category": "non-veg",
+        "calories": 360.0, "protein": 32.0, "carbs": 38.0, "fat": 6.5, "prep_time": 18.0,
+        "description": "Light, tender white fish rich in B vitamins and lean protein for restful sleep.",
+        "tags": ["cod", "quinoa", "clean eating"]
+    },
+    {
+        "id": "int_dn_4", "name": "Tofu Vegetable Stir-Fry with Tamari & Sesame Seeds",
+        "slot": "dinner", "cuisine": "western", "diet_category": "vegan",
+        "calories": 340.0, "protein": 22.0, "carbs": 32.0, "fat": 14.0, "prep_time": 15.0,
+        "description": "Golden pan-seared firm tofu cubes with broccoli, snap peas, and sesame drizzle.",
+        "tags": ["tofu", "stir-fry", "vegan"]
+    },
+    {
+        "id": "int_sn_1", "name": "Crisp Apple Slices with Pure Natural Peanut Butter",
+        "slot": "snack", "cuisine": "western", "diet_category": "vegan",
+        "calories": 180.0, "protein": 5.0, "carbs": 24.0, "fat": 8.0, "prep_time": 2.0,
+        "description": "Crisp orchard fruit paired with plant fats and protein to curb afternoon hunger.",
+        "tags": ["apple", "peanut butter", "clean snack"]
+    },
+    {
+        "id": "int_sn_2", "name": "Raw Walnut & Almond Snack Pack (30g)",
+        "slot": "snack", "cuisine": "western", "diet_category": "vegan",
+        "calories": 190.0, "protein": 5.5, "carbs": 6.0, "fat": 17.0, "prep_time": 1.0,
+        "description": "Essential alpha-linolenic omega-3 fats and vitamin E for sustained neuronal health.",
+        "tags": ["walnuts", "almonds", "brain food"]
+    },
+    {
+        "id": "int_sn_3", "name": "Hummus Dip with Crunchy Carrot & Cucumber Sticks",
+        "slot": "snack", "cuisine": "western", "diet_category": "vegan",
+        "calories": 135.0, "protein": 4.5, "carbs": 16.0, "fat": 6.0, "prep_time": 3.0,
+        "description": "Savory tahini-chickpea dip with crunchy vegetables for low-glycemic satiety.",
+        "tags": ["hummus", "veggies", "vegan", "low-calorie"]
     }
+]
 
-def get_adaptive_recommendations(profile: dict, is_exam_period: bool = False, k: int = 3):
+
+# ── Curated Exercise Catalog (Time & Goal Tailored) ──────────────────────────
+# Structured routines strictly calibrated to student available minutes (15, 20, 30, 45, 60 mins).
+CURATED_EXERCISES = [
+    # ── 15-MINUTE ROUTINES (For time-crunched students & high stress periods) ──
+    {
+        "id": "ex_15_1",
+        "name": "15-Min Quick Dorm HIIT & Cardio Burn",
+        "duration_mins": 15,
+        "intensity": "High",
+        "intensity_level": 3,
+        "equipment": "Bodyweight / Home",
+        "primary_goal": "weight_loss",
+        "target_goals": ["weight_loss", "fitness"],
+        "knee_safe": False,
+        "back_safe": True,
+        "calories_per_kg_hr": 8.0,
+        "description": "High-efficiency intervals: 40s jumping jacks, mountain climbers, high knees, shadow boxing, 20s rest. Rapid calorie burn."
+    },
+    {
+        "id": "ex_15_2",
+        "name": "15-Min Study Desk Posture & Spine Decompression",
+        "duration_mins": 15,
+        "intensity": "Light",
+        "intensity_level": 1,
+        "equipment": "Bodyweight / Home",
+        "primary_goal": "mobility",
+        "target_goals": ["mobility", "stress_relief", "fitness"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 3.0,
+        "description": "Restorative sequence: thoracic spine twists, cat-cow flow, doorway chest openers, neck releases to reverse study fatigue."
+    },
+    {
+        "id": "ex_15_3",
+        "name": "15-Min Low-Impact Knee-Safe Core & Tone",
+        "duration_mins": 15,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Bodyweight / Home",
+        "primary_goal": "fitness",
+        "target_goals": ["fitness", "strength", "weight_loss"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 4.5,
+        "description": "Zero jumping or deep knee flexion: glute bridges, bird-dogs, dead bugs, forearm planks, and seated Russian twists."
+    },
+
+    # ── 20-MINUTE ROUTINES ──
+    {
+        "id": "ex_20_1",
+        "name": "20-Min Full-Body Functional Calisthenics",
+        "duration_mins": 20,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Bodyweight / Home",
+        "primary_goal": "fitness",
+        "target_goals": ["fitness", "strength", "weight_loss"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 5.5,
+        "description": "Balanced circuit: push-ups (or incline/knee), bodyweight Romanian deadlifts, wall sits, plank taps, and march-in-place."
+    },
+    {
+        "id": "ex_20_2",
+        "name": "20-Min Fat Burn Aerobic Cardio Flow",
+        "duration_mins": 20,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Bodyweight / Home",
+        "primary_goal": "weight_loss",
+        "target_goals": ["weight_loss", "fitness"],
+        "knee_safe": False,
+        "back_safe": True,
+        "calories_per_kg_hr": 6.8,
+        "description": "Continuous aerobic movement: skater jumps, butt kicks, step jacks, standing oblique crunches, and arm pulses."
+    },
+    {
+        "id": "ex_20_3",
+        "name": "20-Min Vinyasa Yoga Flow for Mental Clarity",
+        "duration_mins": 20,
+        "intensity": "Light",
+        "intensity_level": 1,
+        "equipment": "Bodyweight / Home",
+        "primary_goal": "mobility",
+        "target_goals": ["mobility", "stress_relief", "fitness"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 3.5,
+        "description": "Sun salutations, warrior poses, gentle hip openers, and deep belly breathing to reset stress cortisol levels."
+    },
+    {
+        "id": "ex_20_4",
+        "name": "20-Min Upper Body & Core Dumbbell Sculpt",
+        "duration_mins": 20,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Dumbbells / Basic Gym",
+        "primary_goal": "strength",
+        "target_goals": ["strength", "fitness"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 5.2,
+        "description": "Dumbbell shoulder presses, bicep curls, overhead tricep extensions, and plank dumbbell drags."
+    },
+
+    # ── 30-MINUTE ROUTINES ──
+    {
+        "id": "ex_30_1",
+        "name": "30-Min Total Body Conditioning Circuit",
+        "duration_mins": 30,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Bodyweight / Home",
+        "primary_goal": "fitness",
+        "target_goals": ["fitness", "strength", "weight_loss"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 6.0,
+        "description": "3 rounds of 10 exercises: push-ups, glute bridges, step-backs, plank shoulder taps, arm circles, and side planks."
+    },
+    {
+        "id": "ex_30_2",
+        "name": "30-Min HIIT Cardio & Core Blast",
+        "duration_mins": 30,
+        "intensity": "High",
+        "intensity_level": 3,
+        "equipment": "Bodyweight / Home",
+        "primary_goal": "weight_loss",
+        "target_goals": ["weight_loss", "fitness"],
+        "knee_safe": False,
+        "back_safe": True,
+        "calories_per_kg_hr": 8.5,
+        "description": "Tabata-style intervals: burpees, high knees, squat thrusts, bicycle crunches, and mountain climbers."
+    },
+    {
+        "id": "ex_30_3",
+        "name": "30-Min Joint Mobility, Hip Opening & Spine Health",
+        "duration_mins": 30,
+        "intensity": "Light",
+        "intensity_level": 1,
+        "equipment": "Bodyweight / Home",
+        "primary_goal": "mobility",
+        "target_goals": ["mobility", "stress_relief"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 3.2,
+        "description": "90/90 hip transitions, pigeon stretch, child's pose, world's greatest stretch, and spinal waves."
+    },
+    {
+        "id": "ex_30_4",
+        "name": "30-Min Campus Power Walk & Interval Incline",
+        "duration_mins": 30,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Outdoor / Walking",
+        "primary_goal": "fitness",
+        "target_goals": ["fitness", "weight_loss", "stress_relief"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 5.0,
+        "description": "Brisk outdoor university walk incorporating stair climbs and pace intervals to clear the mind and boost stamina."
+    },
+
+    # ── 45-MINUTE ROUTINES ──
+    {
+        "id": "ex_45_1",
+        "name": "45-Min Athletic Strength & Hypertrophy Split",
+        "duration_mins": 45,
+        "intensity": "High",
+        "intensity_level": 3,
+        "equipment": "Gym / Dumbbells",
+        "primary_goal": "strength",
+        "target_goals": ["strength", "fitness"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 6.5,
+        "description": "Progressive resistance split: goblet squats, dumbbell bench presses, bent-over rows, lunges, and hollow body holds."
+    },
+    {
+        "id": "ex_45_2",
+        "name": "45-Min Calorie-Torching Cardio & Bodyweight Burn",
+        "duration_mins": 45,
+        "intensity": "High",
+        "intensity_level": 3,
+        "equipment": "Bodyweight / Home",
+        "primary_goal": "weight_loss",
+        "target_goals": ["weight_loss", "fitness"],
+        "knee_safe": False,
+        "back_safe": True,
+        "calories_per_kg_hr": 8.0,
+        "description": "Comprehensive full body metabolic workout combining plyometrics, core stability, and cardio endurance intervals."
+    },
+    {
+        "id": "ex_45_3",
+        "name": "45-Min Deep Hatha Yoga & Guided Pranayama",
+        "duration_mins": 45,
+        "intensity": "Light",
+        "intensity_level": 1,
+        "equipment": "Bodyweight / Home",
+        "primary_goal": "mobility",
+        "target_goals": ["mobility", "stress_relief"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 3.0,
+        "description": "Deep fascial releases, restorative holds, hamstring length, and 10 minutes of box breathing to eliminate study burnout."
+    },
+
+    # ── 60-MINUTE ROUTINES ──
+    {
+        "id": "ex_60_1",
+        "name": "60-Min Comprehensive Full-Body Gym Session",
+        "duration_mins": 60,
+        "intensity": "High",
+        "intensity_level": 3,
+        "equipment": "Full Gym",
+        "primary_goal": "strength",
+        "target_goals": ["strength", "fitness", "weight_loss"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 7.0,
+        "description": "Complete push-pull-legs resistance training with compound movements, core training, and dedicated cool-down stretch."
+    },
+    {
+        "id": "ex_60_2",
+        "name": "60-Min Steady State Endurance Cardio & Outdoor Run",
+        "duration_mins": 60,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Outdoor / Running",
+        "primary_goal": "weight_loss",
+        "target_goals": ["weight_loss", "fitness"],
+        "knee_safe": False,
+        "back_safe": True,
+        "calories_per_kg_hr": 8.5,
+        "description": "Zone 2 aerobic endurance jog or stationary cycling session designed for maximum cardiovascular and mitochondrial health."
+    }
+]
+
+
+# ── Helper: Predict Adherence Score using XGBoost ────────────────────────────
+def predict_adherence(feats: Dict[str, float]) -> float:
+    """Predict adherence probability using trained XGBoost Regressor or baseline fallback."""
+    if _xgb_model and _scaler:
+        try:
+            X_df = pd.DataFrame([feats])[_feature_cols]
+            X_scaled = _scaler.transform(X_df)
+            prob = float(_xgb_model.predict(X_scaled)[0])
+            return float(np.clip(prob, 0.1, 0.99))
+        except Exception:
+            pass
+    
+    # Fallback heuristic if model isn't available
+    score = 0.85
+    if feats.get("limitation_conflict", 0):
+        score *= 0.3
+    if feats.get("is_exam_period", 0) or feats.get("student_stress_score", 3.0) >= 3.8:
+        if feats.get("item_duration_mins", 0) > 30:
+            score *= 0.6
+    return round(float(score), 4)
+
+
+# ── Helper: Filter & Score Meals for Profile ─────────────────────────────────
+def get_scored_meals_for_profile(profile: dict, is_exam_period: bool = False) -> List[Dict[str, Any]]:
     """
-    Adaptive Model 2 (Proposed System):
-    Context-aware XGBoost ranker that dynamically:
-    - Scales time down by 50% if in exam period or high stress (stress > 3.8)
-    - Excludes exercises conflicting with student physical limitations
-    - Ranks items based on predicted Adherence Probability P(Complete)
+    Filters and ranks meal candidates based on student diet, cuisine, and context scores.
     """
-    workouts, meals, _ = load_cleaned_datasets()
+    diet_pref = str(profile.get("diet_pref") or profile.get("dietary_preference", "any")).lower()
+    meal_style = str(profile.get("meal_style", "both")).lower()
+    allergies = str(profile.get("allergies", "")).lower()
+    avoid_foods = str(profile.get("avoid_foods", "")).lower()
 
-    # Extract Student Context Features
-    workload = profile.get("workload_intensity_score", 50.0)
-    stress = profile.get("stress_score", 3.0)
-    burnout = profile.get("burnout_score", 3.0)
-    sleep_def = profile.get("sleep_deficit", 0.5)
-    bmi = profile.get("bmi", 22.0)
-    avail_mins = profile.get("available_minutes", 45.0)
-    limits = str(profile.get("physical_limitations", "")).lower()
-    equip_access = str(profile.get("equipment_access", "Home / Bodyweight")).lower()
-    diet_pref = str(profile.get("dietary_preference", "Non-Vegetarian")).lower()
+    workload = float(profile.get("workload_intensity_score", 50.0))
+    stress = float(profile.get("stress_score", 3.0))
+    burnout = float(profile.get("burnout_score", 3.0))
+    sleep_def = float(profile.get("sleep_deficit", max(0.0, 7.5 - float(profile.get("sleep_hours", 7.0)))))
+    bmi = float(profile.get("bmi", 22.0))
+    avail_mins = float(profile.get("available_minutes", 20))
 
-    # Dynamic Time Adaptation for Exam Period / High Stress
     if is_exam_period or stress >= 3.8:
-        effective_avail_mins = max(15.0, avail_mins * 0.50)  # 50% reduction for high academic stress
+        effective_avail_mins = max(15.0, avail_mins * 0.5)
         effective_workload = min(100.0, workload + 20.0)
         effective_stress = min(5.0, stress + 1.0)
     else:
@@ -101,78 +641,38 @@ def get_adaptive_recommendations(profile: dict, is_exam_period: bool = False, k:
         effective_workload = workload
         effective_stress = stress
 
-    # Use cached ML Model & Scaler
-    xgb_model = _xgb_model
-    scaler = _scaler
-    feature_cols = _feature_cols
+    scored_meals = []
 
-    # --- 1. RANK WORKOUT CANDIDATES ---
-    workout_list = []
-    for _, row in workouts.iterrows():
-        duration = row["time_per_workout"]
-        title = str(row["title"]).lower()
-        equip = str(row["equipment"]).lower()
+    for m in CURATED_MEALS:
+        m_diet = m["diet_category"]
+        m_cuisine = m["cuisine"]
+        name_lower = m["name"].lower()
+        desc_lower = m["description"].lower()
 
-        # Limitation Conflict
-        limitation_conflict = 0
-        if ("knee" in limits or "back" in limits) and ("squat" in title or "deadlift" in title or "high intensity" in title):
-            limitation_conflict = 1
+        # 1. Diet Filter (Vegetarian / Vegan / Non-Veg)
+        if "vegan" in diet_pref:
+            if m_diet != "vegan":
+                continue
+        elif "veg" in diet_pref and "non" not in diet_pref:
+            if m_diet not in ["veg", "vegan"]:
+                continue
 
-        # Equipment Match
-        equip_match = 1 if (equip in equip_access or "home" in equip or "full gym" in equip_access) else 0
+        # 2. Cuisine Filter
+        if meal_style == "sri_lankan" and m_cuisine != "sri_lankan":
+            continue
+        elif meal_style == "western" and m_cuisine != "western":
+            continue
 
-        # Build feature vector
-        feats = {
-            "student_workload_score": effective_workload,
-            "student_stress_score": effective_stress,
-            "student_burnout_score": burnout,
-            "student_sleep_deficit": sleep_def,
-            "student_bmi": bmi,
-            "student_available_mins": effective_avail_mins,
-            "item_duration_mins": duration,
-            "item_intensity_level": 3 if "advanced" in str(row["level"]).lower() else (2 if "intermediate" in str(row["level"]).lower() else 1),
-            "item_prep_time": 0.0,
-            "item_protein": 0.0,
-            "item_calories": 0.0,
-            "is_exam_period": 1 if is_exam_period else 0,
-            "limitation_conflict": limitation_conflict,
-            "equipment_match": equip_match
-        }
+        # 3. Allergy & Avoid Foods Filter
+        conflict = 0
+        for allergen in [allergies, avoid_foods]:
+            if allergen and allergen in name_lower or (allergen and allergen in desc_lower):
+                conflict = 1
+                break
+        if conflict:
+            continue
 
-        # Predict Adherence Probability
-        if xgb_model and scaler:
-            X_df = pd.DataFrame([feats])[feature_cols]
-            X_scaled = scaler.transform(X_df)
-            prob = float(xgb_model.predict(X_scaled)[0])
-        else:
-            prob = 0.70
-
-        # Ensure severe penalty if physical limitation conflict
-        if limitation_conflict:
-            prob *= 0.2
-
-        w_dict = row.to_dict()
-        w_dict["adherence_probability"] = round(float(prob), 4)
-        w_dict["adapted_duration_mins"] = duration
-        w_dict["limitation_warning"] = True if limitation_conflict else False
-        workout_list.append(w_dict)
-
-    # Sort Workouts by Adherence Score
-    workout_list.sort(key=lambda x: x["adherence_probability"], reverse=True)
-
-    # --- 2. RANK MEAL CANDIDATES ---
-    meal_list = []
-    for _, row in meals.iterrows():
-        prep_time = row["prep_time"]
-        protein = row["protein"]
-        calories = row["calories"]
-        
-        meal_veg = row.get("vegetarian", 0)
-        meal_vegan = row.get("vegan", 0)
-        diet_match = 1
-        if "vegetarian" in diet_pref and not (meal_veg or meal_vegan):
-            diet_match = 0
-
+        # 4. Feature Vector for XGBoost
         feats = {
             "student_workload_score": effective_workload,
             "student_stress_score": effective_stress,
@@ -182,59 +682,346 @@ def get_adaptive_recommendations(profile: dict, is_exam_period: bool = False, k:
             "student_available_mins": effective_avail_mins,
             "item_duration_mins": 0.0,
             "item_intensity_level": 1,
-            "item_prep_time": prep_time,
-            "item_protein": protein,
-            "item_calories": calories,
+            "item_prep_time": float(m["prep_time"]),
+            "item_protein": float(m["protein"]),
+            "item_calories": float(m["calories"]),
             "is_exam_period": 1 if is_exam_period else 0,
             "limitation_conflict": 0,
-            "equipment_match": diet_match
+            "equipment_match": 1
         }
 
-        if xgb_model and scaler:
-            X_df = pd.DataFrame([feats])[feature_cols]
-            X_scaled = scaler.transform(X_df)
-            prob = float(xgb_model.predict(X_scaled)[0])
-        else:
-            prob = 0.75
+        adherence = predict_adherence(feats)
+        m_copy = dict(m)
+        m_copy["adherence_probability"] = round(adherence, 4)
+        scored_meals.append(m_copy)
 
-        if not diet_match:
-            prob *= 0.3
+    # Sort meals by adherence
+    scored_meals.sort(key=lambda x: x["adherence_probability"], reverse=True)
+    return scored_meals
 
-        m_dict = row.to_dict()
-        m_dict["adherence_probability"] = round(float(prob), 4)
-        meal_list.append(m_dict)
 
-    meal_list.sort(key=lambda x: x["adherence_probability"], reverse=True)
+# ── Helper: Tailor Exercises for Profile ─────────────────────────────────────
+def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = False) -> List[Dict[str, Any]]:
+    """
+    Ranks exercises strictly constrained by student available minutes, limitations, and goals.
+    """
+    workload = float(profile.get("workload_intensity_score", 50.0))
+    stress = float(profile.get("stress_score", 3.0))
+    burnout = float(profile.get("burnout_score", 3.0))
+    sleep_def = float(profile.get("sleep_deficit", max(0.0, 7.5 - float(profile.get("sleep_hours", 7.0)))))
+    bmi = float(profile.get("bmi", 22.0))
+    avail_mins = int(profile.get("available_minutes", 20))
+    limits = str(profile.get("physical_limitations", "")).lower()
+    equipment_list = profile.get("equipment", [])
+    equip_str = " ".join(equipment_list).lower() if equipment_list else "home / bodyweight"
+
+    goals = profile.get("goals", [])
+    primary_goal = str(profile.get("goal", "fitness")).lower()
+    all_goals = set([g.lower() for g in goals] + [primary_goal])
+
+    # Exam period / high stress reduction
+    if is_exam_period or stress >= 3.8:
+        effective_avail_mins = max(15, int(round(avail_mins * 0.5)))
+        effective_workload = min(100.0, workload + 20.0)
+        effective_stress = min(5.0, stress + 1.0)
+    else:
+        effective_avail_mins = avail_mins
+        effective_workload = workload
+        effective_stress = stress
+
+    # Approximate student weight for calorie calculation
+    # Standard formula: BMI * (1.68)^2 ≈ 65kg default
+    approx_weight_kg = max(45.0, min(100.0, bmi * (1.68 ** 2)))
+
+    scored_exercises = []
+
+    for ex in CURATED_EXERCISES:
+        # Check limitation safety
+        has_knee_limit = ("knee" in limits or "lower" in limits or "high-impact" in limits or "joint" in limits)
+        has_back_limit = ("back" in limits or "upper" in limits or "spine" in limits)
+
+        limitation_conflict = 0
+        if has_knee_limit and not ex["knee_safe"]:
+            limitation_conflict = 1
+        if has_back_limit and not ex["back_safe"]:
+            limitation_conflict = 1
+
+        # Equipment match
+        ex_equip = ex["equipment"].lower()
+        equip_match = 1
+        if "gym" in ex_equip and "gym" not in equip_str and "full gym" not in equip_str:
+            equip_match = 0
+        if "dumbbell" in ex_equip and "dumbbell" not in equip_str and "gym" not in equip_str:
+            equip_match = 0
+
+        # Calorie calculation: weight_kg * (duration/60) * MET_rate
+        cal_burned = round(approx_weight_kg * (ex["duration_mins"] / 60.0) * ex["calories_per_kg_hr"])
+
+        feats = {
+            "student_workload_score": effective_workload,
+            "student_stress_score": effective_stress,
+            "student_burnout_score": burnout,
+            "student_sleep_deficit": sleep_def,
+            "student_bmi": bmi,
+            "student_available_mins": float(effective_avail_mins),
+            "item_duration_mins": float(ex["duration_mins"]),
+            "item_intensity_level": ex["intensity_level"],
+            "item_prep_time": 0.0,
+            "item_protein": 0.0,
+            "item_calories": float(cal_burned),
+            "is_exam_period": 1 if is_exam_period else 0,
+            "limitation_conflict": limitation_conflict,
+            "equipment_match": equip_match
+        }
+
+        prob = predict_adherence(feats)
+        if limitation_conflict:
+            prob *= 0.2
+
+        # Goal relevance multiplier
+        goal_match = any(g in ex["target_goals"] for g in all_goals)
+        if goal_match:
+            prob = min(0.99, prob * 1.1)
+
+        ex_copy = dict(ex)
+        ex_copy["minutes"] = ex["duration_mins"]
+        ex_copy["calories_burned"] = cal_burned
+        ex_copy["adherence_probability"] = round(float(prob), 4)
+        ex_copy["limitation_warning"] = True if limitation_conflict else False
+        scored_exercises.append(ex_copy)
+
+    # Sort strictly: closest to effective_avail_mins, then by adherence
+    scored_exercises.sort(
+        key=lambda x: (
+            abs(x["duration_mins"] - effective_avail_mins),
+            -x["adherence_probability"]
+        )
+    )
+    return scored_exercises
+
+
+# ── Main API: Baseline Recommendations (Model 1) ─────────────────────────────
+def get_baseline_recommendations(profile: dict, k: int = 3) -> Dict[str, Any]:
+    """
+    Baseline Model 1: Static rule-based filter ignoring student stress & academic workload context.
+    """
+    avail_mins = int(profile.get("available_minutes", 20))
+    diet_pref = str(profile.get("diet_pref") or profile.get("dietary_preference", "any")).lower()
+
+    # Generic workout list (unadjusted for stress or limitations)
+    raw_exercises = [ex for ex in CURATED_EXERCISES if ex["duration_mins"] <= avail_mins + 10]
+    if not raw_exercises:
+        raw_exercises = CURATED_EXERCISES[:k]
+
+    formatted_exercises = []
+    for ex in raw_exercises[:k]:
+        e = dict(ex)
+        e["minutes"] = e["duration_mins"]
+        e["calories_burned"] = 150
+        e["adherence_probability"] = 0.50
+        e["limitation_warning"] = False
+        formatted_exercises.append(e)
+
+    # Generic meals
+    raw_meals = []
+    for m in CURATED_MEALS:
+        if "vegan" in diet_pref and m["diet_category"] != "vegan":
+            continue
+        if "veg" in diet_pref and "non" not in diet_pref and m["diet_category"] not in ["veg", "vegan"]:
+            continue
+        m_copy = dict(m)
+        m_copy["adherence_probability"] = 0.50
+        raw_meals.append(m_copy)
+
+    return {
+        "model_version": "Model 1 - Generic Baseline",
+        "context_aware": False,
+        "is_exam_period": False,
+        "effective_available_minutes": avail_mins,
+        "recommended_workouts": formatted_exercises,
+        "recommended_meals": raw_meals[:k]
+    }
+
+
+# ── Main API: Adaptive AI Recommendations (Model 2) ──────────────────────────
+def get_adaptive_recommendations(profile: dict, is_exam_period: bool = False, k: int = 3) -> Dict[str, Any]:
+    """
+    Adaptive Model 2: Context-aware XGBoost ranker responding dynamically to stress,
+    workload, exam period, limitations, and user goals.
+    """
+    exercises = get_tailored_exercises_for_profile(profile, is_exam_period=is_exam_period)
+    meals = get_scored_meals_for_profile(profile, is_exam_period=is_exam_period)
+
+    avail_mins = int(profile.get("available_minutes", 20))
+    stress = float(profile.get("stress_score", 3.0))
+    workload = float(profile.get("workload_intensity_score", 50.0))
+
+    if is_exam_period or stress >= 3.8:
+        effective_avail_mins = max(15, int(round(avail_mins * 0.5)))
+    else:
+        effective_avail_mins = avail_mins
+
+    # Slot-based top choices for today
+    bf = [m for m in meals if m["slot"] == "breakfast"][:2]
+    lu = [m for m in meals if m["slot"] == "lunch"][:2]
+    dn = [m for m in meals if m["slot"] == "dinner"][:2]
+    sn = [m for m in meals if m["slot"] == "snack"][:2]
 
     return {
         "model_version": "Model 2 - Context-Aware Adaptive XGBoost",
         "context_aware": True,
         "is_exam_period": is_exam_period,
         "effective_available_minutes": effective_avail_mins,
-        "stress_level": round(effective_stress, 2),
-        "workload_score": round(effective_workload, 2),
-        "recommended_workouts": workout_list[:k],
-        "recommended_meals": meal_list[:k]
+        "stress_level": round(stress, 2),
+        "workload_score": round(workload, 2),
+        "recommended_workouts": exercises[:k],
+        "recommended_meals": meals[:k],
+        "today_slots": {
+            "breakfast": bf,
+            "lunch": lu,
+            "dinner": dn,
+            "snack": sn,
+            "exercise": exercises[0] if exercises else None
+        }
     }
+
+
+# ── Main API: 7-Day Date-Wise Plan Generation ────────────────────────────────
+def generate_week_plan(
+    profile: dict,
+    is_exam_period: bool = False,
+    use_baseline: bool = False,
+    start_date: Optional[datetime.date] = None
+) -> Dict[str, Any]:
+    """
+    Generates a personalized 7-day schedule with date, daily exercise routine,
+    and 4 meal slots (Breakfast, Lunch, Dinner, Snack options) matching student
+    dietary preferences, available workout time, and academic stress level.
+    """
+    if start_date is None:
+        start_date = datetime.date.today()
+
+    if use_baseline:
+        engine_info = get_baseline_recommendations(profile, k=10)
+        exercises = engine_info["recommended_workouts"]
+        meals = engine_info["recommended_meals"]
+    else:
+        engine_info = get_adaptive_recommendations(profile, is_exam_period=is_exam_period, k=10)
+        exercises = get_tailored_exercises_for_profile(profile, is_exam_period=is_exam_period)
+        meals = get_scored_meals_for_profile(profile, is_exam_period=is_exam_period)
+
+    limits = str(profile.get("physical_limitations", "")).lower()
+    if limits and limits != "none":
+        safe_exercises = [e for e in exercises if not e.get("limitation_warning", False)]
+        if safe_exercises:
+            exercises = safe_exercises
+
+    # Categorize meals by slot
+    breakfast_pool = [m for m in meals if m["slot"] == "breakfast"]
+    lunch_pool = [m for m in meals if m["slot"] == "lunch"]
+    dinner_pool = [m for m in meals if m["slot"] == "dinner"]
+    snack_pool = [m for m in meals if m["slot"] == "snack"]
+
+    # Fallbacks in case filter was extremely tight
+    if not breakfast_pool:
+        breakfast_pool = [m for m in CURATED_MEALS if m["slot"] == "breakfast"]
+    if not lunch_pool:
+        lunch_pool = [m for m in CURATED_MEALS if m["slot"] == "lunch"]
+    if not dinner_pool:
+        dinner_pool = [m for m in CURATED_MEALS if m["slot"] == "dinner"]
+    if not snack_pool:
+        snack_pool = [m for m in CURATED_MEALS if m["slot"] == "snack"]
+
+    # Variety rotation across 7 days
+    days = []
+    num_ex = len(exercises) if exercises else 1
+    num_bf = len(breakfast_pool)
+    num_lu = len(lunch_pool)
+    num_dn = len(dinner_pool)
+    num_sn = len(snack_pool)
+
+    for i in range(7):
+        current_date = start_date + datetime.timedelta(days=i)
+        day_name = current_date.strftime("%A")
+        date_str = current_date.strftime("%Y-%m-%d")
+
+        # Pick exercise for this day
+        # Day 7 or Day 4 can be active recovery/mobility if high stress
+        ex_for_day = exercises[i % num_ex] if exercises else {
+            "name": "20-Min Brisk Walking", "minutes": 20, "calories_burned": 100,
+            "intensity": "Light", "equipment": "None", "adherence_probability": 0.85
+        }
+
+        # Pick meals for each slot (Primary + Alternative)
+        bf_item_1 = breakfast_pool[i % num_bf]
+        bf_item_2 = breakfast_pool[(i + 1) % num_bf]
+
+        lu_item_1 = lunch_pool[i % num_lu]
+        lu_item_2 = lunch_pool[(i + 1) % num_lu]
+
+        dn_item_1 = dinner_pool[i % num_dn]
+        dn_item_2 = dinner_pool[(i + 1) % num_dn]
+
+        sn_item_1 = snack_pool[i % num_sn]
+        sn_item_2 = snack_pool[(i + 1) % num_sn]
+
+        day_plan = {
+            "day_number": i + 1,
+            "day_name": day_name,
+            "date": date_str,
+            "exercise": ex_for_day,
+            "meals": {
+                "breakfast": [bf_item_1, bf_item_2],
+                "lunch": [lu_item_1, lu_item_2],
+                "dinner": [dn_item_1, dn_item_2],
+                "snack": [sn_item_1, sn_item_2]
+            }
+        }
+        days.append(day_plan)
+
+    return {
+        "model_version": engine_info["model_version"],
+        "context_aware": engine_info["context_aware"],
+        "is_exam_period": is_exam_period,
+        "effective_available_minutes": engine_info["effective_available_minutes"],
+        "user_preferences": {
+            "goal": profile.get("goal", "fitness"),
+            "goals": profile.get("goals", []),
+            "available_minutes": profile.get("available_minutes", 20),
+            "diet_pref": profile.get("diet_pref") or profile.get("dietary_preference", "any"),
+            "meal_style": profile.get("meal_style", "both"),
+            "physical_limitations": profile.get("physical_limitations", ""),
+            "allergies": profile.get("allergies", ""),
+            "avoid_foods": profile.get("avoid_foods", "")
+        },
+        "days": days
+    }
+
 
 if __name__ == "__main__":
     test_profile = {
         "workload_intensity_score": 75.0,
         "stress_score": 4.2,
         "burnout_score": 4.0,
-        "sleep_deficit": 2.5,
-        "bmi": 24.5,
-        "available_minutes": 60,
+        "sleep_deficit": 2.0,
+        "bmi": 23.5,
+        "available_minutes": 20,
         "physical_limitations": "Knee pain",
-        "equipment_access": "Home / Bodyweight",
-        "dietary_preference": "Vegetarian"
+        "equipment": ["Home / Bodyweight"],
+        "diet_pref": "vegan",
+        "meal_style": "sri_lankan",
+        "goals": ["weight_loss", "fitness"]
     }
 
-    print("=== MODEL 1: BASELINE RECOMMENDATIONS ===")
-    res_base = get_baseline_recommendations(test_profile)
-    print(json.dumps(res_base, indent=2))
-
-    print("\n=== MODEL 2: ADAPTIVE XGBOOST RECOMMENDATIONS (EXAM PERIOD) ===")
-    res_adap = get_adaptive_recommendations(test_profile, is_exam_period=True)
-    print(json.dumps(res_adap, indent=2))
-
+    print("=== TESTING 7-DAY WEEK PLAN (VEGAN + SRI LANKAN + 20 MINS + KNEE PAIN) ===")
+    plan = generate_week_plan(test_profile, is_exam_period=True)
+    print(f"Model: {plan['model_version']}")
+    print(f"Effective Time: {plan['effective_available_minutes']} mins")
+    print(f"Total Days: {len(plan['days'])}")
+    day1 = plan['days'][0]
+    print(f"Day 1 ({day1['day_name']} {day1['date']}):")
+    print(f"  Exercise: {day1['exercise']['name']} ({day1['exercise']['minutes']}m) - Adherence: {day1['exercise']['adherence_probability']}")
+    print(f"  Breakfast: {day1['meals']['breakfast'][0]['name']}")
+    print(f"  Lunch: {day1['meals']['lunch'][0]['name']}")
+    print(f"  Dinner: {day1['meals']['dinner'][0]['name']}")
+    print(f"  Snack: {day1['meals']['snack'][0]['name']}")

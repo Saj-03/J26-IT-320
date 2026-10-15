@@ -6,6 +6,7 @@ import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { ProgressRing } from '../../../shared/components/ui/ProgressRing';
 import { workoutSteps, featuredExercise } from '../data';
+import { getRecommendations } from '../api';
 import { cn } from '../../../shared/lib/cn';
 const feelings = [
     { emoji: '😌', label: 'Easy', note: 'We can add a little more next time.' },
@@ -18,12 +19,24 @@ function fmt(s) {
 }
 export function PhysicalWorkout() {
     const navigate = useNavigate();
+    const [recom, setRecom] = useState(null);
     const [index, setIndex] = useState(0);
     const [left, setLeft] = useState(workoutSteps[0].seconds);
     const [running, setRunning] = useState(true);
     const [finished, setFinished] = useState(false);
     const [feeling, setFeeling] = useState(null);
-    const step = workoutSteps[index];
+
+    useEffect(() => {
+        getRecommendations().then((res) => {
+            if (res?.exercises?.[0]) {
+                setRecom(res.exercises[0]);
+            }
+        }).catch(() => null);
+    }, []);
+
+    const workoutTitle = recom?.name || featuredExercise.title;
+    const workoutMins = recom?.minutes || 20;
+    const step = workoutSteps[index] || workoutSteps[0];
     useEffect(() => {
         if (!running || finished)
             return;
@@ -55,12 +68,12 @@ export function PhysicalWorkout() {
             🎉
           </motion.div>
           <h1 className="text-2xl font-extrabold text-charcoal mt-3">Workout Completed!</h1>
-          <p className="text-sm text-charcoal-muted mt-1">{featuredExercise.title}</p>
+          <p className="text-sm text-charcoal-muted mt-1">{workoutTitle}</p>
 
           <div className="grid grid-cols-3 gap-2.5 mt-6">
             {[
-                { l: 'Duration', v: '20 min' },
-                { l: 'Active minutes', v: '18' },
+                { l: 'Duration', v: `${workoutMins} min` },
+                { l: 'Active minutes', v: `${Math.max(1, workoutMins - 2)}` },
                 { l: 'Exercises', v: `${index + 1}/${workoutSteps.length}` }
             ].
                 map((s) => <Card key={s.l} padding="sm" className="text-center">
@@ -102,7 +115,7 @@ export function PhysicalWorkout() {
     return (<div className="max-w-md mx-auto">
       <div className="text-center">
         <p className="text-sm font-semibold text-brand-600">Focused workout</p>
-        <h1 className="text-xl font-extrabold text-charcoal mt-1">{featuredExercise.title}</h1>
+        <h1 className="text-xl font-extrabold text-charcoal mt-1">{workoutTitle}</h1>
         <p className="text-sm text-charcoal-muted mt-0.5">
           Exercise {index + 1} of {workoutSteps.length}
         </p>

@@ -45,13 +45,14 @@ def run_evaluation():
 
         # Evaluate Model 1 Top 1 Workout
         m1_w = res_m1["recommended_workouts"][0]
+        m1_duration = m1_w.get("minutes") or m1_w.get("time_per_workout") or m1_w.get("duration_mins", 20)
         # Check time violation (if workout > 30 mins during exam period)
-        if m1_w["time_per_workout"] > 30:
+        if m1_duration > 30:
             model1_time_violations += 1
 
         # Check limitation conflict for Model 1
         limits = str(profile.get("physical_limitations", "")).lower()
-        m1_title = str(m1_w["title"]).lower()
+        m1_title = str(m1_w.get("title") or m1_w.get("name") or "").lower()
         if ("knee" in limits or "back" in limits) and ("squat" in m1_title or "deadlift" in m1_title or "high intensity" in m1_title):
             model1_limitation_conflicts += 1
 
@@ -59,7 +60,8 @@ def run_evaluation():
 
         # Evaluate Model 2 Top 1 Workout
         m2_w = res_m2["recommended_workouts"][0]
-        if m2_w["time_per_workout"] > 30:
+        m2_duration = m2_w.get("minutes") or m2_w.get("time_per_workout") or m2_w.get("duration_mins", 20)
+        if m2_duration > 30:
             model2_time_violations += 1
 
         if m2_w.get("limitation_warning", False):

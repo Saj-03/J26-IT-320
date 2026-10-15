@@ -11,22 +11,49 @@ import { SectionTitle, MedicalDisclaimer } from '../components/Shared';
 import { getProfile } from '../api';
 import useStudent from '../../../shared/hooks/useStudent';
 
-const GOAL_LABELS = { fitness: 'Improve Physical Fitness', weight_loss: 'Lose Weight' };
+const GOAL_LABELS = {
+  fitness: 'Improve Physical Fitness',
+  weight_loss: 'Weight Management',
+  lose: 'Weight Loss',
+  tone: 'Muscle Tone & Strength',
+  strength: 'Strength & Conditioning',
+  mobility: 'Flexibility & Posture',
+  flexibility: 'Flexibility & Posture',
+  active: 'Daily Activity & Energy',
+  stress: 'Stress Relief & Decompression'
+};
 const LEVEL_LABELS = { low: 'Beginner', medium: 'Moderate', high: 'Active' };
-const DIET_LABELS = { any: 'No Preference', veg: 'Vegetarian', 'non-veg': 'Non-Vegetarian', sri_lankan: 'Sri Lankan', vegetarian: 'Vegetarian', international: 'International' };
+const DIET_LABELS = {
+  any: 'Balanced (No Preference)',
+  veg: 'Vegetarian',
+  vegan: 'Vegan (100% Plant-Based)',
+  'non-veg': 'Non-Vegetarian'
+};
 
 function buildRows(p) {
   if (!p) return [];
   const lims = (p.physical_limitations || 'none').split(',').filter(x => x && x !== 'none');
+  const goalsStr = (p.goals && Array.isArray(p.goals) && p.goals.length)
+    ? p.goals.map(g => GOAL_LABELS[g] || g).join(', ')
+    : (GOAL_LABELS[p.goal] || p.goal || 'General Fitness');
+
+  const mealStyleStr = p.meal_style === 'sri_lankan'
+    ? 'Authentic Sri Lankan'
+    : (p.meal_style === 'western' ? 'International Healthy' : 'Sri Lankan & International');
+
   return [
-    { emoji: '🎯', label: 'Goal', value: GOAL_LABELS[p.goal] || p.goal },
-    { emoji: '📊', label: 'Fitness level', value: LEVEL_LABELS[p.activity_level] || p.activity_level },
-    { emoji: '⏱️', label: 'Available workout time', value: `${p.available_minutes} min` },
-    { emoji: '😴', label: 'Sleep target', value: `${p.sleep_hours} hours / night` },
-    { emoji: '🦵', label: 'Physical limitations', value: lims.length ? lims.join(', ') : 'None' },
-    { emoji: '🥗', label: 'Dietary preference', value: DIET_LABELS[p.diet_pref] || p.diet_pref },
-    { emoji: '💪', label: 'BMI', value: p.bmi ? p.bmi.toFixed(1) : '—' },
-    { emoji: '📚', label: 'Workload score', value: p.workload_intensity_score ? `${Math.round(p.workload_intensity_score)} / 100` : '—' },
+    { emoji: '🎯', label: 'Primary Goals', value: goalsStr },
+    { emoji: '⏱️', label: 'Available Workout Time', value: `${p.available_minutes || 20} min (Strictly Constrained)` },
+    { emoji: '🥗', label: 'Dietary Preference', value: DIET_LABELS[p.diet_pref] || p.diet_pref },
+    { emoji: '🍛', label: 'Cuisine Style', value: mealStyleStr },
+    { emoji: '🦵', label: 'Physical Limitations', value: lims.length ? lims.join(', ') : 'None Reported (All exercises safe)' },
+    { emoji: '🚫', label: 'Foods to Avoid', value: p.avoid_foods || 'None' },
+    { emoji: '🥜', label: 'Food Allergies', value: p.allergies || 'None' },
+    { emoji: '🌅', label: 'Preferred Exercise Time', value: p.preferred_time ? (p.preferred_time.charAt(0).toUpperCase() + p.preferred_time.slice(1)) : 'Morning' },
+    { emoji: '📊', label: 'Activity Level', value: LEVEL_LABELS[p.activity_level] || p.activity_level },
+    { emoji: '😴', label: 'Sleep Target', value: `${p.sleep_hours || 7} hours / night` },
+    { emoji: '💪', label: 'Current BMI', value: p.bmi ? p.bmi.toFixed(1) : '—' },
+    { emoji: '📚', label: 'Academic Workload Score', value: p.workload_intensity_score ? `${Math.round(p.workload_intensity_score)} / 100` : '—' },
   ];
 }
 export function PhysicalProfile() {

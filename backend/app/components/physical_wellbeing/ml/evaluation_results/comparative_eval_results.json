@@ -1,0 +1,23 @@
+{
+    "evaluation_students_count": 100,
+    "scenario": "Exam Period High Academic Load",
+    "model_1_baseline": {
+        "avg_predicted_adherence": 0.5,
+        "workout_time_overload_count": 0,
+        "workout_time_overload_pct": 0.0,
+        "physical_limitation_conflicts": 0,
+        "safety_compliance_pct": 100.0
+    },
+    "model_2_adaptive_xgboost": {
+        "avg_predicted_adherence": 0.9459,
+        "workout_time_overload_count": 0,
+        "workout_time_overload_pct": 0.0,
+        "physical_limitation_conflicts": 0,
+        "safety_compliance_pct": 100.0
+    },
+    "improvement_metrics": {
+        "adherence_gain_pct": 89.17,
+        "time_overload_reduction_pct": 0.0,
+        "safety_compliance_improvement_pct": 0
+    }
+}
