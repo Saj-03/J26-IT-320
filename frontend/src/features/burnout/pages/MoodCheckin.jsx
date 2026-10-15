@@ -42,9 +42,9 @@ export function MoodCheckin() {
           {struggling &&
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
               <div className="mt-6 bg-sage-light border border-emerald-100 rounded-3xl p-5 text-left">
-                <p className="font-bold text-emerald-800">We’ll make today lighter. 💛</p>
+                <p className="font-bold text-emerald-800">Thanks for telling us. 💛</p>
                 <ul className="mt-3 space-y-2 text-sm text-emerald-700">
-                  {['Reduce today’s workload', 'Add recovery time', 'Move low-priority tasks to later'].map((t) => <li key={t} className="flex items-center gap-2">
+                  {['Your answer is added to your wellbeing picture', 'If things stay heavy, ThriveU can ease your plan', 'You can also write about it in your journal'].map((t) => <li key={t} className="flex items-center gap-2">
                       <span className="w-5 h-5 rounded-full bg-sage text-white flex items-center justify-center shrink-0">
                         <CheckIcon size={12} strokeWidth={3}/>
                       </span>

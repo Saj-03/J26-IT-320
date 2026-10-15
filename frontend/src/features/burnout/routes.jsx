@@ -10,6 +10,7 @@ export default function burnoutRoutes() {
   return (
     <>
       <Route path="wellbeing" element={<Wellbeing />} />
+      <Route path="journal" element={<JournalPage />} />
       <Route path="wellbeing/journal" element={<JournalPage />} />
       <Route path="wellbeing/chat" element={<ChatPage />} />
       <Route path="mood" element={<MoodCheckin />} />
