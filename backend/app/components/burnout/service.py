@@ -103,3 +103,41 @@ def build_context(db: Session, user) -> dict | None:
            "quite different from usual" if score > 0.6 else
            "slightly different from usual" if score > 0.3 else "about normal")
     return {"task_load": p["task_load"], "completion_rate": p["task_completion_rate"], "deviation": dev}
+
+
+# ---------------------------------------------------------------- demo / evaluation scenarios
+DEMO_JOURNALS = {
+    "bad": ["I am exhausted and I cannot cope with all these deadlines.",
+            "Everything feels overwhelming, I keep falling behind and I am so stressed.",
+            "I did not sleep, I feel hopeless about this semester."],
+    "normal": ["Good day, finished my tasks and still had time to relax.",
+               "Feeling fine, a bit busy but manageable."],
+}
+DEMO_MOODS = {"bad": [1, 2, 1], "normal": [4, 4, 5]}
+
+
+def seed_demo(db: Session, user, scenario: str = "bad") -> WellbeingSignal:
+    """Replace this student's recent history with a scripted scenario and run the real pipeline.
+    6 normal weeks of Scheduler behaviour (the personal baseline) + a current week that is normal or 'bad'.
+    Uses the real fusion; only the inputs are scripted. For demos and the evaluation scenarios."""
+    from app.components.burnout.models import JournalEntry, MoodTap
+    from app.components.burnout.nlp.sentiment import sentiment
+    from app.shared.integration.mock_signals import mock_deviation_signal
+
+    bad = scenario == "bad"
+    now = datetime.utcnow()
+    db.query(SignalEvent).filter(SignalEvent.signal_type == "DEVIATION", SignalEvent.student_id == user.research_id).delete()
+    for model in (JournalEntry, MoodTap, ChatMessage):
+        db.query(model).filter(model.user_id == user.id, model.created_at >= now - timedelta(days=7)).delete()
+
+    for w in range(7, 0, -1):                      # w=1 is the current week, 2..7 are the baseline
+        p = mock_deviation_signal(user.research_id, bad_week=(bad and w == 1), seed=w)
+        db.add(SignalEvent(event_id=p["event_id"], signal_type="DEVIATION", student_id=user.research_id,
+                           payload=p, status="ACCEPTED", received_at=now - timedelta(days=7 * (w - 1), hours=1 if w == 1 else 0)))
+    for i, t in enumerate(DEMO_JOURNALS[scenario]):
+        db.add(JournalEntry(user_id=user.id, mode="text", text=t, sentiment=sentiment(t), emotion="demo",
+                            created_at=now - timedelta(hours=i + 1)))
+    for i, m in enumerate(DEMO_MOODS[scenario]):
+        db.add(MoodTap(user_id=user.id, mood=m, created_at=now - timedelta(hours=i + 1)))
+    db.commit()
+    return publish(db, user)

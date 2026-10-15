@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends
+from typing import Literal
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.db.session import get_db
 from app.core.dependencies import get_current_user
 from app.components.burnout import schemas, service
@@ -60,3 +62,11 @@ def compute(db: Session = Depends(get_db), user=Depends(get_current_user)):
 def signal_summary(db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Read-only: latest stored signal + recent scores for the dashboard."""
     return service.summary(db, user)
+
+
+@router.post("/demo/{scenario}", response_model=schemas.SignalOut)
+def demo(scenario: Literal["bad", "normal"], db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Demo/evaluation: script a 'bad' or 'normal' week for the logged-in student and run the real pipeline."""
+    if not settings.DEMO_MODE:
+        raise HTTPException(404, "Demo mode is off")
+    return service.to_out(service.seed_demo(db, user, scenario))

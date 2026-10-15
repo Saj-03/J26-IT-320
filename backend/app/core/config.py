@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     LLM_API_KEY: str = ""
     LLM_MODEL: str = "claude-sonnet-4-6"
     RISK_SIGNAL_MAX_AGE_HOURS: int = 24       # freshness check (C3 <- C4)
+    DEMO_MODE: bool = True                    # enables /burnout/demo/* (seeds sample weeks); set False in production
     URGENT_DEADLINE_WINDOW_HOURS: int = 48    # tasks due inside this window are never deferred
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

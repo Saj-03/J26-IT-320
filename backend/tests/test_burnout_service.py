@@ -85,3 +85,11 @@ def test_journal_and_mood_endpoints_refresh_signal(db, user):
     m = router.mood(schemas.MoodIn(mood=1), db=db, user=user)
     assert m["ok"] and m["signal"].risk_score >= 0
     assert db.query(SignalEvent).filter_by(signal_type="RISK", student_id=user.research_id).count() == 2
+
+
+def test_demo_bad_week_rises_and_normal_week_stays_low(db, user):
+    bad = service.seed_demo(db, user, "bad")
+    assert bad.risk_level in ("MODERATE", "HIGH")
+    assert sum(1 for v in bad.inputs["signals"].values() if v is not None) >= 3   # several signals agree
+    ok = service.seed_demo(db, user, "normal")
+    assert ok.risk_level == "LOW" and ok.risk_score < bad.risk_score
