@@ -17,13 +17,15 @@ def journal(data: schemas.JournalIn, db: Session = Depends(get_db), user=Depends
     e = JournalEntry(user_id=user.id, mode=data.mode, text=data.text,
                      sentiment=sentiment(data.text), emotion=emotion(data.text))
     db.add(e); db.commit()
-    return {"sentiment": e.sentiment, "emotion": e.emotion}
+    sig = service.publish(db, user)          # closed loop: every journal save refreshes the risk signal
+    return {"sentiment": e.sentiment, "emotion": e.emotion, "signal": service.to_out(sig)}
 
 
 @router.post("/mood")
 def mood(data: schemas.MoodIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
     db.add(MoodTap(user_id=user.id, mood=data.mood)); db.commit()
-    return {"ok": True}
+    sig = service.publish(db, user)          # closed loop: every mood tap refreshes the risk signal
+    return {"ok": True, "signal": service.to_out(sig)}
 
 
 @router.post("/chat")

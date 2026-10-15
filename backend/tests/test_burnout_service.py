@@ -75,3 +75,13 @@ def test_deviation_detector():
     base = [[0.85, 1, 6, 0.2], [0.8, 1, 7, 0.25], [0.9, 0, 6, 0.2], [0.85, 2, 6, 0.3], [0.8, 1, 5, 0.2]]
     assert deviation_score(base[:2], base[0]) is None
     assert deviation_score(base, [0.3, 7, 14, 0.9]) > deviation_score(base, [0.85, 1, 6, 0.2])
+
+
+def test_journal_and_mood_endpoints_refresh_signal(db, user):
+    """Closed loop: saving a journal / tapping a mood returns a fresh signal without a manual compute call."""
+    from app.components.burnout import router, schemas
+    j = router.journal(schemas.JournalIn(text="I am exhausted and cannot cope with anything"), db=db, user=user)
+    assert j["signal"].risk_level in ("LOW", "MODERATE", "HIGH")
+    m = router.mood(schemas.MoodIn(mood=1), db=db, user=user)
+    assert m["ok"] and m["signal"].risk_score >= 0
+    assert db.query(SignalEvent).filter_by(signal_type="RISK", student_id=user.research_id).count() == 2
