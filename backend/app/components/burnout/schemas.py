@@ -26,6 +26,15 @@ class SignalOut(BaseModel):
     note: str = "This is not a diagnosis."
 
 
+class Tip(BaseModel):
+    text: str
+    reason: str                    # always shown with the tip (FR7)
+    category: str
+
+
 class SummaryOut(BaseModel):
     latest: SignalOut | None
     history: list[float]          # recent risk scores, oldest first (for the trend chart)
+    signals: dict[str, float] = {}   # per-signal risk 0..1; a missing key = no data for that signal
+    factors: list[dict] = []         # which behaviour features moved most vs the student's own baseline
+    tip: Tip | None = None           # only when >=2 signals agree

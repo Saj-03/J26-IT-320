@@ -93,3 +93,14 @@ def test_demo_bad_week_rises_and_normal_week_stays_low(db, user):
     assert sum(1 for v in bad.inputs["signals"].values() if v is not None) >= 3   # several signals agree
     ok = service.seed_demo(db, user, "normal")
     assert ok.risk_level == "LOW" and ok.risk_score < bad.risk_score
+
+
+def test_summary_has_tip_only_when_signals_agree(db, user):
+    from app.components.burnout import tips
+    bad = service.seed_demo(db, user, "bad")
+    s = service.summary(db, user)
+    assert s["tip"] and s["tip"]["reason"].startswith("Shown because") and s["factors"]
+    assert tips.choose_tip({"mood": 0.9, "journal": 0.1}) is None          # one signal alone: no tip
+    assert tips.choose_tip({"mood": 0.9, "journal": 0.8})["category"] in tips.TIPS
+    service.seed_demo(db, user, "normal")
+    assert service.summary(db, user)["tip"] is None

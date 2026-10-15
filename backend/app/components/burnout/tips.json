@@ -1,0 +1,47 @@
+{
+ "workload": [
+  "Pick the one task that matters most today and let the rest wait.",
+  "Look at this week's deadlines and move one low-priority task to a calmer day.",
+  "Break your biggest task into three small steps and only start the first.",
+  "Try a 25-minute focus block, then a real 5-minute break away from your screen.",
+  "If everything feels urgent, write it down. Usually only one or two things truly are.",
+  "Ask yourself what can be shortened, not just what can be finished."
+ ],
+ "rest": [
+  "Aim for a steady bedtime tonight. Even 30 minutes earlier can help.",
+  "Put your phone away 30 minutes before sleep and see how tomorrow feels.",
+  "A short walk in daylight can help both energy and sleep.",
+  "Drink some water and eat something proper before the next study block.",
+  "Schedule one evening this week with no studying at all."
+ ],
+ "reflect": [
+  "Write three lines: what was hard today, what went okay, what you need tomorrow.",
+  "Name the feeling in one word. Naming it often makes it a little smaller.",
+  "Read your last journal entry. What would you say to a friend who wrote it?",
+  "Write down one thing you handled better than you expected this week."
+ ],
+ "mood": [
+  "Do one small thing today that has nothing to do with deadlines.",
+  "Listen to a song you like, all the way through.",
+  "Step outside for five minutes and notice three things you can see.",
+  "Message someone you feel comfortable with, even just to say hi.",
+  "Do something kind for yourself today, however small."
+ ],
+ "talk": [
+  "Talking to someone you trust can lighten things. A friend or family member counts.",
+  "If it keeps feeling heavy, the university counselling service is there for students like you.",
+  "You can use the chat here to talk things through whenever you like.",
+  "Telling a lecturer or advisor you are overloaded is allowed, and often helps."
+ ],
+ "break": [
+  "Take ten slow breaths: in for four, out for six.",
+  "Stand up, stretch your shoulders and look at something far away for a minute.",
+  "Take a proper break between tasks. Switching tabs does not count.",
+  "Have a short rest before your next study block. You will work better after it."
+ ],
+ "general": [
+  "Progress counts even when it is small. Be fair to yourself today.",
+  "You do not have to fix everything today.",
+  "A rough week does not mean a rough semester."
+ ]
+}

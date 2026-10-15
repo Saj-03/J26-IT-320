@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 
 from app.components.burnout.models import JournalEntry, ChatMessage, MoodTap, WellbeingSignal
 from app.components.burnout.ml.fusion import fuse
-from app.components.burnout.ml.deviation_detector import deviation_score
+from app.components.burnout.ml.deviation_detector import deviation_score, deviation_detail
+from app.components.burnout import tips
 from app.components.burnout.schemas import SignalOut
 from app.shared.integration.contracts import RiskSignal, RecoverySignal
 from app.shared.integration.models import SignalEvent
@@ -21,7 +22,13 @@ def _row(p: dict) -> list[float]:
 
 
 def latest_behaviour(db: Session, research_id: str) -> tuple[float | None, dict | None]:
-    """(deviation score, latest DeviationSignal payload) from C3 signals. (None, None) if missing/stale.
+    """(deviation score, latest DeviationSignal payload) from C3 signals. (None, None) if missing/stale."""
+    d, p = behaviour_detail(db, research_id)
+    return (None if d is None else d["score"]), p
+
+
+def behaviour_detail(db: Session, research_id: str) -> tuple[dict | None, dict | None]:
+    """({score, top_factors}, latest DeviationSignal payload). (None, None) if missing/stale.
     Only the integration audit log is read - never the Scheduler's own tables."""
     evs = (db.query(SignalEvent)
              .filter(SignalEvent.signal_type == "DEVIATION", SignalEvent.student_id == research_id,
@@ -30,8 +37,8 @@ def latest_behaviour(db: Session, research_id: str) -> tuple[float | None, dict 
     if not evs or datetime.utcnow() - evs[0].received_at > DEVIATION_MAX_AGE:
         return None, None
     # oldest first so the baseline reads naturally; newest event is the one being scored
-    score = deviation_score([_row(e.payload) for e in reversed(evs[1:])], _row(evs[0].payload))
-    return score, evs[0].payload
+    detail = deviation_detail([_row(e.payload) for e in reversed(evs[1:])], _row(evs[0].payload))
+    return detail, evs[0].payload
 
 
 def _trend(prev: WellbeingSignal | None, score: float) -> str:
@@ -46,14 +53,15 @@ def compute_signal(db: Session, user) -> WellbeingSignal:
     j = db.query(func.avg(JournalEntry.sentiment)).filter(JournalEntry.user_id == user.id, JournalEntry.created_at >= since).scalar()
     c = db.query(func.avg(ChatMessage.sentiment)).filter(ChatMessage.user_id == user.id, ChatMessage.role == "user", ChatMessage.created_at >= since).scalar()
     m = db.query(func.avg(MoodTap.mood)).filter(MoodTap.user_id == user.id, MoodTap.created_at >= since).scalar()
-    deviation, _ = latest_behaviour(db, user.research_id)
-    result = fuse(deviation, j, c, m)
+    detail, _ = behaviour_detail(db, user.research_id)
+    result = fuse(None if detail is None else detail["score"], j, c, m)
 
     prev = (db.query(WellbeingSignal).filter_by(user_id=user.id)
               .order_by(WellbeingSignal.created_at.desc()).first())
     trend = _trend(prev, result["risk_score"])
     sig = WellbeingSignal(user_id=user.id, risk_score=result["risk_score"], risk_level=result["risk_level"],
-                          inputs={"signals": result["inputs"], "reasons": result["reasons"], "trend": trend})
+                          inputs={"signals": result["inputs"], "reasons": result["reasons"], "trend": trend,
+                                  "factors": [] if detail is None else detail["top_factors"]})
     db.add(sig); db.commit(); db.refresh(sig)
     return sig
 
@@ -90,8 +98,13 @@ def publish(db: Session, user) -> WellbeingSignal:
 def summary(db: Session, user, n: int = 14) -> dict:
     rows = (db.query(WellbeingSignal).filter_by(user_id=user.id)
               .order_by(WellbeingSignal.created_at.desc()).limit(n).all())
-    return {"latest": to_out(rows[0]) if rows else None,
-            "history": [r.risk_score for r in reversed(rows)]}
+    if not rows:
+        return {"latest": None, "history": [], "signals": {}, "factors": [], "tip": None}
+    inp = rows[0].inputs or {}
+    sig = inp.get("signals", {})
+    factors = inp.get("factors", [])
+    return {"latest": to_out(rows[0]), "history": [r.risk_score for r in reversed(rows)],
+            "signals": sig, "factors": factors, "tip": tips.choose_tip(sig, factors, user.id)}
 
 
 def build_context(db: Session, user) -> dict | None:
