@@ -25,7 +25,7 @@ export default function PlannedTasks() {
     <Card padding="lg">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>
-          <h3 className="font-bold text-charcoal">Planned by IHSD</h3>
+          <h3 className="font-bold text-charcoal">Planned by ThriveU</h3>
           <p className="text-sm text-charcoal-muted">
             Peak hours: {data?.peak_hours?.length ? data.peak_hours.map((h) => `${h}:00`).join(", ") : "still learning"}
             {data?.pomodoro && ` · ${data.pomodoro.focus_minutes} min focus / ${data.pomodoro.break_minutes} min break`}
@@ -46,7 +46,7 @@ export default function PlannedTasks() {
       {loading && !data ? <LoadingState label="Building your plan…" /> :
         error ? <ErrorState onRetry={reload} /> :
         !data?.tasks?.length ? (
-          <EmptyState title="No tasks to plan yet" desc="Add a task and IHSD will place it in your best focus hours."
+          <EmptyState title="No tasks to plan yet" desc="Add a task and ThriveU will place it in your best focus hours."
             actionLabel="Add a task" onAction={() => navigate("/app/add-task")} />
         ) : (
           <ul className="space-y-2">

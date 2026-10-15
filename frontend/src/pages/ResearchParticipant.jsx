@@ -18,7 +18,7 @@ export function ResearchParticipant() {
     const navigate = useNavigate();
     const completed = surveys.filter((s) => s.status === 'done').length;
     return (<div className="space-y-6">
-      <PageHeader title="Research Participation" subtitle="Thank you for being part of the IHSD study."/>
+      <PageHeader title="Research Participation" subtitle="Thank you for being part of the ThriveU study."/>
 
       <div className="grid lg:grid-cols-3 gap-6">
         <Card padding="lg" className="lg:col-span-2">

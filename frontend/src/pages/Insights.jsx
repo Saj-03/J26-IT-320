@@ -13,7 +13,7 @@ const insights = [
 ];
 export function Insights() {
     return (<div className="space-y-6">
-      <PageHeader title="AI Insights" subtitle="What IHSD has learned about how you work and feel best."/>
+      <PageHeader title="AI Insights" subtitle="What ThriveU has learned about how you work and feel best."/>
 
       <AIInsightCard title="Your Weekly Trend">
         You completed <b>18% more tasks</b> this week than last — and did it with less late-night work. Keep protecting
@@ -50,19 +50,19 @@ export function Insights() {
             <h3 className="font-bold text-charcoal">Task completion rate</h3>
           </div>
           <p className="text-xs text-charcoal-muted mb-4">Trending up over the week</p>
-          <LineChart data={weeklyTasksData.map((d) => ({ label: d.day, value: d.value }))} color="#F5811E"/>
+          <LineChart data={weeklyTasksData.map((d) => ({ label: d.day, value: d.value }))} color="#2E9C88"/>
         </Card>
         <Card padding="lg">
           <h3 className="font-bold text-charcoal mb-1">Stress trend</h3>
           <p className="text-xs text-charcoal-muted mb-4">Calming into the weekend</p>
-          <LineChart data={stressData.map((d) => ({ label: d.day, value: d.value }))} color="#F2B857"/>
+          <LineChart data={stressData.map((d) => ({ label: d.day, value: d.value }))} color="#7F95CC"/>
         </Card>
       </div>
 
       {/* Estimated vs actual */}
       <Card padding="lg">
         <h3 className="font-bold text-charcoal mb-1">Estimated vs actual duration</h3>
-        <p className="text-xs text-charcoal-muted mb-5">You tend to underestimate — IHSD adds a buffer for you.</p>
+        <p className="text-xs text-charcoal-muted mb-5">You tend to underestimate — ThriveU adds a buffer for you.</p>
         <div className="space-y-4">
           {[
             { task: 'Chemistry Lab Report', est: 120, act: 165 },

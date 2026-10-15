@@ -65,10 +65,10 @@ export const todayRecommendation = {
     tag: 'Evening · 20 min'
 };
 export const todayRings = [
-    { id: 'activity', label: 'Activity', emoji: '🚶', current: 5240, total: 7000, unit: 'steps', color: '#F5811E' },
-    { id: 'exercise', label: 'Exercise', emoji: '🏃', current: 20, total: 30, unit: 'min', color: '#7FB998' },
-    { id: 'nutrition', label: 'Nutrition', emoji: '🥗', current: 2, total: 3, unit: 'meals', color: '#7CB8E8' },
-    { id: 'habits', label: 'Habits', emoji: '✨', current: 4, total: 5, unit: 'done', color: '#B69CE0' }
+    { id: 'activity', label: 'Activity', emoji: '🚶', current: 5240, total: 7000, unit: 'steps', color: '#2E9C88' },
+    { id: 'exercise', label: 'Exercise', emoji: '🏃', current: 20, total: 30, unit: 'min', color: '#8CCFA0' },
+    { id: 'nutrition', label: 'Nutrition', emoji: '🥗', current: 2, total: 3, unit: 'meals', color: '#7FCFDD' },
+    { id: 'habits', label: 'Habits', emoji: '✨', current: 4, total: 5, unit: 'done', color: '#9EB2DB' }
 ];
 export const todayPlan = [
     { id: 'p1', period: 'Morning', emoji: '🚶', title: '10-Minute Walk', target: 'Around campus', status: 'done' },

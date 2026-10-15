@@ -133,7 +133,7 @@ export function Tasks() {
       {loading && !data ? <LoadingState label="Loading your tasks…"/> :
             error ? <ErrorState onRetry={reload}/> :
             list.length === 0 ?
-            <EmptyState title="Nothing here yet" desc="You’re all caught up in this view. Add a task and IHSD will find the best time for it." actionLabel="Add a task" onAction={() => navigate('/app/add-task')}/> :
+            <EmptyState title="Nothing here yet" desc="You’re all caught up in this view. Add a task and ThriveU will find the best time for it." actionLabel="Add a task" onAction={() => navigate('/app/add-task')}/> :
             <div className="grid md:grid-cols-2 gap-4">
           {list.map((t) => <TaskCard key={t.id} task={t} onStart={() => navigate('/app/focus/setup')}/>)}
         </div>}

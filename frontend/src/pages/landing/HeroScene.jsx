@@ -48,18 +48,18 @@ function bgMapper(scene) {
 }
 
 const FALLING = [
-  { x: 58, delay: 3.2, dur: 7.5, size: 16, hue: '#A9C23F' },
-  { x: 72, delay: 5.4, dur: 8.5, size: 12, hue: '#C9B23A' },
-  { x: 36, delay: 7.1, dur: 9, size: 14, hue: '#8DB33A' },
-  { x: 84, delay: 9.6, dur: 7, size: 11, hue: '#D4A63A' },
-  { x: 48, delay: 12, dur: 8, size: 13, hue: '#A9C23F' },
+  { x: 58, delay: 3.2, dur: 7.5, size: 16, hue: '#9ADBCC' },
+  { x: 72, delay: 5.4, dur: 8.5, size: 12, hue: '#9EB2DB' },
+  { x: 36, delay: 7.1, dur: 9, size: 14, hue: '#8CCFA0' },
+  { x: 84, delay: 9.6, dur: 7, size: 11, hue: '#7FCFDD' },
+  { x: 48, delay: 12, dur: 8, size: 13, hue: '#C7F2D1' },
 ];
 
 function Leaf({ size, hue }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
       <path d="M12 2C6 6 4 12 6 18c2 3 5 4 6 4 1 0 4-1 6-4 2-6 0-12-6-16Z" fill={hue} />
-      <path d="M12 4v17" stroke="#5E7A22" strokeWidth="1" opacity=".5" />
+      <path d="M12 4v17" stroke="#1D695B" strokeWidth="1" opacity=".5" />
     </svg>
   );
 }
@@ -249,7 +249,7 @@ export function HeroScene({ className = '', children, mode = 'scroll', studentsC
       <div
         data-sun
         className="pointer-events-none absolute -right-[10%] -top-[20%] h-[80%] w-[60%] opacity-0 mix-blend-screen"
-        style={{ background: 'radial-gradient(closest-side, rgba(255,214,140,.75), rgba(255,180,90,.25) 45%, transparent 75%)' }}
+        style={{ background: 'radial-gradient(closest-side, rgba(208,242,247,.8), rgba(154,219,204,.3) 45%, transparent 75%)' }}
       />
 
       {/* 2 · students — grounded at the bottom, walking towards the viewer */}

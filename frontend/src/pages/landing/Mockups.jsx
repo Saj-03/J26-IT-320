@@ -150,9 +150,9 @@ export function AdjustCard({ className = '' }) {
 }
 
 const moods = [
-  ['#7FD08A', 'M8 14s1.5 2 4 2 4-2 4-2'],
+  ['#8CCFA0', 'M8 14s1.5 2 4 2 4-2 4-2'],
   ['#F59E8B', 'M8 15.5s1.5-1.5 4-1.5 4 1.5 4 1.5'],
-  ['#86D3C8', 'M8.5 15h7'],
+  ['#9ADBCC', 'M8.5 15h7'],
   ['#F7A3A3', 'M8 16s1.5-2 4-2 4 2 4 2'],
 ];
 
@@ -169,9 +169,9 @@ export function CheckinCard({ className = '' }) {
           >
             <svg width="34" height="34" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="11" fill={fill} />
-              <circle cx="9" cy="10" r="1.1" fill="#2A2A28" />
-              <circle cx="15" cy="10" r="1.1" fill="#2A2A28" />
-              <path d={mouth} stroke="#2A2A28" strokeWidth="1.3" fill="none" strokeLinecap="round" />
+              <circle cx="9" cy="10" r="1.1" fill="#252E48" />
+              <circle cx="15" cy="10" r="1.1" fill="#252E48" />
+              <path d={mouth} stroke="#252E48" strokeWidth="1.3" fill="none" strokeLinecap="round" />
             </svg>
           </button>
         ))}
@@ -197,21 +197,21 @@ export function WalkCard({ className = '' }) {
     <div className={`${card} w-[240px] p-3.5 ${className}`}>
       <p className="text-sm font-bold text-charcoal">12-minute walk</p>
       <p className="text-[10px] text-charcoal-muted">Campus Loop</p>
-      <div className="relative mt-2.5 h-[110px] overflow-hidden rounded-lg bg-[#E9EFE4]">
+      <div className="relative mt-2.5 h-[110px] overflow-hidden rounded-lg bg-[#E6F6EE]">
         <svg viewBox="0 0 220 110" className="absolute inset-0 h-full w-full">
           <path d="M0 30 L220 45 M40 0 L70 110 M150 0 L130 110 M0 85 L220 70" stroke="#fff" strokeWidth="5" />
-          <path d="M0 30 L220 45 M40 0 L70 110 M150 0 L130 110 M0 85 L220 70" stroke="#DCE3D5" strokeWidth="1" />
+          <path d="M0 30 L220 45 M40 0 L70 110 M150 0 L130 110 M0 85 L220 70" stroke="#C7E9DE" strokeWidth="1" />
           <path
             data-route
             d="M35 84 C 40 50, 70 28, 110 26 S 180 30, 186 58 S 150 92, 110 86 S 60 80, 35 84"
             fill="none"
-            stroke="#F5811E"
+            stroke="#2E9C88"
             strokeWidth="3.5"
             strokeLinecap="round"
             pathLength="1"
           />
-          <circle cx="35" cy="84" r="5" fill="#1F4D3A" stroke="#fff" strokeWidth="2" />
-          <circle cx="186" cy="58" r="5" fill="#F5811E" stroke="#fff" strokeWidth="2" />
+          <circle cx="35" cy="84" r="5" fill="#9EB2DB" stroke="#fff" strokeWidth="2" />
+          <circle cx="186" cy="58" r="5" fill="#2E9C88" stroke="#fff" strokeWidth="2" />
         </svg>
       </div>
       <div className="mt-2.5 flex justify-between text-[11px] font-semibold text-charcoal">

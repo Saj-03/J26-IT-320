@@ -46,7 +46,7 @@ export function Onboarding() {
                   <div className="w-16 h-16 rounded-3xl bg-brand-500 text-white flex items-center justify-center mx-auto mb-6 shadow-glow">
                     <SparklesIcon size={28}/>
                   </div>
-                  <h1 className="text-3xl font-extrabold text-charcoal">Welcome to IHSD</h1>
+                  <h1 className="text-3xl font-extrabold text-charcoal">Welcome to ThriveU</h1>
                   <p className="mt-3 text-charcoal-light max-w-sm mx-auto">Let’s build a system that works with your life.</p>
                 </div>}
 
@@ -147,7 +147,7 @@ export function Onboarding() {
                   </motion.div>
                   <h1 className="text-3xl font-extrabold text-charcoal">Your intelligent student profile is ready.</h1>
                   <p className="mt-3 text-charcoal-light max-w-sm mx-auto">
-                    We’ve set up IHSD around your rhythm, your workload and your goals.
+                    We’ve set up ThriveU around your rhythm, your workload and your goals.
                   </p>
                   <Button size="lg" className="mt-8" onClick={() => navigate('/app')}>
                     Build My Schedule <ArrowRightIcon size={18}/>
