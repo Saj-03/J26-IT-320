@@ -1,6 +1,9 @@
 __pycache__/
 *.pyc
 .venv/
+.venv312/
+.pip-cache/
+.install-temp/
 .env
 node_modules/
 dist/

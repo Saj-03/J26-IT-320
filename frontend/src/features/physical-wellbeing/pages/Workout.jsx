@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { PauseIcon, PlayIcon, SkipForwardIcon, FlagIcon, CheckIcon } from 'lucide-react';
+import { PauseIcon, PlayIcon, SkipForwardIcon, FlagIcon, CheckIcon, CameraIcon } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { ProgressRing } from '../../../shared/components/ui/ProgressRing';
@@ -14,6 +14,7 @@ import {
 } from '../data';
 import { getRecommendations, getProfile } from '../api';
 import { cn } from '../../../shared/lib/cn';
+import { PoseTracker } from '../components/PoseTracker';
 
 const feelings = [
     { emoji: '😌', label: 'Easy', note: 'We can add a little more next time.' },
@@ -36,6 +37,7 @@ export function PhysicalWorkout() {
     const [running, setRunning] = useState(true);
     const [finished, setFinished] = useState(false);
     const [feeling, setFeeling] = useState(null);
+    const [poseTracking, setPoseTracking] = useState(false);
 
     useEffect(() => {
         Promise.all([
@@ -218,6 +220,24 @@ export function PhysicalWorkout() {
                 <h2 className="text-lg font-extrabold text-charcoal">{step?.name}</h2>
                 <p className="text-sm text-charcoal-light mt-1.5 leading-relaxed">{step?.cue}</p>
             </Card>
+
+            <section className="mt-4 rounded-3xl border border-black/[0.06] bg-white p-4">
+                <div className="flex items-center justify-between gap-3">
+                    <div>
+                        <h2 className="text-sm font-bold text-charcoal">Webcam form check <span className="font-medium text-charcoal-muted">(optional)</span></h2>
+                        <p className="mt-1 text-xs text-charcoal-muted">Live pose and rep tracking runs in your browser. Video is never uploaded or saved.</p>
+                    </div>
+                    <button
+                        type="button"
+                        aria-pressed={poseTracking}
+                        onClick={() => setPoseTracking((enabled) => !enabled)}
+                        className={cn('shrink-0 inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-bold transition-colors', poseTracking ? 'bg-brand-600 text-white' : 'bg-brand-50 text-brand-700 hover:bg-brand-100')}
+                    >
+                        <CameraIcon size={15} /> {poseTracking ? 'Turn off' : 'Enable'}
+                    </button>
+                </div>
+                {poseTracking && <div className="mt-4"><PoseTracker exerciseName={step?.name || workoutTitle} /></div>}
+            </section>
 
             <div className="flex gap-2 mt-5">
                 <Button size="lg" className="flex-1" variant={running ? 'secondary' : 'primary'} onClick={() => setRunning((r) => !r)}>
