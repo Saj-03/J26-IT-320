@@ -15,6 +15,7 @@ Features dual recommendation engines for research evaluation:
 """
 
 import os
+import re
 import json
 import datetime
 from typing import Dict, List, Any, Optional
@@ -470,7 +471,7 @@ CURATED_EXERCISES = [
         "knee_safe": True,
         "back_safe": True,
         "calories_per_kg_hr": 7.0,
-        "description": "Dance-based calorie torcher: merengue steps, cumbia shuffles, side-reach squats, and high-energy hip rolls."
+        "description": "Dance-based calorie torcher: merengue steps, cumbia shuffles, low-impact side reaches, and high-energy hip rolls."
     },
     {
         "id": "ex_20_jog",
@@ -667,10 +668,24 @@ CURATED_EXERCISES = [
         "equipment": "Gym / Dumbbells",
         "primary_goal": "strength",
         "target_goals": ["strength", "fitness"],
-        "knee_safe": True,
+        "knee_safe": False,
         "back_safe": True,
         "calories_per_kg_hr": 6.5,
         "description": "Progressive resistance split: goblet squats, dumbbell bench presses, bent-over rows, lunges, and hollow body holds."
+    },
+    {
+        "id": "ex_45_knee_safe",
+        "name": "45-Min Joint-Friendly Upper Body & Core Strength",
+        "duration_mins": 45,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Gym / Dumbbells",
+        "primary_goal": "strength",
+        "target_goals": ["strength", "fitness"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 5.8,
+        "description": "Zero knee strain: dumbbell bench press, seated overhead shoulder press, dumbbell chest-supported rows, glute bridge holds, and core planks."
     },
     {
         "id": "ex_45_2",
@@ -855,6 +870,138 @@ def get_scored_meals_for_profile(profile: dict, is_exam_period: bool = False) ->
     return scored_meals
 
 
+# ── Helper: Clinical Risk Triage & Limitations Analysis ──────────────────────
+def analyze_limitations_and_safety(profile: dict) -> Dict[str, Any]:
+    """
+    Clinical risk triage & limitation analysis for exercise prescription.
+    Evaluates reported physical limitations, injury history, severity, and symptoms
+    to determine if physician/physiotherapist consultation is required,
+    and returns exact movement exclusions and safe clinical alternatives.
+    """
+    raw_limits = str(profile.get("physical_limitations", "") or "").strip()
+    limits_lower = raw_limits.lower()
+
+    # Detect choice mode: 'no', 'prefer_not_to_say', or 'yes'
+    if not raw_limits or raw_limits == "none" or limits_lower.startswith("no") or "no limitations" in limits_lower:
+        return {
+            "choice": "no",
+            "has_limitations": False,
+            "risk_level": "low",
+            "doctor_consultation_advised": False,
+            "doctor_consultation_title": "All Clear for Physical Activity",
+            "doctor_consultation_reason": "No physical limitations reported. Standard student fitness guidelines apply.",
+            "clinical_summary": "Cleared for all movement planes, progressive resistance, and cardiovascular training.",
+            "flagged_categories": [],
+            "restricted_movements": [],
+            "safe_modifications": ["Full-body compound movements", "Aerobic and interval training"]
+        }
+
+    if "prefer not to say" in limits_lower or "prefer_not_to_say" in limits_lower:
+        return {
+            "choice": "prefer_not_to_say",
+            "has_limitations": True,
+            "risk_level": "moderate",
+            "doctor_consultation_advised": False,
+            "doctor_consultation_title": "Precautionary Low-Impact Protocol",
+            "doctor_consultation_reason": "Health status undisclosed. System defaults to joint-neutral, low-impact activities to prevent injury.",
+            "clinical_summary": "Restricted to low-impact, joint-friendly movements. If you have any underlying pain or condition, consult a doctor.",
+            "flagged_categories": ["undisclosed"],
+            "restricted_movements": ["Heavy maximal lifts", "High-impact jumping", "Exhaustive Tabata sprints"],
+            "safe_modifications": ["Flat campus power walking", "Gentle joint mobility", "Restorative yoga"]
+        }
+
+    # 'Yes' mode: Analyze categories, severity, and clinical red flags
+    flagged = []
+    restricted = []
+    modifications = []
+    red_flags = []
+
+    # 1. Lower body (knee / ankle / hip)
+    if any(k in limits_lower for k in ["knee", "ankle", "hip", "lower", "patell", "meniscus", "acl", "ligament", "lower-body"]):
+        flagged.append("lower_body_knee")
+        restricted.extend(["Deep bodyweight/barbell squats", "Forward lunges", "Jump squats / plyometrics", "High-impact running"])
+        modifications.extend(["Glute bridge holds", "Straight-leg quad raises", "Flat campus power walking", "Low-impact side steps"])
+        if any(w in limits_lower for w in ["tear", "severe", "sharp", "swollen", "surgery", "meniscus", "acl"]):
+            red_flags.append("Knee joint pathology or sharp joint pain reported")
+
+    # 2. Upper body (back / spine / lumbar)
+    if any(k in limits_lower for k in ["back", "spine", "lumbar", "disc", "sciatica", "vertebra", "upper-body"]):
+        flagged.append("upper_body_back")
+        restricted.extend(["Heavy barbell deadlifts", "Unsupported spinal flexion", "Overhead heavy presses"])
+        modifications.extend(["Cat-cow thoracic mobility", "Bird-dog core holds", "Pelvic tilts", "Forearm planks"])
+        if any(w in limits_lower for w in ["disc", "herniat", "sciatica", "numb", "severe", "shooting"]):
+            red_flags.append("Spinal disc irritation, nerve pain, or severe back strain reported")
+
+    # 3. Shoulder / Neck
+    if any(k in limits_lower for k in ["shoulder", "neck", "rotator", "cervical"]):
+        flagged.append("shoulder_neck")
+        restricted.extend(["Overhead barbell presses", "Behind-the-neck pulls", "Heavy push-ups"])
+        modifications.extend(["Scapular retractions", "Doorway chest openers", "Wall slides", "Band pull-aparts"])
+
+    # 4. Respiratory / Asthma
+    if any(k in limits_lower for k in ["asthma", "breath", "wheez", "inhaler", "respiratory", "lung"]):
+        flagged.append("respiratory_asthma")
+        restricted.extend(["High-intensity Tabata sprints", "Cold-air endurance runs", "Exhaustive aerobic intervals"])
+        modifications.extend(["Steady-state indoor walking", "Box breathing & pranayama", "Gradual warm-up routines"])
+        if "severe" in limits_lower or "inhaler" in limits_lower:
+            red_flags.append("Exercise-induced asthma or respiratory sensitivity reported")
+
+    # 5. Cardiovascular / Blood Pressure / Dizziness
+    if any(k in limits_lower for k in ["heart", "cardio", "chest", "pressure", "hypertension", "dizzy", "faint", "palpitation"]):
+        flagged.append("cardiovascular")
+        restricted.extend(["Maximum heart rate HIIT", "Rapid positional changes (head-below-heart)", "Heavy isometric strain"])
+        modifications.extend(["Supervised light walking", "Seated gentle mobility", "Controlled rhythmic breathing"])
+        red_flags.append("Cardiovascular or dizziness symptoms require medical clearance prior to physical exertion")
+
+    # 6. Recent Surgery / Fracture / Acute injury
+    if any(k in limits_lower for k in ["surgery", "operat", "fracture", "broken", "sprain", "torn", "rehab", "injury"]):
+        flagged.append("recent_injury_surgery")
+        restricted.extend(["All loaded resistance training", "Dynamic athletic drills"])
+        modifications.extend(["Physiotherapist-guided rehabilitation", "Gentle active range of motion"])
+        red_flags.append("Recent musculoskeletal injury or surgical intervention flagged")
+
+    # 7. General Flexibility / Stiffness
+    if any(k in limits_lower for k in ["flexibility", "stiff", "tightness"]):
+        if not flagged:
+            flagged.append("flexibility")
+        restricted.extend(["Aggressive ballistic stretches"])
+        modifications.extend(["Dynamic mobility flows", "Slow static post-workout stretches"])
+
+    # If user selected 'yes' but free text was generic
+    if not flagged:
+        flagged.append("general_limitation")
+        restricted.append("High-intensity impact drills")
+        modifications.append("Low-impact adaptive exercises")
+
+    # Detect severity
+    is_severe = any(w in limits_lower for w in ["severe", "sharp", "chronic", "tear", "surgery", "disc", "heart", "chest"]) or "severity: severe" in limits_lower
+    is_moderate = any(w in limits_lower for w in ["moderate", "medium", "frequent", "strain", "sprain"]) or "severity: moderate" in limits_lower or len(flagged) >= 2
+
+    doctor_advised = bool(red_flags) or is_severe or "cardiovascular" in flagged or "recent_injury_surgery" in flagged
+    risk_level = "high" if doctor_advised else ("moderate" if (is_moderate or flagged) else "low")
+
+    if doctor_advised:
+        title = "🩺 Physician / Physiotherapist Consultation Advised"
+        reason = f"Medical clearance recommended: {'; '.join(red_flags) if red_flags else 'Significant joint or medical condition disclosed'}. Exercise should be performed under professional medical or physical therapy guidance."
+    else:
+        title = "🛡️ Adaptive AI Safety Protocol Active"
+        reason = f"Identified {', '.join(flagged).replace('_', ' ')} limitation(s). Algorithmic safety rules applied to replace contra-indicated exercises with joint-friendly alternatives."
+
+    return {
+        "choice": "yes",
+        "has_limitations": True,
+        "risk_level": risk_level,
+        "severity": "severe" if is_severe else ("moderate" if is_moderate else "mild"),
+        "doctor_consultation_advised": doctor_advised,
+        "doctor_consultation_title": title,
+        "doctor_consultation_reason": reason,
+        "clinical_summary": f"Identified: {', '.join(flagged).replace('_', ' ')}. Risk: {risk_level.upper()}.",
+        "flagged_categories": flagged,
+        "restricted_movements": list(dict.fromkeys(restricted)),
+        "safe_modifications": list(dict.fromkeys(modifications))
+    }
+
+
 # ── Helper: Tailor Exercises for Profile ─────────────────────────────────────
 def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = False) -> List[Dict[str, Any]]:
     """
@@ -866,7 +1013,7 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
     sleep_def = float(profile.get("sleep_deficit", max(0.0, 7.5 - float(profile.get("sleep_hours", 7.0)))))
     bmi = float(profile.get("bmi", 22.0))
     avail_mins = int(profile.get("available_minutes", 20))
-    limits = str(profile.get("physical_limitations", "")).lower()
+    safety = analyze_limitations_and_safety(profile)
     equipment_list = profile.get("equipment", [])
     equip_str = " ".join(equipment_list).lower() if equipment_list else "home / bodyweight"
     pref_acts = [str(a).lower() for a in profile.get("preferred_activities", [])]
@@ -890,15 +1037,36 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
     scored_exercises = []
 
     for ex in CURATED_EXERCISES:
-        # Check limitation safety
-        has_knee_limit = ("knee" in limits or "lower" in limits or "high-impact" in limits or "joint" in limits)
-        has_back_limit = ("back" in limits or "upper" in limits or "spine" in limits)
-
+        ex_name_l = ex["name"].lower()
+        ex_desc_l = ex["description"].lower()
         limitation_conflict = 0
-        if has_knee_limit and not ex["knee_safe"]:
-            limitation_conflict = 1
-        if has_back_limit and not ex["back_safe"]:
-            limitation_conflict = 1
+
+        # Limitation screening
+        if safety["choice"] == "prefer_not_to_say":
+            # Undisclosed limitation: strictly allow only low-to-moderate joint-neutral routines
+            if ex["intensity_level"] > 2 or not ex["knee_safe"] or not ex["back_safe"]:
+                limitation_conflict = 1
+        elif safety["has_limitations"]:
+            # Check knee / lower-body
+            if "lower_body_knee" in safety["flagged_categories"]:
+                if not ex["knee_safe"]:
+                    limitation_conflict = 1
+                if any(w in ex_name_l or w in ex_desc_l for w in ["squat", "lunge", "jump", "burpee", "jog"]):
+                    limitation_conflict = 1
+            # Check back / upper-body
+            if "upper_body_back" in safety["flagged_categories"]:
+                if not ex["back_safe"]:
+                    limitation_conflict = 1
+                if "deadlift" in ex_desc_l:
+                    limitation_conflict = 1
+            # Check respiratory / asthma or cardiovascular
+            if any(c in safety["flagged_categories"] for c in ["respiratory_asthma", "cardiovascular"]):
+                if ex["intensity_level"] >= 3:
+                    limitation_conflict = 1
+            # Check recent injury or surgery
+            if "recent_injury_surgery" in safety["flagged_categories"]:
+                if ex["intensity_level"] >= 2 or not ex["knee_safe"] or not ex["back_safe"]:
+                    limitation_conflict = 1
 
         # Equipment match
         ex_equip = ex["equipment"].lower()
@@ -1072,6 +1240,7 @@ def get_adaptive_recommendations(profile: dict, is_exam_period: bool = False, k:
         "effective_available_minutes": effective_avail_mins,
         "stress_level": round(stress, 2),
         "workload_score": round(workload, 2),
+        "safety_analysis": analyze_limitations_and_safety(profile),
         "recommended_workouts": exercises[:k],
         "recommended_meals": meals[:k],
         "today_slots": {
@@ -1099,6 +1268,8 @@ def generate_week_plan(
     if start_date is None:
         start_date = datetime.date.today()
 
+    safety = analyze_limitations_and_safety(profile)
+
     if use_baseline:
         engine_info = get_baseline_recommendations(profile, k=10)
         exercises = engine_info["recommended_workouts"]
@@ -1108,8 +1279,7 @@ def generate_week_plan(
         exercises = get_tailored_exercises_for_profile(profile, is_exam_period=is_exam_period)
         meals = get_scored_meals_for_profile(profile, is_exam_period=is_exam_period)
 
-    limits = str(profile.get("physical_limitations", "")).lower()
-    if limits and limits != "none":
+    if safety["has_limitations"]:
         safe_exercises = [e for e in exercises if not e.get("limitation_warning", False)]
         if safe_exercises:
             exercises = safe_exercises
@@ -1199,6 +1369,7 @@ def generate_week_plan(
         "context_aware": engine_info["context_aware"],
         "is_exam_period": is_exam_period,
         "effective_available_minutes": engine_info["effective_available_minutes"],
+        "safety_analysis": safety,
         "user_preferences": {
             "goal": profile.get("goal", "fitness"),
             "goals": profile.get("goals", []),

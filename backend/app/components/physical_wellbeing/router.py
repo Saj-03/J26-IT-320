@@ -109,7 +109,8 @@ def recommendations(is_exam_period: bool = False, use_baseline: bool = False, db
         "user_preferences": profile_dict,
         "exercises": formatted_exercises,
         "meals": formatted_meals,
-        "today_slots": res.get("today_slots")
+        "today_slots": res.get("today_slots"),
+        "safety_analysis": res.get("safety_analysis")
     }
 
 

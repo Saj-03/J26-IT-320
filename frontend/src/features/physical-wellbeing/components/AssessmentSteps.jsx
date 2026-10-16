@@ -7,7 +7,9 @@ import {
     activityLevels,
     willingActivities,
     equipmentFacilities,
+    limitationPrimaryChoices,
     limitationOptions,
+    limitationSeverities,
     availableTimeOptions,
     barrierOptions,
     nutritionGoals,
@@ -44,7 +46,9 @@ export const initialAssessment = {
     availableTime: '15–30 minutes',
     equipment: ['No equipment'],
     preferredTime: 'Evening',
-    limitations: ['none'],
+    limitationChoice: 'no',
+    limitations: [],
+    limitationSeverity: 'mild',
     limitationNote: '',
 
     // Step 5: Nutrition & Meals
@@ -397,40 +401,179 @@ export function StepExerciseSafety({ state, set }) {
                 </div>
             </div>
 
-            {/* Physical Limitations */}
-            <div className="pt-2">
-                <p className="text-sm font-semibold text-charcoal-light mb-1">
-                    Do you have any physical limitations or areas of discomfort?
-                </p>
-                <p className="text-xs text-charcoal-muted mb-3">
-                    Our safety engine completely filters out conflicting movements across your 7-day plan
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {limitationOptions.map((l) => (
-                        <SelectCard
-                            key={l.id}
-                            selected={(state.limitations || []).includes(l.id)}
-                            onClick={() => pickLimitation(l.id)}
-                            emoji={l.emoji}
-                            label={l.label}
-                            desc={l.desc}
-                        />
-                    ))}
+            {/* Physical Limitations & Clinical Triage */}
+            <div className="pt-2 border-t border-black/[0.06]">
+                <div className="mb-3">
+                    <p className="text-sm font-bold text-charcoal flex items-center gap-1.5">
+                        <span>🩺</span> Do you have any physical limitations or health conditions that affect exercise?
+                    </p>
+                    <p className="text-xs text-charcoal-muted mt-0.5">
+                        Informed by sports physiology to calibrate joint safety and determine if physician consultation is recommended.
+                    </p>
                 </div>
 
-                <div className="mt-3">
-                    <label htmlFor="limitnote" className="text-xs font-bold text-charcoal-muted uppercase tracking-wider block mb-1">
-                        Additional details or notes <span className="font-normal lowercase">(optional)</span>
-                    </label>
-                    <textarea
-                        id="limitnote"
-                        rows={2}
-                        value={state.limitationNote}
-                        onChange={(e) => set('limitationNote', e.target.value)}
-                        placeholder="e.g. slight right knee strain after running, lower back stiffness from sitting"
-                        className="w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-xs text-charcoal placeholder:text-charcoal-muted outline-none transition-all focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 resize-none"
-                    />
+                {/* Primary Choice: No | Prefer not to say | Yes */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-4">
+                    {limitationPrimaryChoices.map((choice) => {
+                        const isSelected = (state.limitationChoice || 'no') === choice.id;
+                        return (
+                            <button
+                                key={choice.id}
+                                type="button"
+                                onClick={() => {
+                                    set('limitationChoice', choice.id);
+                                    if (choice.id === 'no') {
+                                        set('limitations', ['none']);
+                                    } else if (choice.id === 'prefer_not_to_say') {
+                                        set('limitations', ['prefer_not_to_say']);
+                                    } else {
+                                        set('limitations', (state.limitations || []).filter(x => x !== 'none' && x !== 'prefer_not_to_say'));
+                                    }
+                                }}
+                                className={`text-left rounded-2xl p-3.5 border-2 transition-all ${
+                                    isSelected 
+                                        ? 'border-brand-500 bg-brand-50/70 shadow-sm' 
+                                        : 'border-black/[0.07] bg-white hover:border-brand-200'
+                                }`}
+                            >
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-xl">{choice.emoji}</span>
+                                    <span className="font-extrabold text-sm text-charcoal">{choice.label}</span>
+                                </div>
+                                <p className="text-[11px] text-charcoal-muted leading-tight">{choice.desc}</p>
+                            </button>
+                        );
+                    })}
                 </div>
+
+                {/* Conditional Sub-panel if 'prefer_not_to_say' */}
+                {state.limitationChoice === 'prefer_not_to_say' && (
+                    <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 text-xs text-blue-900 leading-relaxed mb-3">
+                        <p className="font-bold flex items-center gap-1.5 mb-1 text-blue-950">
+                            <span>🔒</span> Privacy Respected: Precautionary Low-Impact Protocol
+                        </p>
+                        <p>
+                            Because your health status is undisclosed, our adaptive engine will automatically restrict your 7-day plan to gentle, low-impact, joint-neutral activities (campus power walking, restorative mobility, yoga). If you ever experience pain or dizziness, please stop immediately and consult a doctor.
+                        </p>
+                    </div>
+                )}
+
+                {/* Conditional Sub-panel if 'yes' */}
+                {state.limitationChoice === 'yes' && (
+                    <div className="space-y-4 p-4 rounded-3xl bg-amber-50/40 border border-amber-200/80 mb-3">
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-wider text-charcoal-light mb-1.5">
+                                1. Select affected areas or conditions <span className="text-brand-600">(Select all that apply)</span>
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {limitationOptions.map((l) => {
+                                    const isSelected = (state.limitations || []).includes(l.id);
+                                    return (
+                                        <SelectCard
+                                            key={l.id}
+                                            selected={isSelected}
+                                            onClick={() => {
+                                                const current = (state.limitations || []).filter(x => x !== 'none' && x !== 'prefer_not_to_say');
+                                                const updated = current.includes(l.id) ? current.filter(x => x !== l.id) : [...current, l.id];
+                                                set('limitations', updated);
+                                            }}
+                                            emoji={l.emoji}
+                                            label={l.label}
+                                            desc={l.desc}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Severity Selector */}
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-wider text-charcoal-light mb-1.5">
+                                2. Pain or Discomfort Intensity
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                {limitationSeverities.map((sev) => {
+                                    const isSelected = (state.limitationSeverity || 'mild') === sev.id;
+                                    return (
+                                        <button
+                                            key={sev.id}
+                                            type="button"
+                                            onClick={() => set('limitationSeverity', sev.id)}
+                                            className={`text-left rounded-2xl p-3 border-2 transition-all ${
+                                                isSelected
+                                                    ? 'border-brand-500 bg-white shadow-soft font-bold'
+                                                    : 'border-black/[0.06] bg-white/70 hover:border-brand-200'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                                <span>{sev.emoji}</span>
+                                                <span className="text-xs font-extrabold text-charcoal">{sev.label}</span>
+                                            </div>
+                                            <p className="text-[10px] text-charcoal-muted leading-tight">{sev.desc}</p>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Symptoms Textarea */}
+                        <div>
+                            <label htmlFor="limitnote" className="text-xs font-bold text-charcoal-muted uppercase tracking-wider block mb-1">
+                                3. Mention specific symptoms, diagnoses, or triggers <span className="font-normal lowercase">(optional)</span>
+                            </label>
+                            <textarea
+                                id="limitnote"
+                                rows={2}
+                                value={state.limitationNote}
+                                onChange={(e) => set('limitationNote', e.target.value)}
+                                placeholder="e.g. sharp right knee pain when bending past 90°, asthma flare-ups during cold runs, lower back stiffness after 3 hours of studying"
+                                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-xs text-charcoal placeholder:text-charcoal-muted outline-none transition-all focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 resize-none shadow-sm"
+                            />
+                        </div>
+
+                        {/* Real-Time Clinical Doctor Consultation Analysis Box */}
+                        {(() => {
+                            const isSevere = state.limitationSeverity === 'severe';
+                            const hasCardio = (state.limitations || []).includes('cardiovascular');
+                            const hasSurgery = (state.limitations || []).includes('surgery_injury');
+                            const hasRespiratory = (state.limitations || []).includes('respiratory');
+                            const needsDoctor = isSevere || hasCardio || hasSurgery || hasRespiratory;
+
+                            if (needsDoctor) {
+                                return (
+                                    <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-950 text-xs space-y-1.5">
+                                        <p className="font-extrabold flex items-center gap-1.5 text-rose-900 text-sm">
+                                            <span>🩺</span> Physician / Physiotherapist Consultation Advised
+                                        </p>
+                                        <p className="leading-relaxed">
+                                            {hasCardio 
+                                                ? "Cardiovascular symptoms or dizziness require formal medical clearance before starting exercise."
+                                                : hasSurgery
+                                                ? "Post-surgery or acute musculoskeletal injuries must be evaluated by a physiotherapist."
+                                                : hasRespiratory
+                                                ? "Asthma or breathing sensitivities require medical management. High-intensity cardio will be excluded."
+                                                : "Severe or sharp pain indicates potential joint or tissue damage. We strongly advise a clinical assessment before commencing physical activity."}
+                                        </p>
+                                        <p className="text-[11px] font-semibold text-rose-800 pt-0.5">
+                                            ✓ Our AI recommendation engine will strictly enforce restorative, low-impact movements to safeguard your health.
+                                        </p>
+                                    </div>
+                                );
+                            } else {
+                                return (
+                                    <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs">
+                                        <p className="font-bold flex items-center gap-1.5 text-emerald-900 mb-0.5">
+                                            <span>🛡️</span> Adaptive Safety Protection Active
+                                        </p>
+                                        <p className="leading-relaxed text-emerald-800">
+                                            Your selected limitations will be respected. Conflicting movements (such as deep squats, lunges, or spinal shear) will be automatically filtered and replaced across your 7-day plan.
+                                        </p>
+                                    </div>
+                                );
+                            }
+                        })()}
+                    </div>
+                )}
             </div>
 
             <MedicalDisclaimer />
