@@ -1,18 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PauseIcon, PlayIcon, SkipForwardIcon, FlagIcon, CheckIcon, CameraIcon } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { ProgressRing } from '../../../shared/components/ui/ProgressRing';
-import {
-    kneeSafeWorkoutSteps,
-    backSafeWorkoutSteps,
-    gentleWorkoutSteps,
-    standardWorkoutSteps,
-    featuredExercise
-} from '../data';
-import { getRecommendations, getProfile } from '../api';
+import { featuredExercise } from '../data';
+import { getRecommendations } from '../api';
 import { cn } from '../../../shared/lib/cn';
 import { PoseTracker } from '../components/PoseTracker';
 
@@ -29,64 +23,46 @@ function fmt(s) {
 
 export function PhysicalWorkout() {
     const navigate = useNavigate();
-    const [recom, setRecom] = useState(null);
-    const [steps, setSteps] = useState(standardWorkoutSteps);
-    const [safetyBadge, setSafetyBadge] = useState(null);
+    const location = useLocation();
+    const selectedWorkout = location.state?.workout || location.state?.exercise || null;
+    const [recommendedWorkout, setRecommendedWorkout] = useState(selectedWorkout);
     const [index, setIndex] = useState(0);
-    const [left, setLeft] = useState(standardWorkoutSteps[0].seconds);
+    const [left, setLeft] = useState(20 * 60);
     const [running, setRunning] = useState(true);
     const [finished, setFinished] = useState(false);
     const [feeling, setFeeling] = useState(null);
     const [poseTracking, setPoseTracking] = useState(false);
 
     useEffect(() => {
-        Promise.all([
-            getRecommendations().catch(() => null),
-            getProfile().catch(() => null)
-        ]).then(([recomRes, profRes]) => {
-            if (recomRes?.exercises?.[0]) {
-                setRecom(recomRes.exercises[0]);
-            }
-            
-            const limits = (profRes?.physical_limitations || recomRes?.user_preferences?.physical_limitations || '').toLowerCase();
-            const safety = recomRes?.safety_analysis || null;
-            
-            let selectedSteps = standardWorkoutSteps;
-            let badge = null;
+        if (selectedWorkout) {
+            setRecommendedWorkout(selectedWorkout);
+            return;
+        }
+        getRecommendations()
+            .then((result) => setRecommendedWorkout(result?.exercises?.[0] || null))
+            .catch(() => setRecommendedWorkout(null));
+    }, [selectedWorkout]);
 
-            if (limits.includes('knee') || limits.includes('lower') || limits.includes('joint') || safety?.flagged_categories?.includes('lower_body_knee')) {
-                selectedSteps = kneeSafeWorkoutSteps;
-                badge = {
-                    emoji: '🦵',
-                    text: 'Knee-Safe Mode Active (Zero Squats / Zero Knee Shear)',
-                    color: 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                };
-            } else if (limits.includes('back') || limits.includes('spine') || limits.includes('lumbar') || safety?.flagged_categories?.includes('upper_body_back')) {
-                selectedSteps = backSafeWorkoutSteps;
-                badge = {
-                    emoji: '🧍',
-                    text: 'Back & Spine Safe Mode Active (Zero Compressive Load)',
-                    color: 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                };
-            } else if (limits.includes('prefer_not_to_say') || limits.includes('asthma') || limits.includes('cardio') || limits.includes('surgery') || safety?.doctor_consultation_advised) {
-                selectedSteps = gentleWorkoutSteps;
-                badge = {
-                    emoji: '🔒',
-                    text: 'Gentle Precautionary Protocol Active',
-                    color: 'bg-blue-50 text-blue-800 border-blue-200'
-                };
-            }
+    const workout = selectedWorkout || recommendedWorkout || {
+        name: featuredExercise.title,
+        minutes: 20,
+        description: featuredExercise.benefit
+    };
+    const workoutTitle = workout.name || workout.title || featuredExercise.title;
+    const workoutMins = Number(workout.minutes || workout.duration_mins || 20);
+    const workoutDay = location.state?.dayName;
+    const currentSteps = [{
+        name: workoutTitle,
+        seconds: Math.max(60, workoutMins * 60),
+        cue: workout.description || 'Follow the recommended routine at a comfortable pace, and pause if you feel pain.'
+    }];
+    const step = currentSteps[0];
 
-            setSteps(selectedSteps);
-            setSafetyBadge(badge);
-            setLeft(selectedSteps[0].seconds);
-        }).catch(() => null);
-    }, []);
-
-    const workoutTitle = recom?.name || featuredExercise.title;
-    const workoutMins = recom?.minutes || 20;
-    const currentSteps = steps && steps.length > 0 ? steps : standardWorkoutSteps;
-    const step = currentSteps[index] || currentSteps[0];
+    useEffect(() => {
+        setLeft(currentSteps[0].seconds);
+        setIndex(0);
+        setFinished(false);
+    }, [workoutTitle, workoutMins, workout.description]);
 
     useEffect(() => {
         if (!running || finished) return;
@@ -182,16 +158,10 @@ export function PhysicalWorkout() {
     return (
         <div className="w-full max-w-7xl mx-auto">
             <div className="text-center">
-                {safetyBadge && (
-                    <div className={cn('inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold mb-2 shadow-sm', safetyBadge.color)}>
-                        <span>{safetyBadge.emoji}</span>
-                        <span>{safetyBadge.text}</span>
-                    </div>
-                )}
                 <p className="text-sm font-semibold text-brand-600">Focused workout</p>
                 <h1 className="text-xl font-extrabold text-charcoal mt-1">{workoutTitle}</h1>
                 <p className="text-sm text-charcoal-muted mt-0.5">
-                    Exercise {index + 1} of {currentSteps.length}
+                    {workoutDay ? `${workoutDay}’s planned workout` : `${workoutMins}-minute personalized session`}
                 </p>
             </div>
 
@@ -208,7 +178,7 @@ export function PhysicalWorkout() {
                 ))}
             </div>
 
-            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-8 items-start">
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-[minmax(0,1.45fr)_minmax(340px,1fr)] xl:grid-cols-[minmax(0,1.7fr)_minmax(380px,1fr)] gap-5 lg:gap-7 xl:gap-8 items-start">
                 <section className="min-w-0 rounded-3xl border border-black/[0.06] bg-white p-4 sm:p-5">
                     <div className="flex items-center justify-between gap-3">
                         <div>

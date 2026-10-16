@@ -98,7 +98,7 @@ export function PhysicalExercise() {
 
           <div className="p-6 pt-0">
             <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-black/[0.05]">
-              <Button size="lg" className="flex-1" onClick={() => navigate('/app/physical/workout')}>
+              <Button size="lg" className="flex-1" disabled={loading} onClick={() => navigate('/app/physical/workout', { state: { workout: featured } })}>
                 <PlayIcon size={17} fill="currentColor" /> Start Workout
               </Button>
             </div>
@@ -147,7 +147,7 @@ export function PhysicalExercise() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                onClick={() => navigate('/app/physical/workout')}
+                onClick={() => navigate('/app/physical/workout', { state: { workout: a } })}
                 className="text-left rounded-3xl bg-white border border-black/[0.04] shadow-soft p-5 hover:shadow-card transition-all flex flex-col justify-between"
               >
                 <div>

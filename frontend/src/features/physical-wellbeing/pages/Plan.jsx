@@ -410,7 +410,7 @@ export function PhysicalPlan() {
                         </div>
                         <Button
                           size="md"
-                          onClick={() => navigate('/app/physical/workout')}
+                          onClick={() => navigate('/app/physical/workout', { state: { workout: currentDay.exercise, dayName: currentDay.day_name, dayDate: currentDay.date } })}
                           className="shrink-0 shadow-soft"
                         >
                           <PlayIcon size={14} fill="currentColor" /> Start Workout
@@ -577,7 +577,7 @@ export function PhysicalPlan() {
                   </p>
                 </div>
               </div>
-              <Button size="md" onClick={() => navigate('/app/physical/workout')}>
+              <Button size="md" onClick={() => navigate('/app/physical/workout', { state: { workout: currentDay?.exercise, dayName: currentDay?.day_name, dayDate: currentDay?.date } })}>
                 <PlayIcon size={14} fill="currentColor" /> Start Workout
               </Button>
             </Card>

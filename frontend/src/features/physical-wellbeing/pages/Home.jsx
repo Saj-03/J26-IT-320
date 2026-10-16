@@ -215,7 +215,7 @@ export function PhysicalHome() {
           benefit={topRecommendation.benefit}
           tag={topRecommendation.tag}
           primaryLabel="Start Activity"
-          onPrimary={() => navigate('/app/physical/workout')}
+          onPrimary={() => navigate('/app/physical/workout', topWorkout ? { state: { workout: topWorkout } } : undefined)}
           onChange={() => navigate('/app/physical/exercise')}
         />
       </div>
