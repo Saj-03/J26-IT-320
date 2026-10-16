@@ -28,7 +28,8 @@ export function PhysicalWorkout() {
     const [recommendedWorkout, setRecommendedWorkout] = useState(selectedWorkout);
     const [index, setIndex] = useState(0);
     const [left, setLeft] = useState(20 * 60);
-    const [running, setRunning] = useState(true);
+    const [started, setStarted] = useState(false);
+    const [running, setRunning] = useState(false);
     const [finished, setFinished] = useState(false);
     const [feeling, setFeeling] = useState(null);
     const [poseTracking, setPoseTracking] = useState(false);
@@ -61,6 +62,8 @@ export function PhysicalWorkout() {
     useEffect(() => {
         setLeft(currentSteps[0].seconds);
         setIndex(0);
+        setStarted(false);
+        setRunning(false);
         setFinished(false);
     }, [workoutTitle, workoutMins, workout.description]);
 
@@ -220,21 +223,34 @@ export function PhysicalWorkout() {
                         <p className="text-sm text-charcoal-light mt-1.5 leading-relaxed">{step?.cue}</p>
                     </Card>
 
-                    <div className="flex gap-2 mt-5">
-                        <Button size="lg" className="flex-1" variant={running ? 'secondary' : 'primary'} onClick={() => setRunning((r) => !r)}>
-                            {running ? <PauseIcon size={17} /> : <PlayIcon size={17} fill="currentColor" />}
-                            {running ? 'Pause' : 'Resume'}
+                    {!started ? (
+                        <Button
+                            size="lg"
+                            fullWidth
+                            className="mt-5"
+                            onClick={() => { setStarted(true); setRunning(true); }}
+                        >
+                            <PlayIcon size={17} fill="currentColor" /> Start Workout
                         </Button>
-                        <Button size="lg" variant="outline" onClick={skip}>
-                            <SkipForwardIcon size={16} /> Skip
-                        </Button>
-                    </div>
-                    <button
-                        onClick={() => setFinished(true)}
-                        className="mt-3 w-full inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-charcoal-muted hover:text-charcoal py-2.5"
-                    >
-                        <FlagIcon size={14} /> Finish Workout
-                    </button>
+                    ) : (
+                        <>
+                            <div className="flex gap-2 mt-5">
+                                <Button size="lg" className="flex-1" variant={running ? 'secondary' : 'primary'} onClick={() => setRunning((r) => !r)}>
+                                    {running ? <PauseIcon size={17} /> : <PlayIcon size={17} fill="currentColor" />}
+                                    {running ? 'Pause' : 'Resume'}
+                                </Button>
+                                <Button size="lg" variant="outline" onClick={skip}>
+                                    <SkipForwardIcon size={16} /> Skip
+                                </Button>
+                            </div>
+                            <button
+                                onClick={() => setFinished(true)}
+                                className="mt-3 w-full inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-charcoal-muted hover:text-charcoal py-2.5"
+                            >
+                                <FlagIcon size={14} /> Finish Workout
+                            </button>
+                        </>
+                    )}
                 </section>
             </div>
         </div>
