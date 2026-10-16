@@ -1,11 +1,12 @@
-import { LayoutDashboardIcon, CalendarDaysIcon, ListTodoIcon, TimerIcon, HeartPulseIcon, TrophyIcon, LineChartIcon, BriefcaseIcon, SparklesIcon, SettingsIcon, ShieldCheckIcon, FlaskConicalIcon, DumbbellIcon } from 'lucide-react';
+import { LayoutDashboardIcon, CalendarDaysIcon, ListTodoIcon, TimerIcon, HeartPulseIcon, TrophyIcon, LineChartIcon, BriefcaseIcon, SparklesIcon, SettingsIcon, ShieldCheckIcon, FlaskConicalIcon, DumbbellIcon, NotebookPenIcon } from 'lucide-react';
 export const primaryNav = [
     { to: '/app', label: 'Overview', icon: LayoutDashboardIcon },
     { to: '/app/schedule', label: 'My Schedule', icon: CalendarDaysIcon },
     { to: '/app/tasks', label: 'Tasks', icon: ListTodoIcon },
     { to: '/app/focus', label: 'Focus', icon: TimerIcon },
     { to: '/app/wellbeing', label: 'Wellbeing', icon: HeartPulseIcon },
-    { to: '/app/physical', label: 'Physical', icon: DumbbellIcon },
+    { to: '/app/journal', label: 'Journal', icon: NotebookPenIcon },
+    { to: '/app/physical', label: 'Physical', icon: DumbbellIcon, NotebookPenIcon },
     { to: '/app/progress', label: 'Progress', icon: TrophyIcon },
     { to: '/app/insights', label: 'Insights', icon: LineChartIcon },
     { to: '/app/career', label: 'Career', icon: BriefcaseIcon }

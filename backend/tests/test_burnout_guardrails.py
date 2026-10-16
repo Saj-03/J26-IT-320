@@ -19,3 +19,13 @@ def test_prompt_forbids_diagnosis_and_grounds_context():
     assert "Never diagnose" in BASE
     p = build_system_prompt({"task_load": 9, "completion_rate": 0.5, "deviation": "about normal"})
     assert "task load 9" in p and build_system_prompt(None) == BASE
+
+
+def test_new_crisis_phrases_and_shared_helplines():
+    from app.components.burnout.llm import prompts
+    for t in ["I just can't go on", "there is no point in living", "I don't want to be alive", "everyone is better off without me"]:
+        assert prompts.is_crisis(t), t
+    assert not prompts.is_crisis("This deadline is killing me but I'm fine")
+    assert "1926" in prompts.CRISIS_REPLY and "1333" in prompts.CRISIS_REPLY
+    assert {h["number"] for h in prompts.HELPLINES} >= {"1926", "1333"}
+

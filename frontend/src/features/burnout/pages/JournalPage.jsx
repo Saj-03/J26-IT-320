@@ -5,6 +5,7 @@ import { PageHeader } from "../../../shared/components/layout/PageHeader";
 import { Card } from "../../../shared/components/ui/Card";
 import { Button } from "../../../shared/components/ui/Button";
 import { cn } from "../../../shared/lib/cn";
+import { CrisisCard } from "../components/CrisisCard";
 import { addJournal, sendMood, listJournal, deleteJournal } from "../api";
 
 const MOODS = [
@@ -43,6 +44,7 @@ export default function JournalPage() {
   const [text, setText] = useState("");
   const [mood, setMood] = useState(null);
   const [signal, setSignal] = useState(null);
+  const [crisis, setCrisis] = useState(null);       // helplines, when the last entry sounded unsafe
   const [listening, setListening] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -84,6 +86,7 @@ export default function JournalPage() {
     try {
       const r = await addJournal({ mode: "text", text });
       setSignal(r.signal);
+      setCrisis(r.crisis ? r.helplines : null);
       setText("");
       await load(query);
     } catch {
@@ -133,7 +136,8 @@ export default function JournalPage() {
       </Card>
 
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-      {signal && (
+      {crisis && <CrisisCard helplines={crisis} />}
+      {signal && !crisis && (
         <div className="flex items-start gap-2 rounded-2xl bg-sage-light px-4 py-3 text-sm text-emerald-800">
           <SparklesIcon size={15} className="mt-0.5 shrink-0" />
           <div>

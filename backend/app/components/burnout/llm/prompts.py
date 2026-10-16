@@ -10,12 +10,20 @@ BASE = (
     "the university counselling contact and encourage reaching out to a trusted person."
 )
 
+# Single source for every place a crisis message is shown (chat reply + journal care card).
+# Numbers checked 16 Oct 2026 against findahelpline.com (Sri Lanka) and NIMH; re-check before any real deployment.
+HELPLINES = [
+    {"name": "National Mental Health Helpline (NIMH)", "number": "1926", "note": "free, 24/7, call or SMS"},
+    {"name": "Crisis Support Line", "number": "1333", "note": "free, 24/7"},
+    {"name": "Sri Lanka Sumithrayo", "number": "+94 707 308 308", "note": "emotional support"},
+    {"name": "Emergency (police / ambulance)", "number": "119 / 1990", "note": "if you are in immediate danger"},
+]
 CRISIS_REPLY = (
-    "I'm really glad you told me. This sounds serious, and you deserve support from a real "
-    "person right now. In Sri Lanka you can call the National Mental Health Helpline 1926, "
-    "or Sumithrayo on 011 2682535. If you are in immediate danger, call 119 or go to the "
-    "nearest hospital. Is there someone you trust who can be with you?"
-)  # VERIFY these numbers before the demo.
+    "I'm really glad you told me. This sounds serious, and you deserve support from a real person "
+    "right now. In Sri Lanka you can call the National Mental Health Helpline 1926 (free, 24/7) or the "
+    "Crisis Support Line 1333. If you are in immediate danger, call 119 or 1990, or go to the nearest "
+    "hospital. Is there someone you trust who can be with you?"
+)
 
 FALLBACK_REPLY = ("I'm having trouble replying right now. If this week feels heavy, a short break "
                   "or talking to someone you trust can help. I'll be here again in a moment.")
@@ -26,7 +34,8 @@ CRISIS_TERMS = [
     "suicide", "suicidal", "want to die", "wanna die", "wish i was dead", "wish i were dead",
     "better off dead", "self harm", "selfharm", "hurt myself", "harm myself", "cut myself",
     "no reason to live", "dont want to live", "do not want to live",
-    "dont want to be here anymore", "end it all",
+    "dont want to be here anymore", "end it all", "dont want to be alive", "do not want to be alive",
+    "cant go on", "no point in living", "not worth living", "better off without me",
 ]
 
 

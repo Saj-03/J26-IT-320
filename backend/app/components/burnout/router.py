@@ -20,7 +20,9 @@ def journal(data: schemas.JournalIn, db: Session = Depends(get_db), user=Depends
                      sentiment=sentiment(data.text), emotion=emotion(data.text))
     db.add(e); db.commit()
     sig = service.publish(db, user)          # closed loop: every journal save refreshes the risk signal
-    return {"sentiment": e.sentiment, "emotion": e.emotion, "signal": service.to_out(sig)}
+    crisis = prompts.is_crisis(data.text)    # same guardrail as the chat; the entry is still saved
+    return {"sentiment": e.sentiment, "emotion": e.emotion, "signal": service.to_out(sig),
+            "crisis": crisis, "helplines": prompts.HELPLINES if crisis else []}
 
 
 @router.get("/journal", response_model=list[schemas.JournalEntryOut])

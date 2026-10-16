@@ -1,4 +1,5 @@
 """End-to-end service test on an in-memory DB: signals in -> fusion -> contracts out."""
+from datetime import datetime, timedelta
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -33,8 +34,11 @@ def user(db):
 
 def _post_deviation(db, user, bad, seed=None):
     p = mock_deviation_signal(user.research_id, bad_week=bad, seed=seed)
+    # explicit, strictly increasing times: Windows' clock is too coarse to order events created back to back
+    n = db.query(SignalEvent).filter_by(signal_type="DEVIATION", student_id=user.research_id).count()
     db.add(SignalEvent(event_id=p["event_id"], signal_type="DEVIATION", student_id=user.research_id,
-                       payload=p, status="ACCEPTED")); db.commit()
+                       payload=p, status="ACCEPTED",
+                       received_at=datetime.utcnow() - timedelta(hours=100) + timedelta(hours=n))); db.commit()
 
 
 def test_no_data_is_low_and_does_not_crash(db, user):
@@ -121,3 +125,12 @@ def test_journal_list_search_delete_and_isolation(db, user):
         router.journal_delete(other_id, db=db, user=user)          # cannot delete someone else's entry
     router.journal_delete(allv[0].id, db=db, user=user)
     assert len(router.journal_list(db=db, user=user)) == 1
+
+
+def test_journal_crisis_returns_care_card_and_still_saves(db, user):
+    from app.components.burnout import router, schemas
+    r = router.journal(schemas.JournalIn(text="I want to end my life"), db=db, user=user)
+    assert r["crisis"] is True and any(h["number"] == "1926" for h in r["helplines"])
+    assert len(router.journal_list(db=db, user=user)) == 1                  # saved, not discarded
+    ok = router.journal(schemas.JournalIn(text="Tired but okay today"), db=db, user=user)
+    assert ok["crisis"] is False and ok["helplines"] == []
