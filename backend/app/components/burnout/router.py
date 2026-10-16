@@ -68,7 +68,7 @@ async def chat(data: schemas.ChatIn, db: Session = Depends(get_db), user=Depends
         history = [{"role": m.role, "content": m.content} for m in reversed(recent)]
         ctx = service.build_context(db, user) if data.context_grounded else None
         try:
-            text = await chat_agent.reply(prompts.build_system_prompt(ctx), history)
+            text = await chat_agent.reply(prompts.build_system_prompt(ctx), history, ctx)
         except Exception:            # never crash the endpoint on an LLM/network error
             text = prompts.FALLBACK_REPLY
 
