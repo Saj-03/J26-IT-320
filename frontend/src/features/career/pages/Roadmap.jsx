@@ -7,6 +7,7 @@ import Button from "../components/CareerButton";
 import { EmptyState, LoadingState } from "../../../shared/components/ui/States";
 import { useCareerFlow } from "../utils/careerSession";
 import RoadmapItem from "../components/RoadmapItem";
+import PrintButton from "../components/PrintButton";
 
 export default function Roadmap() {
   const navigate = useNavigate();
@@ -24,13 +25,14 @@ export default function Roadmap() {
   }
 
   return (
-    <CareerPage className="space-y-5">
+    <CareerPage className="space-y-5" step="roadmap">
       <PageHeader
         title={`Your Roadmap: ${roadmap.career_name}`}
         subtitle={`${roadmap.message} Current readiness: ${Math.round(roadmap.readiness_percentage)}%. High-priority items come first.`}
         action={
-          <div className="flex flex-wrap gap-2">
+          <div className="acrds-no-print flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => navigate("/app/career")}>Dashboard</Button>
+            <PrintButton />
             <Button onClick={() => navigate("/app/career/interview")}><MicIcon size={16} /> Practise interview</Button>
           </div>
         }
@@ -42,7 +44,11 @@ export default function Roadmap() {
             desc="Keep building portfolio projects and prepare for interviews." />
         </Card>
       ) : (
-        roadmap.roadmap.map((item, i) => <RoadmapItem key={item.skill} item={item} step={i + 1} />)
+        <ol className="space-y-5">
+          {roadmap.roadmap.map((item, i) => (
+            <RoadmapItem key={item.skill} item={item} step={i + 1} last={i === roadmap.roadmap.length - 1} />
+          ))}
+        </ol>
       )}
     </CareerPage>
   );

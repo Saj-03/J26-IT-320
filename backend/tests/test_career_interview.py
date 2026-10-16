@@ -54,3 +54,27 @@ def test_report_summary():
     ])
     assert report["overall_score"] == 70 and report["focus_tips"][0] == "a"
     assert report["dimension_scores"]["delivery"] is None
+
+
+def test_keyword_ending_in_e_matches_other_word_forms():
+    assert keyword_coverage("I imputed and supervised it.", ["impute", "supervise"])[0] == 1.0
+
+
+def test_every_career_has_a_full_technical_question_bank():
+    import json
+    from app.components.career.services.career_data import load_careers
+    from app.components.career.services.interview_questions import DATA_FILE
+    bank = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    for career in load_careers():
+        cid = career["career_id"]
+        assert len(bank["careers"].get(cid, [])) >= 4, cid
+        assert [q["category"] for q in select_questions(cid, 0)].count("Technical") == 3, cid
+
+
+def test_model_answers_cover_their_own_keywords():
+    import json
+    from app.components.career.services.interview_questions import DATA_FILE
+    bank = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    questions = [q for qs in bank["careers"].values() for q in qs] + [q for qs in bank["general"].values() for q in qs]
+    for q in questions:
+        assert keyword_coverage(q["model_answer"], q["keywords"])[2] == [], q["id"]

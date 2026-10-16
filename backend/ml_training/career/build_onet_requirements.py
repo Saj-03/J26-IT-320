@@ -116,7 +116,8 @@ def ranking_eval(table: pd.DataFrame) -> list[dict]:
     if not SURVEY.exists():
         return []
     df = pd.read_csv(SURVEY)
-    df = df[df["label_career"].notna()]
+    # The O*NET comparison covers the original 10 careers only (the others were derived from O*NET).
+    df = df[df["label_career"].isin(CAREER_OCCUPATIONS)]
     variants = {
         "Hand-set levels (used in the app)": table.pivot(index="career_id", columns="skill", values="handset_required"),
         "O*NET importance (exact)": table.pivot(index="career_id", columns="skill", values="onet_importance"),

@@ -5,12 +5,11 @@ Saves each student's ACRDS progress in the shared database (per user account).
 - interview_sessions: one row per finished interview practice (history over time).
 """
 import json
-from datetime import datetime
 from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from app.components.career.models import CareerFlowState, InterviewSession
+from app.components.career.models import CareerFlowState, InterviewSession, utc_now
 
 MAX_STATE_BYTES = 300_000  # a full flow is ~20-60 KB; reject anything unreasonably large
 
@@ -26,7 +25,7 @@ def state_too_large(data: dict) -> bool:
 def save_state(db: Session, user_id: str, data: dict) -> CareerFlowState:
     row = db.get(CareerFlowState, user_id) or CareerFlowState(user_id=user_id)
     row.data = data
-    row.updated_at = datetime.utcnow()
+    row.updated_at = utc_now()
     db.add(row)
     db.commit()
     db.refresh(row)

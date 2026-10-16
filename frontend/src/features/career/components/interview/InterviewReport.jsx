@@ -3,6 +3,7 @@ import { ProgressRing } from "../../../../shared/components/ui/ProgressRing";
 import Card from "../CareerCard";
 import Button from "../CareerButton";
 import ScoreBar from "./ScoreBar";
+import PrintButton from "../PrintButton";
 import { INK, PALETTE, ui } from "../../theme";
 
 const AREA_LABEL = { content: "Answer content", delivery: "Voice delivery", presentation: "Camera presentation" };
@@ -63,7 +64,8 @@ export default function InterviewReport({ report, results, onRestart, onRoadmap 
       </div>
 
       <p className="text-xs text-charcoal-muted">{report.disclaimer}</p>
-      <div className="flex flex-wrap gap-3">
+      <div className="acrds-no-print flex flex-wrap gap-3">
+        <PrintButton label="Download report (PDF)" />
         <Button onClick={onRestart}><RotateCcwIcon size={16} /> Practise again (new question set)</Button>
         <Button variant="outline" onClick={onRoadmap}><MapIcon size={16} /> Back to my roadmap</Button>
       </div>

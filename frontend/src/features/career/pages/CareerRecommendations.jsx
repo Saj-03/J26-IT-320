@@ -43,7 +43,7 @@ export default function CareerRecommendations() {
   };
 
   return (
-    <CareerPage className="space-y-5">
+    <CareerPage className="space-y-5" step="careers">
       <PageHeader
         title="Your Top 5 Career Paths"
         subtitle="Ranked by how closely your skill profile matches each career, plus your interests and experience. Select one to see your skill gaps."

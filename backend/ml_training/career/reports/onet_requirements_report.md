@@ -56,13 +56,13 @@ Source: O*NET 30.2 Database, U.S. Department of Labor, Employment and Training A
 
 ## Do the O*NET levels rank careers better? (cosine only, survey data)
 
-Students whose stated role maps to an ACRDS career: n = 57. Random ordering gives Hit@1 0.10, Hit@3 0.30, Hit@5 0.50.
+Students whose stated role maps to an ACRDS career: n = 76. Random ordering gives Hit@1 0.10, Hit@3 0.30, Hit@5 0.50.
 
 | Requirement set | Hit@1 | Hit@3 | Hit@5 | MRR |
 |---|---|---|---|---|
-| Hand-set levels (used in the app) | 0.158 | 0.368 | 0.526 | 0.352 |
-| O*NET importance (exact) | 0.123 | 0.333 | 0.474 | 0.315 |
-| O*NET importance (rounded 1-5) | 0.211 | 0.351 | 0.439 | 0.365 |
+| Hand-set levels (used in the app) | 0.250 | 0.408 | 0.566 | 0.412 |
+| O*NET importance (exact) | 0.132 | 0.395 | 0.526 | 0.342 |
+| O*NET importance (rounded 1-5) | 0.224 | 0.368 | 0.513 | 0.382 |
 
 All variants are close to chance: with self-rated skills, the choice of requirement levels does not change ranking quality. The O*NET levels are therefore used as external evidence for the requirement profiles, not as a ranking improvement.
 

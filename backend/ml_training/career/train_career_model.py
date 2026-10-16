@@ -61,6 +61,9 @@ MODEL_OUT = BACKEND / "ml_models" / "career_family_model.joblib"
 REPORT_DIR = Path(__file__).resolve().parent / "reports"
 SEED = 42
 ALPHAS = [round(a, 1) for a in np.arange(0, 1.01, 0.1)]
+# Deployment cap: skill match must keep some weight, otherwise careers in the same family tie
+# and the skill-based explanations lose their meaning. The report still shows alpha = 1.0.
+MAX_DEPLOY_ALPHA = 0.9
 PROFILE_FIELDS = [
     "academic_status", "employment_status", "faculty_field", "academic_performance_trend", "career_confidence",
     "previous_career_preference", "preferred_learning_method", "skill_learning_consistency",
@@ -279,7 +282,7 @@ def write_report(ctx: dict) -> None:
           "|---|" + "---|" * len(ctx["classes"])]
     for cls, row in zip(ctx["classes"], ctx["confusion"]):
         L.append(f"| **{cls}** | " + " | ".join(str(v) for v in row) + " |")
-    L += ["", "## Career ranking (10 ACRDS careers)", "",
+    L += ["", f"## Career ranking ({len(load_careers())} ACRDS careers)", "",
           f"Students whose stated role maps to an ACRDS career: n = {ctx['ranking'][0.0]['n']}. "
           "Score = alpha x P(family) x 100 + (1 - alpha) x cosine match (out-of-fold probabilities).", "",
           "| alpha | Method | Hit@1 | Hit@3 | Hit@5 | MRR |", "|---|---|---|---|---|---|"]
@@ -287,7 +290,8 @@ def write_report(ctx: dict) -> None:
         method = "cosine only (current rules)" if a == 0 else ("ML only" if a == 1 else "hybrid")
         mark = " **(selected)**" if a == ctx["alpha"] else ""
         L.append(f"| {a}{mark} | {method} | {m['hit@1']:.3f} | {m['hit@3']:.3f} | {m['hit@5']:.3f} | {m['mrr']:.3f} |")
-    L += ["", f"Selected alpha = **{ctx['alpha']}** (best Hit@5; ties -> smallest alpha). Note: alpha is chosen on the same out-of-fold "
+    L += ["", f"Selected alpha = **{ctx['alpha']}** (best Hit@5 with alpha <= {MAX_DEPLOY_ALPHA}, so skill match keeps a role; "
+          "ties -> smallest alpha). Note: alpha is chosen on the same out-of-fold "
           "predictions, so the hybrid row is slightly optimistic; confirm on new survey data.", "",
           "## Most important features (permutation importance, selected model)", "",
           "| Feature | Importance (drop in macro F1) |", "|---|---|",
@@ -346,7 +350,7 @@ def main():
     ranking = career_ranking_eval(df, profiles, best_proba, classes)
     # The app shows a top-5 list, so Hit@5 is the deciding metric. On ties prefer the smallest
     # alpha: it keeps the most skill-match signal, which is what the explanations are built on.
-    alpha = max(ranking, key=lambda a: (ranking[a]["hit@5"], -a))
+    alpha = max((a for a in ranking if a <= MAX_DEPLOY_ALPHA), key=lambda a: (ranking[a]["hit@5"], -a))
 
     # Robustness check without straight-liners
     df_r, _, X_r_full, y_r = load_dataset(exclude_straight_liners=True)

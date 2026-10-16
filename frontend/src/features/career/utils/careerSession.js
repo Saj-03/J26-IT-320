@@ -2,7 +2,7 @@
 // sessionStorage gives instant reads in this tab; every change is also saved to the database
 // (PUT /api/career/me/state), so the flow is still there after logging in again or on another device.
 import { useEffect, useState } from "react";
-import { getSavedState, saveSavedState } from "../api/careerApi";
+import { clearSavedState, getSavedState, saveSavedState } from "../api/careerApi";
 
 const KEY = "acrds.flow";
 const OWNER = "_ownerId"; // which account the cached flow belongs to (never sent to the server)
@@ -56,6 +56,12 @@ export const careerSession = {
     return withoutOwner(read());
   },
   clear: () => sessionStorage.removeItem(KEY),
+  /** Delete the student's saved flow here and in the database ("Start over"). */
+  reset: async () => {
+    clearTimeout(saveTimer); // drop a pending save so it cannot bring the old flow back
+    await clearSavedState();
+    sessionStorage.removeItem(KEY);
+  },
 };
 
 /** Career flow for the current page; refreshes from the database once on mount. */
@@ -70,5 +76,9 @@ export function useCareerFlow() {
       .finally(() => active && setReady(true));
     return () => { active = false; };
   }, []);
-  return { flow, ready };
+  const reset = async () => {
+    await careerSession.reset();
+    setFlow({});
+  };
+  return { flow, ready, reset };
 }

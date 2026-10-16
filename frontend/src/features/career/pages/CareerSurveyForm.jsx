@@ -65,14 +65,31 @@ function Chips({ label, options, selected, onToggle }) {
 const toggle = (list, item) => (list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
 const toList = (text) => (text ? text.split(", ").filter(Boolean) : []);
 
-function Section({ title, children }) {
+function SectionTitle({ number, title, subtitle }) {
+  return (
+    <div className="flex items-center gap-3 mb-4">
+      <span className="w-8 h-8 rounded-full bg-[#9ADBCC] text-[#12352E] text-sm font-extrabold flex items-center justify-center shrink-0">
+        {number}
+      </span>
+      <div>
+        <h3 className="font-bold text-charcoal leading-tight">{title}</h3>
+        {subtitle && <p className="text-xs text-charcoal-muted">{subtitle}</p>}
+      </div>
+    </div>
+  );
+}
+
+function Section({ number, title, children }) {
   return (
     <Card padding="lg">
-      <h3 className="font-bold text-charcoal mb-4">{title}</h3>
+      <SectionTitle number={number} title={title} />
       <div className="grid sm:grid-cols-2 gap-4">{children}</div>
     </Card>
   );
 }
+
+// Questions that must be answered before submitting (used for the progress bar).
+const REQUIRED_FIELDS = ["academic_status", "employment_status", "faculty_field", "degree_programme", "academic_performance_trend", "career_area_interest", "preferred_career_role", "previous_career_preference", "preferred_learning_method", "skill_learning_consistency", "extracurricular_participation", "career_related_work_status"];
 
 export default function CareerSurveyForm() {
   const navigate = useNavigate();
@@ -100,6 +117,7 @@ export default function CareerSurveyForm() {
   // Multi-select answers are stored as "A, B, C" strings, like the survey export.
   const toggleText = (name) => (item) => set(name, toggle(toList(form[name]), item).join(", "));
   const joins = form.extracurricular_participation === "Yes";
+  const answered = REQUIRED_FIELDS.filter((f) => String(form[f] ?? "").trim()).length;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -121,7 +139,7 @@ export default function CareerSurveyForm() {
   };
 
   return (
-    <CareerPage className="max-w-3xl mx-auto">
+    <CareerPage className="max-w-3xl mx-auto" step="profile">
       <PageHeader
         title="Career Profile Survey"
         subtitle="Your answers are used only to recommend careers and build your development roadmap."
@@ -132,8 +150,19 @@ export default function CareerSurveyForm() {
         }
       />
 
+      {/* Completion bar */}
+      <div className="rounded-2xl bg-white/70 border border-[#9ADBCC]/50 px-4 py-3 flex items-center gap-3">
+        <div className="flex-1 h-2 rounded-full bg-[#E3FFD6] overflow-hidden">
+          <div className="h-full rounded-full bg-gradient-to-r from-[#9ADBCC] to-[#5DBFA9] transition-all duration-500"
+            style={{ width: `${(answered / REQUIRED_FIELDS.length) * 100}%` }} />
+        </div>
+        <span className="text-xs font-bold text-[#1F5F53] whitespace-nowrap">
+          {answered} of {REQUIRED_FIELDS.length} answered
+        </span>
+      </div>
+
       <form className="space-y-5" onSubmit={submit}>
-        <Section title="Academic details">
+        <Section number={1} title="Academic details">
           <Select name="academic_status" form={form} set={set} />
           <Select name="employment_status" form={form} set={set} />
           <Select name="faculty_field" label="Faculty / field" form={form} set={setFaculty} />
@@ -142,7 +171,7 @@ export default function CareerSurveyForm() {
           <Select name="academic_performance_trend" label="Academic performance trend" form={form} set={set} />
         </Section>
 
-        <Section title="Career details">
+        <Section number={2} title="Career details">
           <p className="sm:col-span-2 text-xs text-charcoal-muted -mb-2">
             Career options are filtered based on your selected faculty field.
           </p>
@@ -160,8 +189,7 @@ export default function CareerSurveyForm() {
         </Section>
 
         <Card padding="lg">
-          <h3 className="font-bold text-charcoal mb-1">Skill self-rating</h3>
-          <p className="text-sm text-charcoal-muted mb-4">1 = beginner, 5 = very strong.</p>
+          <SectionTitle number={3} title="Skill self-rating" subtitle="1 = beginner, 5 = very strong." />
           <div className="space-y-3">
             {SKILLS.map((s) => (
               <Rating key={s.key} label={s.label} value={form.skills[s.key]} onChange={(v) => setSkill(s.key, v)} />
@@ -169,12 +197,12 @@ export default function CareerSurveyForm() {
           </div>
         </Card>
 
-        <Section title="Learning details">
+        <Section number={4} title="Learning details">
           <Select name="preferred_learning_method" form={form} set={set} />
           <Select name="skill_learning_consistency" label="How often do you learn new skills?" form={form} set={set} />
         </Section>
 
-        <Section title="Extracurricular activities">
+        <Section number={5} title="Extracurricular activities">
           <Select name="extracurricular_participation" label="Do you take part in extracurricular activities?" form={form} set={set} />
           {joins && (
             <>
@@ -186,7 +214,7 @@ export default function CareerSurveyForm() {
           )}
         </Section>
 
-        <Section title="Career readiness">
+        <Section number={6} title="Career readiness">
           <Select name="career_related_work_status" label="Completed career-related courses, projects or work?" form={form} set={set} />
           <Chips label="Type of career-related work (select all that apply)" options={OPTIONS.career_related_work_type}
             selected={toList(form.career_related_work_type)} onToggle={toggleText("career_related_work_type")} />

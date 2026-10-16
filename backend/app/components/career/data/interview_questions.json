@@ -20,7 +20,7 @@
         "id": "gen_intro_2",
         "question": "Why are you interested in this career?",
         "tip": "Link your interest to real experiences (a module, project or internship) and to what the role actually involves.",
-        "model_answer": "I became interested in this career during my degree when I worked on a project that involved the main tasks of this role. I enjoyed solving the problems and seeing the impact of the result. I have since improved my skills through courses and practice, and I am motivated because this career lets me keep learning, work with a team and create value for users and the organisation.",
+        "model_answer": "I became interested in this career during my degree when I worked on a project that involved the main tasks of this role. I enjoyed solving the problems and seeing the impact of the result. I have since improved my skills through courses, an internship and practice, and I am motivated because this career lets me keep learning, work with a team and create value for users and the organisation.",
         "keywords": [
           "project",
           "interest|enjoy|passion",
@@ -112,7 +112,7 @@
         "id": "se_4",
         "question": "How do you make sure your code is good quality?",
         "tip": "Talk about testing, code reviews, readability and design principles.",
-        "model_answer": "I write unit tests for important logic and run them before every commit. I keep functions small with clear names, follow the team's coding standards, and apply principles like SOLID and DRY. I ask for code reviews, fix issues found by linters, and refactor code when it becomes hard to read or maintain.",
+        "model_answer": "I write unit tests for important logic and run them before every commit. I keep functions small with clear names so the code stays readable, follow the team's coding standards, and apply principles like SOLID and DRY. I ask for code reviews, fix issues found by linters, and refactor code when it becomes hard to read or maintain.",
         "keywords": [
           "unit test|testing",
           "review",
@@ -258,7 +258,7 @@
         "id": "ux_2",
         "question": "What is the difference between UI and UX?",
         "tip": "UX is the overall experience; UI is the visual and interactive layer.",
-        "model_answer": "UX, or user experience, is about how easy and satisfying a product is to use overall, including research, information architecture and user flows. UI, or user interface, is the visual layer the user interacts with, such as layout, colours, typography and buttons. Good UX solves the right problem, and good UI makes the solution clear and attractive.",
+        "model_answer": "UX, or user experience, is about the usability of a product, how easy and satisfying it is to use overall, including research, information architecture and user flows. UI, or user interface, is the visual layer the user interacts with, such as layout, colours, typography and buttons. Good UX solves the right problem, and good UI makes the solution clear and attractive.",
         "keywords": [
           "user experience",
           "user interface",
@@ -650,7 +650,7 @@
         "id": "ce_1",
         "question": "How do you make sure a construction project is safe on site?",
         "tip": "Mention risk assessment, PPE, supervision and standards.",
-        "model_answer": "I start with a risk assessment for each activity and make sure everyone has the right PPE such as helmets and safety boots. I check that work follows the approved drawings and building codes, hold short toolbox talks before work, keep the site clean and barricaded, and report and investigate any incident so it does not happen again.",
+        "model_answer": "I start with a risk assessment for each activity and make sure everyone has the right PPE such as helmets and safety boots. I check that work follows the approved drawings and building codes, hold short toolbox talks before work, supervise the workers, keep the site clean and barricaded, and report and investigate any incident so it does not happen again.",
         "keywords": [
           "risk assessment",
           "PPE|protective equipment|helmet",
@@ -672,6 +672,34 @@
           "labour",
           "material",
           "contingency"
+        ]
+      },
+      {
+        "id": "ce_3",
+        "question": "How do you make sure the quality of concrete work on site?",
+        "tip": "Mention mix design, testing, curing and inspection.",
+        "model_answer": "I check that the mix design and materials meet the specification, and supervise batching and placing. We take cube samples for compressive strength testing and do a slump test for workability. After placing, I make sure the concrete is compacted and properly cured, and I inspect and record everything so any defect can be corrected early.",
+        "keywords": [
+          "mix design|specification",
+          "slump",
+          "cube|compressive strength",
+          "curing|cured|cure",
+          "compact",
+          "inspect"
+        ]
+      },
+      {
+        "id": "ce_4",
+        "question": "A project is falling behind schedule. What would you do?",
+        "tip": "Explain finding the cause, re-planning and communicating with the client.",
+        "model_answer": "First I compare the actual progress with the programme to find the critical activities causing the delay. Then I look at options such as adding resources, working extra shifts or changing the sequence of work. I update the schedule, discuss the impact on cost with the project manager, and communicate the revised plan to the client and subcontractors.",
+        "keywords": [
+          "schedule|programme",
+          "critical",
+          "resource",
+          "sequence",
+          "cost",
+          "communicat"
         ]
       }
     ],
@@ -703,6 +731,34 @@
           "downtime",
           "monitor"
         ]
+      },
+      {
+        "id": "me_3",
+        "question": "How would you design a simple mechanical part from an idea to production?",
+        "tip": "Cover requirements, CAD, analysis, prototype and testing.",
+        "model_answer": "I start by writing down the requirements such as load, size and cost. Then I create a 3D model in CAD software like SolidWorks and check the stresses using calculations or FEA. After selecting the material and tolerances, I make a prototype, test it, improve the design, and prepare the final drawings for manufacturing.",
+        "keywords": [
+          "requirement",
+          "CAD|SolidWorks|AutoCAD",
+          "stress|FEA|analysis",
+          "tolerance",
+          "prototype",
+          "test"
+        ]
+      },
+      {
+        "id": "me_4",
+        "question": "How would you plan preventive maintenance for machines in a factory?",
+        "tip": "Explain schedules, inspections, records and spare parts.",
+        "model_answer": "I would list all machines and their critical parts, then use the manufacturer's manual and past breakdown records to set a maintenance schedule. Technicians would do regular inspection, lubrication and replacement of worn parts. I would keep spare parts in stock and track downtime so the schedule can be improved over time.",
+        "keywords": [
+          "preventive|schedule",
+          "inspect",
+          "lubricat",
+          "spare part",
+          "record",
+          "downtime"
+        ]
       }
     ],
     "electrical_engineer": [
@@ -732,6 +788,34 @@
           "continuity",
           "fuse|breaker",
           "document"
+        ]
+      },
+      {
+        "id": "ee_3",
+        "question": "How would you size a cable and protection device for a new circuit?",
+        "tip": "Mention load current, voltage drop, standards and the breaker.",
+        "model_answer": "I calculate the load current from the power of the connected equipment, then choose a cable size whose current rating is higher after correction factors for installation and temperature. I check that the voltage drop stays within the limits in the wiring standards, and select a circuit breaker rated between the load current and the cable rating so the cable is protected.",
+        "keywords": [
+          "load current|current",
+          "cable",
+          "voltage drop",
+          "standard|regulation",
+          "breaker|fuse|protection",
+          "rating"
+        ]
+      },
+      {
+        "id": "ee_4",
+        "question": "How can a building reduce its electricity consumption?",
+        "tip": "Talk about measuring use, efficient equipment and renewable energy.",
+        "model_answer": "I would start with an energy audit to measure where electricity is used. Then I would recommend efficient equipment such as LED lighting and inverter air conditioners, add sensors and timers to switch things off, improve the power factor, and consider solar panels. Finally I would monitor the meter readings to confirm the savings.",
+        "keywords": [
+          "audit",
+          "LED|efficient",
+          "sensor|timer",
+          "power factor",
+          "solar|renewable",
+          "monitor"
         ]
       }
     ],
@@ -763,6 +847,34 @@
           "bias",
           "document|record"
         ]
+      },
+      {
+        "id": "ra_3",
+        "question": "How do you do a literature review for a research topic?",
+        "tip": "Explain searching databases, selecting sources and summarising.",
+        "model_answer": "I define keywords from the research question and search databases such as Google Scholar and IEEE. I screen titles and abstracts, select relevant peer-reviewed sources, and record them in a reference manager like Zotero. Then I summarise each paper, compare their methods and findings, and identify the research gap.",
+        "keywords": [
+          "keyword",
+          "database|Google Scholar",
+          "peer-reviewed|journal",
+          "reference|Zotero|Mendeley",
+          "summar",
+          "gap"
+        ]
+      },
+      {
+        "id": "ra_4",
+        "question": "What ethical issues must you consider when collecting data from people?",
+        "tip": "Mention consent, anonymity, confidentiality and approval.",
+        "model_answer": "Participants must give informed consent and know they can withdraw at any time. I keep the data anonymous where possible, store it securely and keep it confidential. The study should have ethics approval from the review committee, and I make sure no participant is harmed or pressured.",
+        "keywords": [
+          "informed consent|consent",
+          "withdraw",
+          "anonym",
+          "confidential",
+          "ethics approval|ethics committee|review",
+          "harm"
+        ]
       }
     ],
     "laboratory_technician": [
@@ -792,6 +904,34 @@
           "dispos",
           "disinfect|decontaminat",
           "report"
+        ]
+      },
+      {
+        "id": "lt_3",
+        "question": "How do you calibrate and maintain laboratory equipment?",
+        "tip": "Explain standards, schedules and records.",
+        "model_answer": "I follow the manufacturer's instructions and the standard operating procedure. I calibrate equipment such as balances and pipettes against certified reference standards on a regular schedule, record the results in the calibration log, and label the equipment with the next due date. If equipment fails, I remove it from use and report it.",
+        "keywords": [
+          "calibrat",
+          "standard operating procedure|SOP",
+          "reference standard|standard",
+          "schedule",
+          "log|record",
+          "report"
+        ]
+      },
+      {
+        "id": "lt_4",
+        "question": "How do you handle and label samples so they are not mixed up?",
+        "tip": "Talk about labelling, chain of custody and storage.",
+        "model_answer": "Every sample gets a unique ID label with the patient or source details, date and time as soon as it is received. I record it in the register or LIMS, follow the chain of custody, store it at the correct temperature, and double-check the label before every test so there is no mix-up.",
+        "keywords": [
+          "label",
+          "unique ID|ID",
+          "register|LIMS|record",
+          "chain of custody",
+          "storage|temperature",
+          "check"
         ]
       }
     ],
@@ -823,6 +963,34 @@
           "variance",
           "monitor|compare"
         ]
+      },
+      {
+        "id": "fa_3",
+        "question": "How would you analyse whether a company is performing well financially?",
+        "tip": "Mention ratios, trends and comparison with competitors.",
+        "model_answer": "I would calculate key ratios such as profit margin, return on equity, the current ratio and the debt to equity ratio. Then I look at the trends over several years, compare them with competitors and the industry average, and check the cash flow, because a profitable company can still have liquidity problems.",
+        "keywords": [
+          "ratio",
+          "profit|margin",
+          "liquidity|current ratio",
+          "trend",
+          "competitor|industry",
+          "cash flow"
+        ]
+      },
+      {
+        "id": "fa_4",
+        "question": "How do you decide whether an investment project is worth doing?",
+        "tip": "Explain NPV, IRR, payback and risk.",
+        "model_answer": "I forecast the project's cash flows and discount them at the cost of capital to find the net present value. If the NPV is positive and the internal rate of return is higher than the required return, it adds value. I also check the payback period and do a sensitivity analysis to understand the risk.",
+        "keywords": [
+          "cash flow",
+          "discount|cost of capital",
+          "NPV|net present value",
+          "IRR|internal rate of return",
+          "payback",
+          "sensitivity|risk"
+        ]
       }
     ],
     "hr_executive": [
@@ -852,6 +1020,34 @@
           "fair|both sides",
           "fact|investigat",
           "follow up"
+        ]
+      },
+      {
+        "id": "hr_3",
+        "question": "How would you plan the onboarding of a new employee?",
+        "tip": "Cover preparation, orientation, training and follow-up.",
+        "model_answer": "Before the first day I prepare the contract, equipment and system access. On the first day there is an orientation about the company policies and culture, and I assign a buddy or mentor. I arrange training for the role, set clear goals for the probation period, and do check-in meetings to get feedback.",
+        "keywords": [
+          "onboarding|orientation",
+          "contract",
+          "policies|policy",
+          "mentor|buddy",
+          "training",
+          "probation|feedback"
+        ]
+      },
+      {
+        "id": "hr_4",
+        "question": "How would you design a fair performance appraisal process?",
+        "tip": "Explain goals, criteria, evidence and feedback.",
+        "model_answer": "I would set clear and measurable goals or KPIs at the start of the year, and use the same criteria for everyone in the role. Managers collect evidence during the year and hold regular feedback meetings. The final appraisal includes self-assessment, is documented, and leads to a development plan, with a way to appeal if the employee disagrees.",
+        "keywords": [
+          "goal|KPI",
+          "criteria",
+          "evidence",
+          "feedback",
+          "self-assessment",
+          "development plan|development"
         ]
       }
     ],
@@ -883,6 +1079,34 @@
           "confidential",
           "ethic"
         ]
+      },
+      {
+        "id": "ph_3",
+        "question": "How would you respond to a disease outbreak in a community?",
+        "tip": "Mention surveillance, reporting, control measures and education.",
+        "model_answer": "I would help identify and report the cases quickly to the health authority through the surveillance system. Then we trace contacts, support isolation or treatment, and apply control measures such as vaccination, clean water or vector control. At the same time we run health education so people know how to protect themselves.",
+        "keywords": [
+          "surveillance",
+          "report",
+          "contact tracing|contact",
+          "isolat",
+          "vaccin|control measure|vector",
+          "education|awareness"
+        ]
+      },
+      {
+        "id": "ph_4",
+        "question": "How would you encourage people to change an unhealthy behaviour, such as smoking?",
+        "tip": "Talk about understanding the audience, clear messages and support.",
+        "model_answer": "First I would understand the target group and why they smoke through a short survey or discussion. Then I would design clear messages in the local language, use community leaders and social media, and link people to support services such as counselling. Finally I would evaluate whether the behaviour actually changed.",
+        "keywords": [
+          "target group|audience",
+          "survey|discussion",
+          "message",
+          "community leader|community",
+          "counsel|support",
+          "evaluat"
+        ]
       }
     ],
     "health_administrator": [
@@ -912,6 +1136,34 @@
           "record",
           "regulation|compliance",
           "quality"
+        ]
+      },
+      {
+        "id": "ha_3",
+        "question": "How would you manage the budget of a hospital department?",
+        "tip": "Explain planning, monitoring and controlling costs.",
+        "model_answer": "I would prepare the budget based on last year's spending, patient numbers and planned services. Each month I compare the actual expenses with the budget, investigate any variance, and control costs by reducing waste in supplies and negotiating with vendors, without lowering the quality of patient care.",
+        "keywords": [
+          "budget",
+          "expense|spending",
+          "variance",
+          "cost",
+          "vendor|supplier|procurement",
+          "quality|patient care"
+        ]
+      },
+      {
+        "id": "ha_4",
+        "question": "How do you protect patient records and keep them confidential?",
+        "tip": "Mention access control, policies, training and audits.",
+        "model_answer": "Patient records should only be accessed by authorised staff, using role-based access control and passwords in the electronic health record system. I make sure staff are trained on the privacy policy, paper files are locked, and access logs are audited regularly. Any breach is reported and investigated.",
+        "keywords": [
+          "confidential|privacy",
+          "authori",
+          "access control|access",
+          "electronic health record|EHR|system",
+          "train",
+          "audit"
         ]
       }
     ],
@@ -943,6 +1195,34 @@
           "option",
           "expectation"
         ]
+      },
+      {
+        "id": "gd_3",
+        "question": "What design principles do you use to make a layout look good?",
+        "tip": "Mention hierarchy, alignment, contrast, colour and typography.",
+        "model_answer": "I create a clear visual hierarchy so the most important message stands out first. I use a grid for alignment, enough white space, and contrast in size and colour. I limit the layout to two typefaces with good typography and a consistent colour palette that matches the brand.",
+        "keywords": [
+          "hierarchy",
+          "alignment|grid",
+          "white space|spacing",
+          "contrast",
+          "typography|typeface|font",
+          "colour|color|brand"
+        ]
+      },
+      {
+        "id": "gd_4",
+        "question": "How do you prepare a design file for printing?",
+        "tip": "Talk about CMYK, resolution, bleed and fonts.",
+        "model_answer": "I set the document to the correct final size with a bleed and safe margins, and use CMYK colour mode. Images are at least 300 dpi resolution. I convert or embed the fonts, check spelling one more time, and export a print-ready PDF according to the printer's specifications.",
+        "keywords": [
+          "CMYK",
+          "bleed",
+          "300 dpi|resolution",
+          "font",
+          "margin",
+          "PDF|print-ready"
+        ]
       }
     ],
     "content_creator": [
@@ -972,6 +1252,34 @@
           "edit",
           "caption",
           "platform"
+        ]
+      },
+      {
+        "id": "cc_3",
+        "question": "How do you measure whether your content is successful?",
+        "tip": "Mention analytics, engagement and goals.",
+        "model_answer": "I start with the goal, such as awareness or sales, and choose metrics that match it. I check the analytics for reach, views, watch time and engagement like likes, comments and shares, and the conversion rate when there is a link. I compare posts, find what works, and adjust the content plan.",
+        "keywords": [
+          "goal",
+          "analytics|insights",
+          "reach|views",
+          "engagement",
+          "conversion",
+          "adjust|improve"
+        ]
+      },
+      {
+        "id": "cc_4",
+        "question": "How do you grow an audience on a new channel?",
+        "tip": "Talk about niche, consistency, trends and collaboration.",
+        "model_answer": "I choose a clear niche and target audience, then post consistently on a schedule. I follow trends and use relevant hashtags and SEO in titles, reply to comments to build community, and collaborate with other creators. I review the analytics to see which formats bring new followers.",
+        "keywords": [
+          "niche|target audience|audience",
+          "consisten|schedule",
+          "trend",
+          "hashtag|SEO",
+          "community|comment",
+          "collaborat"
         ]
       }
     ],
@@ -1003,6 +1311,34 @@
           "plagiari|copying",
           "review"
         ]
+      },
+      {
+        "id": "cw_3",
+        "question": "How do you write content that ranks well on search engines?",
+        "tip": "Mention keyword research, structure and quality.",
+        "model_answer": "I start with keyword research to understand what the audience searches for, because good SEO (search engine optimisation) begins there. I use the main keyword in the title, headings and meta description, structure the article with short paragraphs and subheadings, add internal links, and above all write original, useful content that answers the reader's question.",
+        "keywords": [
+          "keyword research|keyword",
+          "SEO|search engine",
+          "heading|title",
+          "meta description|meta",
+          "internal link|link",
+          "original"
+        ]
+      },
+      {
+        "id": "cw_4",
+        "question": "How do you edit and proofread your own work?",
+        "tip": "Explain taking a break, reading aloud and tools.",
+        "model_answer": "After the first draft I take a short break so I can read it with fresh eyes. I edit for structure and clarity first, then proofread for grammar, spelling and punctuation. I read it aloud, use tools like Grammarly, check it against the style guide, and ask a colleague to review important pieces.",
+        "keywords": [
+          "draft",
+          "clarity|structure",
+          "grammar|spelling|punctuation",
+          "read aloud|aloud",
+          "Grammarly|tool",
+          "style guide"
+        ]
       }
     ],
     "public_relations_executive": [
@@ -1032,6 +1368,34 @@
           "consistent",
           "action|fix",
           "monitor"
+        ]
+      },
+      {
+        "id": "pr_3",
+        "question": "How would you build good relationships with the media?",
+        "tip": "Mention media lists, personalised pitches and reliability.",
+        "model_answer": "I would build a media list of journalists who cover our industry and learn what stories they write. I send personalised pitches with a newsworthy angle instead of mass emails, respond quickly to their requests, provide accurate information and spokespeople, and keep in touch even when I don't need coverage.",
+        "keywords": [
+          "media list|journalist",
+          "pitch",
+          "newsworth|angle|story",
+          "respond|quick",
+          "accurate|trust",
+          "spokesperson|spokespeople"
+        ]
+      },
+      {
+        "id": "pr_4",
+        "question": "How would you measure the success of a PR campaign?",
+        "tip": "Talk about objectives, coverage, reach and sentiment.",
+        "model_answer": "I set clear objectives at the start, for example awareness among students. Then I track media coverage, the reach and impressions, the sentiment of the coverage, social media engagement and website traffic. I compare the results with the objectives and write a report with lessons for the next campaign.",
+        "keywords": [
+          "objective|goal",
+          "coverage",
+          "reach|impression",
+          "sentiment",
+          "engagement|traffic",
+          "report"
         ]
       }
     ],
@@ -1063,6 +1427,34 @@
           "private|talk",
           "parent"
         ]
+      },
+      {
+        "id": "te_3",
+        "question": "How do you assess whether students have understood a lesson?",
+        "tip": "Mention formative and summative assessment and feedback.",
+        "model_answer": "I use formative assessment during the lesson, such as questioning, quick quizzes and exit tickets, to check understanding. At the end of a unit I use summative assessment like a test or project with a clear rubric. I give feedback that tells students how to improve and use the results to adjust my teaching.",
+        "keywords": [
+          "formative",
+          "question",
+          "quiz|exit ticket",
+          "summative|test",
+          "rubric",
+          "feedback"
+        ]
+      },
+      {
+        "id": "te_4",
+        "question": "How do you support students with different abilities in the same class?",
+        "tip": "Explain differentiation, grouping and extra support.",
+        "model_answer": "I use differentiation by giving tasks at different levels and offering extension activities for faster learners. I use mixed-ability group work so students learn from each other, give extra support and scaffolding to students who struggle, and track individual progress so I can adjust my plans.",
+        "keywords": [
+          "differentiat",
+          "level|abilit",
+          "extension",
+          "group",
+          "scaffold|support",
+          "progress"
+        ]
       }
     ],
     "education_coordinator": [
@@ -1092,6 +1484,34 @@
           "collaborat",
           "training",
           "evaluat"
+        ]
+      },
+      {
+        "id": "ec_3",
+        "question": "How would you evaluate whether a training programme is effective?",
+        "tip": "Mention feedback, assessment results and improvement.",
+        "model_answer": "I would collect feedback from learners through surveys, look at assessment results to see if the learning outcomes were achieved, and check attendance and completion rates. I would also ask instructors for their observations, then use these results to improve the programme for the next intake.",
+        "keywords": [
+          "feedback|survey",
+          "assessment|result",
+          "learning outcome|outcome",
+          "attendance|completion",
+          "instructor|teacher",
+          "improve"
+        ]
+      },
+      {
+        "id": "ec_4",
+        "question": "How do you manage the timetable and resources for many classes?",
+        "tip": "Talk about planning, tools and handling conflicts.",
+        "model_answer": "I collect the requirements for each course, such as hours, lecturers and rooms, and build the timetable in a scheduling tool or spreadsheet. I check for clashes, book the resources like labs and projectors early, share the timetable with staff and students, and update it quickly when there is a change.",
+        "keywords": [
+          "timetable|schedule",
+          "lecturer|staff",
+          "room|lab|resource",
+          "clash|conflict",
+          "spreadsheet|tool",
+          "communicat|share"
         ]
       }
     ],
@@ -1123,6 +1543,34 @@
           "authori",
           "data protection"
         ]
+      },
+      {
+        "id": "la_3",
+        "question": "How would you organise documents for a court case?",
+        "tip": "Mention indexing, deadlines and version control.",
+        "model_answer": "I create a case file with a clear index, organising documents by type and date, such as pleadings, evidence and correspondence. I keep track of filing deadlines in a calendar, make sure the latest version of each document is used, and store copies securely in the document management system.",
+        "keywords": [
+          "index",
+          "pleading|evidence",
+          "correspondence",
+          "deadline|calendar",
+          "version",
+          "document management|secure"
+        ]
+      },
+      {
+        "id": "la_4",
+        "question": "How do you draft a basic legal document such as a letter or contract?",
+        "tip": "Explain using templates, accurate details and review.",
+        "model_answer": "I start from the firm's approved template and fill in the accurate details of the parties, dates and terms. I use clear and precise language, check the relevant law or clauses, proofread carefully, and then send the draft to the lawyer for review before it is signed or sent.",
+        "keywords": [
+          "template",
+          "parties|party",
+          "terms|clause",
+          "precise|clear",
+          "proofread",
+          "review|lawyer"
+        ]
       }
     ],
     "compliance_officer": [
@@ -1152,6 +1600,34 @@
           "procedure",
           "document",
           "corrective action|investigat"
+        ]
+      },
+      {
+        "id": "co_3",
+        "question": "How would you carry out a compliance risk assessment?",
+        "tip": "Mention identifying risks, likelihood, impact and controls.",
+        "model_answer": "I identify the laws and regulations that apply to each business area, and list the compliance risks. For each risk I rate the likelihood and impact, check the existing controls, and decide the residual risk. High risks get an action plan with owners and deadlines, and I monitor them in a risk register.",
+        "keywords": [
+          "regulation|law",
+          "risk",
+          "likelihood",
+          "impact",
+          "control",
+          "risk register|register|monitor"
+        ]
+      },
+      {
+        "id": "co_4",
+        "question": "How would you train staff to follow a new policy?",
+        "tip": "Explain clear communication, training and checking understanding.",
+        "model_answer": "I would explain why the policy matters in simple language, run short training sessions or e-learning with real examples, and share a quick guide. I would test understanding with a short quiz, record who completed the training, and follow up with refresher sessions and monitoring.",
+        "keywords": [
+          "policy",
+          "training|e-learning",
+          "example",
+          "quiz|test",
+          "record",
+          "refresher|monitor"
         ]
       }
     ],
@@ -1183,6 +1659,34 @@
           "feedback",
           "lessons learned"
         ]
+      },
+      {
+        "id": "cd_3",
+        "question": "How would you get community members involved in a development project?",
+        "tip": "Mention participation, local leaders and communication.",
+        "model_answer": "I would hold community meetings to listen to people and involve them in decisions from the start. I would work with local leaders and community-based organisations, form a committee with women and youth representatives, communicate regularly in the local language, and give people roles so they feel ownership of the project.",
+        "keywords": [
+          "participat|involve",
+          "meeting",
+          "leader",
+          "committee|organisation|organization",
+          "communicat",
+          "ownership"
+        ]
+      },
+      {
+        "id": "cd_4",
+        "question": "How would you write a funding proposal for a community project?",
+        "tip": "Explain the problem, objectives, budget and evaluation.",
+        "model_answer": "I would describe the problem using data from a needs assessment, then state clear objectives and the activities to achieve them. I would include a realistic budget, a timeline, the expected outcomes, and how we will monitor and evaluate the results, and align it with the donor's priorities.",
+        "keywords": [
+          "needs assessment|problem",
+          "objective",
+          "budget",
+          "timeline",
+          "outcome",
+          "monitor|evaluat"
+        ]
       }
     ],
     "counselling_assistant": [
@@ -1212,6 +1716,34 @@
           "safeguarding|procedure",
           "inform|refer",
           "record"
+        ]
+      },
+      {
+        "id": "ca_3",
+        "question": "What is active listening and how do you use it?",
+        "tip": "Mention attention, paraphrasing, open questions and empathy.",
+        "model_answer": "Active listening means giving the student my full attention without interrupting or judging. I use open questions, paraphrase and summarise what they said to show I understand, notice their body language, and respond with empathy so they feel heard and safe to share more.",
+        "keywords": [
+          "attention",
+          "open question|question",
+          "paraphras|reflect",
+          "summar",
+          "empathy|empath",
+          "non-judg|judg"
+        ]
+      },
+      {
+        "id": "ca_4",
+        "question": "How do you know when to refer a student to another professional?",
+        "tip": "Talk about limits of your role, referral and follow-up.",
+        "model_answer": "I know the limits of my role and training. If a student has a serious mental health issue, a medical problem or needs legal or financial help, I refer them to the right professional such as a counsellor, psychologist or doctor, with their consent where possible. I explain the referral, keep it confidential, and follow up to make sure they got support.",
+        "keywords": [
+          "limit|role",
+          "refer",
+          "professional|psychologist|counsellor|counselor",
+          "consent",
+          "confidential",
+          "follow up|follow-up"
         ]
       }
     ]

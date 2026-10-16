@@ -1,112 +1,213 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ClipboardListIcon, SparklesIcon, BarChart3Icon, MapIcon, MicIcon, ArrowRightIcon, ShieldCheckIcon } from "lucide-react";
-import { PageHeader } from "../../../shared/components/layout/PageHeader";
+import {
+  ClipboardListIcon, SparklesIcon, BarChart3Icon, MapIcon, MicIcon, ArrowRightIcon, ShieldCheckIcon,
+  TrophyIcon, GaugeIcon, TargetIcon, CheckCircle2Icon, LockIcon, RotateCcwIcon,
+} from "lucide-react";
 import Card from "../components/CareerCard";
 import CareerPage from "../components/CareerPage";
 import Button from "../components/CareerButton";
+import { cn } from "../../../shared/lib/cn";
 import { useCareerFlow } from "../utils/careerSession";
 import { getInterviewHistory } from "../api/careerApi";
 import { ETHICS_NOTES } from "../constants";
 import { ui } from "../theme";
 
+// Summary tile in the hero banner.
+function Stat({ icon: Icon, label, value, sub }) {
+  return (
+    <div className="rounded-2xl bg-white/70 backdrop-blur px-4 py-3 border border-white/80 min-w-0">
+      <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-[#34477A]">
+        <Icon size={13} /> {label}
+      </p>
+      <p className="text-lg font-extrabold text-charcoal truncate">{value}</p>
+      {sub && <p className="text-xs text-charcoal-muted truncate">{sub}</p>}
+    </div>
+  );
+}
+
 export default function CareerDashboard() {
   const navigate = useNavigate();
-  const { flow } = useCareerFlow();
+  const { flow, reset } = useCareerFlow();
   const [history, setHistory] = useState([]);
+  const [resetting, setResetting] = useState(false);
+  const [resetError, setResetError] = useState("");
+
+  const startOver = async () => {
+    if (!window.confirm("Start over? Your profile, recommendations, skill gaps and roadmap will be deleted. "
+      + "Your interview practice history is kept.")) return;
+    setResetting(true);
+    setResetError("");
+    try {
+      await reset();
+    } catch {
+      setResetError("Could not reset your progress. Check your connection and try again.");
+    } finally {
+      setResetting(false);
+    }
+  };
   useEffect(() => {
     getInterviewHistory(5).then(setHistory).catch(() => {});
   }, []);
 
+  const top = flow.recommendations?.[0];
+  const lastInterview = history[0]?.overall_score ?? flow.interviewReport?.overall_score;
+
   // Each step unlocks once the previous step has produced a result.
   const steps = [
-    { title: "Career Profile", icon: ClipboardListIcon, to: "/app/career/survey", ready: true,
-      desc: "Tell us about your studies, skills, interests and activities." },
+    { title: "Career Profile", icon: ClipboardListIcon, to: "/app/career/survey", ready: true, done: !!flow.profile,
+      desc: "Tell us about your studies, skills, interests and activities.", accent: "bg-[#9ADBCC]" },
     { title: "Career Recommendations", icon: SparklesIcon, to: "/app/career/recommendations", ready: !!flow.recommendations,
-      desc: "Your top 5 career paths, ranked by skill-profile match with clear reasons." },
+      done: !!flow.recommendations, desc: "Your top 5 career paths for your faculty, with clear reasons.", accent: "bg-[#C7F2D1]" },
     { title: "Skill Gap Analysis", icon: BarChart3Icon, to: "/app/career/gap-analysis", ready: !!flow.gapAnalysis,
-      desc: "Compare your current skill levels with what your chosen career needs." },
+      done: !!flow.gapAnalysis, desc: "Compare your skill levels with what your chosen career needs.", accent: "bg-[#D0F2F7]" },
     { title: "Personalized Roadmap", icon: MapIcon, to: "/app/career/roadmap", ready: !!flow.roadmap,
-      desc: "Courses, projects and weekly tasks to close your most important gaps." },
+      done: !!flow.roadmap, desc: "Courses, projects and weekly tasks to close your most important gaps.", accent: "bg-[#9EB2DB]" },
   ];
+  const completed = steps.filter((s) => s.done).length;
 
-  const stepLabel = (i, ready) => {
+  const action = (s, i) => {
     if (i === 0) return flow.profile ? "Edit profile" : "Start";
-    return ready ? "View" : "Complete previous step";
+    return s.ready ? "View" : "Complete previous step";
   };
 
   return (
     <CareerPage>
-      <PageHeader
-        title="Adaptive Career Readiness and Development System"
-        subtitle="Move from career confusion to career readiness: profile → recommendations → skill gaps → roadmap."
-        action={
-          <Button onClick={() => navigate("/app/career/survey")}>
-            {flow.profile ? "Update my profile" : "Start career survey"} <ArrowRightIcon size={16} />
-          </Button>
-        }
-      />
-
-      <div className="grid sm:grid-cols-2 gap-5">
-        {steps.map(({ title, icon: Icon, to, ready, desc }, i) => (
-          <Card key={title} padding="lg" hover className="flex flex-col">
-            <div className="flex items-center gap-3 mb-3">
-              <span className={`w-10 h-10 rounded-2xl ${ui.iconTile} flex items-center justify-center`}>
-                <Icon size={20} />
-              </span>
-              <div>
-                <p className="text-xs font-bold text-charcoal-muted">Step {i + 1}</p>
-                <h3 className="font-bold text-charcoal">{title}</h3>
+      {/* Hero */}
+      <section className="rounded-4xl bg-gradient-to-br from-[#9ADBCC] via-[#D0F2F7] to-[#9EB2DB] p-6 sm:p-8 shadow-soft">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-widest text-[#1F5F53]">Career Readiness · ACRDS</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#12352E] tracking-tight mt-1">
+              Adaptive Career Readiness and Development System
+            </h1>
+            <p className="text-sm text-[#1F4A43] mt-2">
+              Move from career confusion to career readiness: profile → recommendations → skill gaps → roadmap → interview.
+            </p>
+            <div className="mt-4 flex items-center gap-3">
+              <div className="h-2 w-40 rounded-full bg-white/60 overflow-hidden">
+                <div className="h-full rounded-full bg-[#1F5F53] transition-all duration-700" style={{ width: `${(completed / 4) * 100}%` }} />
               </div>
+              <span className="text-xs font-bold text-[#1F5F53]">{completed} of 4 steps done</span>
             </div>
-            <p className="text-sm text-charcoal-muted flex-1">{desc}</p>
-            <Button className="mt-4 self-start" variant={ready ? "soft" : "outline"} size="sm"
-              disabled={!ready} onClick={() => navigate(to)}>
-              {stepLabel(i, ready)}
+          </div>
+          <div className="flex flex-col items-start lg:items-end gap-2">
+            <Button size="lg" className="bg-[#FFFBF0] hover:bg-white text-[#1F5F53]"
+              onClick={() => navigate("/app/career/survey")}>
+              {flow.profile ? "Update my profile" : "Start career survey"} <ArrowRightIcon size={18} />
             </Button>
-          </Card>
-        ))}
+            {flow.profile && (
+              <button type="button" onClick={startOver} disabled={resetting}
+                className="flex items-center gap-1.5 text-xs font-bold text-[#1F5F53] hover:underline disabled:opacity-60">
+                <RotateCcwIcon size={13} /> {resetting ? "Resetting…" : "Start over"}
+              </button>
+            )}
+            {resetError && <p className="text-xs font-semibold text-red-700">{resetError}</p>}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
+          <Stat icon={TrophyIcon} label="Top match" value={top ? top.career_name : "—"}
+            sub={top ? `${Math.round(top.match_percentage)}% match` : "Complete the survey"} />
+          <Stat icon={TargetIcon} label="Readiness"
+            value={flow.gapAnalysis ? `${Math.round(flow.gapAnalysis.readiness_percentage)}%` : "—"}
+            sub={flow.gapAnalysis ? flow.gapAnalysis.career_name : "Select a career"} />
+          <Stat icon={GaugeIcon} label="Skill stage" value={flow.persona?.name || "—"}
+            sub={flow.persona ? `avg ${flow.persona.average_skill_level}/5` : "From your survey"} />
+          <Stat icon={MicIcon} label="Last interview" value={lastInterview != null ? `${Math.round(lastInterview)}/100` : "—"}
+            sub={lastInterview != null ? "practice score" : "Not practised yet"} />
+        </div>
+      </section>
+
+      {/* Steps */}
+      <div className="grid sm:grid-cols-2 gap-5">
+        {steps.map((s, i) => {
+          const Icon = s.icon;
+          return (
+            <Card key={s.title} padding="none" hover className="flex flex-col overflow-hidden">
+              <div className={cn("h-1.5", s.accent)} />
+              <div className="p-6 flex flex-col flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className={`w-11 h-11 rounded-2xl ${ui.iconTile} flex items-center justify-center`}>
+                    <Icon size={20} />
+                  </span>
+                  <div className="flex-1">
+                    <p className="text-xs font-bold text-charcoal-muted">Step {i + 1}</p>
+                    <h3 className="font-bold text-charcoal">{s.title}</h3>
+                  </div>
+                  {s.done ? (
+                    <span className="flex items-center gap-1 rounded-full bg-[#C7F2D1] text-[#1F5E3D] px-2.5 py-1 text-xs font-bold">
+                      <CheckCircle2Icon size={13} /> Done
+                    </span>
+                  ) : !s.ready && (
+                    <span className="flex items-center gap-1 rounded-full bg-black/[0.04] text-charcoal-muted px-2.5 py-1 text-xs font-bold">
+                      <LockIcon size={12} /> Locked
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-charcoal-muted flex-1">{s.desc}</p>
+                <Button className="mt-4 self-start" variant={s.ready ? "soft" : "outline"} size="sm"
+                  disabled={!s.ready} onClick={() => navigate(s.to)}>
+                  {action(s, i)}
+                </Button>
+              </div>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Step 5: AI Interview Simulator (available any time) */}
-      <Card padding="lg" className="border-2 border-[#9EB2DB] bg-[#D0F2F7]/40">
-        <div className="flex items-center gap-3 mb-2">
-          <span className="w-10 h-10 rounded-2xl bg-[#FFFBF0] text-[#34477A] flex items-center justify-center">
-            <MicIcon size={20} />
-          </span>
-          <div>
-            <p className="text-xs font-bold text-charcoal-muted">Step 5</p>
-            <h3 className="font-bold text-charcoal">AI Interview Simulator</h3>
-          </div>
-        </div>
-        <p className="text-sm text-charcoal-muted mb-3">
-          Practise career-specific interview questions by typing, speaking or on camera, and get feedback on answer
-          content, speaking pace and presentation.
-          {flow.interviewReport && ` Last score: ${Math.round(flow.interviewReport.overall_score)}/100 (${flow.interviewReport.readiness_band}).`}
-        </p>
-        <ul className="space-y-1">
-          {ETHICS_NOTES.map((note) => (
-            <li key={note} className="flex items-start gap-2 text-xs text-charcoal-light">
-              <ShieldCheckIcon size={14} className="mt-0.5 text-[#1F5F53] shrink-0" /> {note}
-            </li>
-          ))}
-        </ul>
-        {history.length > 0 && (
-          <div className="mt-4">
-            <p className="text-xs font-bold uppercase tracking-wide text-charcoal-muted mb-1.5">Your recent practice</p>
+      <Card padding="none" className="overflow-hidden border-2 border-[#9EB2DB]">
+        <div className="grid md:grid-cols-[1.4fr_1fr]">
+          <div className="p-6 bg-[#D0F2F7]/50">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="w-11 h-11 rounded-2xl bg-[#FFFBF0] text-[#34477A] flex items-center justify-center">
+                <MicIcon size={20} />
+              </span>
+              <div>
+                <p className="text-xs font-bold text-charcoal-muted">Step 5</p>
+                <h3 className="font-bold text-charcoal">AI Interview Simulator</h3>
+              </div>
+            </div>
+            <p className="text-sm text-charcoal-muted mb-3">
+              Practise career-specific interview questions by typing, speaking or on camera, and get feedback on answer
+              content, speaking pace and presentation.
+            </p>
             <ul className="space-y-1">
-              {history.map((h) => (
-                <li key={h.id} className="flex flex-wrap justify-between gap-2 text-sm text-charcoal-light">
-                  <span>{new Date(h.created_at).toLocaleDateString()} · {h.career_name}</span>
-                  <span className="font-semibold text-charcoal">{Math.round(h.overall_score)}/100</span>
+              {ETHICS_NOTES.map((note) => (
+                <li key={note} className="flex items-start gap-2 text-xs text-charcoal-light">
+                  <ShieldCheckIcon size={14} className="mt-0.5 text-[#1F5F53] shrink-0" /> {note}
                 </li>
               ))}
             </ul>
+            <Button className="mt-4" onClick={() => navigate("/app/career/interview")}>
+              <MicIcon size={16} /> Start interview practice
+            </Button>
           </div>
-        )}
-        <Button className="mt-4" size="sm" onClick={() => navigate("/app/career/interview")}>
-          <MicIcon size={16} /> Start interview practice
-        </Button>
+          <div className="p-6 bg-[#FFFBF0]">
+            <p className="text-xs font-bold uppercase tracking-wide text-charcoal-muted mb-2">Your recent practice</p>
+            {history.length ? (
+              <ul className="space-y-2.5">
+                {history.map((h) => (
+                  <li key={h.id} className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-charcoal truncate">{h.career_name}</p>
+                      <div className="h-1.5 rounded-full bg-[#E3FFD6] mt-1 overflow-hidden">
+                        <div className="h-full rounded-full bg-[#5DBFA9]" style={{ width: `${h.overall_score}%` }} />
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-extrabold text-charcoal">{Math.round(h.overall_score)}</p>
+                      <p className="text-[10px] text-charcoal-muted">{new Date(h.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-charcoal-muted">Your interview scores will appear here so you can track your progress.</p>
+            )}
+          </div>
+        </div>
       </Card>
     </CareerPage>
   );

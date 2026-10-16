@@ -64,7 +64,10 @@ def _token_match(keyword_tok: str, word: str) -> bool:
     """Light stemming: 'testing' matches 'tests', 'encapsulation' matches 'encapsulate'."""
     if len(keyword_tok) <= 3:
         return word in (keyword_tok, keyword_tok + "s")
-    return word.startswith(stem(keyword_tok))
+    root = stem(keyword_tok)
+    if root.endswith("e") and len(root) > 4:
+        root = root[:-1]  # 'impute' -> 'imput', so it also matches 'imputing' and 'imputation'
+    return word.startswith(root)
 
 
 def _phrase_in(phrase: str, words: list[str]) -> bool:

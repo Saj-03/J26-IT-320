@@ -161,7 +161,7 @@ export default function InterviewSimulator() {
   };
 
   return (
-    <CareerPage>
+    <CareerPage step="interview">
       <PageHeader
         title="AI Interview Simulator"
         subtitle={session && stage !== "setup"

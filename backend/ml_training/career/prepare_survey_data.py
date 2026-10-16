@@ -8,8 +8,13 @@ Run from backend/:
 What it does:
   1. Keeps ONLY the career-component questions (the shared team survey also has
      scheduler/burnout/physical questions, age, height, weight - all dropped).
-  2. Removes bulk-duplicated submissions (identical answers submitted 3+ times
-     = automated / test entries). Exact double submissions keep one copy.
+  2. Removes non-genuine submissions using the form timestamps:
+       - bursts: 5+ submissions in a row, each <= 15 s after the previous one
+         (a ~10-minute survey cannot be completed that fast, repeatedly);
+       - constant intervals: 7+ submissions in a row with near-identical spacing
+         (coefficient of variation < 0.15) - scripted, timer-like submission;
+       - bulk duplicates: identical answers submitted 3+ times.
+     Exact double submissions keep one copy.
   3. Normalises the free-text "preferred career role" into a career family
      label (and an ACRDS career id where one clearly applies).
   4. Writes an anonymised dataset (no timestamp, no personal data) and a
@@ -58,11 +63,15 @@ QUESTIONS = {
 }
 SKILL_COLUMNS = [c for c in QUESTIONS if c.startswith("skill_") and c != "skill_learning_consistency"]
 BULK_DUPLICATE_MIN = 3
+BURST_SECONDS, BURST_MIN_RUN = 15, 5
+REGULAR_WINDOW, REGULAR_MAX_CV = 6, 0.15   # 6 consecutive gaps = 7 submissions
 
 # Free-text role -> (family, ACRDS career_id or None). First matching rule wins.
 UNSURE = r"^(still )?not sure|^cant$|^can't$|^-$|^none$|^idk$|^$"
 ROLE_RULES = [
     (r"cyber|security|\bsoc\b|\bgrc\b", "cybersecurity", "cybersecurity_analyst"),
+    (r"graphic|brand designer", "design", "graphic_designer"),
+    (r"content creator|video|youtuber|motion", "design", "content_creator"),
     (r"\bui\b|\bux\b|ui/ux|design|animat|artist|interior", "design", "ui_ux_designer"),
     (r"data scien|data analy|statistic", "data", "data_analyst"),
     (r"data engineer|\bdata\b", "data", None),
@@ -75,6 +84,21 @@ ROLE_RULES = [
     (r"software|^se$|developer|full ?stack|game|\bai engineer|implementation engineer|programmer",
      "software", "software_engineer"),
     (r"application support", "software", None),
+    (r"civil|structural", "other", "civil_engineer"),
+    (r"mechanical|industrial engineer|maintenance engineer", "other", "mechanical_engineer"),
+    (r"electrical|electronic", "other", "electrical_engineer"),
+    (r"teach|lecturer|instructor|tutor", "other", "teacher"),
+    (r"counsel", "other", "counselling_assistant"),
+    (r"lawyer|legal|attorney", "other", "legal_assistant"),
+    (r"compliance", "other", "compliance_officer"),
+    (r"research assistant", "other", "research_assistant"),
+    (r"lab(oratory)? tech", "other", "laboratory_technician"),
+    (r"public health", "other", "public_health_assistant"),
+    (r"health admin|hospital admin", "other", "health_administrator"),
+    (r"account|financ|auditor", "business", "finance_analyst"),
+    (r"\bhr\b|human resource", "business", "hr_executive"),
+    (r"writer|editor|journalist", "business", "content_writer"),
+    (r"public relations|\bpr\b", "business", "public_relations_executive"),
     (r"law|teach|lecturer|nurs|doctor|dentist|physician|psycholog|counsel|scien|biotech|pharma|"
      r"environment|government|flight|football|electrical|medical|health", "other", None),
     (r"account|bank|entrepreneur|manager|\bhr\b|executive|business|director|market", "business", None),
@@ -105,11 +129,48 @@ def load_source(source: str) -> pd.DataFrame:
     return pd.read_csv(source)
 
 
+def submission_flags(timestamps: pd.Series) -> tuple[pd.Series, pd.Series]:
+    """(burst, constant_interval) flags per row, from the form's submission timestamps."""
+    t = pd.to_datetime(timestamps, dayfirst=True, errors="coerce").sort_values()
+    gaps = t.diff().dt.total_seconds()
+    burst = pd.Series(False, index=timestamps.index)
+    regular = pd.Series(False, index=timestamps.index)
+    idx = list(t.index)
+
+    # Runs of consecutive fast submissions (each <= BURST_SECONDS after the previous one).
+    run = [idx[0]] if idx else []
+    for prev_i, i in zip(idx, idx[1:]):
+        if gaps[i] <= BURST_SECONDS:
+            run.append(i)
+        else:
+            if len(run) >= BURST_MIN_RUN:
+                burst[run] = True
+            run = [i]
+    if len(run) >= BURST_MIN_RUN:
+        burst[run] = True
+
+    # Windows of near-constant spacing (excluding bursts, which are caught above).
+    g = gaps.to_numpy()
+    for start in range(1, len(idx) - REGULAR_WINDOW + 1):
+        window = g[start:start + REGULAR_WINDOW]
+        if (window > BURST_SECONDS).all() and window.std() / window.mean() < REGULAR_MAX_CV:
+            regular[idx[start - 1:start + REGULAR_WINDOW]] = True
+    return burst, regular
+
+
 def prepare(raw: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     cols = {field: find_column(raw.columns, needle) for field, needle in QUESTIONS.items()}
     df = raw[list(cols.values())].copy()
     df.columns = list(cols.keys())
-    stats = {"raw_rows": len(df)}
+    stats = {"raw_rows": len(df), "burst_rows": 0, "constant_interval_rows": 0}
+
+    # Non-genuine submissions detected from the timestamps (only when the export has them).
+    ts_cols = [c for c in raw.columns if str(c).strip().lower() == "timestamp"]
+    if ts_cols:
+        burst, regular = submission_flags(raw[ts_cols[0]])
+        stats["burst_rows"] = int(burst.sum())
+        stats["constant_interval_rows"] = int((regular & ~burst).sum())
+        df = df[~(burst | regular)]
 
     # Bulk duplicates: the same full answer set submitted 3+ times.
     signature = df.astype(str).agg("|".join, axis=1)
@@ -157,6 +218,10 @@ def write_report(df: pd.DataFrame, stats: dict) -> None:
         "| Step | Rows |",
         "|---|---|",
         f"| Raw survey responses | {stats['raw_rows']} |",
+        f"| Removed: machine-speed bursts ({BURST_MIN_RUN}+ submissions in a row, each <= {BURST_SECONDS} s apart) "
+        f"| {stats['burst_rows']} |",
+        f"| Removed: constant-interval submissions ({REGULAR_WINDOW + 1}+ in a row, spacing variation "
+        f"< {REGULAR_MAX_CV:.0%}) | {stats['constant_interval_rows']} |",
         f"| Removed: bulk-duplicated submissions ({stats['bulk_duplicate_groups']} answer set(s) "
         f"repeated {BULK_DUPLICATE_MIN}+ times) | {stats['bulk_duplicate_rows']} |",
         f"| Removed: exact double submissions | {stats['double_submissions_removed']} |",

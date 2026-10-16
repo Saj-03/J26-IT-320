@@ -26,7 +26,7 @@ def test_role_mapping():
     assert map_role("SOC analyst") == ("cybersecurity", "cybersecurity_analyst")
     assert map_role("Data Engineer") == ("data", None)
     assert map_role("ui/ux designer") == ("design", "ui_ux_designer")
-    assert map_role("Accountant") == ("business", None)
+    assert map_role("Accountant") == ("business", "finance_analyst")
     assert map_role("Nurse") == ("other", None)
     assert map_role("Still not sure") == (None, None)
 

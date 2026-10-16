@@ -47,7 +47,7 @@ export default function SkillGapAnalysis() {
   };
 
   return (
-    <CareerPage>
+    <CareerPage step="gap">
       <PageHeader
         title={`Skill Gap Analysis: ${gapAnalysis.career_name}`}
         subtitle="Gap = required level − your current level. Strong (≤ 0), Needs Improvement (1), Critical Gap (≥ 2)."

@@ -17,11 +17,11 @@ MODEL_FILE = Path(__file__).resolve().parents[4] / "ml_models" / "career_family_
 # training. With 1-5 respondents (Engineering, Law, Education, ...) its predictions are guesses,
 # so for those faculties the recommender uses skill match + the student's own choices instead.
 MIN_FACULTY_SUPPORT = 10
-# Labelled training responses per faculty in the current model (105 survey responses, 2026-09).
-# A retrained model stores its own counts in the bundle ("faculty_counts"), which then take priority.
+# Fallback only: labelled training responses per faculty (140 genuine survey responses, 2026-10).
+# The trained model stores its own counts in the bundle ("faculty_counts"), which take priority.
 DEFAULT_FACULTY_COUNTS = {
-    "Computing": 54, "Science": 14, "Health Science/Medicine": 9, "Business/Management": 9, "Engineering": 4,
-    "Design/Creative Studies": 3, "Education": 3, "Arts/Humanities": 3, "Law": 1, "Social Sciences": 1,
+    "Computing": 70, "Business/Management": 18, "Science": 15, "Health Science/Medicine": 10, "Engineering": 5,
+    "Education": 5, "Arts/Humanities": 5, "Design/Creative Studies": 3, "Social Sciences": 3, "Law": 2,
 }
 
 
