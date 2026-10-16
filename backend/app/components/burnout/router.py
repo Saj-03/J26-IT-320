@@ -23,6 +23,26 @@ def journal(data: schemas.JournalIn, db: Session = Depends(get_db), user=Depends
     return {"sentiment": e.sentiment, "emotion": e.emotion, "signal": service.to_out(sig)}
 
 
+@router.get("/journal", response_model=list[schemas.JournalEntryOut])
+def journal_list(q: str | None = None, limit: int = 200, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """The student's own entries, newest first. `q` searches the text. Never returns another student's entries."""
+    query = db.query(JournalEntry).filter(JournalEntry.user_id == user.id)
+    if q and q.strip():
+        query = query.filter(JournalEntry.text.ilike(f"%{q.strip()}%"))
+    rows = query.order_by(JournalEntry.created_at.desc()).limit(min(max(limit, 1), 500)).all()
+    return [schemas.JournalEntryOut(id=r.id, text=r.text, mode=r.mode, created_at=r.created_at.isoformat() + "Z") for r in rows]
+
+
+@router.delete("/journal/{entry_id}")
+def journal_delete(entry_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Delete one of the student's own entries and refresh the signal so it no longer counts."""
+    e = db.query(JournalEntry).filter_by(id=entry_id, user_id=user.id).first()
+    if not e:
+        raise HTTPException(404, "Entry not found")
+    db.delete(e); db.commit()
+    return {"signal": service.to_out(service.publish(db, user))}
+
+
 @router.post("/mood")
 def mood(data: schemas.MoodIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
     db.add(MoodTap(user_id=user.id, mood=data.mood)); db.commit()

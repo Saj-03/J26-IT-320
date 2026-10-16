@@ -8,3 +8,5 @@ export const sendChat = (message) => api.post("/burnout/chat", { message }).then
 export const computeSignal = () => api.post("/burnout/signal/compute").then((r) => r.data);
 export const getSummary = () => api.get("/burnout/signal/summary").then((r) => r.data);
 export const runDemo = (scenario) => api.post(`/burnout/demo/${scenario}`).then((r) => r.data);
+export const listJournal = (q = "") => api.get("/burnout/journal", { params: q ? { q } : {} }).then((r) => r.data);
+export const deleteJournal = (id) => api.delete(`/burnout/journal/${id}`).then((r) => r.data);

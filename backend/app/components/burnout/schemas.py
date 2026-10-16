@@ -38,3 +38,11 @@ class SummaryOut(BaseModel):
     signals: dict[str, float] = {}   # per-signal risk 0..1; a missing key = no data for that signal
     factors: list[dict] = []         # which behaviour features moved most vs the student's own baseline
     tip: Tip | None = None           # only when >=2 signals agree
+
+
+class JournalEntryOut(BaseModel):
+    """The student's own entry. Text is private to them; other components only ever receive scores."""
+    id: str
+    text: str
+    mode: str
+    created_at: str      # ISO-8601 UTC ("Z"), formatted in the student's own timezone by the UI

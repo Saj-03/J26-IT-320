@@ -104,3 +104,20 @@ def test_summary_has_tip_only_when_signals_agree(db, user):
     assert tips.choose_tip({"mood": 0.9, "journal": 0.8})["category"] in tips.TIPS
     service.seed_demo(db, user, "normal")
     assert service.summary(db, user)["tip"] is None
+
+
+def test_journal_list_search_delete_and_isolation(db, user):
+    from fastapi import HTTPException
+    from app.components.burnout import router, schemas
+    other = User(email="o@b.lk", full_name="O", hashed_password="x"); db.add(other); db.commit(); db.refresh(other)
+    router.journal(schemas.JournalIn(text="Exam stress is building up"), db=db, user=user)
+    router.journal(schemas.JournalIn(text="Lovely walk by the lake"), db=db, user=user)
+    router.journal(schemas.JournalIn(text="Secret of the other student"), db=db, user=other)
+    allv = router.journal_list(db=db, user=user)
+    assert len(allv) == 2 and allv[0].created_at.endswith("Z") and "Secret" not in " ".join(e.text for e in allv)
+    assert [e.text for e in router.journal_list(q="EXAM", db=db, user=user)] == ["Exam stress is building up"]
+    other_id = router.journal_list(db=db, user=other)[0].id
+    with pytest.raises(HTTPException):
+        router.journal_delete(other_id, db=db, user=user)          # cannot delete someone else's entry
+    router.journal_delete(allv[0].id, db=db, user=user)
+    assert len(router.journal_list(db=db, user=user)) == 1
