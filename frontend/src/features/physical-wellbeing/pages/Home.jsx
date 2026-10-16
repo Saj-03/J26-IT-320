@@ -13,28 +13,51 @@ import { AdaptiveLoop } from '../components/AdaptiveLoop';
 import { SectionTitle, AdaptedChip } from '../components/Shared';
 import ProfileRecommendations from '../components/ProfileRecommendations';
 import useStudent from '../../../shared/hooks/useStudent';
-import { getRecommendations, getProfile } from '../api';
-import { todayRings, weeklyChallenge, wellbeingProfile } from '../data';
+import { getRecommendations, getProfile, getActivitySummary, getHabits } from '../api';
 
 export function PhysicalHome() {
     const navigate = useNavigate();
     const student = useStudent();
-    const challengePct = Math.round(weeklyChallenge.current / weeklyChallenge.total * 100);
 
     const [recomData, setRecomData] = useState(null);
     const [profile, setProfile] = useState(null);
+    const [activitySummary, setActivitySummary] = useState(null);
+    const [habits, setHabits] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         Promise.all([
             getRecommendations(false, false).catch(() => null),
-            getProfile().catch(() => null)
-        ]).then(([rec, prof]) => {
+            getProfile().catch(() => null),
+            getActivitySummary().catch(() => null),
+            getHabits().catch(() => [])
+        ]).then(([rec, prof, act, habs]) => {
             setRecomData(rec);
             setProfile(prof);
+            setActivitySummary(act);
+            setHabits(Array.isArray(habs) ? habs : []);
             setLoading(false);
         });
     }, []);
+
+    // Real stats
+    const todaySteps = activitySummary?.today?.steps || 0;
+    const todayMins = activitySummary?.today?.exercise_minutes || 0;
+    const targetMins = profile?.available_minutes || 20;
+    const totalHabits = habits.length;
+    const doneHabits = habits.filter((h) => h.done).length;
+    const habitStreak = habits.length > 0 ? Math.max(...habits.map((h) => h.streak || 0), 0) : 0;
+
+    const weeklyMins = activitySummary?.weekly_totals?.exercise_minutes || 0;
+    const weeklyTarget = 150;
+    const challengePct = Math.min(100, Math.round((weeklyMins / weeklyTarget) * 100));
+
+    // Dynamic score calculation
+    const baseScore = profile ? 40 : 0;
+    const stepsScore = Math.min(25, Math.round((todaySteps / 8000) * 25));
+    const exerciseScore = Math.min(20, Math.round((todayMins / targetMins) * 20));
+    const habitsScore = totalHabits > 0 ? Math.min(15, Math.round((doneHabits / totalHabits) * 15)) : (profile ? 10 : 0);
+    const dynamicScore = Math.min(100, baseScore + stepsScore + exerciseScore + habitsScore);
 
     // Top live recommendation from model
     const topWorkout = recomData?.exercises?.[0];
@@ -73,20 +96,22 @@ export function PhysicalHome() {
       <Card padding="lg" className="relative overflow-hidden">
         <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-brand-50" aria-hidden/>
         <div className="relative flex flex-col sm:flex-row items-center gap-6">
-          <ProgressRing value={wellbeingProfile.score} size={132} stroke={13}>
-            <span className="text-3xl font-extrabold text-charcoal">{wellbeingProfile.score}</span>
+          <ProgressRing value={dynamicScore} size={132} stroke={13}>
+            <span className="text-3xl font-extrabold text-charcoal">{dynamicScore}</span>
             <span className="text-xs font-semibold text-charcoal-muted">/ 100</span>
           </ProgressRing>
           <div className="flex-1 text-center sm:text-left">
-            <p className="text-sm font-semibold text-brand-600">Good morning, {studentName} 👋</p>
+            <p className="text-sm font-semibold text-brand-600">Good day, {studentName} 👋</p>
             <h2 className="text-xl sm:text-2xl font-extrabold text-charcoal mt-1 leading-snug max-w-lg">
-              Here’s your personalized plan for today.
+              {todaySteps === 0 && todayMins === 0
+                ? "Ready to build healthy momentum today?"
+                : "Great progress on your daily wellness goals!"}
             </h2>
             <p className="text-sm text-charcoal-muted mt-1.5 leading-relaxed max-w-lg">
               {profile ? (
                 <>Calibrated for <strong>{profile.available_minutes} mins</strong> daily workout window and <strong>{profile.meal_style?.replace('_', ' ')}</strong> meals.</>
               ) : (
-                'Your habits and nutrition are strong. A little more movement would lift your score further.'
+                'Complete your wellbeing assessment to generate your personalized AI routine.'
               )}
             </p>
             <div className="mt-3 flex flex-wrap gap-2 justify-center sm:justify-start">
@@ -94,6 +119,11 @@ export function PhysicalHome() {
               {profile?.diet_pref && (
                 <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-cream border border-black/[0.06] text-charcoal-light">
                   Diet: {profile.diet_pref}
+                </span>
+              )}
+              {profile?.physical_limitations && profile.physical_limitations !== 'none' && (
+                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800">
+                  Safety: {profile.physical_limitations}
                 </span>
               )}
             </div>
@@ -105,9 +135,47 @@ export function PhysicalHome() {
       <div>
         <h3 className="text-lg font-bold text-charcoal mb-3">Today’s Overview</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {todayRings.map((r) => {
-            const pct = Math.min(100, r.current / r.total * 100);
-            return (<Card key={r.id} padding="sm" hover className="flex items-center gap-3">
+          {[
+            {
+              id: 'steps',
+              label: 'Steps',
+              emoji: '👟',
+              current: todaySteps,
+              total: 8000,
+              unit: 'steps',
+              color: '#16a34a'
+            },
+            {
+              id: 'workout',
+              label: 'Active Workout',
+              emoji: '⏱️',
+              current: todayMins,
+              total: targetMins,
+              unit: 'mins',
+              color: '#f59e0b'
+            },
+            {
+              id: 'habits',
+              label: 'Habits Done',
+              emoji: '⭐',
+              current: doneHabits,
+              total: Math.max(totalHabits, 1),
+              unit: totalHabits === 0 ? 'no habits' : 'habits',
+              color: '#3b82f6'
+            },
+            {
+              id: 'energy',
+              label: 'Active Energy',
+              emoji: '🔥',
+              current: Math.round(todaySteps * 0.04 + todayMins * 5),
+              total: 300,
+              unit: 'kcal burn',
+              color: '#ec4899'
+            }
+          ].map((r) => {
+            const pct = Math.min(100, Math.round((r.current / r.total) * 100));
+            return (
+              <Card key={r.id} padding="sm" hover className="flex items-center gap-3">
                 <ProgressRing value={pct} size={54} stroke={6} color={r.color}>
                   <span className="text-sm">{r.emoji}</span>
                 </ProgressRing>
@@ -119,8 +187,9 @@ export function PhysicalHome() {
                   </p>
                   <p className="text-[10px] text-charcoal-muted">{r.unit}</p>
                 </div>
-              </Card>);
-        })}
+              </Card>
+            );
+          })}
         </div>
       </div>
 
@@ -148,10 +217,10 @@ export function PhysicalHome() {
             <SectionTitle title="Jump back in"/>
             <div className="space-y-2">
               {[
-                { emoji: '📅', label: '7-Day Full Schedule', desc: 'Date-wise meals & workouts', to: '/app/physical/plan' },
+                { emoji: '📅', label: '7 to 30-Day Schedule', desc: 'Date-wise meals & workouts', to: '/app/physical/plan' },
                 { emoji: '🏃', label: 'Today’s exercise', desc: `${profile?.available_minutes || 20}-min calibrated session`, to: '/app/physical/exercise' },
                 { emoji: '🥗', label: 'Your nutrition plan', desc: `${profile?.meal_style?.replace('_', ' ') || 'Sri Lankan'} meals`, to: '/app/physical/nutrition' },
-                { emoji: '✨', label: 'Healthy habits', desc: `${wellbeingProfile.streak} day streak`, to: '/app/physical/habits' }
+                { emoji: '✨', label: 'Healthy habits', desc: habitStreak > 0 ? `${habitStreak} day streak` : 'Track daily habits', to: '/app/physical/habits' }
               ].map((q) => <button key={q.label} onClick={() => navigate(q.to)} className="w-full flex items-center gap-3 rounded-2xl bg-cream p-3.5 text-left hover:bg-black/[0.04] transition-colors">
                   <span className="text-xl">{q.emoji}</span>
                   <div className="flex-1 min-w-0">
@@ -166,27 +235,27 @@ export function PhysicalHome() {
           {/* Weekly challenge */}
           <Card>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-charcoal">Weekly Challenge</h3>
+              <h3 className="font-bold text-charcoal">Weekly Move Target</h3>
               <TrophyIcon size={17} className="text-brand-500"/>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-3xl">{weeklyChallenge.emoji}</span>
+              <span className="text-3xl">🏃‍♂️</span>
               <div>
-                <p className="font-extrabold text-charcoal text-sm">{weeklyChallenge.title}</p>
-                <p className="text-xs text-charcoal-muted">{weeklyChallenge.goal}</p>
+                <p className="font-extrabold text-charcoal text-sm">150-Min Weekly Goal</p>
+                <p className="text-xs text-charcoal-muted">WHO recommended active minutes</p>
               </div>
             </div>
             <div className="mt-4">
               <div className="flex justify-between text-xs font-semibold text-charcoal-muted mb-1.5">
                 <span>
-                  {weeklyChallenge.current} / {weeklyChallenge.total} min
+                  {weeklyMins} / {weeklyTarget} min
                 </span>
                 <span>{challengePct}%</span>
               </div>
               <ProgressBar value={challengePct}/>
             </div>
             <Button variant="soft" size="sm" className="mt-4" fullWidth onClick={() => navigate('/app/physical/achievements')}>
-              Continue Challenge <ArrowRightIcon size={14}/>
+              View Badges & Rewards <ArrowRightIcon size={14}/>
             </Button>
           </Card>
         </div>

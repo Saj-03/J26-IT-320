@@ -861,6 +861,35 @@ def get_scored_meals_for_profile(profile: dict, is_exam_period: bool = False) ->
                     adherence = min(0.99, adherence * 1.25)
                     break
 
+        # 6. Goal-Specific Nutritional Alignment (Weight Loss vs Weight Gain vs Maintenance)
+        goals = [str(g).lower() for g in profile.get("goals", [])]
+        primary_goal = str(profile.get("goal", "fitness")).lower()
+        all_goal_str = " ".join(goals + [primary_goal])
+        
+        m_cals = float(m["calories"])
+        m_prot = float(m["protein"])
+
+        # Weight Loss / Fat Burn / High BMI (> 25)
+        if "weight_loss" in all_goal_str or "lose" in all_goal_str or bmi >= 25.0:
+            if m_prot >= 15.0 and m_cals <= 450:
+                # Satiety & lean muscle preservation under caloric deficit
+                adherence = min(0.99, adherence * 1.30)
+            elif m_cals > 550:
+                adherence *= 0.80
+
+        # Weight Gain / Muscle Building / Low BMI (< 18.5)
+        elif "weight_gain" in all_goal_str or "gain" in all_goal_str or "muscle" in all_goal_str or bmi < 18.5:
+            if m_cals >= 380 and m_prot >= 16.0:
+                # Caloric surplus & muscle recovery
+                adherence = min(0.99, adherence * 1.30)
+            elif m_cals < 250:
+                adherence *= 0.85
+
+        # Strength & Conditioning
+        elif "strength" in all_goal_str:
+            if m_prot >= 20.0:
+                adherence = min(0.99, adherence * 1.25)
+
         m_copy = dict(m)
         m_copy["adherence_probability"] = round(adherence, 4)
         scored_meals.append(m_copy)
@@ -1147,6 +1176,12 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
         if goal_match:
             prob = min(0.99, prob * 1.1)
 
+        # High BMI & Walking Synergy: Safe fat-loss without joint shear
+        is_walking_fat_loss = (bmi >= 24.5 or "weight_loss" in all_goals or any("lose" in g for g in all_goals)) and any("walk" in a for a in pref_acts)
+        if is_walking_fat_loss and ("walk" in ex_name_l or "walk" in ex_equip or "walking" in ex_tags_l):
+            prob = min(0.99, prob * 1.35)
+            activity_match = max(activity_match, 2)
+
         ex_copy = dict(ex)
         ex_copy["minutes"] = ex["duration_mins"]
         ex_copy["calories_burned"] = cal_burned
@@ -1253,21 +1288,23 @@ def get_adaptive_recommendations(profile: dict, is_exam_period: bool = False, k:
     }
 
 
-# ── Main API: 7-Day Date-Wise Plan Generation ────────────────────────────────
+# ── Main API: Flexible Date-Wise Plan Generation (Week / Month) ──────────────
 def generate_week_plan(
     profile: dict,
     is_exam_period: bool = False,
     use_baseline: bool = False,
-    start_date: Optional[datetime.date] = None
+    start_date: Optional[datetime.date] = None,
+    num_days: int = 7
 ) -> Dict[str, Any]:
     """
-    Generates a personalized 7-day schedule with date, daily exercise routine,
-    and 4 meal slots (Breakfast, Lunch, Dinner, Snack options) matching student
-    dietary preferences, available workout time, and academic stress level.
+    Generates a personalized schedule for any duration (7 days, 14 days, or 30 days)
+    with date, daily exercise routine, and 4 meal slots (Breakfast, Lunch, Dinner, Snack)
+    matching student dietary preferences, target weight/caloric trajectory, and available time.
     """
     if start_date is None:
         start_date = datetime.date.today()
 
+    num_days = max(1, min(31, int(num_days or 7)))
     safety = analyze_limitations_and_safety(profile)
 
     if use_baseline:
@@ -1317,7 +1354,7 @@ def generate_week_plan(
     if not snack_pool:
         snack_pool = get_safe_fallback("snack")
 
-    # Variety rotation across 7 days
+    # Variety rotation across the requested timeframe
     days = []
     num_ex = len(exercises) if exercises else 1
     num_bf = len(breakfast_pool)
@@ -1325,7 +1362,7 @@ def generate_week_plan(
     num_dn = len(dinner_pool)
     num_sn = len(snack_pool)
 
-    for i in range(7):
+    for i in range(num_days):
         current_date = start_date + datetime.timedelta(days=i)
         day_name = current_date.strftime("%A")
         date_str = current_date.strftime("%Y-%m-%d")

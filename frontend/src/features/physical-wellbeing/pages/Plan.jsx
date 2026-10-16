@@ -27,6 +27,7 @@ export function PhysicalPlan() {
 
   // Mode and view state
   const [activeTab, setActiveTab] = useState('week'); // 'week' | 'today'
+  const [daysCount, setDaysCount] = useState(7); // 7 | 14 | 30
   const [selectedDayIdx, setSelectedDayIdx] = useState(0);
   const [isExamPeriod, setIsExamPeriod] = useState(false);
   const [useBaseline, setUseBaseline] = useState(false);
@@ -46,11 +47,12 @@ export function PhysicalPlan() {
     setError('');
     try {
       const [wp, prof] = await Promise.all([
-        getWeekPlan(isExamPeriod, useBaseline).catch(() => null),
+        getWeekPlan(isExamPeriod, useBaseline, daysCount).catch(() => null),
         getProfile().catch(() => null)
       ]);
       setPlanData(wp);
       setUserProfile(prof);
+      setSelectedDayIdx((prev) => (wp?.days && prev >= wp.days.length ? 0 : prev));
     } catch (err) {
       console.error(err);
       setError('Unable to load your personalized plan. Please check your connection.');
@@ -61,7 +63,7 @@ export function PhysicalPlan() {
 
   useEffect(() => {
     fetchPlan();
-  }, [isExamPeriod, useBaseline]);
+  }, [isExamPeriod, useBaseline, daysCount]);
 
   const setStatus = (id, s) => setStatuses((prev) => ({ ...prev, [id]: s }));
 
@@ -73,29 +75,54 @@ export function PhysicalPlan() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader
           title="Personalized Wellbeing Plan"
-          subtitle="Adaptive 7-day schedule tailored to your available time, dietary preferences, and university workload."
+          subtitle={`Adaptive ${daysCount}-day schedule tailored to your available time, dietary preferences, and university workload.`}
         />
 
-        {/* View Toggle */}
-        <div className="flex items-center gap-1.5 bg-white p-1 rounded-full border border-black/[0.08] shadow-sm self-start shrink-0">
-          <button
-            onClick={() => setActiveTab('week')}
-            className={cn(
-              'flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all',
-              activeTab === 'week' ? 'bg-brand-500 text-white shadow-soft' : 'text-charcoal-light hover:text-charcoal'
-            )}
-          >
-            <CalendarIcon size={14} /> 7-Day Plan
-          </button>
-          <button
-            onClick={() => setActiveTab('today')}
-            className={cn(
-              'flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all',
-              activeTab === 'today' ? 'bg-brand-500 text-white shadow-soft' : 'text-charcoal-light hover:text-charcoal'
-            )}
-          >
-            <ClockIcon size={14} /> Today's Schedule
-          </button>
+        {/* View & Duration Toggles */}
+        <div className="flex flex-wrap items-center gap-2 self-start shrink-0">
+          {/* Timeframe Selector */}
+          <div className="flex items-center gap-1 bg-white p-1 rounded-full border border-black/[0.08] shadow-sm">
+            {[
+              { label: '1 Week', count: 7 },
+              { label: '2 Weeks', count: 14 },
+              { label: '1 Month', count: 30 }
+            ].map((tf) => (
+              <button
+                key={tf.count}
+                onClick={() => setDaysCount(tf.count)}
+                className={cn(
+                  'px-3 py-1.5 rounded-full text-xs font-bold transition-all',
+                  daysCount === tf.count
+                    ? 'bg-charcoal text-white shadow-xs'
+                    : 'text-charcoal-light hover:text-charcoal'
+                )}
+              >
+                {tf.label}
+              </button>
+            ))}
+          </div>
+
+          {/* View Toggle */}
+          <div className="flex items-center gap-1.5 bg-white p-1 rounded-full border border-black/[0.08] shadow-sm">
+            <button
+              onClick={() => setActiveTab('week')}
+              className={cn(
+                'flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all',
+                activeTab === 'week' ? 'bg-brand-500 text-white shadow-soft' : 'text-charcoal-light hover:text-charcoal'
+              )}
+            >
+              <CalendarIcon size={14} /> {daysCount}-Day Plan
+            </button>
+            <button
+              onClick={() => setActiveTab('today')}
+              className={cn(
+                'flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all',
+                activeTab === 'today' ? 'bg-brand-500 text-white shadow-soft' : 'text-charcoal-light hover:text-charcoal'
+              )}
+            >
+              <ClockIcon size={14} /> Today's Schedule
+            </button>
+          </div>
         </div>
       </div>
 
@@ -172,6 +199,82 @@ export function PhysicalPlan() {
         </div>
       </Card>
 
+      {/* Clinical Risk Triage & Doctor Consultation Banner */}
+      {planData?.safety_analysis && planData.safety_analysis.has_limitations && (
+        <Card
+          padding="md"
+          className={cn(
+            'border-2 transition-all',
+            planData.safety_analysis.doctor_consultation_advised
+              ? 'bg-rose-50/80 border-rose-300 text-rose-950 shadow-soft'
+              : planData.safety_analysis.choice === 'prefer_not_to_say'
+              ? 'bg-blue-50/70 border-blue-200 text-blue-950'
+              : 'bg-amber-50/70 border-amber-300 text-amber-950'
+          )}
+        >
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+            <div className="space-y-1.5 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xl">
+                  {planData.safety_analysis.doctor_consultation_advised ? '🩺' : planData.safety_analysis.choice === 'prefer_not_to_say' ? '🔒' : '🛡️'}
+                </span>
+                <h3 className="font-extrabold text-sm text-charcoal">
+                  {planData.safety_analysis.doctor_consultation_title}
+                </h3>
+                <span
+                  className={cn(
+                    'text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full',
+                    planData.safety_analysis.risk_level === 'high'
+                      ? 'bg-rose-600 text-white'
+                      : planData.safety_analysis.risk_level === 'moderate'
+                      ? 'bg-amber-500 text-white'
+                      : 'bg-emerald-600 text-white'
+                  )}
+                >
+                  Clinical Triage: {planData.safety_analysis.risk_level} risk
+                </span>
+              </div>
+
+              <p className="text-xs text-charcoal-light leading-relaxed">
+                {planData.safety_analysis.doctor_consultation_reason}
+              </p>
+
+              {/* Movement exclusions and clinical substitutions */}
+              <div className="grid sm:grid-cols-2 gap-2 pt-2 border-t border-black/[0.06] text-[11px]">
+                {planData.safety_analysis.restricted_movements?.length > 0 && (
+                  <div className="bg-white/80 rounded-xl p-2.5 border border-black/[0.05]">
+                    <span className="font-bold text-rose-700 block mb-1">
+                      🚫 Excluded from your routines:
+                    </span>
+                    <p className="text-charcoal-muted leading-tight">
+                      {planData.safety_analysis.restricted_movements.join(', ')}
+                    </p>
+                  </div>
+                )}
+                {planData.safety_analysis.safe_modifications?.length > 0 && (
+                  <div className="bg-white/80 rounded-xl p-2.5 border border-black/[0.05]">
+                    <span className="font-bold text-emerald-700 block mb-1">
+                      ✅ Prescribed joint-safe alternatives:
+                    </span>
+                    <p className="text-charcoal-muted leading-tight">
+                      {planData.safety_analysis.safe_modifications.join(', ')}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {planData.safety_analysis.doctor_consultation_advised && (
+              <div className="sm:text-right shrink-0">
+                <span className="inline-flex items-center gap-1 text-[11px] font-extrabold bg-rose-600 text-white px-3 py-1.5 rounded-full shadow-sm">
+                  🩺 Doctor Clearance Advised
+                </span>
+              </div>
+            )}
+          </div>
+        </Card>
+      )}
+
       {loading ? (
         <Card padding="lg" className="text-center py-12">
           <div className="w-8 h-8 rounded-full border-3 border-brand-500 border-t-transparent animate-spin mx-auto mb-3" />
@@ -185,7 +288,21 @@ export function PhysicalPlan() {
           <Button size="sm" className="mt-4" onClick={fetchPlan}>Try Again</Button>
         </Card>
       ) : activeTab === 'week' ? (
-        /* ── 7-DAY WEEK PLAN VIEW ── */
+        /* ── CUSTOM-DAY WEEK PLAN VIEW ── */
+        (!planData?.days || planData.days.length === 0) ? (
+          <Card padding="lg" className="text-center py-12">
+            <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mx-auto mb-3 text-2xl">
+              📅
+            </div>
+            <h3 className="text-lg font-bold text-charcoal">No Plan Generated Yet</h3>
+            <p className="text-sm text-charcoal-muted mt-1 max-w-md mx-auto">
+              Complete your wellbeing assessment to generate your personalized {daysCount}-day nutrition and workout schedule.
+            </p>
+            <Button className="mt-4" onClick={() => navigate('/physical-setup')}>
+              Take Assessment
+            </Button>
+          </Card>
+        ) : (
         <div className="space-y-6">
           {/* Day Selector Pills */}
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -393,6 +510,7 @@ export function PhysicalPlan() {
             </AnimatePresence>
           )}
         </div>
+        )
       ) : (
         /* ── TODAY'S SCHEDULE TIMELINE VIEW ── */
         <div className="space-y-6">

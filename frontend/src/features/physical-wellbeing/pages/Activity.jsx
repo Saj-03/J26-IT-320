@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
@@ -6,42 +6,141 @@ import { BarChart } from '../../../shared/components/charts/Charts';
 import { PhysicalNav } from '../components/PhysicalNav';
 import { AIInsightCard } from '../../../shared/components/domain/AIInsightCard';
 import { SectionTitle, ChoiceChip } from '../components/Shared';
-import { activityToday, weeklyActivity } from '../data';
 import { Field } from '../../../shared/components/ui/Field';
 import { Button } from '../../../shared/components/ui/Button';
-import { logActivity } from '../api';
-const metrics = ['Steps', 'Exercise', 'Active Minutes'];
+import { getActivitySummary, logActivity, getProfile } from '../api';
+
+const metrics = ['Steps', 'Exercise Minutes'];
+
 export function PhysicalActivity() {
-    const [metric, setMetric] = useState('Steps');
-    const [log, setLog] = useState({ steps: '', exercise_minutes: '' });
-    const [saving, setSaving] = useState(false);
-    const [saved, setSaved] = useState(false);
-    const submit = async (e) => {
-        e.preventDefault();
-        setSaving(true);
-        try {
-            await logActivity({ day: new Date().toISOString().slice(0, 10), steps: +log.steps || 0, exercise_minutes: +log.exercise_minutes || 0 });
-            setSaved(true);
-        }
-        finally {
-            setSaving(false);
-        }
-    };
-    const data = weeklyActivity[metric];
-    const avg = Math.round(data.reduce((s, d) => s + d.value, 0) / data.length);
-    return (<div className="space-y-6">
-      <PageHeader title="Activity" subtitle="Where you are today, and how this week is trending."/>
+  const [metric, setMetric] = useState('Steps');
+  const [log, setLog] = useState({ steps: '', exercise_minutes: '' });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [activitySummary, setActivitySummary] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchSummary = async () => {
+    try {
+      const [act, prof] = await Promise.all([
+        getActivitySummary().catch(() => null),
+        getProfile().catch(() => null)
+      ]);
+      setActivitySummary(act);
+      setProfile(prof);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSummary();
+  }, []);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!log.steps && !log.exercise_minutes) return;
+    setSaving(true);
+    setSaved(false);
+    try {
+      await logActivity({
+        day: new Date().toISOString().slice(0, 10),
+        steps: +log.steps || 0,
+        exercise_minutes: +log.exercise_minutes || 0
+      });
+      setSaved(true);
+      setLog({ steps: '', exercise_minutes: '' });
+      await fetchSummary();
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const todaySteps = activitySummary?.today?.steps || 0;
+  const todayMins = activitySummary?.today?.exercise_minutes || 0;
+  const targetMins = profile?.available_minutes || 20;
+
+  const history = activitySummary?.history_7_days || [
+    { label: 'Mon', steps: 0, exercise_minutes: 0 },
+    { label: 'Tue', steps: 0, exercise_minutes: 0 },
+    { label: 'Wed', steps: 0, exercise_minutes: 0 },
+    { label: 'Thu', steps: 0, exercise_minutes: 0 },
+    { label: 'Fri', steps: 0, exercise_minutes: 0 },
+    { label: 'Sat', steps: 0, exercise_minutes: 0 },
+    { label: 'Sun', steps: 0, exercise_minutes: 0 }
+  ];
+
+  const chartData = history.map((h) => ({
+    label: h.label,
+    value: metric === 'Steps' ? (h.steps || 0) : (h.exercise_minutes || 0)
+  }));
+
+  const totalChartValue = chartData.reduce((s, d) => s + d.value, 0);
+  const avg = Math.round(totalChartValue / (chartData.length || 1));
+  const hasLoggedAnyHistory = totalChartValue > 0;
+
+  const todayItems = [
+    {
+      id: 'steps',
+      emoji: '👟',
+      label: 'Daily Steps',
+      current: todaySteps,
+      total: 8000,
+      unit: 'steps',
+      color: '#16a34a'
+    },
+    {
+      id: 'workout',
+      emoji: '⏱️',
+      label: 'Workout Time',
+      current: todayMins,
+      total: targetMins,
+      unit: 'min',
+      color: '#f59e0b'
+    },
+    {
+      id: 'active_cal',
+      emoji: '🔥',
+      label: 'Active Energy',
+      current: Math.round(todaySteps * 0.04 + todayMins * 5),
+      total: 300,
+      unit: 'kcal',
+      color: '#ec4899'
+    }
+  ];
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Physical Activity"
+        subtitle="Real-time daily tracking and 7-day trends connected to your adaptive plan."
+      />
 
       <PhysicalNav />
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Today */}
         <Card padding="lg" className="lg:col-span-1">
-          <SectionTitle title="Today"/>
+          <SectionTitle
+            title="Today's Activity"
+            subtitle={
+              todaySteps === 0 && todayMins === 0
+                ? 'No activity logged yet today'
+                : 'Live stats from today’s logs'
+            }
+          />
+
           <div className="space-y-4">
-            {activityToday.map((a) => {
-            const pct = Math.min(100, a.current / a.total * 100);
-            return (<div key={a.id}>
+            {todayItems.map((a) => {
+              const pct = Math.min(100, Math.round((a.current / a.total) * 100));
+              return (
+                <div key={a.id}>
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-sm font-medium text-charcoal-light flex items-center gap-2">
                       <span>{a.emoji}</span>
@@ -55,36 +154,87 @@ export function PhysicalActivity() {
                       </span>
                     </span>
                   </div>
-                  <ProgressBar value={pct} color={a.color}/>
-                </div>);
-        })}
+                  <ProgressBar value={pct} color={a.color} />
+                </div>
+              );
+            })}
           </div>
+
+          {todaySteps === 0 && todayMins === 0 && (
+            <div className="mt-5 p-3 rounded-2xl bg-cream border border-black/[0.04] text-xs text-charcoal-muted text-center">
+              💡 Log your morning steps or workout in the form below to update your daily progress rings!
+            </div>
+          )}
         </Card>
 
         {/* Weekly chart */}
         <Card padding="lg" className="lg:col-span-2">
-          <SectionTitle title="This week" subtitle={`Average ${avg.toLocaleString()} per day`}/>
+          <SectionTitle
+            title="Past 7 Days History"
+            subtitle={
+              hasLoggedAnyHistory
+                ? `Daily Average: ${avg.toLocaleString()} ${metric === 'Steps' ? 'steps' : 'minutes'}`
+                : 'No historical entries yet for this period'
+            }
+          />
+
           <div className="flex gap-2 mb-5 overflow-x-auto no-scrollbar -mx-1 px-1">
-            {metrics.map((m) => <ChoiceChip key={m} selected={metric === m} onClick={() => setMetric(m)}>
+            {metrics.map((m) => (
+              <ChoiceChip key={m} selected={metric === m} onClick={() => setMetric(m)}>
                 {m}
-              </ChoiceChip>)}
+              </ChoiceChip>
+            ))}
           </div>
-          <BarChart data={data} height={190}/>
+
+          {hasLoggedAnyHistory ? (
+            <BarChart data={chartData} height={190} unit={metric === 'Steps' ? ' steps' : ' min'} />
+          ) : (
+            <div className="h-[190px] flex flex-col items-center justify-center rounded-2xl bg-cream/60 border border-dashed border-black/10 text-center p-6">
+              <span className="text-3xl mb-2">📊</span>
+              <p className="text-sm font-bold text-charcoal">No Activity Logged in the Last 7 Days</p>
+              <p className="text-xs text-charcoal-muted mt-1 max-w-sm">
+                Each time you log steps or workout minutes, your 7-day consistency graph will build up here automatically.
+              </p>
+            </div>
+          )}
         </Card>
       </div>
 
       <Card padding="lg">
-        <SectionTitle title="Log today’s activity" subtitle="Numbers only — this feeds your adaptive plan."/>
+        <SectionTitle
+          title="Log Today's Activity"
+          subtitle="Real measurements only — feeds directly into your XGBoost adaptive schedule."
+        />
         <form onSubmit={submit} className="grid sm:grid-cols-[1fr_1fr_auto] gap-4 items-end">
-          <Field label="Steps" name="steps" type="number" min={0} value={log.steps} onChange={(e) => setLog({ ...log, steps: e.target.value })}/>
-          <Field label="Exercise minutes" name="exercise_minutes" type="number" min={0} value={log.exercise_minutes} onChange={(e) => setLog({ ...log, exercise_minutes: e.target.value })}/>
-          <Button type="submit" size="lg" disabled={saving}>{saved ? 'Saved ✓' : saving ? 'Saving…' : 'Save'}</Button>
+          <Field
+            label="Steps Walked Today"
+            name="steps"
+            type="number"
+            min={0}
+            placeholder="e.g. 5200"
+            value={log.steps}
+            onChange={(e) => setLog({ ...log, steps: e.target.value })}
+          />
+          <Field
+            label="Exercise Minutes"
+            name="exercise_minutes"
+            type="number"
+            min={0}
+            placeholder="e.g. 25"
+            value={log.exercise_minutes}
+            onChange={(e) => setLog({ ...log, exercise_minutes: e.target.value })}
+          />
+          <Button type="submit" size="lg" disabled={saving}>
+            {saved ? 'Saved ✓' : saving ? 'Saving…' : 'Save Activity'}
+          </Button>
         </form>
       </Card>
 
       <AIInsightCard>
-        Thursday was your quietest day. Your evening plan for tomorrow was made slightly lighter so it stays easy to
-        finish.
+        {todayMins > 0 || todaySteps > 0
+          ? `You have logged ${todaySteps.toLocaleString()} steps and ${todayMins} active minutes today! The adaptive engine preserves recovery slots while maintaining consistency.`
+          : 'No movement logged yet today. Even a brisk 15-minute campus power walk elevates mood, burns calories, and sharpens attention.'}
       </AIInsightCard>
-    </div>);
+    </div>
+  );
 }

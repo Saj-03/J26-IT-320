@@ -1,3 +1,4 @@
+import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -116,6 +117,7 @@ def recommendations(is_exam_period: bool = False, use_baseline: bool = False, db
 
 @router.get("/week-plan")
 def get_week_plan(
+    days_count: int = 7,
     is_exam_period: bool = False,
     use_baseline: bool = False,
     db: Session = Depends(get_db),
@@ -129,20 +131,108 @@ def get_week_plan(
     return recommender.generate_week_plan(
         profile_dict,
         is_exam_period=is_exam_period,
-        use_baseline=use_baseline
+        use_baseline=use_baseline,
+        num_days=days_count
     )
+
+
+@router.get("/activity")
+def get_activity_summary(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    today = datetime.date.today()
+    # Today's activity
+    today_log = db.query(ActivityLog).filter_by(user_id=user.id, day=today).first()
+    
+    # Last 7 days history
+    seven_days_ago = today - datetime.timedelta(days=6)
+    recent_logs = db.query(ActivityLog).filter(
+        ActivityLog.user_id == user.id,
+        ActivityLog.day >= seven_days_ago
+    ).order_by(ActivityLog.day.asc()).all()
+
+    # Build day map for the past 7 days
+    history_by_date = {log.day.strftime("%Y-%m-%d"): log for log in recent_logs}
+    days_data = []
+    for i in range(7):
+        d = seven_days_ago + datetime.timedelta(days=i)
+        d_key = d.strftime("%Y-%m-%d")
+        d_name = d.strftime("%a")
+        log_entry = history_by_date.get(d_key)
+        days_data.append({
+            "day": d_name,
+            "date": d_key,
+            "steps": log_entry.steps if log_entry else 0,
+            "exercise_minutes": log_entry.exercise_minutes if log_entry else 0
+        })
+
+    total_week_steps = sum(d["steps"] for d in days_data)
+    total_week_exercise = sum(d["exercise_minutes"] for d in days_data)
+
+    return {
+        "today": {
+            "steps": today_log.steps if today_log else 0,
+            "exercise_minutes": today_log.exercise_minutes if today_log else 0,
+            "completed_recommendation": today_log.completed_recommendation if today_log else False,
+            "has_logged_today": today_log is not None
+        },
+        "weekly_totals": {
+            "steps": total_week_steps,
+            "exercise_minutes": total_week_exercise,
+            "days_active": len([d for d in days_data if d["steps"] > 0 or d["exercise_minutes"] > 0])
+        },
+        "daily_history": days_data
+    }
 
 
 @router.post("/activity")
 def log_activity(data: schemas.ActivityIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    db.add(ActivityLog(user_id=user.id, **data.model_dump())); db.commit()
+    today = data.day
+    existing = db.query(ActivityLog).filter_by(user_id=user.id, day=today).first()
+    if existing:
+        existing.steps += data.steps
+        existing.exercise_minutes += data.exercise_minutes
+        if data.completed_recommendation:
+            existing.completed_recommendation = True
+    else:
+        db.add(ActivityLog(user_id=user.id, **data.model_dump()))
+    db.commit()
     return {"ok": True}
+
+
+@router.get("/habits")
+def get_user_habits(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    habits = db.query(Habit).filter_by(user_id=user.id).order_by(Habit.streak.desc()).all()
+    today = datetime.date.today()
+    result = []
+    for h in habits:
+        done_today = False
+        if h.last_done:
+            done_today = (h.last_done.date() == today)
+        result.append({
+            "id": h.id,
+            "name": h.name,
+            "streak": h.streak,
+            "done": done_today,
+            "last_done": h.last_done.isoformat() if h.last_done else None
+        })
+    return result
 
 
 @router.post("/habits")
 def add_habit(data: schemas.HabitIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    h = Habit(user_id=user.id, name=data.name); db.add(h); db.commit()
-    return {"id": h.id}
+    h = Habit(user_id=user.id, name=data.name.strip(), streak=0)
+    db.add(h)
+    db.commit()
+    return {"id": h.id, "name": h.name, "streak": 0, "done": False}
+
+
+@router.delete("/habits/{habit_id}")
+def delete_habit(habit_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    h = db.get(Habit, habit_id)
+    if not h or h.user_id != user.id:
+        raise HTTPException(404, "Habit not found")
+    db.delete(h)
+    db.commit()
+    return {"ok": True}
 
 
 @router.post("/habits/{habit_id}/done")
@@ -151,4 +241,6 @@ def habit_done(habit_id: str, db: Session = Depends(get_db), user=Depends(get_cu
     if not h or h.user_id != user.id:
         raise HTTPException(404)
     h = service.mark_habit_done(db, h)
-    return {"streak": h.streak, "badge": service.badge_for(h.streak)}
+    today = datetime.date.today()
+    done_today = (h.last_done.date() == today) if h.last_done else False
+    return {"streak": h.streak, "done": done_today, "badge": service.badge_for(h.streak)}

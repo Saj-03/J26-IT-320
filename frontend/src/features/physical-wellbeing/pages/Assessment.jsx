@@ -60,18 +60,32 @@ const toProfile = (s) => {
   const equipArr = Array.isArray(s.equipment) && s.equipment.length > 0 ? s.equipment : ['No equipment'];
 
   // Physical limitations: mapping to keywords recognized by safety filter
-  const lims = (s.limitations || []).filter(x => x !== 'none');
-  const limLabels = lims.map(l => {
-    if (l === 'lower_body') return 'lower-body (knee)';
-    if (l === 'upper_body') return 'upper-body (back)';
-    if (l === 'high_impact') return 'high-impact';
-    if (l === 'flexibility') return 'flexibility';
-    return l;
-  });
-  if (s.limitationNote && s.limitationNote.trim()) {
-    limLabels.push(s.limitationNote.trim());
+  let physical_limitations = 'none';
+  if (s.limitationChoice === 'prefer_not_to_say' || (s.limitations || []).includes('prefer_not_to_say')) {
+    physical_limitations = 'prefer_not_to_say';
+  } else if (s.limitationChoice === 'no' || (s.limitations || []).includes('none')) {
+    physical_limitations = 'none';
+  } else {
+    const lims = (s.limitations || []).filter(x => x !== 'none' && x !== 'prefer_not_to_say');
+    const limLabels = lims.map(l => {
+      if (l === 'lower_body') return 'lower-body (knee)';
+      if (l === 'upper_body') return 'upper-body (back)';
+      if (l === 'shoulder_neck') return 'shoulder and neck';
+      if (l === 'high_impact') return 'high-impact';
+      if (l === 'respiratory') return 'respiratory (asthma)';
+      if (l === 'cardiovascular') return 'cardiovascular (blood pressure/dizziness)';
+      if (l === 'surgery_injury') return 'recent surgery or injury';
+      if (l === 'flexibility') return 'flexibility and stiffness';
+      return l;
+    });
+    if (s.limitationSeverity) {
+      limLabels.push(`Severity: ${s.limitationSeverity}`);
+    }
+    if (s.limitationNote && s.limitationNote.trim()) {
+      limLabels.push(`Notes: ${s.limitationNote.trim()}`);
+    }
+    physical_limitations = limLabels.length ? limLabels.join('; ') : 'none';
   }
-  const physical_limitations = limLabels.length ? limLabels.join(', ') : 'none';
 
   // Primary goal mapping
   let primaryGoal = 'fitness';
