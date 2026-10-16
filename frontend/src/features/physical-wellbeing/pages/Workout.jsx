@@ -180,7 +180,7 @@ export function PhysicalWorkout() {
     }
 
     return (
-        <div className="max-w-md mx-auto">
+        <div className="w-full max-w-7xl mx-auto">
             <div className="text-center">
                 {safetyBadge && (
                     <div className={cn('inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold mb-2 shadow-sm', safetyBadge.color)}>
@@ -208,52 +208,65 @@ export function PhysicalWorkout() {
                 ))}
             </div>
 
-            {/* Timer */}
-            <div className="flex justify-center my-8">
-                <ProgressRing value={pct} size={240} stroke={15}>
-                    <span className="text-5xl">{step?.emoji || '🏋️'}</span>
-                    <span className="text-4xl font-extrabold text-charcoal tracking-tight tabular-nums mt-2">{fmt(left)}</span>
-                </ProgressRing>
-            </div>
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-8 items-start">
+                <section className="min-w-0 rounded-3xl border border-black/[0.06] bg-white p-4 sm:p-5">
+                    <div className="flex items-center justify-between gap-3">
+                        <div>
+                            <h2 className="text-sm font-bold text-charcoal">Webcam form check <span className="font-medium text-charcoal-muted">(optional)</span></h2>
+                            <p className="mt-1 text-xs text-charcoal-muted">Live pose tracking stays in your browser. Video is never uploaded or saved.</p>
+                        </div>
+                        <button
+                            type="button"
+                            aria-pressed={poseTracking}
+                            onClick={() => setPoseTracking((enabled) => !enabled)}
+                            className={cn('shrink-0 inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-bold transition-colors', poseTracking ? 'bg-brand-600 text-white' : 'bg-brand-50 text-brand-700 hover:bg-brand-100')}
+                        >
+                            <CameraIcon size={15} /> {poseTracking ? 'Turn off' : 'Enable'}
+                        </button>
+                    </div>
+                    {poseTracking ? (
+                        <div className="mt-4"><PoseTracker exerciseName={step?.name || workoutTitle} /></div>
+                    ) : (
+                        <div className="mt-4 flex min-h-56 items-center justify-center rounded-2xl bg-brand-50/70 px-6 text-center">
+                            <div>
+                                <CameraIcon size={28} className="mx-auto text-brand-400" />
+                                <p className="mt-3 text-sm font-semibold text-charcoal">Camera is off</p>
+                                <p className="mt-1 text-xs text-charcoal-muted">Enable the optional form check to see your live skeleton and rep count.</p>
+                            </div>
+                        </div>
+                    )}
+                </section>
 
-            <Card padding="lg" className="text-center">
-                <h2 className="text-lg font-extrabold text-charcoal">{step?.name}</h2>
-                <p className="text-sm text-charcoal-light mt-1.5 leading-relaxed">{step?.cue}</p>
-            </Card>
+                <section className="min-w-0">
+                    <div className="flex justify-center py-2 sm:py-4">
+                        <ProgressRing value={pct} size={poseTracking ? 210 : 240} stroke={15}>
+                            <span className="text-5xl">{step?.emoji || '🏋️'}</span>
+                            <span className="text-4xl font-extrabold text-charcoal tracking-tight tabular-nums mt-2">{fmt(left)}</span>
+                        </ProgressRing>
+                    </div>
 
-            <section className="mt-4 rounded-3xl border border-black/[0.06] bg-white p-4">
-                <div className="flex items-center justify-between gap-3">
-                    <div>
-                        <h2 className="text-sm font-bold text-charcoal">Webcam form check <span className="font-medium text-charcoal-muted">(optional)</span></h2>
-                        <p className="mt-1 text-xs text-charcoal-muted">Live pose and rep tracking runs in your browser. Video is never uploaded or saved.</p>
+                    <Card padding="lg" className="text-center">
+                        <h2 className="text-lg font-extrabold text-charcoal">{step?.name}</h2>
+                        <p className="text-sm text-charcoal-light mt-1.5 leading-relaxed">{step?.cue}</p>
+                    </Card>
+
+                    <div className="flex gap-2 mt-5">
+                        <Button size="lg" className="flex-1" variant={running ? 'secondary' : 'primary'} onClick={() => setRunning((r) => !r)}>
+                            {running ? <PauseIcon size={17} /> : <PlayIcon size={17} fill="currentColor" />}
+                            {running ? 'Pause' : 'Resume'}
+                        </Button>
+                        <Button size="lg" variant="outline" onClick={skip}>
+                            <SkipForwardIcon size={16} /> Skip
+                        </Button>
                     </div>
                     <button
-                        type="button"
-                        aria-pressed={poseTracking}
-                        onClick={() => setPoseTracking((enabled) => !enabled)}
-                        className={cn('shrink-0 inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-bold transition-colors', poseTracking ? 'bg-brand-600 text-white' : 'bg-brand-50 text-brand-700 hover:bg-brand-100')}
+                        onClick={() => setFinished(true)}
+                        className="mt-3 w-full inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-charcoal-muted hover:text-charcoal py-2.5"
                     >
-                        <CameraIcon size={15} /> {poseTracking ? 'Turn off' : 'Enable'}
+                        <FlagIcon size={14} /> Finish Workout
                     </button>
-                </div>
-                {poseTracking && <div className="mt-4"><PoseTracker exerciseName={step?.name || workoutTitle} /></div>}
-            </section>
-
-            <div className="flex gap-2 mt-5">
-                <Button size="lg" className="flex-1" variant={running ? 'secondary' : 'primary'} onClick={() => setRunning((r) => !r)}>
-                    {running ? <PauseIcon size={17} /> : <PlayIcon size={17} fill="currentColor" />}
-                    {running ? 'Pause' : 'Resume'}
-                </Button>
-                <Button size="lg" variant="outline" onClick={skip}>
-                    <SkipForwardIcon size={16} /> Skip
-                </Button>
+                </section>
             </div>
-            <button
-                onClick={() => setFinished(true)}
-                className="mt-3 w-full inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-charcoal-muted hover:text-charcoal py-2.5"
-            >
-                <FlagIcon size={14} /> Finish Workout
-            </button>
         </div>
     );
 }
