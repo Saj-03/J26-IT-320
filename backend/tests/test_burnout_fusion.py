@@ -65,3 +65,8 @@ def test_enabled_subset_ignores_other_signals():
 def test_text_gain_makes_mild_negatives_count():
     from app.components.burnout.ml.fusion import text_risk
     assert text_risk(-0.4) > 0.5 and text_risk(0.3) == 0.0 and text_risk(-1) == 1.0
+
+def test_two_converging_signals_are_never_low_even_if_behaviour_looks_normal():
+    r = fuse(0.0, -0.5, None, 1.5)          # normal behaviour week, strained journal, low mood
+    assert r["risk_level"] == "MODERATE"
+    assert fuse(0.0, -0.5, None, 4.0)["risk_level"] == "LOW"      # only one signal strained: stays LOW

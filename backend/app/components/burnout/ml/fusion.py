@@ -46,6 +46,10 @@ def fuse(deviation: float | None, journal_sent: float | None,
     level = "HIGH" if score >= T_HIGH else "MODERATE" if score >= T_MODERATE else "LOW"
     if len(parts) < 2 and level == "HIGH":      # one signal alone is never HIGH
         level = "MODERATE"
+    # Convergence floor: when two independent signals both show strain, a calm signal elsewhere (e.g. a normal
+    # Scheduler week) must not average the picture back down to LOW. Same rule that unlocks tips (FR7).
+    if level == "LOW" and sum(1 for v in parts.values() if v > REASON_AT) >= 2:
+        level = "MODERATE"
 
     reasons = []
     if parts.get("deviation", 0) > REASON_AT:
