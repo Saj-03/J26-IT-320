@@ -157,3 +157,20 @@ def test_preferences_defaults_sharing_off_and_delete_my_data(db, user):
     assert out["journal"] == 1 and out["mood"] >= 1 and out["sent_signals"] >= 1
     assert router.journal_list(db=db, user=user) == []
     assert db.query(SignalEvent).filter(SignalEvent.signal_type.in_(["RISK", "RECOVERY"])).count() == 0
+
+
+def test_journal_edit_rescores_and_mood_history_is_private(db, user):
+    from fastapi import HTTPException
+    from app.components.burnout import router, schemas
+    other = User(email="p@b.lk", full_name="P", hashed_password="x"); db.add(other); db.commit(); db.refresh(other)
+    router.journal(schemas.JournalIn(text="Everything is wonderful today"), db=db, user=user)
+    entry = router.journal_list(db=db, user=user)[0]
+    before = db.get(JournalEntry, entry.id).sentiment
+    out = router.journal_edit(entry.id, schemas.JournalIn(text="I am exhausted and hopeless"), db=db, user=user)
+    assert out["entry"].text.startswith("I am exhausted") and db.get(JournalEntry, entry.id).sentiment < before
+    with pytest.raises(HTTPException):
+        router.journal_edit(entry.id, schemas.JournalIn(text="hijack"), db=db, user=other)
+    assert router.journal_edit(entry.id, schemas.JournalIn(text="I want to end my life"), db=db, user=user)["crisis"] is True
+    router.mood(schemas.MoodIn(mood=2), db=db, user=user)
+    assert [m.mood for m in router.mood_history(db=db, user=user)] == [2]
+    assert router.mood_history(db=db, user=other) == []

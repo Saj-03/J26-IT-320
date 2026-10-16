@@ -45,6 +45,28 @@ def journal_delete(entry_id: str, db: Session = Depends(get_db), user=Depends(ge
     return {"signal": service.to_out(service.publish(db, user))}
 
 
+@router.put("/journal/{entry_id}")
+def journal_edit(entry_id: str, data: schemas.JournalIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Edit one of the student's own entries. Tone is re-scored and the signal refreshed so old wording stops counting."""
+    e = db.query(JournalEntry).filter_by(id=entry_id, user_id=user.id).first()
+    if not e:
+        raise HTTPException(404, "Entry not found")
+    e.text, e.sentiment, e.emotion = data.text, sentiment(data.text), emotion(data.text)
+    db.commit()
+    crisis = prompts.is_crisis(data.text)
+    return {"entry": schemas.JournalEntryOut(id=e.id, text=e.text, mode=e.mode, created_at=e.created_at.isoformat() + "Z"),
+            "signal": service.to_out(service.publish(db, user)),
+            "crisis": crisis, "helplines": prompts.HELPLINES if crisis else []}
+
+
+@router.get("/mood/history", response_model=list[schemas.MoodTapOut])
+def mood_history(limit: int = 300, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """The student's own mood taps (for the mood shown next to each day in the journal)."""
+    rows = (db.query(MoodTap).filter(MoodTap.user_id == user.id)
+              .order_by(MoodTap.created_at.desc()).limit(min(max(limit, 1), 1000)).all())
+    return [schemas.MoodTapOut(mood=r.mood, created_at=r.created_at.isoformat() + "Z") for r in rows]
+
+
 @router.post("/mood")
 def mood(data: schemas.MoodIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
     db.add(MoodTap(user_id=user.id, mood=data.mood)); db.commit()

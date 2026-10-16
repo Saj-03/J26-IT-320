@@ -13,3 +13,5 @@ export const deleteJournal = (id) => api.delete(`/burnout/journal/${id}`).then((
 export const getPreferences = () => api.get("/burnout/preferences").then((r) => r.data);
 export const setPreferences = (p) => api.put("/burnout/preferences", p).then((r) => r.data);
 export const deleteMyData = () => api.delete("/burnout/my-data").then((r) => r.data);
+export const updateJournal = (id, text) => api.put(`/burnout/journal/${id}`, { mode: "text", text }).then((r) => r.data);
+export const moodHistory = () => api.get("/burnout/mood/history").then((r) => r.data);

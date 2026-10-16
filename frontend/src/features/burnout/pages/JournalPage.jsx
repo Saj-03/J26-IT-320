@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { MicIcon, SaveIcon, SparklesIcon, SearchIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
+import { MicIcon, SaveIcon, SparklesIcon, SearchIcon, PlusIcon, Trash2Icon, XIcon, PencilIcon, FlameIcon, ShuffleIcon, BookOpenIcon } from "lucide-react";
 import { PageHeader } from "../../../shared/components/layout/PageHeader";
 import { Card } from "../../../shared/components/ui/Card";
 import { Button } from "../../../shared/components/ui/Button";
 import { cn } from "../../../shared/lib/cn";
+import { useAuth } from "../../../shared/context/AuthContext";
 import { CrisisCard } from "../components/CrisisCard";
-import { addJournal, sendMood, listJournal, deleteJournal } from "../api";
+import { addJournal, sendMood, listJournal, deleteJournal, updateJournal, moodHistory } from "../api";
 
 const MOODS = [
   { emoji: "😣", label: "Struggling", score: 1 },
@@ -14,6 +15,21 @@ const MOODS = [
   { emoji: "😐", label: "Okay", score: 3 },
   { emoji: "🙂", label: "Good", score: 4 },
   { emoji: "🔥", label: "Motivated", score: 5 },
+];
+const moodEmoji = (avg) => (avg <= 1.5 ? "😣" : avg <= 2.5 ? "😕" : avg <= 3.5 ? "😐" : avg <= 4.5 ? "🙂" : "🔥");
+
+// Gentle prompts. They invite, they never push.
+const PROMPTS = [
+  "What took most of your energy today?",
+  "What is one thing that went better than you expected?",
+  "What is on your mind that you have not said out loud?",
+  "What do you need more of this week? What do you need less of?",
+  "Describe today in three words, then say why.",
+  "Who or what helped you today, even a little?",
+  "What are you looking forward to, however small?",
+  "What would make tomorrow feel lighter?",
+  "What are you proud of this week?",
+  "What would you tell a friend who had your week?",
 ];
 
 // What the student sees after the signal refreshes: awareness and a next step, never a verdict.
@@ -25,32 +41,59 @@ const RESPONSE = {
 
 // Dates are shown in the student's own timezone (the API sends UTC).
 const dayKey = (iso) => new Date(iso).toLocaleDateString("en-CA"); // YYYY-MM-DD, local
+const todayKey = () => new Date().toLocaleDateString("en-CA");
 const dayLabel = (iso) => {
   const d = new Date(iso);
-  const today = new Date();
-  const yest = new Date(); yest.setDate(today.getDate() - 1);
-  if (dayKey(iso) === today.toLocaleDateString("en-CA")) return "Today";
+  const yest = new Date(); yest.setDate(yest.getDate() - 1);
+  if (dayKey(iso) === todayKey()) return "Today";
   if (dayKey(iso) === yest.toLocaleDateString("en-CA")) return "Yesterday";
   return d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
 };
+const longDate = (d = new Date()) => d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 const timeLabel = (iso) => new Date(iso).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
 const snippet = (t) => (t.length > 70 ? t.slice(0, 70).trim() + "…" : t);
+const words = (t) => (t.trim() ? t.trim().split(/\s+/).length : 0);
+const greeting = () => { const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"; };
+
+// Days in a row with at least one entry, counting back from today (or yesterday, so the streak is not lost before you write).
+function streakOf(entries) {
+  const days = new Set(entries.map((e) => dayKey(e.created_at)));
+  const d = new Date();
+  if (!days.has(d.toLocaleDateString("en-CA"))) d.setDate(d.getDate() - 1);
+  let n = 0;
+  while (days.has(d.toLocaleDateString("en-CA"))) { n += 1; d.setDate(d.getDate() - 1); }
+  return n;
+}
 
 export default function JournalPage() {
+  const { user } = useAuth();
+  const firstName = (user?.full_name || "").trim().split(" ")[0];
   const [entries, setEntries] = useState([]);
+  const [allEntries, setAllEntries] = useState([]);   // unfiltered, for the streak and counts
+  const [moods, setMoods] = useState([]);
   const [query, setQuery] = useState("");
   const [date, setDate] = useState("");
-  const [selected, setSelected] = useState(null);   // null = writing a new entry
+  const [selected, setSelected] = useState(null);     // null = writing a new entry
+  const [editing, setEditing] = useState(false);
   const [text, setText] = useState("");
   const [mood, setMood] = useState(null);
+  const [promptIdx, setPromptIdx] = useState(() => new Date().getDate() % PROMPTS.length);
   const [signal, setSignal] = useState(null);
-  const [crisis, setCrisis] = useState(null);       // helplines, when the last entry sounded unsafe
+  const [crisis, setCrisis] = useState(null);         // helplines, when the last entry sounded unsafe
   const [listening, setListening] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const load = useCallback((q) => listJournal(q).then(setEntries).catch(() => setError("Could not load your entries.")), []);
+  const load = useCallback((q) => Promise.all([listJournal(q), listJournal(""), moodHistory()])
+    .then(([filtered, all, m]) => { setEntries(filtered); setAllEntries(all); setMoods(m); })
+    .catch(() => setError("Could not load your entries.")), []);
   useEffect(() => { const t = setTimeout(() => load(query), 250); return () => clearTimeout(t); }, [query, load]);
+
+  const moodByDay = useMemo(() => {
+    const acc = {};
+    moods.forEach((m) => { const k = dayKey(m.created_at); (acc[k] ||= []).push(m.mood); });
+    return Object.fromEntries(Object.entries(acc).map(([k, v]) => [k, v.reduce((a, b) => a + b, 0) / v.length]));
+  }, [moods]);
 
   const visible = useMemo(() => (date ? entries.filter((e) => dayKey(e.created_at) === date) : entries), [entries, date]);
   const groups = useMemo(() => {
@@ -63,6 +106,9 @@ export default function JournalPage() {
     return out;
   }, [visible]);
 
+  const streak = useMemo(() => streakOf(allEntries), [allEntries]);
+  const weekCount = useMemo(() => allEntries.filter((e) => Date.now() - new Date(e.created_at) < 7 * 864e5).length, [allEntries]);
+
   // Voice mode: browser Web Speech API -> text (no audio is uploaded)
   const dictate = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -74,19 +120,26 @@ export default function JournalPage() {
     r.start();
   };
 
+  const handleResult = (r) => { setSignal(r.signal); setCrisis(r.crisis ? r.helplines : null); };
+
   const pickMood = async (score) => {
     setMood(score);
     setError("");
-    try { setSignal((await sendMood(score)).data.signal); } catch { setError("Could not save your mood. Please try again."); }
+    try { setSignal((await sendMood(score)).data.signal); await load(query); } catch { setError("Could not save your mood. Please try again."); }
   };
 
   const save = async () => {
     setSaving(true);
     setError("");
     try {
-      const r = await addJournal({ mode: "text", text });
-      setSignal(r.signal);
-      setCrisis(r.crisis ? r.helplines : null);
+      if (editing && selected) {
+        const r = await updateJournal(selected.id, text);
+        handleResult(r);
+        setSelected(r.entry);
+        setEditing(false);
+      } else {
+        handleResult(await addJournal({ mode: "text", text }));
+      }
       setText("");
       await load(query);
     } catch {
@@ -102,17 +155,33 @@ export default function JournalPage() {
       const r = await deleteJournal(selected.id);
       setSignal(r.signal);
       setSelected(null);
+      setEditing(false);
       await load(query);
     } catch {
       setError("Could not delete that entry.");
     }
   };
 
+  const startEdit = () => { setText(selected.text); setEditing(true); };
+  const newEntry = () => { setSelected(null); setEditing(false); setText(""); };
   const filtering = Boolean(query || date);
+  const writing = !selected || editing;
+  const shownDate = selected && !editing ? new Date(selected.created_at) : new Date();
+  const selectedMood = selected ? moodByDay[dayKey(selected.created_at)] : undefined;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
-      <PageHeader title="Your journal" subtitle="A private place for your thoughts. Only you can read your entries." />
+      <PageHeader title={`${greeting()}${firstName ? ", " + firstName : ""}`} subtitle="Your private journal. Only you can read what you write here." />
+
+      <div className="flex flex-wrap gap-2 text-sm" aria-label="Journal summary">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 text-brand-700 font-semibold px-3 py-1.5">
+          <FlameIcon size={14} /> {streak > 0 ? `${streak} day${streak > 1 ? "s" : ""} in a row` : "Start a streak today"}
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-black/[0.04] text-charcoal-light px-3 py-1.5">{weekCount} this week</span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-black/[0.04] text-charcoal-light px-3 py-1.5">
+          <BookOpenIcon size={14} /> {allEntries.length} {allEntries.length === 1 ? "entry" : "entries"} in total
+        </span>
+      </div>
 
       <Card padding="lg">
         <p className="text-sm font-semibold text-charcoal mb-3">How are you feeling today?</p>
@@ -148,8 +217,8 @@ export default function JournalPage() {
       )}
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Entry list: search + date filter + grouped by day */}
-        <Card padding="md" className="lg:col-span-1 flex flex-col max-h-[34rem]">
+        {/* Past entries: search + date filter, grouped by day with that day's mood */}
+        <Card padding="md" className="lg:col-span-1 flex flex-col max-h-[36rem]">
           <div className="relative">
             <SearchIcon size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-muted" />
             <input
@@ -175,23 +244,25 @@ export default function JournalPage() {
             )}
           </div>
 
-          <Button variant="soft" size="sm" className="mt-3" onClick={() => { setSelected(null); setText(""); }}>
+          <Button variant="soft" size="sm" className="mt-3" onClick={newEntry}>
             <PlusIcon size={14} /> New entry
           </Button>
 
           <div className="mt-3 overflow-y-auto flex-1 -mx-1 px-1">
             {groups.length === 0 ? (
               <p className="text-sm text-charcoal-muted py-6 text-center">
-                {filtering ? "No entries match." : "No entries yet. Write your first one."}
+                {filtering ? "No entries match." : "No entries yet. Your first page is waiting."}
               </p>
             ) : groups.map((g) => (
               <div key={g.key} className="mb-3">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-charcoal-muted mb-1">{g.label}</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-charcoal-muted mb-1 flex items-center gap-1.5">
+                  {g.label} {moodByDay[g.key] !== undefined && <span className="text-sm normal-case" title="Your mood that day">{moodEmoji(moodByDay[g.key])}</span>}
+                </p>
                 <ul className="space-y-1">
                   {g.items.map((e) => (
                     <li key={e.id}>
                       <button
-                        onClick={() => setSelected(e)}
+                        onClick={() => { setSelected(e); setEditing(false); }}
                         className={cn(
                           "w-full text-left rounded-xl px-3 py-2 text-sm transition-colors",
                           selected?.id === e.id ? "bg-brand-50 text-charcoal" : "hover:bg-black/[0.03] text-charcoal-light"
@@ -208,39 +279,58 @@ export default function JournalPage() {
           </div>
         </Card>
 
-        {/* Reader / writer */}
-        <Card padding="lg" className="lg:col-span-2">
-          {selected ? (
-            <>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-bold text-charcoal">{dayLabel(selected.created_at)}</p>
-                  <p className="text-xs text-charcoal-muted">{new Date(selected.created_at).toLocaleString()}</p>
-                </div>
+        {/* The page: reads like a journal page, dated, with a prompt when blank */}
+        <Card padding="lg" className="lg:col-span-2 bg-cream/40">
+          <div className="flex items-start justify-between gap-3 border-b border-black/[0.06] pb-3">
+            <div>
+              <p className="font-bold text-charcoal text-lg">{longDate(shownDate)}</p>
+              <p className="text-xs text-charcoal-muted">
+                {selected && !editing ? `Written at ${timeLabel(selected.created_at)}` : editing ? "Editing this entry" : "A new page"}
+                {selected && !editing && selectedMood !== undefined && <span> · Mood that day {moodEmoji(selectedMood)}</span>}
+              </p>
+            </div>
+            {selected && !editing && (
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={startEdit}><PencilIcon size={14} /> Edit</Button>
                 <Button variant="outline" size="sm" onClick={remove}><Trash2Icon size={14} /> Delete</Button>
               </div>
-              <p className="mt-4 whitespace-pre-wrap text-charcoal leading-relaxed">{selected.text}</p>
-            </>
-          ) : (
+            )}
+          </div>
+
+          {writing ? (
             <>
-              <p className="font-bold text-charcoal mb-3">New entry</p>
+              {!editing && (
+                <div className="mt-4 flex items-start justify-between gap-3">
+                  <p className="italic text-charcoal-light">{PROMPTS[promptIdx]}</p>
+                  <button onClick={() => setPromptIdx((i) => (i + 1) % PROMPTS.length)} className="text-xs font-semibold text-brand-600 flex items-center gap-1 shrink-0" aria-label="Another prompt">
+                    <ShuffleIcon size={12} /> Another
+                  </button>
+                </div>
+              )}
               <textarea
-                rows={9}
+                rows={11}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder="Anything on your mind…"
-                aria-label="New journal entry"
-                className="w-full rounded-2xl border border-black/10 bg-cream/50 px-4 py-3.5 text-sm text-charcoal placeholder:text-charcoal-muted outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 resize-none"
+                placeholder="Start writing…"
+                aria-label="Journal entry"
+                className="mt-3 w-full rounded-2xl border border-black/10 bg-white/80 px-4 py-3.5 text-[15px] leading-7 text-charcoal placeholder:text-charcoal-muted outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 resize-none"
               />
-              <div className="flex flex-wrap gap-3 mt-4">
+              <div className="flex flex-wrap items-center gap-3 mt-4">
                 <Button onClick={save} disabled={!text.trim() || saving}>
-                  <SaveIcon size={16} /> {saving ? "Saving…" : "Save"}
+                  <SaveIcon size={16} /> {saving ? "Saving…" : editing ? "Save changes" : "Save"}
                 </Button>
-                <Button variant="outline" onClick={dictate} disabled={listening}>
-                  <MicIcon size={16} className={listening ? "text-brand-500 animate-pulse" : ""} /> {listening ? "Listening…" : "Speak"}
-                </Button>
+                {editing ? (
+                  <Button variant="outline" onClick={() => { setEditing(false); setText(""); }}>Cancel</Button>
+                ) : (
+                  <Button variant="outline" onClick={dictate} disabled={listening}>
+                    <MicIcon size={16} className={listening ? "text-brand-500 animate-pulse" : ""} /> {listening ? "Listening…" : "Speak"}
+                  </Button>
+                )}
+                <span className="ml-auto text-xs text-charcoal-muted">{words(text)} words</span>
               </div>
             </>
+          ) : (
+            <p className="mt-4 whitespace-pre-wrap text-[15px] leading-7 text-charcoal">{selected.text}</p>
           )}
         </Card>
       </div>

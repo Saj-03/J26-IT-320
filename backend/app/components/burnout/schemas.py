@@ -56,3 +56,8 @@ class PreferencesIn(BaseModel):
 class PreferencesOut(BaseModel):
     share_with_scheduler: bool
     chat_enabled: bool
+
+
+class MoodTapOut(BaseModel):
+    mood: int
+    created_at: str      # ISO-8601 UTC ("Z")
