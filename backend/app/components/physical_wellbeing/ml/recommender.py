@@ -359,6 +359,48 @@ CURATED_MEALS = [
 CURATED_EXERCISES = [
     # ── 15-MINUTE ROUTINES (For time-crunched students & high stress periods) ──
     {
+        "id": "ex_15_walk",
+        "name": "15-Min Campus Brisk Walking & Sunlight Boost",
+        "duration_mins": 15,
+        "intensity": "Light",
+        "intensity_level": 1,
+        "equipment": "Outdoor / Walking",
+        "primary_goal": "fitness",
+        "target_goals": ["fitness", "weight_loss", "stress_relief"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 4.0,
+        "description": "Brisk paced outdoor campus walk to stimulate blood flow, reset mental fatigue, and get natural sunlight."
+    },
+    {
+        "id": "ex_15_dance",
+        "name": "15-Min High-Energy Student Dance Cardio",
+        "duration_mins": 15,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Bodyweight / Home",
+        "primary_goal": "weight_loss",
+        "target_goals": ["weight_loss", "fitness", "stress_relief"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 6.5,
+        "description": "Upbeat rhythm cardio combining simple salsa steps, side shuffles, arm reaches, and hip sways. Fun and stress-busting."
+    },
+    {
+        "id": "ex_15_jog",
+        "name": "15-Min Campus Jog-Walk Interval Cardio",
+        "duration_mins": 15,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Outdoor / Running",
+        "primary_goal": "weight_loss",
+        "target_goals": ["weight_loss", "fitness"],
+        "knee_safe": False,
+        "back_safe": True,
+        "calories_per_kg_hr": 7.0,
+        "description": "Alternating 1-min light jog with 1-min brisk recovery walk across university grounds."
+    },
+    {
         "id": "ex_15_1",
         "name": "15-Min Quick Dorm HIIT & Cardio Burn",
         "duration_mins": 15,
@@ -403,6 +445,62 @@ CURATED_EXERCISES = [
 
     # ── 20-MINUTE ROUTINES ──
     {
+        "id": "ex_20_walk",
+        "name": "20-Min Campus Power Walk & Interval Pace",
+        "duration_mins": 20,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Outdoor / Walking",
+        "primary_goal": "weight_loss",
+        "target_goals": ["walking", "weight_loss", "fitness", "stress_relief"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 5.0,
+        "description": "Energetic outdoor campus power walk alternating 3-min brisk strides with 1-min fast arm-swing cadence. Low impact."
+    },
+    {
+        "id": "ex_20_zumba",
+        "name": "20-Min Rhythm Zumba & Aerobic Beat Session",
+        "duration_mins": 20,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Bodyweight / Home",
+        "primary_goal": "weight_loss",
+        "target_goals": ["dance", "zumba", "weight_loss", "fitness"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 7.0,
+        "description": "Dance-based calorie torcher: merengue steps, cumbia shuffles, side-reach squats, and high-energy hip rolls."
+    },
+    {
+        "id": "ex_20_jog",
+        "name": "20-Min Outdoor Campus Jog & Stride Intervals",
+        "duration_mins": 20,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Outdoor / Running",
+        "primary_goal": "weight_loss",
+        "target_goals": ["running", "jogging", "weight_loss", "fitness"],
+        "knee_safe": False,
+        "back_safe": True,
+        "calories_per_kg_hr": 8.0,
+        "description": "Graduated aerobic jogging session around student grounds: 3-min light jog, 1-min recovery walk, repeat."
+    },
+    {
+        "id": "ex_20_bands",
+        "name": "20-Min Resistance Band Posture & Full-Body Tone",
+        "duration_mins": 20,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Resistance Bands",
+        "primary_goal": "strength",
+        "target_goals": ["strength", "fitness", "mobility"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 5.0,
+        "description": "Band pull-aparts, lateral band walks, standing bicep curls, and glute kickbacks with minimal joint strain."
+    },
+    {
         "id": "ex_20_1",
         "name": "20-Min Full-Body Functional Calisthenics",
         "duration_mins": 20,
@@ -438,7 +536,7 @@ CURATED_EXERCISES = [
         "intensity_level": 1,
         "equipment": "Bodyweight / Home",
         "primary_goal": "mobility",
-        "target_goals": ["mobility", "stress_relief", "fitness"],
+        "target_goals": ["mobility", "stress_relief", "fitness", "yoga"],
         "knee_safe": True,
         "back_safe": True,
         "calories_per_kg_hr": 3.5,
@@ -515,6 +613,48 @@ CURATED_EXERCISES = [
         "back_safe": True,
         "calories_per_kg_hr": 5.0,
         "description": "Brisk outdoor university walk incorporating stair climbs and pace intervals to clear the mind and boost stamina."
+    },
+    {
+        "id": "ex_30_zumba",
+        "name": "30-Min Latin Beats Zumba Party & Fat Burn",
+        "duration_mins": 30,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Bodyweight / Home",
+        "primary_goal": "weight_loss",
+        "target_goals": ["dance", "zumba", "weight_loss", "fitness"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 7.5,
+        "description": "Exhilarating 30-minute dance workout with salsa, reggaeton, and bachata intervals. Burns maximum calories with zero boredom."
+    },
+    {
+        "id": "ex_30_run",
+        "name": "30-Min Campus Steady State Jog & Endurance",
+        "duration_mins": 30,
+        "intensity": "High",
+        "intensity_level": 3,
+        "equipment": "Outdoor / Running",
+        "primary_goal": "weight_loss",
+        "target_goals": ["running", "jogging", "weight_loss", "fitness"],
+        "knee_safe": False,
+        "back_safe": True,
+        "calories_per_kg_hr": 9.0,
+        "description": "Steady-paced outdoor campus jog building cardiovascular capacity and metabolic rate."
+    },
+    {
+        "id": "ex_30_mat",
+        "name": "30-Min Mat Pilates & Deep Core Stability",
+        "duration_mins": 30,
+        "intensity": "Moderate",
+        "intensity_level": 2,
+        "equipment": "Exercise Mat",
+        "primary_goal": "strength",
+        "target_goals": ["mobility", "strength", "fitness"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 4.5,
+        "description": "The Hundred, roll-ups, single leg stretches, swimming, and side planks for robust spinal posture and pelvic health."
     },
 
     # ── 45-MINUTE ROUTINES ──
@@ -665,9 +805,14 @@ def get_scored_meals_for_profile(profile: dict, is_exam_period: bool = False) ->
 
         # 3. Allergy & Avoid Foods Filter
         conflict = 0
-        for allergen in [allergies, avoid_foods]:
-            if allergen and allergen in name_lower or (allergen and allergen in desc_lower):
-                conflict = 1
+        for raw_list in [allergies, avoid_foods]:
+            if raw_list and str(raw_list).strip():
+                terms = [t.strip().lower() for t in re.split(r'[,;]+|\band\b', str(raw_list)) if t.strip()]
+                for t in terms:
+                    if len(t) >= 3 and (t in name_lower or t in desc_lower or any(t in tag for tag in m.get("tags", []))):
+                        conflict = 1
+                        break
+            if conflict:
                 break
         if conflict:
             continue
@@ -691,6 +836,16 @@ def get_scored_meals_for_profile(profile: dict, is_exam_period: bool = False) ->
         }
 
         adherence = predict_adherence(feats)
+
+        # 5. Favourite Foods Boost
+        favs = profile.get("favourite_foods", "")
+        if favs and str(favs).strip():
+            fav_terms = [t.strip().lower() for t in re.split(r'[,;]+|\band\b', str(favs)) if t.strip()]
+            for ft in fav_terms:
+                if len(ft) >= 3 and (ft in name_lower or ft in desc_lower or any(ft in tag for tag in m.get("tags", []))):
+                    adherence = min(0.99, adherence * 1.25)
+                    break
+
         m_copy = dict(m)
         m_copy["adherence_probability"] = round(adherence, 4)
         scored_meals.append(m_copy)
@@ -703,7 +858,7 @@ def get_scored_meals_for_profile(profile: dict, is_exam_period: bool = False) ->
 # ── Helper: Tailor Exercises for Profile ─────────────────────────────────────
 def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = False) -> List[Dict[str, Any]]:
     """
-    Ranks exercises strictly constrained by student available minutes, limitations, and goals.
+    Ranks exercises strictly constrained by student available minutes, limitations, and preferred activities.
     """
     workload = float(profile.get("workload_intensity_score", 50.0))
     stress = float(profile.get("stress_score", 3.0))
@@ -714,6 +869,7 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
     limits = str(profile.get("physical_limitations", "")).lower()
     equipment_list = profile.get("equipment", [])
     equip_str = " ".join(equipment_list).lower() if equipment_list else "home / bodyweight"
+    pref_acts = [str(a).lower() for a in profile.get("preferred_activities", [])]
 
     goals = profile.get("goals", [])
     primary_goal = str(profile.get("goal", "fitness")).lower()
@@ -729,8 +885,6 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
         effective_workload = workload
         effective_stress = stress
 
-    # Approximate student weight for calorie calculation
-    # Standard formula: BMI * (1.68)^2 ≈ 65kg default
     approx_weight_kg = max(45.0, min(100.0, bmi * (1.68 ** 2)))
 
     scored_exercises = []
@@ -753,8 +907,9 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
             equip_match = 0
         if "dumbbell" in ex_equip and "dumbbell" not in equip_str and "gym" not in equip_str:
             equip_match = 0
+        if "band" in ex_equip and "band" not in equip_str:
+            equip_match = 0
 
-        # Calorie calculation: weight_kg * (duration/60) * MET_rate
         cal_burned = round(approx_weight_kg * (ex["duration_mins"] / 60.0) * ex["calories_per_kg_hr"])
 
         feats = {
@@ -776,7 +931,48 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
 
         prob = predict_adherence(feats)
         if limitation_conflict:
-            prob *= 0.2
+            prob *= 0.15
+
+        # Check preferred activity match
+        activity_match = 0
+        if pref_acts:
+            ex_name_l = ex["name"].lower()
+            ex_desc_l = ex["description"].lower()
+            ex_tags_l = [t.lower() for t in ex.get("target_goals", [])]
+            for act in pref_acts:
+                if "walk" in act and ("walk" in ex_name_l or "walk" in ex_equip or "walking" in ex_tags_l):
+                    activity_match = 1; break
+                elif "dance" in act or "zumba" in act:
+                    if "dance" in ex_name_l or "zumba" in ex_name_l or "dance" in ex_tags_l or "zumba" in ex_tags_l:
+                        activity_match = 1; break
+                elif "run" in act or "jog" in act:
+                    if "run" in ex_name_l or "jog" in ex_name_l or "running" in ex_tags_l or "jogging" in ex_tags_l or "running" in ex_equip:
+                        activity_match = 1; break
+                elif "yoga" in act and ("yoga" in ex_name_l or "yoga" in ex_tags_l):
+                    activity_match = 1; break
+                elif "strength" in act and ("strength" in ex_name_l or "dumbbell" in ex_name_l or "gym" in ex_equip or "strength" in ex_tags_l):
+                    activity_match = 1; break
+                elif "stretch" in act and ("stretch" in ex_name_l or "mobility" in ex_name_l or "posture" in ex_name_l):
+                    activity_match = 1; break
+                elif "home" in act and ("home" in ex_equip or "bodyweight" in ex_equip or "calisthenics" in ex_name_l):
+                    activity_match = 1; break
+
+        if pref_acts:
+            if activity_match:
+                prob = min(0.99, prob * 1.35)
+            else:
+                prob *= 0.65
+
+        # Equipment alignment boost
+        if "outdoor" in equip_str and ("outdoor" in ex_equip or "walk" in ex_equip or "run" in ex_equip):
+            prob = min(0.99, prob * 1.25)
+            activity_match = max(activity_match, 1)
+        elif "dumbbell" in equip_str and "dumbbell" in ex_equip:
+            prob = min(0.99, prob * 1.25)
+            activity_match = max(activity_match, 1)
+        elif "band" in equip_str and "band" in ex_equip:
+            prob = min(0.99, prob * 1.25)
+            activity_match = max(activity_match, 1)
 
         # Goal relevance multiplier
         goal_match = any(g in ex["target_goals"] for g in all_goals)
@@ -788,12 +984,14 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
         ex_copy["calories_burned"] = cal_burned
         ex_copy["adherence_probability"] = round(float(prob), 4)
         ex_copy["limitation_warning"] = True if limitation_conflict else False
+        ex_copy["activity_match"] = activity_match
         scored_exercises.append(ex_copy)
 
-    # Sort strictly: closest to effective_avail_mins, then by adherence
+    # Sort strictly: closest to duration, then preferred activity match, then adherence
     scored_exercises.sort(
         key=lambda x: (
             abs(x["duration_mins"] - effective_avail_mins),
+            -x.get("activity_match", 0),
             -x["adherence_probability"]
         )
     )
@@ -922,15 +1120,32 @@ def generate_week_plan(
     dinner_pool = [m for m in meals if m["slot"] == "dinner"]
     snack_pool = [m for m in meals if m["slot"] == "snack"]
 
-    # Fallbacks in case filter was extremely tight
+    diet_pref = str(profile.get("diet_pref") or profile.get("dietary_preference", "any")).lower()
+    meal_style = str(profile.get("meal_style", "both")).lower()
+
+    def get_safe_fallback(slot_name):
+        candidates = [m for m in CURATED_MEALS if m["slot"] == slot_name]
+        if "vegan" in diet_pref:
+            candidates = [m for m in candidates if m["diet_category"] == "vegan"]
+        elif "veg" in diet_pref and "non" not in diet_pref:
+            candidates = [m for m in candidates if m["diet_category"] in ["veg", "vegan"]]
+        if "sri" in meal_style:
+            sl = [m for m in candidates if m["cuisine"] == "sri_lankan"]
+            if sl: candidates = sl
+        elif "inter" in meal_style or "west" in meal_style:
+            w = [m for m in candidates if m["cuisine"] == "western"]
+            if w: candidates = w
+        return candidates
+
+    # Safe fallbacks preserving student diet and cuisine preferences
     if not breakfast_pool:
-        breakfast_pool = [m for m in CURATED_MEALS if m["slot"] == "breakfast"]
+        breakfast_pool = get_safe_fallback("breakfast")
     if not lunch_pool:
-        lunch_pool = [m for m in CURATED_MEALS if m["slot"] == "lunch"]
+        lunch_pool = get_safe_fallback("lunch")
     if not dinner_pool:
-        dinner_pool = [m for m in CURATED_MEALS if m["slot"] == "dinner"]
+        dinner_pool = get_safe_fallback("dinner")
     if not snack_pool:
-        snack_pool = [m for m in CURATED_MEALS if m["slot"] == "snack"]
+        snack_pool = get_safe_fallback("snack")
 
     # Variety rotation across 7 days
     days = []

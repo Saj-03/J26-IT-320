@@ -85,8 +85,8 @@ export function PhysicalGenerating() {
                     </div>)}
                 </div>
 
-                <Button size="lg" fullWidth className="mt-8" onClick={() => navigate('/app/physical')}>
-                  View My Plan <ArrowRightIcon size={18}/>
+                <Button size="lg" fullWidth className="mt-8" onClick={() => navigate('/app/physical/plan')}>
+                  View My 7-Day Plan <ArrowRightIcon size={18}/>
                 </Button>
               </motion.div>}
           </AnimatePresence>
