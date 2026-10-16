@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, DateTime, JSON, ForeignKey, Float, Integer, Text
+from sqlalchemy import String, DateTime, JSON, ForeignKey, Float, Integer, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.session import Base
 
@@ -43,3 +43,12 @@ class WellbeingSignal(Base):
     risk_level: Mapped[str] = mapped_column(String)
     inputs: Mapped[dict] = mapped_column(JSON)           # traceability: which signals contributed
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class BurnoutPreference(Base):
+    """Student's own choices (FR11 / NFR5). Own table so the shared users table is not touched."""
+    __tablename__ = "burnout_preferences"
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    share_with_scheduler: Mapped[bool] = mapped_column(Boolean, default=True)   # off = signals stay private to the student
+    chat_enabled: Mapped[bool] = mapped_column(Boolean, default=False)          # chat is opt-in
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

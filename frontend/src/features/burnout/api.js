@@ -10,3 +10,6 @@ export const getSummary = () => api.get("/burnout/signal/summary").then((r) => r
 export const runDemo = (scenario) => api.post(`/burnout/demo/${scenario}`).then((r) => r.data);
 export const listJournal = (q = "") => api.get("/burnout/journal", { params: q ? { q } : {} }).then((r) => r.data);
 export const deleteJournal = (id) => api.delete(`/burnout/journal/${id}`).then((r) => r.data);
+export const getPreferences = () => api.get("/burnout/preferences").then((r) => r.data);
+export const setPreferences = (p) => api.put("/burnout/preferences", p).then((r) => r.data);
+export const deleteMyData = () => api.delete("/burnout/my-data").then((r) => r.data);

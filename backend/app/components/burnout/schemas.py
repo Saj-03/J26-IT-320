@@ -46,3 +46,13 @@ class JournalEntryOut(BaseModel):
     text: str
     mode: str
     created_at: str      # ISO-8601 UTC ("Z"), formatted in the student's own timezone by the UI
+
+
+class PreferencesIn(BaseModel):
+    share_with_scheduler: bool | None = None
+    chat_enabled: bool | None = None
+
+
+class PreferencesOut(BaseModel):
+    share_with_scheduler: bool
+    chat_enabled: bool

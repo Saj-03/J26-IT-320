@@ -134,3 +134,26 @@ def test_journal_crisis_returns_care_card_and_still_saves(db, user):
     assert len(router.journal_list(db=db, user=user)) == 1                  # saved, not discarded
     ok = router.journal(schemas.JournalIn(text="Tired but okay today"), db=db, user=user)
     assert ok["crisis"] is False and ok["helplines"] == []
+
+
+def test_preferences_defaults_sharing_off_and_delete_my_data(db, user):
+    from fastapi import HTTPException
+    import asyncio
+    from app.components.burnout import router, schemas
+    p = service.get_prefs(db, user)
+    assert p.share_with_scheduler is True and p.chat_enabled is False           # chat is opt-in
+    with pytest.raises(HTTPException):                                          # chat refuses until the student turns it on
+        asyncio.run(router.chat(schemas.ChatIn(message="hi"), db=db, user=user))
+
+    service.set_prefs(db, user, share=False, chat=None)
+    router.mood(schemas.MoodIn(mood=1), db=db, user=user)
+    assert db.query(SignalEvent).filter(SignalEvent.signal_type == "RISK").count() == 0   # nothing sent while sharing is off
+    service.set_prefs(db, user, share=True, chat=None)
+    router.mood(schemas.MoodIn(mood=1), db=db, user=user)
+    assert db.query(SignalEvent).filter(SignalEvent.signal_type == "RISK").count() == 1
+
+    router.journal(schemas.JournalIn(text="private thoughts"), db=db, user=user)
+    out = router.delete_my_data(db=db, user=user)["deleted"]
+    assert out["journal"] == 1 and out["mood"] >= 1 and out["sent_signals"] >= 1
+    assert router.journal_list(db=db, user=user) == []
+    assert db.query(SignalEvent).filter(SignalEvent.signal_type.in_(["RISK", "RECOVERY"])).count() == 0

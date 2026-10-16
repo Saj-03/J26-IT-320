@@ -54,6 +54,8 @@ def mood(data: schemas.MoodIn, db: Session = Depends(get_db), user=Depends(get_c
 
 @router.post("/chat")
 async def chat(data: schemas.ChatIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    if not service.get_prefs(db, user).chat_enabled:       # chat is opt-in
+        raise HTTPException(403, "Chat is turned off. You can turn it on in your wellbeing privacy settings.")
     crisis = prompts.is_crisis(data.message)
     db.add(ChatMessage(user_id=user.id, role="user", content=data.message, sentiment=sentiment(data.message)))
     db.commit()
@@ -71,7 +73,8 @@ async def chat(data: schemas.ChatIn, db: Session = Depends(get_db), user=Depends
             text = prompts.FALLBACK_REPLY
 
     db.add(ChatMessage(user_id=user.id, role="assistant", content=text)); db.commit()
-    return {"reply": text, "crisis_flag": crisis}
+    return {"reply": text, "crisis_flag": crisis, "helplines": prompts.HELPLINES if crisis else [],
+            "knows_your_week": bool(not crisis and data.context_grounded and service.build_context(db, user))}
 
 
 @router.post("/signal/compute", response_model=schemas.SignalOut)
@@ -92,3 +95,19 @@ def demo(scenario: Literal["bad", "normal"], db: Session = Depends(get_db), user
     if not settings.DEMO_MODE:
         raise HTTPException(404, "Demo mode is off")
     return service.to_out(service.seed_demo(db, user, scenario))
+
+
+@router.get("/preferences", response_model=schemas.PreferencesOut)
+def get_preferences(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    return service.get_prefs(db, user)
+
+
+@router.put("/preferences", response_model=schemas.PreferencesOut)
+def put_preferences(data: schemas.PreferencesIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    return service.set_prefs(db, user, data.share_with_scheduler, data.chat_enabled)
+
+
+@router.delete("/my-data")
+def delete_my_data(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Right to erase: removes this student's journal, chat, moods, signals and what was sent to other components."""
+    return {"deleted": service.delete_my_data(db, user)}

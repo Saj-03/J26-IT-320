@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.components.burnout.models import JournalEntry, ChatMessage, MoodTap, WellbeingSignal
+from app.components.burnout.models import JournalEntry, ChatMessage, MoodTap, WellbeingSignal, BurnoutPreference
 from app.components.burnout.ml.fusion import fuse
 from app.components.burnout.ml.deviation_detector import deviation_score, deviation_detail
 from app.components.burnout import tips
@@ -87,9 +87,44 @@ def to_recovery_signal(sig: WellbeingSignal, research_id: str) -> RecoverySignal
                           severity=severity, timestamp=datetime.now(timezone.utc))
 
 
+def get_prefs(db: Session, user) -> BurnoutPreference:
+    p = db.get(BurnoutPreference, user.id)
+    if p is None:
+        p = BurnoutPreference(user_id=user.id, share_with_scheduler=True, chat_enabled=False)
+        db.add(p); db.commit(); db.refresh(p)
+    return p
+
+
+def set_prefs(db: Session, user, share: bool | None, chat: bool | None) -> BurnoutPreference:
+    p = get_prefs(db, user)
+    if share is not None:
+        p.share_with_scheduler = share
+    if chat is not None:
+        p.chat_enabled = chat
+    p.updated_at = datetime.utcnow()
+    db.commit(); db.refresh(p)
+    return p
+
+
+def delete_my_data(db: Session, user) -> dict:
+    """Erase everything Component 4 holds about this student, including what it sent to other components.
+    The Scheduler's own behaviour data (DeviationSignal) belongs to Component 3 and is not touched here."""
+    n = {}
+    for name, model in (("journal", JournalEntry), ("chat", ChatMessage), ("mood", MoodTap), ("signals", WellbeingSignal)):
+        n[name] = db.query(model).filter(model.user_id == user.id).delete()
+    n["sent_signals"] = (db.query(SignalEvent)
+                           .filter(SignalEvent.student_id == user.research_id, SignalEvent.signal_type.in_(["RISK", "RECOVERY"]))
+                           .delete(synchronize_session=False))
+    db.commit()
+    return n
+
+
 def publish(db: Session, user) -> WellbeingSignal:
-    """Run fusion, then log RiskSignal (-> Scheduler) and RecoverySignal (-> Physical) in the audit log."""
+    """Run fusion, then log RiskSignal (-> Scheduler) and RecoverySignal (-> Physical) in the audit log.
+    If the student turned sharing off, the signal stays private: nothing is sent to other components."""
     sig = compute_signal(db, user)
+    if not get_prefs(db, user).share_with_scheduler:
+        return sig
     record(db, "RISK", to_risk_signal(sig, user.research_id), "ACCEPTED")
     record(db, "RECOVERY", to_recovery_signal(sig, user.research_id), "ACCEPTED")
     return sig

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRightIcon, SparklesIcon, NotebookPenIcon, MessageCircleHeartIcon, LightbulbIcon, CalendarCheckIcon } from 'lucide-react';
+import { ArrowRightIcon, SparklesIcon, NotebookPenIcon, MessageCircleHeartIcon, LightbulbIcon, CalendarCheckIcon, ShieldCheckIcon } from 'lucide-react';
 import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
@@ -88,7 +88,8 @@ export function Wellbeing() {
           <div className="grid sm:grid-cols-2 gap-4">
             {[
             { icon: NotebookPenIcon, title: 'Check in', desc: 'Tap your mood or write it out.', to: '/app/journal' },
-            { icon: MessageCircleHeartIcon, title: 'Talk it through', desc: 'Optional chat that knows your week.', to: '/app/wellbeing/chat' }
+            { icon: MessageCircleHeartIcon, title: 'Talk it through', desc: 'Optional chat that knows your week.', to: '/app/wellbeing/chat' },
+            { icon: ShieldCheckIcon, title: 'Privacy and your data', desc: 'See what is stored, opt out, or delete it.', to: '/app/wellbeing/privacy' }
         ].map((l) => <button key={l.to} onClick={() => navigate(l.to)} className="text-left bg-white rounded-3xl border border-black/[0.04] shadow-soft p-5 flex items-center gap-4 hover:shadow-card transition-shadow">
                 <span className="w-11 h-11 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0"><l.icon size={20}/></span>
                 <span className="flex-1 min-w-0">
