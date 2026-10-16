@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.core.dependencies import get_current_user
 from app.components.physical_wellbeing import schemas, service
-from app.components.physical_wellbeing.models import WellbeingProfile, ActivityLog, Habit
+from app.components.physical_wellbeing.models import WellbeingProfile, ActivityLog, Habit, WorkoutFeedback
 from app.components.physical_wellbeing.ml import recommender
 
 router = APIRouter()
@@ -74,13 +74,41 @@ def _profile_to_dict(p: WellbeingProfile) -> dict:
     }
 
 
+def _attach_behavior_history(db: Session, user_id: str, profile_dict: dict) -> dict:
+    """Use up to 14 days of explicit check-ins; don't infer skips from missing logs."""
+    since = datetime.date.today() - datetime.timedelta(days=13)
+    feedback = (db.query(WorkoutFeedback)
+                .filter(WorkoutFeedback.user_id == user_id, WorkoutFeedback.day >= since)
+                .order_by(WorkoutFeedback.day.desc()).all())
+    count = len(feedback)
+    completed = sum(1 for item in feedback if item.did_workout)
+    rate = completed / count if count else None
+    target = int(profile_dict.get("available_minutes", 20))
+    if count >= 3 and rate < 0.5:
+        target = max(10, round(target * 0.75))
+        reason = "shorter_sessions_after_recent_missed_workouts"
+    elif count >= 3 and rate >= 0.8:
+        target = min(target, 30)
+        reason = "maintaining_duration_after_consistent_workouts"
+    else:
+        reason = "building_history" if count < 3 else "maintaining_current_duration"
+    profile_dict["behavior_adaptation"] = {
+        "check_ins": count,
+        "completed": completed,
+        "completion_rate": round(rate, 2) if rate is not None else None,
+        "target_minutes": target,
+        "reason": reason,
+    }
+    return profile_dict
+
+
 @router.get("/recommendations")
 def recommendations(is_exam_period: bool = False, use_baseline: bool = False, db: Session = Depends(get_db), user=Depends(get_current_user)):
     p = db.query(WellbeingProfile).filter_by(user_id=user.id).first()
     if not p:
         raise HTTPException(404, "Create your wellbeing profile first")
     
-    profile_dict = _profile_to_dict(p)
+    profile_dict = _attach_behavior_history(db, user.id, _profile_to_dict(p))
 
     if use_baseline:
         res = recommender.get_baseline_recommendations(profile_dict)
@@ -111,7 +139,8 @@ def recommendations(is_exam_period: bool = False, use_baseline: bool = False, db
         "exercises": formatted_exercises,
         "meals": formatted_meals,
         "today_slots": res.get("today_slots"),
-        "safety_analysis": res.get("safety_analysis")
+        "safety_analysis": res.get("safety_analysis"),
+        "behavior_adaptation": profile_dict.get("behavior_adaptation")
     }
 
 
@@ -127,7 +156,7 @@ def get_week_plan(
     if not p:
         raise HTTPException(404, "Create your wellbeing profile first")
     
-    profile_dict = _profile_to_dict(p)
+    profile_dict = _attach_behavior_history(db, user.id, _profile_to_dict(p))
     return recommender.generate_week_plan(
         profile_dict,
         is_exam_period=is_exam_period,
@@ -136,11 +165,45 @@ def get_week_plan(
     )
 
 
+@router.post("/activity/workout-feedback")
+def save_workout_feedback(data: schemas.WorkoutFeedbackIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    feedback = db.query(WorkoutFeedback).filter_by(user_id=user.id, day=data.day).first()
+    if feedback:
+        # Idempotent daily check-in; allow correcting today's answer without double-counting minutes.
+        was_completed = feedback.did_workout
+        previous_minutes = feedback.workout_minutes
+        feedback.did_workout = data.did_workout
+        feedback.workout_minutes = data.workout_minutes if data.did_workout else 0
+        activity = db.query(ActivityLog).filter_by(user_id=user.id, day=data.day).first()
+        if activity and was_completed and not data.did_workout:
+            activity.exercise_minutes = max(0, activity.exercise_minutes - previous_minutes)
+            activity.completed_recommendation = False
+        elif activity and not was_completed and data.did_workout:
+            activity.exercise_minutes += data.workout_minutes
+            activity.completed_recommendation = True
+    else:
+        feedback = WorkoutFeedback(user_id=user.id, day=data.day, did_workout=data.did_workout,
+                                   workout_minutes=data.workout_minutes if data.did_workout else 0)
+        db.add(feedback)
+        if data.did_workout:
+            activity = db.query(ActivityLog).filter_by(user_id=user.id, day=data.day).first()
+            if activity:
+                activity.exercise_minutes += data.workout_minutes
+                activity.completed_recommendation = True
+            else:
+                db.add(ActivityLog(user_id=user.id, day=data.day, steps=0,
+                                   exercise_minutes=data.workout_minutes, completed_recommendation=True))
+    db.commit()
+    return {"ok": True, "day": data.day.isoformat(), "did_workout": data.did_workout}
+
+
 @router.get("/activity")
 def get_activity_summary(db: Session = Depends(get_db), user=Depends(get_current_user)):
     today = datetime.date.today()
     # Today's activity
     today_log = db.query(ActivityLog).filter_by(user_id=user.id, day=today).first()
+    today_feedback = db.query(WorkoutFeedback).filter_by(user_id=user.id, day=today).first()
+    today_feedback = db.query(WorkoutFeedback).filter_by(user_id=user.id, day=today).first()
     
     # Last 7 days history
     seven_days_ago = today - datetime.timedelta(days=6)
@@ -172,6 +235,8 @@ def get_activity_summary(db: Session = Depends(get_db), user=Depends(get_current
             "steps": today_log.steps if today_log else 0,
             "exercise_minutes": today_log.exercise_minutes if today_log else 0,
             "completed_recommendation": today_log.completed_recommendation if today_log else False,
+            "workout_feedback": today_feedback.did_workout if today_feedback else None,
+            "workout_feedback": today_feedback.did_workout if today_feedback else None,
             "has_logged_today": today_log is not None
         },
         "weekly_totals": {

@@ -31,6 +31,12 @@ class ActivityIn(BaseModel):
     completed_recommendation: bool = False
 
 
+class WorkoutFeedbackIn(BaseModel):
+    day: date
+    did_workout: bool
+    workout_minutes: int = Field(default=0, ge=0, le=240)
+
+
 class HabitIn(BaseModel):
     name: str
 

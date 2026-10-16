@@ -1042,6 +1042,8 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
     sleep_def = float(profile.get("sleep_deficit", max(0.0, 7.5 - float(profile.get("sleep_hours", 7.0)))))
     bmi = float(profile.get("bmi", 22.0))
     avail_mins = int(profile.get("available_minutes", 20))
+    behavior = profile.get("behavior_adaptation") or {}
+    behavior_target_mins = int(behavior.get("target_minutes", avail_mins))
     safety = analyze_limitations_and_safety(profile)
     equipment_list = profile.get("equipment", [])
     equip_str = " ".join(equipment_list).lower() if equipment_list else "home / bodyweight"
@@ -1190,10 +1192,10 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
         ex_copy["activity_match"] = activity_match
         scored_exercises.append(ex_copy)
 
-    # Sort strictly: closest to duration, then preferred activity match, then adherence
+    # Recent check-ins can gently shorten future sessions after repeated missed workouts.
     scored_exercises.sort(
         key=lambda x: (
-            abs(x["duration_mins"] - effective_avail_mins),
+            abs(x["duration_mins"] - min(effective_avail_mins, behavior_target_mins)),
             -x.get("activity_match", 0),
             -x["adherence_probability"]
         )
@@ -1275,6 +1277,7 @@ def get_adaptive_recommendations(profile: dict, is_exam_period: bool = False, k:
         "effective_available_minutes": effective_avail_mins,
         "stress_level": round(stress, 2),
         "workload_score": round(workload, 2),
+        "behavior_adaptation": profile.get("behavior_adaptation"),
         "safety_analysis": analyze_limitations_and_safety(profile),
         "recommended_workouts": exercises[:k],
         "recommended_meals": meals[:k],
@@ -1406,6 +1409,7 @@ def generate_week_plan(
         "context_aware": engine_info["context_aware"],
         "is_exam_period": is_exam_period,
         "effective_available_minutes": engine_info["effective_available_minutes"],
+        "behavior_adaptation": profile.get("behavior_adaptation"),
         "safety_analysis": safety,
         "user_preferences": {
             "goal": profile.get("goal", "fitness"),

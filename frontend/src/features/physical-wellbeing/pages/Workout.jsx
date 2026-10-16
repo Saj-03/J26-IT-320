@@ -100,6 +100,29 @@ export function PhysicalWorkout() {
                     <motion.div initial={{ scale: 0.6 }} animate={{ scale: 1 }} transition={{ type: 'spring', damping: 13 }} className="text-6xl">
                         🎉
                     </motion.div>
+                    {false && <motion.div
+                        initial={{ x: -220, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ type: 'spring', stiffness: 75, damping: 13, delay: 0.15 }}
+                        className="mx-auto mt-2 flex w-fit items-center gap-3 rounded-full border border-sky-100 bg-sky-50 px-4 py-2"
+                    >
+                        <motion.svg viewBox="0 0 48 58" className="h-14 w-12" animate={{ y: [0, -2, 0] }} transition={{ duration: 0.45, repeat: Infinity }} role="img" aria-label="Small Messi-inspired cartoon footballer walking in to celebrate">
+                            {/* Dark hair and a friendly bearded footballer face */}
+                            <path d="M10 17 Q7 3 23 3 Q40 3 38 20 L34 22 L13 22 Z" fill="#382820" />
+                            <ellipse cx="24" cy="16" rx="11" ry="12" fill="#d99a70" />
+                            <path d="M13 13 Q16 4 25 5 Q34 5 36 14 Q29 10 23 11 Q18 10 13 13" fill="#382820" />
+                            <circle cx="20" cy="16" r="1" fill="#2c211d" /><circle cx="28" cy="16" r="1" fill="#2c211d" />
+                            <path d="M20 20 Q24 22 28 20 M14 22 Q24 31 34 22" fill="none" stroke="#54372c" strokeWidth="2.4" strokeLinecap="round" />
+                            {/* Argentina-style sky-blue and white number 10 shirt */}
+                            <path d="M16 29 L10 33 L13 40 L17 38 L17 49 Q24 52 31 49 L31 38 L35 40 L38 33 L32 29 L28 27 L24 31 L20 27 Z" fill="#fff" stroke="#d8e8f5" strokeWidth="1" />
+                            <path d="M16 30 L18 49 L21 50 L21 30 Z M27 30 L27 50 L30 49 L32 30 Z" fill="#73b9e8" />
+                            <text x="24" y="42" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#26547a">10</text>
+                            {/* Legs and football boots */}
+                            <path d="M20 50 L19 55 M28 50 L29 55" stroke="#d99a70" strokeWidth="3" strokeLinecap="round" />
+                            <path d="M16 56 Q19 53 22 56 L22 58 L15 58 Z M27 56 Q30 53 33 56 L34 58 L27 58 Z" fill="#f0c64d" />
+                        </motion.svg>
+                        <span className="text-xs font-bold text-sky-900">Messi-style celebration! ⚽</span>
+                    </motion.div>}
                     <h1 className="text-2xl font-extrabold text-charcoal mt-3">Workout Completed!</h1>
                     <p className="text-sm text-charcoal-muted mt-1">{workoutTitle}</p>
 

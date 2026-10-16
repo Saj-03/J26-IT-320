@@ -14,7 +14,7 @@ import { SectionTitle, AdaptedChip } from '../components/Shared';
 import ProfileRecommendations from '../components/ProfileRecommendations';
 import { WellbeingHeroBanner } from '../components/WellbeingHeroBanner';
 import useStudent from '../../../shared/hooks/useStudent';
-import { getRecommendations, getProfile, getActivitySummary, getHabits } from '../api';
+import { getRecommendations, getProfile, getActivitySummary, getHabits, saveWorkoutFeedback } from '../api';
 
 export function PhysicalHome() {
   const navigate = useNavigate();
@@ -25,6 +25,8 @@ export function PhysicalHome() {
   const [activitySummary, setActivitySummary] = useState(null);
   const [habits, setHabits] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [feedbackSaving, setFeedbackSaving] = useState(false);
+  const [feedback, setFeedback] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -36,6 +38,7 @@ export function PhysicalHome() {
       setRecomData(rec);
       setProfile(prof);
       setActivitySummary(act);
+      setFeedback(act?.today?.workout_feedback ?? null);
       setHabits(Array.isArray(habs) ? habs : []);
       setLoading(false);
     });
@@ -80,6 +83,24 @@ export function PhysicalHome() {
 
   const isActiveToday = todaySteps > 0 || todayMins > 0;
 
+  const answerWorkout = async (didWorkout) => {
+    setFeedbackSaving(true);
+    try {
+      await saveWorkoutFeedback({
+        day: new Date().toLocaleDateString('en-CA'),
+        did_workout: didWorkout,
+        workout_minutes: didWorkout ? Number(topWorkout?.minutes || topWorkout?.duration_mins || 20) : 0
+      });
+      setFeedback(didWorkout);
+      const refreshed = await getActivitySummary().catch(() => null);
+      if (refreshed) setActivitySummary(refreshed);
+    } catch (error) {
+      console.error('Could not save workout check-in:', error);
+    } finally {
+      setFeedbackSaving(false);
+    }
+  };
+
   return (<div className="space-y-6">
     {/* ── Animated Wellbeing Hero Banner ── */}
     <WellbeingHeroBanner
@@ -100,6 +121,62 @@ export function PhysicalHome() {
     </div>
 
     <PhysicalNav />
+
+    {false && <Card padding="md" className="overflow-hidden">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="font-bold text-charcoal">Did you work out today?</p>
+          <p className="text-xs text-charcoal-muted mt-0.5">One quick check-in helps tune future workout lengths.</p>
+        </div>
+        <span className="text-3xl" aria-hidden="true">{feedback === true ? '😊' : feedback === false ? '😢' : '🙂'}</span>
+      </div>
+      <div className="relative mt-3 h-12 rounded-2xl bg-brand-50 overflow-hidden" aria-label="Workout check-in avatar">
+        <motion.div
+          className="absolute top-0.5"
+          initial={{ left: '-48px', opacity: 0 }}
+          animate={{ left: feedback === true ? 'calc(100% - 42px)' : feedback === false ? '8px' : 'calc(50% - 18px)', opacity: 1 }}
+          transition={{ left: { type: 'spring', stiffness: 85, damping: 15 }, opacity: { duration: 0.35 } }}
+          role="img"
+          aria-label={feedback === true ? 'Happy avatar walking to the right' : feedback === false ? 'Sad avatar walking to the left' : 'Avatar waiting for your answer'}
+        >
+          <motion.svg viewBox="0 0 48 52" className="h-11 w-10 drop-shadow-sm" animate={feedback === null ? { y: [0, -1, 0] } : { y: [0, -3, 0] }} transition={{ duration: feedback === null ? 1.2 : 0.32, repeat: Infinity }}>
+            {/* Friendly cartoon face and hair */}
+            <path d="M12 14 Q10 3 23 3 Q36 3 35 15 L32 19 L14 18 Z" fill="#49352d" />
+            <circle cx="24" cy="13" r="9" fill="#f2bd91" />
+            <path d="M15 11 Q16 4 24 4 Q32 4 33 11 Q28 7 22 8 Q18 8 15 11" fill="#49352d" />
+            <circle cx="21" cy="13" r="1" fill="#382a27" /><circle cx="27" cy="13" r="1" fill="#382a27" />
+            <circle cx="18" cy="16" r="1.2" fill="#e99587" opacity=".7" /><circle cx="30" cy="16" r="1.2" fill="#e99587" opacity=".7" />
+            {feedback === false ? <path d="M21 19 Q24 16 27 19" fill="none" stroke="#65443b" strokeWidth="1.4" strokeLinecap="round" /> : <path d="M20 17 Q24 21 28 17" fill="none" stroke="#65443b" strokeWidth="1.4" strokeLinecap="round" />}
+            {/* Shirt, sleeves, arms, trousers, and little shoes */}
+            <path d="M17 23 Q24 20 31 23 L34 35 Q24 39 14 35 Z" fill="#55a879" />
+            <path d="M17 24 L11 31 M31 24 L37 29" fill="none" stroke="#f2bd91" strokeWidth="4" strokeLinecap="round" />
+            <path d="M20 36 L18 45 M28 36 L30 45" fill="none" stroke="#42516b" strokeWidth="4.5" strokeLinecap="round" />
+            <path d="M17 46 L14 48 Q14 50 21 49 L22 47 M29 46 L28 48 Q29 50 36 49 L34 47" fill="#f3b84c" stroke="#cc8b2e" strokeWidth=".8" strokeLinejoin="round" />
+          </motion.svg>
+        </motion.div>
+        <span className="absolute left-2 bottom-1 text-[10px] text-charcoal-muted">Not today</span>
+        <span className="absolute right-2 bottom-1 text-[10px] text-charcoal-muted">Yes, I did</span>
+      </div>
+      {feedback === null ? (
+        <div className="mt-3 flex gap-2">
+          <Button size="sm" variant="outline" disabled={feedbackSaving} onClick={() => answerWorkout(false)} className="flex-1">Not today</Button>
+          <Button size="sm" disabled={feedbackSaving} onClick={() => answerWorkout(true)} className="flex-1">Yes, I did</Button>
+        </div>
+      ) : (
+        <p className="mt-2 text-xs font-medium text-charcoal-muted" aria-live="polite">
+          {feedback ? 'Nice work! Your plan will keep what is working for you.' : 'That’s okay. We’ll make future sessions more manageable.'} You can check in again tomorrow.
+        </p>
+      )}
+      {recomData?.behavior_adaptation && (
+        <p className="mt-1 text-[11px] text-charcoal-muted">
+          {recomData.behavior_adaptation.check_ins < 3
+            ? `${recomData.behavior_adaptation.check_ins}/3 check-ins collected before workout-length adjustments.`
+            : recomData.behavior_adaptation.reason === 'shorter_sessions_after_recent_missed_workouts'
+              ? 'Your recent check-ins are guiding the plan toward shorter sessions.'
+              : 'Recent check-ins are included when choosing your workout duration.'}
+        </p>
+      )}
+    </Card>}
 
     {/* Wellbeing score card */}
     <Card padding="lg" className="relative overflow-hidden">
