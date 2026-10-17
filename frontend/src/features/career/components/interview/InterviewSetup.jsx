@@ -1,10 +1,11 @@
-import { KeyboardIcon, MicIcon, VideoIcon, ShieldCheckIcon, PlayIcon, SparklesIcon, Volume2Icon } from "lucide-react";
+import { KeyboardIcon, MicIcon, VideoIcon, ShieldCheckIcon, PlayIcon, SparklesIcon, Volume2Icon, LanguagesIcon } from "lucide-react";
 import { SelectField } from "../../../../shared/components/ui/Field";
 import { cn } from "../../../../shared/lib/cn";
 import Card from "../CareerCard";
 import Button from "../CareerButton";
 import { ETHICS_NOTES } from "../../constants";
 import { ui } from "../../theme";
+import { t, useLanguage } from "../../i18n";
 import MicCheck from "./MicCheck";
 import SpeakerCheck from "./SpeakerCheck";
 
@@ -16,44 +17,67 @@ const MODES = [
 
 const PROVIDER_NAME = { gemini: "Google Gemini", openai: "OpenAI", claude: "Anthropic Claude" };
 
+const CONSENT = {
+  text: "I understand and agree for this practice session.",
+  voice: "I understand and agree to use my microphone for this practice session.",
+  camera: "I understand and agree to use my microphone and camera for this practice session.",
+};
+
 export default function InterviewSetup({ careers, settings, onChange, onStart, speechSupported, speechProblem, llm, busy, error, tts }) {
+  const lang = useLanguage();
   const set = (key, value) => onChange({ ...settings, [key]: value });
   const merge = (patch) => onChange({ ...settings, ...patch });
   const usesMedia = settings.mode !== "text";
 
   return (
     <div className="space-y-5">
+      {/* Answers are scored in English (keywords + English language model), so say so up front. */}
+      {lang !== "en" && (
+        <Card padding="md" className="flex items-start gap-3 bg-[#E3FFD6]/70">
+          <span className="w-10 h-10 rounded-2xl bg-[#C7F2D1] text-[#1F5F53] flex items-center justify-center shrink-0">
+            <LanguagesIcon size={20} />
+          </span>
+          <div>
+            <p className="font-bold text-charcoal">{t("Please answer in English")}</p>
+            <p className="text-sm text-charcoal-light">
+              {t("Questions and feedback are shown in your language, with the English question below. Job interviews in Sri Lanka are usually in English, and the answer scoring works in English, so please give your answers in English.")}
+            </p>
+          </div>
+        </Card>
+      )}
+
       <Card padding="lg" className="space-y-5">
         <div className="grid sm:grid-cols-2 gap-4">
-          <SelectField name="career" label="Career to practise for" value={settings.careerId}
+          <SelectField name="career" label={t("Career to practise for")} value={settings.careerId}
             onChange={(e) => set("careerId", e.target.value)}>
             {careers.map((c) => <option key={c.career_id} value={c.career_id}>{c.career_name}</option>)}
           </SelectField>
-          <SelectField name="variant" label="Question set" value={settings.variant}
+          <SelectField name="variant" label={t("Question set")} value={settings.variant}
             onChange={(e) => set("variant", Number(e.target.value))}>
-            {[0, 1, 2, 3].map((v) => <option key={v} value={v}>Practice set {v + 1}</option>)}
+            {[0, 1, 2, 3].map((v) => <option key={v} value={v}>{t("Practice set {n}", { n: v + 1 })}</option>)}
           </SelectField>
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-charcoal-light mb-2">Answer mode</p>
+          <p className="text-sm font-semibold text-charcoal-light mb-2">{t("Answer mode")}</p>
           <div className="grid sm:grid-cols-3 gap-3">
             {MODES.map(({ id, icon: Icon, title, desc, needsSpeech }) => {
               const disabled = needsSpeech && !speechSupported;
               return (
                 <button key={id} type="button" disabled={disabled} onClick={() => set("mode", id)}
+                  aria-pressed={settings.mode === id}
                   className={cn("text-left rounded-2xl border p-4 transition-colors disabled:opacity-50",
                     settings.mode === id ? ui.choiceOn : ui.choiceOff)}>
                   <Icon size={20} className="mb-2" />
-                  <p className="font-bold text-sm">{title}</p>
-                  <p className="text-xs mt-1 opacity-80">{desc}</p>
+                  <p className="font-bold text-sm">{t(title)}</p>
+                  <p className="text-xs mt-1 opacity-80">{t(desc)}</p>
                 </button>
               );
             })}
           </div>
           {!speechSupported && (
             <p className="text-xs font-semibold text-red-600 mt-2">
-              Voice modes are unavailable: {speechProblem} Typed answers still work.
+              {t("Voice modes are unavailable:")} {speechProblem} {t("Typed answers still work.")}
             </p>
           )}
         </div>
@@ -65,9 +89,10 @@ export default function InterviewSetup({ careers, settings, onChange, onStart, s
               disabled={!tts.supported} onChange={(e) => set("readAloud", e.target.checked)} />
             <span>
               <span className="font-semibold text-charcoal flex items-center gap-1">
-                <Volume2Icon size={14} /> Interviewer reads each question aloud
+                <Volume2Icon size={14} /> {t("Interviewer reads each question aloud")}
               </span>
-              Feels more like a real interview. Uses your browser&apos;s voice; nothing is sent to the server.
+              {t("Feels more like a real interview. Uses your browser's voice; nothing is sent to the server.")}
+              {lang !== "en" && <> {t("The question is read in English, like in a real interview.")}</>}
             </span>
           </label>
           {settings.readAloud && <SpeakerCheck tts={tts} voiceURI={settings.voiceURI} rate={settings.rate} onChange={merge} />}
@@ -77,13 +102,13 @@ export default function InterviewSetup({ careers, settings, onChange, onStart, s
 
       <Card padding="lg" className="bg-[#D0F2F7]/50 border-[#9EB2DB]">
         <h3 className="font-bold text-charcoal mb-2 flex items-center gap-2">
-          <ShieldCheckIcon size={18} className="text-[#1F5F53]" /> Privacy and consent
+          <ShieldCheckIcon size={18} className="text-[#1F5F53]" /> {t("Privacy and consent")}
         </h3>
         <ul className="space-y-1 text-sm text-charcoal-light list-disc pl-5">
-          {ETHICS_NOTES.map((n) => <li key={n}>{n}</li>)}
-          <li>Only your answer text, speaking time and (in camera mode) three face-detection numbers are sent to the server.</li>
-          {usesMedia && <li>Voice answers are converted to text by your browser&apos;s speech recognition (in Chrome this is processed by Google).</li>}
-          {settings.mode === "camera" && <li>Face detection runs inside your browser. The video never leaves your device.</li>}
+          {ETHICS_NOTES.map((n) => <li key={n}>{t(n)}</li>)}
+          <li>{t("Only your answer text, speaking time and (in camera mode) three face-detection numbers are sent to the server.")}</li>
+          {usesMedia && <li>{t("Voice answers are converted to text by your browser's speech recognition (in Chrome this is processed by Google).")}</li>}
+          {settings.mode === "camera" && <li>{t("Face detection runs inside your browser. The video never leaves your device.")}</li>}
         </ul>
         {/* Shown only when the server has an LLM provider configured */}
         {llm.enabled && (
@@ -92,23 +117,24 @@ export default function InterviewSetup({ careers, settings, onChange, onStart, s
               onChange={(e) => set("useLlm", e.target.checked)} />
             <span>
               <span className="font-semibold text-charcoal flex items-center gap-1">
-                <SparklesIcon size={14} /> AI coach feedback (optional)
+                <SparklesIcon size={14} /> {t("AI coach feedback (optional)")}
               </span>
-              Sends your answer text and scores to {PROVIDER_NAME[llm.provider] || llm.provider} to write more
-              detailed feedback. No name, audio or video is sent. Untick to keep your answers on this system only.
+              {t("Sends your answer text and scores to {provider} to write more detailed feedback. No name, audio or video is sent. Untick to keep your answers on this system only.", {
+                provider: PROVIDER_NAME[llm.provider] || llm.provider,
+              })}
             </span>
           </label>
         )}
         <label className="flex items-start gap-2 mt-4 text-sm font-semibold text-charcoal cursor-pointer">
           <input type="checkbox" className="mt-1 accent-[#5DBFA9]" checked={settings.consent}
             onChange={(e) => set("consent", e.target.checked)} />
-          I understand and agree{usesMedia ? " to use my microphone" : ""}{settings.mode === "camera" ? " and camera" : ""} for this practice session.
+          {t(CONSENT[settings.mode])}
         </label>
       </Card>
 
       {error && <p className="text-sm font-semibold text-red-600 bg-red-50 rounded-2xl px-4 py-3">{error}</p>}
       <Button size="lg" fullWidth disabled={!settings.consent || !settings.careerId || busy} onClick={onStart}>
-        <PlayIcon size={18} /> {busy ? "Loading questions…" : "Start interview (5 questions)"}
+        <PlayIcon size={18} /> {busy ? t("Loading questions…") : t("Start interview (5 questions)")}
       </Button>
     </div>
   );

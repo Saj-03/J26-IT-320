@@ -2,7 +2,10 @@
 // sessionStorage gives instant reads in this tab; every change is also saved to the database
 // (PUT /api/career/me/state), so the flow is still there after logging in again or on another device.
 import { useEffect, useState } from "react";
-import { clearSavedState, getSavedState, saveSavedState } from "../api/careerApi";
+import {
+  clearSavedState, generateRoadmap, getGapAnalysis, getSavedState, recommendCareers, saveSavedState,
+} from "../api/careerApi";
+import { getLanguage, setLanguage } from "../i18n";
 
 const KEY = "acrds.flow";
 const DRAFT_KEY = "acrds.surveyDraft"; // unfinished survey answers in this tab (never sent until submitted)
@@ -28,6 +31,10 @@ const withoutOwner = (flow) => {
   const { [OWNER]: _ignored, ...rest } = flow;
   return rest;
 };
+
+// Pages showing the flow re-read it when it changes (e.g. after a language switch).
+const listeners = new Set();
+const notify = () => listeners.forEach((fn) => fn());
 
 let saveTimer;
 const saveToServer = (flow) => {
@@ -68,7 +75,28 @@ export const careerSession = {
     const next = { ...read(), ...patch };
     write(next);
     saveToServer(next);
+    notify();
     return withoutOwner(next);
+  },
+  subscribe: (fn) => {
+    listeners.add(fn);
+    return () => listeners.delete(fn);
+  },
+  /** Re-fetch the saved results in `lang` (the backend writes all student-facing text).
+   *  Scores, rankings and gaps are identical in every language, so only the wording changes. */
+  relocalize: async (lang = getLanguage()) => {
+    const flow = withoutOwner(read());
+    if (!flow.profile || (flow.language || "en") === lang) return;
+    const patch = { language: lang };
+    const rec = await recommendCareers(flow.profile);
+    Object.assign(patch, { recommendations: rec.recommendations, persona: rec.persona });
+    const careerId = flow.gapAnalysis?.career_id || flow.selectedCareer?.career_id;
+    if (careerId) {
+      patch.selectedCareer = rec.recommendations.find((r) => r.career_id === careerId) || flow.selectedCareer;
+      if (flow.gapAnalysis) patch.gapAnalysis = await getGapAnalysis({ career_id: careerId, profile: flow.profile });
+      if (flow.roadmap) patch.roadmap = await generateRoadmap({ career_id: careerId, profile: flow.profile });
+    }
+    if (getLanguage() === lang) careerSession.update(patch); // ignore if the student switched again meanwhile
   },
   /** Load the student's saved flow. A cache from another account in this browser is replaced. */
   syncFromServer: async () => {
@@ -80,6 +108,8 @@ export const careerSession = {
       write({ ...saved, [OWNER]: userId });
     }
     if (fromAnotherAccount) surveyDraft.clear(); // never show one student's draft to another
+    // Saved results written in another language (e.g. chosen on another device): translate them.
+    careerSession.relocalize().catch(() => {});
     return withoutOwner(read());
   },
   clear: () => sessionStorage.removeItem(KEY),
@@ -92,10 +122,17 @@ export const careerSession = {
   },
 };
 
+/** Switch the career pages to another language and translate the saved results. */
+export async function changeLanguage(code) {
+  setLanguage(code);
+  await careerSession.relocalize(code);
+}
+
 /** Career flow for the current page; refreshes from the database once on mount. */
 export function useCareerFlow() {
   const [flow, setFlow] = useState(() => careerSession.get());
   const [ready, setReady] = useState(false);
+  useEffect(() => careerSession.subscribe(() => setFlow(careerSession.get())), []);
   useEffect(() => {
     let active = true;
     careerSession.syncFromServer()

@@ -3,6 +3,7 @@
 // (frames analysed, face-in-frame ratio, facing-camera ratio). No emotion or personality detection.
 // MediaPipe is loaded from a CDN at runtime, so it needs internet the first time.
 import { useCallback, useEffect, useRef, useState } from "react";
+import { t } from "../i18n";
 
 const VERSION = "0.10.14";
 const CDN = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${VERSION}`;
@@ -85,8 +86,8 @@ export default function useFaceMetrics(enabled) {
         if (cancelled) return;
         setStatus("error");
         setError(e?.name === "NotAllowedError"
-          ? "Camera permission was denied."
-          : "Camera or face detection could not start. Check the camera and internet connection.");
+          ? t("Camera permission was denied.")
+          : t("Camera or face detection could not start. Check the camera and internet connection."));
       }
     })();
 

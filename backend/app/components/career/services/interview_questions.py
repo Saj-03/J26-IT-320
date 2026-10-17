@@ -11,6 +11,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
+from app.components.career.services import i18n
+
 DATA_FILE = Path(__file__).resolve().parents[1] / "data" / "interview_questions.json"
 TECHNICAL_PER_SESSION = 3
 SESSION_SIZE = 5
@@ -45,13 +47,15 @@ def has_questions(career_id: str) -> bool:
     return career_id in _bank()["careers"]
 
 
-def public_view(question: dict) -> dict:
-    """What the student sees before answering (no model answer or keywords)."""
+def public_view(question: dict, lang: str = "en") -> dict:
+    """What the student sees before answering (no model answer or keywords).
+    Answers are given and scored in English, so the English question is always included."""
     return {"id": question["id"], "category": question["category"],
-            "question": question["question"], "tip": question["tip"]}
+            "question": i18n.question_field(question, "question", lang), "tip": i18n.question_field(question, "tip", lang),
+            "question_en": question["question"]}
 
 
-def select_questions(career_id: str, variant: int = 0) -> list[dict]:
+def select_questions(career_id: str, variant: int = 0, lang: str = "en") -> list[dict]:
     bank = _bank()
     intro = bank["general"]["introduction"]
     behavioural = bank["general"]["behavioural"]
@@ -68,4 +72,4 @@ def select_questions(career_id: str, variant: int = 0) -> list[dict]:
     spare = [q["id"] for q in behavioural + intro if q["id"] not in chosen_ids]
     while len(chosen_ids) < SESSION_SIZE and spare:
         chosen_ids.insert(-1, spare.pop(0))
-    return [public_view(get_question(qid)) for qid in chosen_ids]
+    return [public_view(get_question(qid), lang) for qid in chosen_ids]

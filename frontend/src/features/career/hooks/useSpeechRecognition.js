@@ -2,6 +2,7 @@
 // Only the resulting TEXT and the speaking time leave this hook - audio is never recorded or uploaded by IHUSD.
 // Supported in Chrome and Edge (in Chrome, Google processes the audio to produce the transcript, so it needs internet).
 import { useCallback, useEffect, useRef, useState } from "react";
+import { t } from "../i18n";
 
 const Recognition = typeof window !== "undefined" ? window.SpeechRecognition || window.webkitSpeechRecognition : null;
 // Brave exposes the API but its speech service does not work.
@@ -9,9 +10,9 @@ const isBrave = typeof navigator !== "undefined" && !!navigator.brave;
 
 /** Why voice input cannot work in this browser/page, or "" if it can. */
 export function voiceProblem() {
-  if (!Recognition || isBrave) return "Voice answers need Google Chrome or Microsoft Edge.";
+  if (!Recognition || isBrave) return t("Voice answers need Google Chrome or Microsoft Edge.");
   if (typeof window !== "undefined" && !window.isSecureContext) {
-    return "Voice answers only work on http://localhost:5173 (not an IP address like 192.168.x.x). Open the site via localhost.";
+    return t("Voice answers only work on http://localhost:5173 (not an IP address like 192.168.x.x). Open the site via localhost.");
   }
   return "";
 }
@@ -92,12 +93,12 @@ export default function useSpeechRecognition(lang = "en-US") {
     rec.onerror = (e) => {
       if (!isCurrent() || e.error === "aborted") return;
       if (e.error === "no-speech") {
-        setHint("No speech heard yet - speak a little louder or check your microphone.");
+        setHint(t("No speech heard yet - speak a little louder or check your microphone."));
         return; // not fatal: onend restarts listening
       }
       keepListening.current = false;
       pauseClock();
-      setError(ERROR_TEXT[e.error] || `Speech recognition stopped (${e.error}). Try again, or type your answer.`);
+      setError(ERROR_TEXT[e.error] ? t(ERROR_TEXT[e.error]) : t("Speech recognition stopped ({code}). Try again, or type your answer.", { code: e.error }));
     };
     // Chrome stops after a pause - restart automatically while the student is still answering.
     rec.onend = () => {
@@ -123,7 +124,7 @@ export default function useSpeechRecognition(lang = "en-US") {
     } catch {
       keepListening.current = false;
       recRef.current = null;
-      setError("Could not start the microphone. Close other tabs using it and try again.");
+      setError(t("Could not start the microphone. Close other tabs using it and try again."));
       return;
     }
     startedAt.current = Date.now();

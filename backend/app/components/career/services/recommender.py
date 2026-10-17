@@ -17,7 +17,8 @@ import math
 from difflib import SequenceMatcher
 
 from app.components.career.schemas import SKILL_KEYS
-from app.components.career.services.career_data import load_careers, skill_label
+from app.components.career.services import i18n
+from app.components.career.services.career_data import load_careers
 from app.components.career.services.career_features import CAREER_FAMILY, role_level, work_status_level
 from app.components.career.services.career_model import family_probabilities, load_bundle
 
@@ -33,8 +34,8 @@ WORK_BONUS = 3
 LEADERSHIP_BONUS = 3
 
 # "other" (non-computing careers) has no label: the family is too broad to describe usefully.
-FAMILY_LABEL = {"software": "software and infrastructure", "data": "data", "cybersecurity": "cybersecurity",
-                "business": "business and management", "design": "design"}
+# The labels themselves are in i18n.py ("family_<name>"), in English, Sinhala and Tamil.
+DESCRIBED_FAMILIES = {"software", "data", "cybersecurity", "business", "design"}
 
 
 def skill_vector(skills: dict) -> list[float]:
@@ -112,25 +113,25 @@ def _has_leadership_role(profile: dict) -> bool:
     return role_level(profile.get("highest_extracurricular_role")) >= 4
 
 
-def calculate_bonus(profile: dict, career: dict) -> tuple[int, list[str]]:
-    """Returns (bonus points, human-readable reasons)."""
+def calculate_bonus(profile: dict, career: dict, lang: str = "en") -> tuple[int, list[str]]:
+    """Returns (bonus points, human-readable reasons in the student's language)."""
     required = career["required_skills"]
     bonus, reasons = 0, []
 
     area = profile.get("career_area_interest", "")
     if _matches_area(area, career):
         bonus += AREA_BONUS
-        reasons.append(f"it matches your interest in {area}")
+        reasons.append(i18n.t(lang, "reason_area", area=i18n.value(area, lang)))
     if _matches_role(profile.get("preferred_career_role", ""), career):
         bonus += ROLE_BONUS
-        reasons.append("it matches your preferred career role")
+        reasons.append(i18n.t(lang, "reason_role"))
     # "Practical" careers need strong hands-on problem solving or digital skills.
     if _has_career_work(profile) and (required["problem_solving"] >= 4 or required["digital_literacy"] >= 4):
         bonus += WORK_BONUS
-        reasons.append("your career-related work gives you practical experience")
+        reasons.append(i18n.t(lang, "reason_work"))
     if _has_leadership_role(profile) and required["leadership"] >= 4:
         bonus += LEADERSHIP_BONUS
-        reasons.append("your extracurricular leadership role fits this career")
+        reasons.append(i18n.t(lang, "reason_leadership"))
     return bonus, reasons
 
 
@@ -144,16 +145,14 @@ def split_skills(student_skills: dict, required: dict) -> tuple[list[str], list[
     return matching, missing
 
 
-def _join(items: list[str]) -> str:
-    if len(items) <= 1:
-        return "".join(items)
-    return ", ".join(items[:-1]) + " and " + items[-1]
-
-
 def build_explanation(career: dict, student_skills: dict, missing: list[str],
-                      bonus_reasons: list[str], family_probability: float = None) -> str:
+                      bonus_reasons: list[str], family_probability: float = None, lang: str = "en") -> str:
     required = career["required_skills"]
-    name = career["career_name"]
+    name = i18n.career_field(career, "career_name", lang)
+
+    def skills(keys):
+        return i18n.join([i18n.skill(k, lang) for k in keys], lang)
+
     # Strengths = the career's most important skills where the student is
     # at or within one level of the requirement ("close to the requirement").
     close = [k for k in SKILL_KEYS if student_skills[k] >= required[k] - 1]
@@ -161,25 +160,24 @@ def build_explanation(career: dict, student_skills: dict, missing: list[str],
     to_improve = [k for k in missing if k not in top_strengths][:3]
 
     if top_strengths:
-        text = (f"{name} is recommended because your "
-                f"{_join([skill_label(k) for k in top_strengths])} skills are close to this career requirement.")
+        text = i18n.t(lang, "explain_strengths", name=name, skills=skills(top_strengths))
     else:
-        text = f"{name} is a possible direction based on the overall shape of your skill profile."
-    family = FAMILY_LABEL.get(CAREER_FAMILY[career["career_id"]])
-    if family and family_probability is not None and family_probability >= 0.35:
-        text += (f" Students with a background similar to yours often prefer {family} careers "
-                 f"(model estimate {family_probability:.0%}).")
+        text = i18n.t(lang, "explain_shape", name=name)
+    family = CAREER_FAMILY[career["career_id"]]
+    if family in DESCRIBED_FAMILIES and family_probability is not None and family_probability >= 0.35:
+        text += i18n.t(lang, "explain_family", family=i18n.t(lang, f"family_{family}"), pct=f"{family_probability:.0%}")
     if bonus_reasons:
-        text += f" It also ranks higher because {_join(bonus_reasons)}."
+        text += i18n.t(lang, "explain_bonus", reasons=i18n.join(bonus_reasons, lang))
     if to_improve:
-        text += f" You may need to improve {_join([skill_label(k) for k in to_improve])}."
+        text += i18n.t(lang, "explain_improve", skills=skills(to_improve))
     elif not missing:
-        text += " You already meet every core skill level for this career."
+        text += i18n.t(lang, "explain_all_met")
     return text
 
 
-def recommend_careers(profile: dict, top_k: int = 5) -> list[dict]:
-    """Score every career and return the top_k, best match first."""
+def recommend_careers(profile: dict, top_k: int = 5, lang: str = "en") -> list[dict]:
+    """Score every career and return the top_k, best match first.
+    `lang` only changes the text (names, descriptions, explanations), never the scores or the order."""
     student_skills = profile["skills"]
     student_vec = skill_vector(student_skills)
     family_proba = family_probabilities(profile)  # None when no trained model is available
@@ -194,12 +192,12 @@ def recommend_careers(profile: dict, top_k: int = 5) -> list[dict]:
         skill_match = adjusted_cosine_percentage(student_vec, skill_vector(required))
         p_family = family_proba.get(CAREER_FAMILY[career["career_id"]], 0.0) if family_proba else None
         base_score = skill_match if p_family is None else alpha * p_family * 100 + (1 - alpha) * skill_match
-        bonus, bonus_reasons = calculate_bonus(profile, career)
+        bonus, bonus_reasons = calculate_bonus(profile, career, lang)
         # Without a faculty (e.g. old API clients) every career is treated as in-faculty, as before.
         tier = faculty_tier(profile, career) if faculty else 1
         if faculty and tier == 1:
             bonus += FACULTY_BONUS
-            bonus_reasons.insert(0, f"it matches your {faculty} faculty field")
+            bonus_reasons.insert(0, i18n.t(lang, "reason_faculty", faculty=i18n.value(faculty, lang)))
         elif tier >= 3:
             bonus -= OUTSIDE_FACULTY_PENALTY
         match = max(0.0, min(base_score + bonus, 100.0))
@@ -207,13 +205,14 @@ def recommend_careers(profile: dict, top_k: int = 5) -> list[dict]:
 
         results.append({
             "career_id": career["career_id"],
-            "career_name": career["career_name"],
-            "career_area": career["career_area"],
-            "description": career["description"],
+            "career_name": i18n.career_field(career, "career_name", lang),
+            "career_area": i18n.career_field(career, "career_area", lang),
+            "description": i18n.career_field(career, "description", lang),
+            "_name_en": career["career_name"],  # English name keeps the tie-break order language-independent
             "match_percentage": round(match, 2),
             "skill_match_percentage": round(skill_match, 2),
             "model_probability": None if p_family is None else round(p_family * 100, 2),
-            "explanation": build_explanation(career, student_skills, missing, bonus_reasons, p_family),
+            "explanation": build_explanation(career, student_skills, missing, bonus_reasons, p_family, lang),
             "matching_skills": matching,
             "missing_skills": missing,
             "recommended_courses": career["recommended_courses"],
@@ -227,9 +226,9 @@ def recommend_careers(profile: dict, top_k: int = 5) -> list[dict]:
     # Faculty filter, then score. Order: in-faculty careers (and careers whose area/role the
     # student chose), then cross-disciplinary careers only if the list is short, then the rest.
     # Within each group: highest match first, alphabetical on ties (deterministic).
-    results.sort(key=lambda r: (min(r["_tier"], 2), r["_tier"] >= 4, -r["match_percentage"], r["career_name"]))
+    results.sort(key=lambda r: (min(r["_tier"], 2), r["_tier"] >= 4, -r["match_percentage"], r["_name_en"]))
     for r in results:
-        del r["_tier"]
+        del r["_tier"], r["_name_en"]
     top = results[:top_k]
 
     # The student's preferred role is always shown, so they can compare it with the alternatives.
@@ -237,5 +236,5 @@ def recommend_careers(profile: dict, top_k: int = 5) -> list[dict]:
     preferred = [r for r in results if _matches_role(role, by_id[r["career_id"]])]
     if preferred and not any(r in top for r in preferred):
         top[-1] = preferred[0]
-        top[-1]["explanation"] += " It is included because it is your preferred career role."
+        top[-1]["explanation"] += i18n.t(lang, "explain_preferred")
     return top

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRightIcon, WandSparklesIcon } from "lucide-react";
+import { ArrowRightIcon, WandSparklesIcon, LanguagesIcon } from "lucide-react";
 import { PageHeader } from "../../../shared/components/layout/PageHeader";
 import Card from "../components/CareerCard";
 import CareerPage from "../components/CareerPage";
@@ -12,16 +12,20 @@ import { recommendCareers } from "../api/careerApi";
 import { careerSession, surveyDraft, useCareerFlow } from "../utils/careerSession";
 import { DEMO_PROFILE, EMPTY_PROFILE, FACULTY_CAREER_OPTIONS, OPTIONS, SKILLS } from "../constants";
 import { ui } from "../theme";
+import { getLanguage, t, useLanguage } from "../i18n";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 const pretty = (name) => name.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 
 // Dropdown bound to one profile field. Options come from constants.OPTIONS unless passed in.
+// The option VALUE stays in English (the trained model was fitted on the English survey answers);
+// only the visible text is translated.
 function Select({ name, label, form, set, options = OPTIONS[name], placeholder = "Select…", disabled = false }) {
   return (
-    <SelectField name={name} label={label || pretty(name)} value={form[name]}
+    <SelectField name={name} label={t(label || pretty(name))} value={form[name]}
       onChange={(e) => set(name, e.target.value)} required disabled={disabled}>
-      <option value="" disabled>{placeholder}</option>
-      {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      <option value="" disabled>{t(placeholder)}</option>
+      {options.map((o) => <option key={o} value={o}>{t(o)}</option>)}
     </SelectField>
   );
 }
@@ -30,10 +34,10 @@ function Select({ name, label, form, set, options = OPTIONS[name], placeholder =
 function Rating({ label, value, onChange }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-      <span className="text-sm font-semibold text-charcoal-light">{label}</span>
+      <span className="text-sm font-semibold text-charcoal-light">{t(label)}</span>
       <div className="flex gap-1.5">
         {[1, 2, 3, 4, 5].map((n) => (
-          <button key={n} type="button" onClick={() => onChange(n)} aria-label={`${label} ${n}`} aria-pressed={n === value}
+          <button key={n} type="button" onClick={() => onChange(n)} aria-label={`${t(label)} ${n}`} aria-pressed={n === value}
             className={cn("w-9 h-9 rounded-xl text-sm font-bold transition-colors",
               n === value ? ui.choiceOn : ui.choiceOff, "border")}>
             {n}
@@ -50,10 +54,10 @@ function Chips({ label, options, selected, onToggle, max }) {
   return (
     <div className="sm:col-span-2">
       <p className="text-sm font-semibold text-charcoal-light mb-2">
-        {label}
+        {t(label)}
         {max != null && (
           <span className={cn("ml-2 text-xs font-bold", full ? "text-[#1F5F53]" : "text-charcoal-muted")}>
-            {selected.length} of {max} selected
+            {t("{n} of {max} selected", { n: selected.length, max })}
           </span>
         )}
       </p>
@@ -62,10 +66,10 @@ function Chips({ label, options, selected, onToggle, max }) {
           const on = selected.includes(item);
           return (
             <button key={item} type="button" onClick={() => onToggle(item)} aria-pressed={on}
-              disabled={full && !on} title={full && !on ? `You can choose up to ${max}` : undefined}
+              disabled={full && !on} title={full && !on ? t("You can choose up to {max}", { max }) : undefined}
               className={cn("rounded-full px-3.5 py-1.5 text-sm font-semibold border transition-colors",
                 "disabled:opacity-40 disabled:cursor-not-allowed", on ? ui.choiceOn : ui.choiceOff)}>
-              {item}
+              {t(item)}
             </button>
           );
         })}
@@ -84,8 +88,8 @@ function SectionTitle({ number, title, subtitle }) {
         {number}
       </span>
       <div>
-        <h3 className="font-bold text-charcoal leading-tight">{title}</h3>
-        {subtitle && <p className="text-xs text-charcoal-muted">{subtitle}</p>}
+        <h3 className="font-bold text-charcoal leading-tight">{t(title)}</h3>
+        {subtitle && <p className="text-xs text-charcoal-muted">{t(subtitle)}</p>}
       </div>
     </div>
   );
@@ -104,6 +108,7 @@ function Section({ number, title, children }) {
 const REQUIRED_FIELDS = ["academic_status", "employment_status", "faculty_field", "degree_programme", "academic_performance_trend", "career_area_interest", "preferred_career_role", "previous_career_preference", "preferred_learning_method", "skill_learning_consistency", "extracurricular_participation", "career_related_work_status"];
 
 export default function CareerSurveyForm() {
+  useLanguage(); // re-render when the language changes
   const navigate = useNavigate();
   // An unfinished draft wins over the last submitted profile, so a refresh never loses answers.
   const [form, setForm] = useState(() => surveyDraft.get() || careerSession.get().profile || EMPTY_PROFILE);
@@ -146,7 +151,8 @@ export default function CareerSurveyForm() {
       const result = await recommendCareers({ ...profile, student_id: form.student_id || null });
       // A new profile invalidates any earlier gap analysis / roadmap.
       careerSession.update({ profile, recommendations: result.recommendations, persona: result.persona,
-                             selectedCareer: null, gapAnalysis: null, roadmap: null });
+                             selectedCareer: null, gapAnalysis: null, roadmap: null, roadmapProgress: null,
+                             language: getLanguage() });
       surveyDraft.clear();
       navigate("/app/career/recommendations");
     } catch (err) {
@@ -159,14 +165,32 @@ export default function CareerSurveyForm() {
   return (
     <CareerPage className="max-w-3xl mx-auto" step="profile">
       <PageHeader
-        title="Career Profile Survey"
-        subtitle="Your answers are used only to recommend careers and build your development roadmap."
+        title={t("Career Profile Survey")}
+        subtitle={t("Your answers are used only to recommend careers and build your development roadmap.")}
         action={
           <Button variant="outline" onClick={toggleDemo}>
-            <WandSparklesIcon size={16} /> {demoFilled ? "Clear demo profile" : "Fill demo profile"}
+            <WandSparklesIcon size={16} /> {demoFilled ? t("Clear demo profile") : t("Fill demo profile")}
           </Button>
         }
       />
+
+      {/* Language first: every following page (results, roadmap, interview) uses the chosen language. */}
+      <Card padding="lg" className="space-y-3 border-2 border-[#9ADBCC]">
+        <div className="flex items-center gap-3">
+          <span className="w-10 h-10 rounded-2xl bg-[#C7F2D1] text-[#1F5F53] flex items-center justify-center shrink-0">
+            <LanguagesIcon size={20} />
+          </span>
+          <div>
+            <h2 className="font-extrabold text-charcoal">
+              Choose your language <span className="text-charcoal-muted font-bold">· භාෂාව තෝරන්න · மொழியைத் தேர்ந்தெடுக்கவும்</span>
+            </h2>
+            <p className="text-xs text-charcoal-muted">
+              {t("Your results, roadmap and interview feedback will be shown in this language. You can change it any time at the top of each page.")}
+            </p>
+          </div>
+        </div>
+        <LanguageSwitcher large />
+      </Card>
 
       {/* Completion bar */}
       <div className="rounded-2xl bg-white/70 border border-[#9ADBCC]/50 px-4 py-3 flex items-center gap-3">
@@ -175,9 +199,9 @@ export default function CareerSurveyForm() {
             style={{ width: `${(answered / REQUIRED_FIELDS.length) * 100}%` }} />
         </div>
         <span className="text-xs font-bold text-[#1F5F53] whitespace-nowrap">
-          {answered} of {REQUIRED_FIELDS.length} answered
+          {t("{n} of {total} answered", { n: answered, total: REQUIRED_FIELDS.length })}
         </span>
-        <span className="hidden sm:inline text-[11px] text-charcoal-muted whitespace-nowrap">· answers kept if you refresh</span>
+        <span className="hidden sm:inline text-[11px] text-charcoal-muted whitespace-nowrap">· {t("answers kept if you refresh")}</span>
       </div>
 
       <form className="space-y-5" onSubmit={submit}>
@@ -185,14 +209,14 @@ export default function CareerSurveyForm() {
           <Select name="academic_status" form={form} set={set} />
           <Select name="employment_status" form={form} set={set} />
           <Select name="faculty_field" label="Faculty / field" form={form} set={setFaculty} />
-          <Field name="degree_programme" label="Degree programme" value={form.degree_programme}
-            onChange={(e) => set("degree_programme", e.target.value)} placeholder="Information Technology" required />
+          <Field name="degree_programme" label={t("Degree programme")} value={form.degree_programme}
+            onChange={(e) => set("degree_programme", e.target.value)} placeholder={t("e.g. Information Technology")} required />
           <Select name="academic_performance_trend" label="Academic performance trend" form={form} set={set} />
         </Section>
 
         <Section number={2} title="Career details">
           <p className="sm:col-span-2 text-xs text-charcoal-muted -mb-2">
-            Career options are filtered based on your selected faculty field.
+            {t("Career options are filtered based on your selected faculty field.")}
           </p>
           <Select name="career_area_interest" label="Career area of interest" form={form} set={set}
             options={facultyOptions?.careerAreas || []} disabled={!facultyOptions}
@@ -244,7 +268,7 @@ export default function CareerSurveyForm() {
 
         {error && <p className="text-sm font-semibold text-red-600 bg-red-50 rounded-2xl px-4 py-3">{error}</p>}
         <Button type="submit" size="lg" fullWidth disabled={busy}>
-          {busy ? "Finding your best careers…" : "Get my career recommendations"} <ArrowRightIcon size={18} />
+          {busy ? t("Finding your best careers…") : t("Get my career recommendations")} <ArrowRightIcon size={18} />
         </Button>
       </form>
     </CareerPage>

@@ -6,6 +6,7 @@ gap <= 0 is Strong, 1 is Needs Improvement, 2+ is a Critical Gap.
 Readiness is the average of min(current / required, 1) across skills."
 """
 from app.components.career.schemas import SKILL_KEYS
+from app.components.career.services import i18n
 
 STRONG = "Strong"
 NEEDS_IMPROVEMENT = "Needs Improvement"
@@ -25,7 +26,8 @@ def readiness_percentage(student_skills: dict, required: dict) -> float:
     return round(sum(ratios) / len(ratios) * 100, 2)
 
 
-def analyse_gaps(profile: dict, career: dict) -> dict:
+def analyse_gaps(profile: dict, career: dict, lang: str = "en") -> dict:
+    """`status` stays an English code (Strong / Needs Improvement / Critical Gap); the UI translates it."""
     student_skills = profile["skills"]
     required = career["required_skills"]
 
@@ -42,7 +44,7 @@ def analyse_gaps(profile: dict, career: dict) -> dict:
 
     return {
         "career_id": career["career_id"],
-        "career_name": career["career_name"],
+        "career_name": i18n.career_field(career, "career_name", lang),
         "readiness_percentage": readiness_percentage(student_skills, required),
         "skill_gaps": skill_gaps,
     }

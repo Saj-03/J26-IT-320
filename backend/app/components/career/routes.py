@@ -6,7 +6,7 @@ services/, so it can be unit-tested without the web layer."
 These endpoints are stateless: the profile is sent in the request body,
 so they can be demonstrated directly from Swagger (/docs).
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_user
@@ -30,6 +30,7 @@ from app.components.career.schemas import (
     StudentCareerProfile,
     to_dict,
 )
+from app.components.career.services import i18n
 from app.components.career.services.career_data import get_career, load_careers
 from app.components.career.services.career_model import model_applies, model_info
 from app.components.career.services.gap_analysis import analyse_gaps
@@ -39,9 +40,13 @@ from app.components.career.services.llm_feedback import generate_llm_feedback, l
 from app.components.career.services.persona import assign_persona, load_persona_model
 from app.components.career.services.recommender import recommend_careers
 from app.components.career.services import saved_state
-from app.components.career.services.roadmap import generate_roadmap
+from app.components.career.services.roadmap import career_milestones, generate_roadmap
 
 router = APIRouter()
+
+# Optional ?language=en|si|ta on every endpoint. It changes only the text the student reads
+# (names, explanations, feedback), never a score, ranking or gap - those are computed in English.
+Language = Query("en", pattern="^(en|si|ta)$", description="Text language: en (English), si (Sinhala), ta (Tamil)")
 
 
 def _career_or_404(career_id: str) -> dict:
@@ -59,8 +64,10 @@ def health():
 
 
 @router.get("/careers")
-def list_careers():
-    return list(load_careers())
+def list_careers(language: str = Language):
+    """All careers; with ?language=si|ta the name, area and description are translated."""
+    return [{**c, **{f: i18n.career_field(c, f, language) for f in ("career_name", "career_area", "description")}}
+            for c in load_careers()]
 
 
 @router.get("/careers/{career_id}")
@@ -69,7 +76,7 @@ def career_detail(career_id: str):
 
 
 @router.post("/recommend-careers", response_model=RecommendationResponse)
-def recommend(profile: StudentCareerProfile):
+def recommend(profile: StudentCareerProfile, language: str = Language):
     info = model_info()
     data = to_dict(profile)
     if not info["loaded"]:
@@ -79,59 +86,63 @@ def recommend(profile: StudentCareerProfile):
     else:
         method = f"hybrid: {info['alpha']} x {info['model']} family model + {round(1 - info['alpha'], 1)} x cosine"
     return {"student_id": profile.student_id, "scoring_method": method,
-            "persona": assign_persona(data["skills"]), "recommendations": recommend_careers(data)}
+            "persona": assign_persona(data["skills"], language),
+            "recommendations": recommend_careers(data, lang=language)}
 
 
 @router.post("/gap-analysis", response_model=GapAnalysisResponse)
-def gap_analysis(body: CareerSelectionRequest):
-    return analyse_gaps(to_dict(body.profile), _career_or_404(body.career_id))
+def gap_analysis(body: CareerSelectionRequest, language: str = Language):
+    return analyse_gaps(to_dict(body.profile), _career_or_404(body.career_id), language)
 
 
 @router.post("/roadmap", response_model=RoadmapResponse)
-def roadmap(body: CareerSelectionRequest):
-    gaps = analyse_gaps(to_dict(body.profile), _career_or_404(body.career_id))
-    items = generate_roadmap(gaps)
-    message = (f"{len(items)} skill(s) to develop for {gaps['career_name']}." if items
-               else f"You already meet every core skill level for {gaps['career_name']}.")
+def roadmap(body: CareerSelectionRequest, language: str = Language):
+    career = _career_or_404(body.career_id)
+    gaps = analyse_gaps(to_dict(body.profile), career, language)
+    items = generate_roadmap(gaps, language)
+    message = (i18n.t(language, "roadmap_message", n=len(items), career=gaps["career_name"]) if items
+               else i18n.t(language, "roadmap_message_done", career=gaps["career_name"]))
     return {"career_id": gaps["career_id"], "career_name": gaps["career_name"],
-            "readiness_percentage": gaps["readiness_percentage"], "roadmap": items, "message": message}
+            "readiness_percentage": gaps["readiness_percentage"], "roadmap": items, "message": message,
+            "milestones": career_milestones(career, language)}
 
 
 # ---------------------------------------------------------------------------
 # AI Interview Simulator
 # ---------------------------------------------------------------------------
-PRIVACY_NOTES = [
-    "Interview practice feedback is advisory.",
-    "Raw audio/video will not be stored.",
-    "Facial presence refers only to observable presentation cues, not personality or emotion detection.",
-]
+def privacy_notes(lang: str = "en") -> list[str]:
+    return [i18n.t(lang, f"privacy_{n}") for n in (1, 2, 3)]
+
+
+PRIVACY_NOTES = privacy_notes()  # English (kept for existing imports)
 
 
 @router.get("/interview/questions/{career_id}", response_model=InterviewQuestionSet)
-def interview_questions(career_id: str, variant: int = 0):
+def interview_questions(career_id: str, variant: int = 0, language: str = Language):
     career = _career_or_404(career_id)
-    return {"career_id": career_id, "career_name": career["career_name"], "variant": variant,
-            "questions": select_questions(career_id, variant), "privacy_notes": PRIVACY_NOTES}
+    return {"career_id": career_id, "career_name": i18n.career_field(career, "career_name", language),
+            "variant": variant, "questions": select_questions(career_id, variant, language),
+            "privacy_notes": privacy_notes(language)}
 
 
 @router.post("/interview/evaluate", response_model=InterviewFeedback)
-def interview_evaluate(body: InterviewAnswerRequest):
+def interview_evaluate(body: InterviewAnswerRequest, language: str = Language):
     _career_or_404(body.career_id)
     question = get_question(body.question_id)
     if not question:
         raise HTTPException(404, f"Unknown question_id '{body.question_id}'")
     result = evaluate_answer(question, body.answer_text, body.mode, body.speaking_seconds,
-                             body.face_presence_ratio, body.facing_camera_ratio, body.frames_analyzed)
+                             body.face_presence_ratio, body.facing_camera_ratio, body.frames_analyzed, language)
     # Scoring is finished. The LLM (if configured and allowed) only adds richer written feedback;
     # on any failure it returns None and the rule-based feedback above is used as-is.
-    llm = generate_llm_feedback(question, body.answer_text, result) if body.use_llm else None
+    llm = generate_llm_feedback(question, body.answer_text, result, lang=language) if body.use_llm else None
     result["llm_feedback"] = llm
     result["feedback_source"] = f"rule-based + LLM ({llm['provider']})" if llm else "rule-based"
     return result
 
 
 @router.post("/interview/coach-feedback", response_model=CoachFeedbackResponse)
-def interview_coach_feedback(body: InterviewAnswerRequest):
+def interview_coach_feedback(body: InterviewAnswerRequest, language: str = Language):
     """AI coach feedback on its own endpoint, so the UI can show the scores first
     (LLMs can take 10-40 s) and add the coach feedback when it arrives."""
     _career_or_404(body.career_id)
@@ -141,14 +152,15 @@ def interview_coach_feedback(body: InterviewAnswerRequest):
     if not body.use_llm:
         return {"llm_feedback": None}
     result = evaluate_answer(question, body.answer_text, body.mode, body.speaking_seconds,
-                             body.face_presence_ratio, body.facing_camera_ratio, body.frames_analyzed)
-    return {"llm_feedback": generate_llm_feedback(question, body.answer_text, result)}
+                             body.face_presence_ratio, body.facing_camera_ratio, body.frames_analyzed, language)
+    return {"llm_feedback": generate_llm_feedback(question, body.answer_text, result, lang=language)}
 
 
 @router.post("/interview/report", response_model=InterviewReport)
-def interview_report(body: InterviewReportRequest):
+def interview_report(body: InterviewReportRequest, language: str = Language):
     career = _career_or_404(body.career_id)
-    return build_report(career["career_name"], [to_dict(r) for r in body.results])
+    return build_report(i18n.career_field(career, "career_name", language), [to_dict(r) for r in body.results],
+                        language)
 
 
 # ---------------------------------------------------------------------------

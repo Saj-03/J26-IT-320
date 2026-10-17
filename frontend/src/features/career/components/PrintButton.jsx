@@ -1,5 +1,6 @@
 import { DownloadIcon } from "lucide-react";
 import Button from "./CareerButton";
+import { t } from "../i18n";
 
 // Print rules for the career pages only: just the element marked `acrds-print` is printed,
 // so the app sidebar/header (shared layout) is left out without changing shared code.
@@ -23,14 +24,14 @@ function ensurePrintStyles() {
 }
 
 // Opens the browser print dialog; students choose "Save as PDF" to download the page.
-export default function PrintButton({ label = "Download PDF", ...props }) {
+export default function PrintButton({ label, ...props }) {
   const onClick = () => {
     ensurePrintStyles();
     window.print();
   };
   return (
     <Button variant="outline" onClick={onClick} {...props}>
-      <DownloadIcon size={16} /> {label}
+      <DownloadIcon size={16} /> {label || t("Download PDF")}
     </Button>
   );
 }

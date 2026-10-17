@@ -16,7 +16,9 @@ import re
 from functools import lru_cache
 from typing import Optional
 
-ADVISORY_NOTE = "Interview practice feedback is advisory."
+from app.components.career.services import i18n
+
+ADVISORY_NOTE = "Interview practice feedback is advisory."  # English; see i18n "advisory" for other languages
 
 # Overall score weights (re-normalised when a component is not available).
 WEIGHTS = {"content": 0.6, "delivery": 0.25, "presentation": 0.15}
@@ -181,7 +183,7 @@ def count_fillers(answer: str) -> tuple[int, list[str]]:
     return sum(found.values()), sorted(found, key=lambda f: -found[f])
 
 
-def score_delivery(answer: str, speaking_seconds: float) -> dict:
+def score_delivery(answer: str, speaking_seconds: float, lang: str = "en") -> dict:
     words = len(tokenize(answer))
     wpm = words / (speaking_seconds / 60)
     low, high = IDEAL_WPM
@@ -196,12 +198,8 @@ def score_delivery(answer: str, speaking_seconds: float) -> dict:
     filler_rate = fillers / max(words, 1) * 100  # fillers per 100 words
     filler_score = max(40.0, 100 - filler_rate * 8)
 
-    if wpm < low:
-        pace_feedback = f"Your pace was {wpm:.0f} words/min. Try speaking a little faster (aim for {low}-{high})."
-    elif wpm > high:
-        pace_feedback = f"Your pace was {wpm:.0f} words/min. Slow down slightly for clarity (aim for {low}-{high})."
-    else:
-        pace_feedback = f"Good speaking pace ({wpm:.0f} words/min)."
+    pace_key = "pace_slow" if wpm < low else "pace_fast" if wpm > high else "pace_good"
+    pace_feedback = i18n.t(lang, pace_key, wpm=f"{wpm:.0f}", low=low, high=high)
 
     return {
         "score": round(0.6 * pace + 0.4 * filler_score, 1),
@@ -213,18 +211,18 @@ def score_delivery(answer: str, speaking_seconds: float) -> dict:
     }
 
 
-def score_presentation(face_presence: float, facing_camera: float, frames: int) -> dict:
+def score_presentation(face_presence: float, facing_camera: float, frames: int, lang: str = "en") -> dict:
     tips = []
     if face_presence < 0.8:
-        tips.append("Stay centred in the camera frame throughout your answer.")
+        tips.append(i18n.t(lang, "cam_centre"))
     if facing_camera < 0.6:
-        tips.append("Look toward the camera more often, as you would look at an interviewer.")
+        tips.append(i18n.t(lang, "cam_look"))
     return {
         "score": round(100 * (0.5 * face_presence + 0.5 * facing_camera), 1),
         "face_presence_ratio": round(face_presence, 3),
         "facing_camera_ratio": round(facing_camera, 3),
         "frames_analyzed": frames,
-        "feedback": tips or ["Good camera presence: you stayed in frame and faced the camera."],
+        "feedback": tips or [i18n.t(lang, "cam_good")],
     }
 
 
@@ -242,48 +240,50 @@ def evaluate_answer(question: dict, answer: str, mode: str = "text",
                     speaking_seconds: Optional[float] = None,
                     face_presence_ratio: Optional[float] = None,
                     facing_camera_ratio: Optional[float] = None,
-                    frames_analyzed: Optional[int] = None) -> dict:
+                    frames_analyzed: Optional[int] = None, lang: str = "en") -> dict:
+    """Scores are always computed on the English answer; `lang` only changes the feedback text."""
     content = score_content(question, answer)
 
     delivery = None
     if mode == "voice" and speaking_seconds and speaking_seconds >= 5 and content["word_count"] > 0:
-        delivery = score_delivery(answer, speaking_seconds)
+        delivery = score_delivery(answer, speaking_seconds, lang)
 
     presentation = None
     if (frames_analyzed or 0) >= 10 and face_presence_ratio is not None and facing_camera_ratio is not None:
-        presentation = score_presentation(face_presence_ratio, facing_camera_ratio, frames_analyzed)
+        presentation = score_presentation(face_presence_ratio, facing_camera_ratio, frames_analyzed, lang)
 
     strengths, improvements = [], []
     if content["semantic_similarity"] >= 70:
-        strengths.append("Your answer is relevant and close to what interviewers expect.")
+        strengths.append(i18n.t(lang, "fb_relevant"))
     elif content["semantic_similarity"] < 40:
-        improvements.append("Answer the question more directly - focus on what was actually asked.")
+        improvements.append(i18n.t(lang, "fb_direct"))
     if content["matched_keywords"]:
-        strengths.append(f"You covered key concepts: {', '.join(content['matched_keywords'][:4])}.")
+        strengths.append(i18n.t(lang, "fb_covered", items=", ".join(content["matched_keywords"][:4])))
     if content["missing_keywords"]:
-        improvements.append(f"Also mention: {', '.join(content['missing_keywords'][:3])}.")
+        improvements.append(i18n.t(lang, "fb_mention", items=", ".join(content["missing_keywords"][:3])))
     if content["word_count"] < 40:
-        improvements.append("Your answer is short. Aim for about 60-200 words (1-2 minutes).")
+        improvements.append(i18n.t(lang, "fb_short"))
     elif content["word_count"] > 250:
-        improvements.append("Keep your answer focused - try to finish within about 2 minutes.")
+        improvements.append(i18n.t(lang, "fb_long"))
     if content["structure"]:
-        missing_parts = [p.title() for p in ("situation", "task", "action", "result") if not content["structure"][p]]
+        missing_parts = [i18n.t(lang, f"star_{p}") for p in ("situation", "task", "action", "result")
+                         if not content["structure"][p]]
         if missing_parts:
-            improvements.append(f"Use the STAR method - add the {', '.join(missing_parts)} part(s).")
+            improvements.append(i18n.t(lang, "fb_star_missing", parts=", ".join(missing_parts)))
         else:
-            strengths.append("Clear STAR structure (Situation, Task, Action, Result).")
+            strengths.append(i18n.t(lang, "fb_star_good"))
     if delivery:
         good_pace = IDEAL_WPM[0] <= delivery["words_per_minute"] <= IDEAL_WPM[1]
         (strengths if good_pace else improvements).append(delivery["pace_feedback"])
         if delivery["filler_count"] >= 3:
-            improvements.append(f"Reduce filler words ({', '.join(delivery['filler_words'][:3])}). Pause briefly instead.")
+            improvements.append(i18n.t(lang, "fb_fillers", items=", ".join(delivery["filler_words"][:3])))
     if presentation:
         target = strengths if presentation["score"] >= 75 else improvements
         target.extend(presentation["feedback"])
 
     return {
         "question_id": question["id"],
-        "question": question["question"],
+        "question": i18n.question_field(question, "question", lang),
         "category": question["category"],
         "mode": mode,
         "overall_score": combine({"content": content["score"],
@@ -294,8 +294,8 @@ def evaluate_answer(question: dict, answer: str, mode: str = "text",
         "presentation": presentation,
         "strengths": strengths,
         "improvements": improvements,
-        "sample_answer": question["model_answer"],
-        "disclaimer": ADVISORY_NOTE,
+        "sample_answer": question["model_answer"],  # English: answers are given in English
+        "disclaimer": i18n.t(lang, "advisory"),
     }
 
 
@@ -304,15 +304,15 @@ def _avg(values: list) -> Optional[float]:
     return round(sum(values) / len(values), 1) if values else None
 
 
-def readiness_band(score: float) -> str:
+def readiness_band(score: float, lang: str = "en") -> str:
     if score >= 75:
-        return "Interview-ready"
+        return i18n.t(lang, "band_ready")
     if score >= 55:
-        return "Almost ready - keep practising"
-    return "Needs more practice"
+        return i18n.t(lang, "band_almost")
+    return i18n.t(lang, "band_more")
 
 
-def build_report(career_name: str, results: list[dict]) -> dict:
+def build_report(career_name: str, results: list[dict], lang: str = "en") -> dict:
     """Summarise a practice session (list of evaluate_answer results)."""
     dims = {
         "content": _avg([r["content_score"] for r in results]),
@@ -335,11 +335,11 @@ def build_report(career_name: str, results: list[dict]) -> dict:
         "career_name": career_name,
         "questions_answered": len(results),
         "overall_score": overall,
-        "readiness_band": readiness_band(overall),
+        "readiness_band": readiness_band(overall, lang),
         "dimension_scores": dims,
         "category_scores": by_category,
         "strongest_area": max(scored, key=scored.get),
         "weakest_area": min(scored, key=scored.get),
         "focus_tips": focus,
-        "disclaimer": ADVISORY_NOTE,
+        "disclaimer": i18n.t(lang, "advisory"),
     }

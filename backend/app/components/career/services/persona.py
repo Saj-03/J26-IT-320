@@ -9,6 +9,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
+from app.components.career.services import i18n
+
 MODEL_FILE = Path(__file__).resolve().parents[4] / "ml_models" / "career_persona_model.joblib"
 
 
@@ -23,7 +25,7 @@ def load_persona_model() -> Optional[dict]:
         return None
 
 
-def assign_persona(skills: dict) -> Optional[dict]:
+def assign_persona(skills: dict, lang: str = "en") -> Optional[dict]:
     bundle = load_persona_model()
     if not bundle:
         return None
@@ -31,7 +33,6 @@ def assign_persona(skills: dict) -> Optional[dict]:
         row = [[float(skills[k]) for k in bundle["skill_keys"]]]
         cluster = int(bundle["kmeans"].predict(bundle["scaler"].transform(row))[0])
         persona = bundle["personas"][bundle["persona_of_cluster"][cluster]]
-        return {"name": persona["name"], "description": persona["description"], "advice": persona["advice"],
-                "average_skill_level": round(sum(row[0]) / len(row[0]), 2)}
+        return {**i18n.persona_text(persona, lang), "average_skill_level": round(sum(row[0]) / len(row[0]), 2)}
     except Exception:
         return None  # never let the persona model break recommendations

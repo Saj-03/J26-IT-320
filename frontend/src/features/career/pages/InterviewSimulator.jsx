@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowRightIcon, RotateCcwIcon, FlagIcon } from "lucide-react";
 import { PageHeader } from "../../../shared/components/layout/PageHeader";
 import { apiErrorMessage } from "../../../shared/api/client";
@@ -15,20 +15,28 @@ import useFaceMetrics from "../hooks/useFaceMetrics";
 import useSpeechSynthesis from "../hooks/useSpeechSynthesis";
 import { evaluateInterviewAnswer, getCareers, getCoachFeedback, getInterviewQuestions, getInterviewReport, health,
   saveInterviewReport } from "../api/careerApi";
-import { careerSession } from "../utils/careerSession";
+import { careerSession, useCareerFlow } from "../utils/careerSession";
+import { t, useLanguage } from "../i18n";
 
 const QUESTION_SETS = 4;
+const DEFAULT_CAREER = "software_engineer";
+
+// Career to practise for: the one passed from the roadmap, else the student's selected career,
+// else their top recommendation.
+const flowCareer = (flow) => flow.selectedCareer?.career_id || flow.recommendations?.[0]?.career_id;
 
 // Stages: setup -> interview (question, then feedback, x5) -> report
 export default function InterviewSimulator() {
+  const lang = useLanguage();
   const navigate = useNavigate();
+  const passedCareer = useLocation().state?.careerId;
+  const { flow } = useCareerFlow(); // also loads the saved flow after a refresh or on a new device
   const speech = useSpeechRecognition();
   const tts = useSpeechSynthesis();
   const [careers, setCareers] = useState([]);
   const [settings, setSettings] = useState(() => {
-    const flow = careerSession.get();
     return {
-      careerId: flow.selectedCareer?.career_id || flow.recommendations?.[0]?.career_id || "software_engineer",
+      careerId: passedCareer || flowCareer(careerSession.get()) || DEFAULT_CAREER,
       mode: "text",
       variant: 0,
       consent: false,
@@ -49,20 +57,35 @@ export default function InterviewSimulator() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
+  // When the saved flow arrives later (fresh tab), use its career unless the student already picked one.
+  const pickedCareer = useRef(!!passedCareer);
+  const savedCareer = flowCareer(flow);
+  useEffect(() => {
+    if (!pickedCareer.current && savedCareer && stage === "setup") {
+      setSettings((s) => ({ ...s, careerId: savedCareer }));
+    }
+  }, [savedCareer]);
+  const changeSettings = (next) => {
+    if (next.careerId !== settings.careerId) pickedCareer.current = true;
+    setSettings(next);
+  };
+
   const voice = settings.mode !== "text";
   const camera = useFaceMetrics(stage === "interview" && settings.mode === "camera");
 
   useEffect(() => {
     getCareers().then(setCareers).catch((err) => setError(apiErrorMessage(err)));
     health().then((h) => setLlm(h.llm_feedback || { enabled: false })).catch(() => {});
-  }, []);
+  }, [lang]); // career names come back in the chosen language
 
   const question = session?.questions[index];
   const feedback = results[index];
   const isLast = session && index === session.questions.length - 1;
 
   const readAloud = settings.readAloud && tts.supported;
-  const readQuestion = () => question && tts.speak(question.question, { voiceURI: settings.voiceURI, rate: settings.rate });
+  // The interviewer always asks in English (answers are given and scored in English).
+  const readQuestion = () => question
+    && tts.speak(question.question_en || question.question, { voiceURI: settings.voiceURI, rate: settings.rate });
   // The interviewer asks each new question; stop talking when the interview stage ends.
   useEffect(() => {
     if (stage === "interview" && readAloud && question) readQuestion();
@@ -177,17 +200,17 @@ export default function InterviewSimulator() {
   return (
     <CareerPage step="interview">
       <PageHeader
-        title="AI Interview Simulator"
+        title={t("AI Interview Simulator")}
         subtitle={session && stage !== "setup"
-          ? `${session.career_name} · practice set ${settings.variant + 1}`
-          : "Practise real interview questions and get feedback on content, voice delivery and camera presence."}
+          ? `${session.career_name} · ${t("Practice set {n}", { n: settings.variant + 1 })}`
+          : t("Practise real interview questions and get feedback on content, voice delivery and camera presence.")}
         action={stage === "interview" && results.some(Boolean) && !isLast ? (
-          <Button variant="outline" onClick={finish} disabled={busy}><FlagIcon size={16} /> End and see report</Button>
+          <Button variant="outline" onClick={finish} disabled={busy}><FlagIcon size={16} /> {t("End and see report")}</Button>
         ) : null}
       />
 
       {stage === "setup" && (
-        <InterviewSetup careers={careers} settings={settings} onChange={setSettings} onStart={() => start()}
+        <InterviewSetup careers={careers} settings={settings} onChange={changeSettings} onStart={() => start()}
           speechSupported={speech.supported} speechProblem={speech.problem} llm={llm} busy={busy} error={error}
           tts={tts} />
       )}
@@ -206,9 +229,9 @@ export default function InterviewSimulator() {
                 <FeedbackCard feedback={feedback} coachLoading={!!coachLoading[index]} />
                 <div className="flex flex-wrap gap-3">
                   <Button onClick={next} disabled={busy}>
-                    {isLast ? "Finish and see report" : "Next question"} <ArrowRightIcon size={16} />
+                    {isLast ? t("Finish and see report") : t("Next question")} <ArrowRightIcon size={16} />
                   </Button>
-                  <Button variant="outline" onClick={retry} disabled={busy}><RotateCcwIcon size={16} /> Try this question again</Button>
+                  <Button variant="outline" onClick={retry} disabled={busy}><RotateCcwIcon size={16} /> {t("Try this question again")}</Button>
                 </div>
               </>
             )}

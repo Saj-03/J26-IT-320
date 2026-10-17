@@ -148,12 +148,21 @@ class RoadmapItem(BaseModel):
     reason: str
 
 
+class RoadmapMilestone(BaseModel):
+    id: str  # courses | tools | projects | cert | interview
+    title: str
+    description: str
+    timeframe: str
+    items: list[str] = []
+
+
 class RoadmapResponse(BaseModel):
     career_id: str
     career_name: str
     readiness_percentage: float
     roadmap: list[RoadmapItem]
     message: str
+    milestones: list[RoadmapMilestone] = []  # career-specific steps (courses, tools, projects, ...)
 
 
 # ---------------------------------------------------------------------------
@@ -164,6 +173,7 @@ class InterviewQuestionOut(BaseModel):
     category: str  # Introduction | Technical | Behavioural
     question: str
     tip: str
+    question_en: Optional[str] = None  # English original (answers are given and scored in English)
 
 
 class InterviewQuestionSet(BaseModel):

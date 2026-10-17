@@ -1,4 +1,5 @@
 // Shared constants for the ACRDS career feature.
+import { t } from "./i18n";
 
 // Same order as the backend SKILL_KEYS.
 export const SKILLS = [
@@ -14,7 +15,7 @@ export const SKILLS = [
 ];
 
 const LABELS = Object.fromEntries(SKILLS.map((s) => [s.key, s.label]));
-export const skillLabel = (key) => LABELS[key] || key.replace(/_/g, " ");
+export const skillLabel = (key) => t(LABELS[key] || key.replace(/_/g, " ")); // in the current language
 
 // Answer options match the real ACRDS survey, because the trained model
 // was fitted on those exact answers (see backend career_features.py).
@@ -159,3 +160,20 @@ export const ETHICS_NOTES = [
   "Raw audio/video will not be stored.",
   "Facial presence refers only to observable presentation cues, not personality or emotion detection.",
 ];
+
+// Plain-language explanations shown in the (i) help tips, so every number on screen is understandable.
+const GLOSSARY_EN = {
+  match: "How well this career fits you, from 0 to 100. It combines a model trained on 140 students' survey answers with how closely your 9 skill ratings match the career's required levels, plus your interests and experience.",
+  readiness: "How close your skills are to what the career needs. Each skill counts up to 100% once you reach its required level; readiness is the average of the 9 skills.",
+  persona: "Your overall skill stage (Developing, Progressing or Advanced), found by grouping 149 students with similar self-ratings. It is a guide, not a grade.",
+  gap: "Gap = required level minus your level. 0 or less = Strong, 1 level = Needs Improvement, 2 or more = Critical Gap.",
+  priority: "High priority = a Critical Gap (2+ levels). Medium = 1 level. Start with the High priority items.",
+  interviewScore: "60% answer content, 25% voice delivery (pace, filler words) and 15% camera presence. Parts you do not use are left out and the rest are re-weighted.",
+};
+
+// GLOSSARY.match etc. return the explanation in the current language.
+export const GLOSSARY = new Proxy(GLOSSARY_EN, { get: (target, key) => t(target[key]) });
+
+// Words next to a match %, so students do not have to interpret the number alone.
+export const matchLabel = (pct) =>
+  t(pct >= 70 ? "Strong match" : pct >= 50 ? "Good match" : pct >= 35 ? "Possible match" : "Stretch option");
