@@ -8,3 +8,8 @@ dist/
 backend/ml_models/*.pkl
 backend/ml_models/*.joblib
 .DS_Store
+
+# Private docs (proposals, survey data with student answers, chat notes) - keep local only
+docs/*.pdf
+docs/*.xlsx
+docs/C3_CHAT_HISTORY.md

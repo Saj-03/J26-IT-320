@@ -1,0 +1,501 @@
+student_id,productive_time,peak_hour,low_hour,capacity_minutes,base_success,heavy_penalty,fatigue_per_session,estimation_bias,before_deadline,pss10,pss_level,stress_sensitivity,stress_weeks,study_hours_per_week,tasks_per_week,task_choice,has_job,job_hours_per_week,noise
+sim0000,Evening,19,10,22.2,0.737,0.216,0.025,0.866,3,14.3,moderate,0.968,0;6,9.6,1,Task I like most,False,0.0,0.113
+sim0001,Evening,20,13,37.2,0.602,0.107,0.03,1.163,2,18.8,moderate,0.787,4,4.2,6,Most important task,True,15.8,0.073
+sim0002,Morning,11,19,18.0,0.631,0.284,0.057,1.258,3,17.3,moderate,1.0,1;2,6.0,5,Most important task,False,0.0,0.064
+sim0003,Late Night,0,12,20.2,0.686,0.067,0.043,1.027,4,21.2,moderate,0.821,2;5,2.6,3,Closest deadline,False,0.0,0.116
+sim0004,Morning,9,22,29.0,0.675,0.14,0.07,1.242,3,17.3,moderate,0.462,5;7,7.5,4,Closest deadline,False,0.0,0.059
+sim0005,Late Night,23,11,24.4,0.565,0.307,0.081,1.172,2,26.5,high,1.0,3;4;5,12.8,3,Hardest task,True,33.1,0.093
+sim0006,Morning,7,19,27.8,0.639,0.338,0.059,1.192,3,21.5,moderate,0.834,1;5,2.5,8,Task I like most,True,39.6,0.058
+sim0007,Morning,9,21,16.7,0.561,0.252,0.042,0.901,2,21.7,moderate,0.458,6,9.1,7,Most important task,True,12.1,0.123
+sim0008,Evening,18,7,35.1,0.551,0.063,0.055,1.073,2,17.0,moderate,0.418,6,9.8,4,Shortest task,True,18.4,0.139
+sim0009,Evening,19,14,28.2,0.624,0.104,0.068,1.508,2,21.5,moderate,0.861,0;6,9.7,5,Easiest task,True,45.0,0.07
+sim0010,Late Night,0,17,41.3,0.61,0.272,0.03,1.21,2,22.0,moderate,0.509,5,7.5,2,Closest deadline,True,23.7,0.143
+sim0011,Morning,9,0,57.9,0.797,0.33,0.084,1.32,4,19.7,moderate,0.228,4,2.3,4,Closest deadline,True,45.0,0.128
+sim0012,Late Night,23,8,20.4,0.657,0.295,0.028,0.841,3,19.7,moderate,0.697,2,4.0,6,Closest deadline,True,8.0,0.109
+sim0013,Late Night,22,9,42.8,0.758,0.168,0.045,1.214,4,22.5,moderate,0.487,0;3,5.9,3,Most important task,False,0.0,0.138
+sim0014,Evening,19,7,35.2,0.95,0.344,0.084,1.369,5,27.8,high,0.424,2;7,9.2,4,Task I like most,True,44.4,0.114
+sim0015,Evening,20,13,40.6,0.778,0.148,0.05,1.347,4,8.4,low,0.518,,5.7,3,Hardest task,True,4.0,0.08
+sim0016,Afternoon,14,22,30.7,0.829,0.234,0.028,1.154,4,28.6,high,0.833,3;6;7,11.8,1,Hardest task,False,0.0,0.058
+sim0017,Afternoon,15,8,37.1,0.584,0.19,0.062,1.555,2,23.4,moderate,0.899,2,2.3,1,Hardest task,False,0.0,0.13
+sim0018,Morning,7,15,28.4,0.64,0.094,0.095,0.978,2,27.3,high,0.835,1;5;6,14.1,4,Closest deadline,True,26.7,0.088
+sim0019,Evening,17,11,31.2,0.62,0.186,0.086,1.407,2,20.5,moderate,0.336,3;6,13.5,4,Closest deadline,False,0.0,0.096
+sim0020,Morning,9,14,39.1,0.624,0.319,0.022,1.003,2,9.6,low,0.953,,11.4,9,Closest deadline,False,0.0,0.064
+sim0021,Evening,19,14,27.2,0.636,0.282,0.076,1.192,2,19.9,moderate,0.301,7,9.2,5,Task I like most,False,0.0,0.054
+sim0022,Late Night,21,8,35.4,0.838,0.315,0.077,1.095,4,16.5,moderate,0.352,1,8.5,11,Closest deadline,True,12.1,0.059
+sim0023,Late Night,23,11,33.9,0.791,0.192,0.03,1.05,4,22.0,moderate,0.632,2;3,13.6,7,Closest deadline,True,27.0,0.078
+sim0024,Late Night,23,12,26.0,0.769,0.244,0.072,1.132,4,16.5,moderate,0.293,2;7,3.4,3,Closest deadline,False,0.0,0.129
+sim0025,Morning,9,16,37.2,0.82,0.072,0.087,1.199,3,27.1,high,1.0,4;5,12.3,2,Closest deadline,False,0.0,0.078
+sim0026,Late Night,22,8,34.9,0.678,0.143,0.075,1.027,4,11.1,low,1.0,1,2.4,4,Hardest task,False,0.0,0.089
+sim0027,Morning,11,19,25.7,0.867,0.074,0.08,1.105,5,17.2,moderate,1.0,7,15.0,4,Closest deadline,False,0.0,0.097
+sim0028,Late Night,22,8,28.4,0.633,0.067,0.049,0.98,2,23.4,moderate,0.865,0;3,9.2,2,Most important task,False,0.0,0.084
+sim0029,Evening,19,9,30.5,0.792,0.103,0.047,1.145,3,19.0,moderate,0.647,3,3.6,4,Closest deadline,True,34.7,0.052
+sim0030,Afternoon,15,20,27.1,0.778,0.31,0.029,0.99,5,21.7,moderate,0.769,6;7,4.3,7,Hardest task,False,0.0,0.094
+sim0031,Morning,10,0,35.9,0.549,0.288,0.027,1.287,2,29.0,high,0.958,0;2;6,5.0,5,Most important task,False,0.0,0.13
+sim0032,Afternoon,14,23,25.7,0.766,0.051,0.061,1.084,5,15.6,moderate,0.608,0;5,14.2,5,Hardest task,False,0.0,0.053
+sim0033,Morning,8,21,38.3,0.638,0.35,0.044,0.808,3,28.0,high,0.959,3;4;6,11.8,3,Closest deadline,True,4.6,0.064
+sim0034,Morning,7,0,45.9,0.603,0.176,0.097,1.189,3,18.6,moderate,0.733,2,6.0,3,Hardest task,False,0.0,0.104
+sim0035,Late Night,22,10,34.3,0.769,0.218,0.083,1.075,5,18.0,moderate,1.0,4;5,6.6,3,Task I like most,False,0.0,0.094
+sim0036,Morning,11,0,13.3,0.668,0.07,0.056,1.08,3,24.1,moderate,0.454,7,3.3,5,Most important task,True,16.3,0.081
+sim0037,Late Night,0,18,19.6,0.822,0.15,0.055,0.933,4,16.2,moderate,0.478,1,5.6,7,Task I like most,True,25.7,0.134
+sim0038,Late Night,21,10,31.7,0.775,0.106,0.023,0.871,5,27.3,high,0.577,0;3,11.6,3,Closest deadline,False,0.0,0.112
+sim0039,Late Night,21,7,56.0,0.677,0.158,0.085,1.096,4,24.8,moderate,0.802,6;7,9.6,5,Closest deadline,False,0.0,0.13
+sim0040,Morning,8,15,30.1,0.807,0.093,0.075,1.188,4,22.0,moderate,0.508,1;5,14.0,3,Closest deadline,False,0.0,0.101
+sim0041,Afternoon,16,9,35.9,0.94,0.249,0.087,1.144,5,20.5,moderate,0.254,3,2.8,4,Closest deadline,False,0.0,0.11
+sim0042,Late Night,0,18,32.8,0.808,0.172,0.028,0.85,5,22.1,moderate,0.879,2;3,17.7,5,Easiest task,False,0.0,0.09
+sim0043,Morning,7,18,34.5,0.586,0.221,0.028,1.538,2,15.0,moderate,0.564,5,7.6,2,Easiest task,False,0.0,0.137
+sim0044,Evening,19,7,25.3,0.942,0.109,0.05,0.951,5,29.4,high,0.675,3;4;5,3.7,3,Closest deadline,False,0.0,0.063
+sim0045,Late Night,23,10,21.1,0.803,0.338,0.072,0.932,4,13.7,moderate,1.0,2;7,7.6,3,Most important task,True,33.7,0.061
+sim0046,Late Night,21,9,24.7,0.689,0.1,0.04,1.2,3,24.9,moderate,0.133,0;3,7.8,5,Closest deadline,False,0.0,0.135
+sim0047,Morning,11,20,23.1,0.773,0.174,0.056,1.06,5,20.9,moderate,1.0,4;7,11.4,3,Closest deadline,False,0.0,0.121
+sim0048,Evening,19,14,34.7,0.796,0.18,0.031,1.325,4,11.6,low,0.413,,13.1,5,Closest deadline,False,0.0,0.145
+sim0049,Morning,11,0,33.7,0.879,0.347,0.085,0.841,5,20.0,moderate,0.587,7,8.0,5,Hardest task,False,0.0,0.097
+sim0050,Late Night,22,16,27.4,0.734,0.069,0.057,1.326,4,18.2,moderate,0.75,4;6,17.8,1,Closest deadline,True,6.7,0.065
+sim0051,Morning,9,18,37.4,0.56,0.185,0.091,1.061,2,25.6,moderate,0.608,3,17.4,3,Hardest task,False,0.0,0.149
+sim0052,Morning,10,22,30.0,0.924,0.078,0.073,1.309,5,26.6,high,0.535,0;4;5,3.9,5,Most important task,True,39.6,0.116
+sim0053,Late Night,0,11,14.3,0.825,0.336,0.069,0.78,5,15.5,moderate,0.755,1;6,8.4,8,Closest deadline,False,0.0,0.113
+sim0054,Late Night,21,14,31.1,0.745,0.15,0.04,1.162,4,18.0,moderate,1.0,2;3,12.3,5,Easiest task,False,0.0,0.142
+sim0055,Evening,20,15,23.9,0.68,0.052,0.047,1.179,3,31.9,high,0.897,2;3;4,3.2,4,Task I like most,False,0.0,0.134
+sim0056,Late Night,0,16,30.7,0.839,0.315,0.073,0.787,5,16.2,moderate,0.632,2;4,16.3,5,Closest deadline,False,0.0,0.133
+sim0057,Late Night,21,11,36.0,0.77,0.156,0.083,1.217,4,21.3,moderate,0.123,0,14.9,3,Task I like most,True,39.0,0.132
+sim0058,Morning,9,18,23.1,0.676,0.282,0.023,0.976,3,19.3,moderate,0.508,7,7.7,3,Most important task,True,29.2,0.132
+sim0059,Late Night,21,8,24.8,0.645,0.275,0.03,1.115,3,17.2,moderate,0.484,4;5,13.0,2,Closest deadline,True,4.0,0.068
+sim0060,Late Night,22,7,27.4,0.818,0.27,0.065,1.125,4,17.8,moderate,0.511,1;7,11.8,5,Most important task,False,0.0,0.133
+sim0061,Evening,18,7,22.7,0.793,0.07,0.02,0.751,5,19.9,moderate,0.492,6,3.2,3,Closest deadline,True,43.2,0.139
+sim0062,Morning,9,22,25.3,0.767,0.103,0.031,1.349,3,19.2,moderate,0.693,3,8.4,4,Task I like most,True,7.4,0.082
+sim0063,Late Night,21,7,47.1,0.785,0.208,0.1,1.234,4,18.2,moderate,0.179,0;6,8.1,3,Closest deadline,False,0.0,0.09
+sim0064,Late Night,0,13,21.1,0.798,0.158,0.053,0.995,4,15.2,moderate,0.759,3;5,6.6,4,Closest deadline,True,45.0,0.113
+sim0065,Afternoon,16,0,31.0,0.692,0.114,0.065,1.249,4,27.5,high,0.78,2;3,6.9,3,Hardest task,False,0.0,0.076
+sim0066,Evening,17,0,14.0,0.8,0.199,0.057,1.36,4,27.2,high,0.537,4;5;7,3.7,3,Closest deadline,False,0.0,0.129
+sim0067,Late Night,0,18,30.6,0.811,0.162,0.028,1.108,4,18.4,moderate,0.787,4,19.9,8,Task I like most,False,0.0,0.098
+sim0068,Morning,7,20,17.8,0.832,0.257,0.033,0.712,4,18.8,moderate,0.58,1;6,9.4,3,Most important task,False,0.0,0.088
+sim0069,Morning,7,12,77.5,0.785,0.24,0.054,0.851,4,19.9,moderate,0.312,0,17.6,1,Closest deadline,True,40.0,0.054
+sim0070,Morning,11,19,25.1,0.626,0.22,0.052,1.111,2,24.7,moderate,0.225,2;7,5.3,2,Closest deadline,True,23.0,0.056
+sim0071,Afternoon,13,18,33.2,0.869,0.342,0.076,0.844,5,26.7,high,1.0,0;4;7,16.5,1,Most important task,False,0.0,0.096
+sim0072,Late Night,23,10,37.0,0.832,0.205,0.095,0.918,4,22.0,moderate,0.433,6,5.8,4,No clear method,False,0.0,0.074
+sim0073,Late Night,22,8,42.5,0.821,0.334,0.05,1.11,5,21.6,moderate,0.749,1;4,4.6,6,Task I like most,True,45.0,0.104
+sim0074,Late Night,22,13,29.1,0.644,0.181,0.1,1.313,3,24.8,moderate,0.825,5,5.5,5,Most important task,False,0.0,0.098
+sim0075,Morning,11,16,50.1,0.842,0.241,0.088,1.057,4,21.8,moderate,0.402,7,2.2,2,Most important task,False,0.0,0.085
+sim0076,Morning,10,22,13.6,0.567,0.318,0.042,1.329,2,25.1,moderate,0.621,3;7,11.5,3,Closest deadline,False,0.0,0.146
+sim0077,Late Night,22,9,20.6,0.878,0.071,0.058,1.017,5,22.0,moderate,0.669,2;6,6.4,4,Task I like most,False,0.0,0.125
+sim0078,Evening,17,8,41.0,0.659,0.161,0.039,1.415,3,22.0,moderate,0.8,5,12.3,3,Hardest task,True,38.2,0.143
+sim0079,Morning,10,21,42.3,0.627,0.301,0.029,0.768,3,19.3,moderate,0.208,3,5.1,4,Closest deadline,True,34.2,0.129
+sim0080,Evening,18,13,24.5,0.677,0.171,0.087,1.316,3,21.5,moderate,0.636,4;7,2.9,4,Hardest task,True,17.3,0.069
+sim0081,Late Night,21,15,33.8,0.83,0.163,0.087,1.021,5,16.6,moderate,0.906,1;2,7.1,5,Closest deadline,False,0.0,0.05
+sim0082,Morning,8,17,18.3,0.909,0.243,0.075,0.977,5,23.0,moderate,0.488,2;5,6.0,4,No clear method,False,0.0,0.091
+sim0083,Morning,8,0,33.2,0.797,0.132,0.04,0.992,5,25.7,moderate,0.608,1,2.9,1,Closest deadline,False,0.0,0.144
+sim0084,Morning,11,0,43.7,0.706,0.142,0.07,1.035,3,23.1,moderate,0.826,1,14.4,6,Hardest task,True,35.3,0.063
+sim0085,Evening,17,0,45.2,0.739,0.169,0.083,1.161,3,19.5,moderate,1.0,5,5.6,3,Easiest task,False,0.0,0.075
+sim0086,Evening,19,9,23.5,0.692,0.174,0.09,1.145,4,12.2,low,0.763,1,8.2,5,Closest deadline,False,0.0,0.129
+sim0087,Late Night,23,18,24.0,0.713,0.154,0.089,1.121,3,12.9,low,0.786,6,6.1,1,Closest deadline,False,0.0,0.09
+sim0088,Afternoon,14,23,25.2,0.682,0.241,0.08,0.943,3,18.0,moderate,0.541,3,6.2,5,Most important task,False,0.0,0.098
+sim0089,Morning,7,20,43.3,0.842,0.086,0.026,0.917,5,9.8,low,0.739,,14.7,5,Shortest task,True,7.2,0.057
+sim0090,Late Night,23,16,50.3,0.774,0.303,0.046,1.086,4,20.0,moderate,0.729,3;4,7.3,4,Hardest task,True,22.8,0.136
+sim0091,Late Night,0,18,22.9,0.895,0.255,0.026,0.89,5,17.5,moderate,0.443,1;2,3.8,2,Closest deadline,True,9.8,0.091
+sim0092,Late Night,0,9,39.8,0.91,0.205,0.059,1.009,4,20.8,moderate,0.921,4,18.0,4,Easiest task,False,0.0,0.099
+sim0093,Morning,10,0,25.7,0.785,0.238,0.046,1.258,4,12.7,low,0.527,2,11.1,5,Most important task,True,19.9,0.091
+sim0094,Evening,17,9,27.4,0.61,0.308,0.095,1.247,2,24.9,moderate,0.0,2;7,7.9,9,Closest deadline,False,0.0,0.103
+sim0095,Evening,20,9,27.4,0.848,0.275,0.047,0.947,4,19.4,moderate,1.0,0,3.7,3,Closest deadline,False,0.0,0.063
+sim0096,Late Night,23,17,28.3,0.668,0.305,0.032,1.085,4,15.2,moderate,0.566,1,2.8,3,Most important task,False,0.0,0.094
+sim0097,Morning,7,16,20.7,0.704,0.198,0.044,1.188,3,19.5,moderate,0.213,5,8.3,1,Most important task,False,0.0,0.086
+sim0098,Late Night,23,7,14.1,0.747,0.063,0.038,1.097,4,11.0,low,0.644,6,13.8,5,Closest deadline,False,0.0,0.091
+sim0099,Late Night,22,8,36.4,0.664,0.305,0.069,1.357,2,19.8,moderate,0.134,0;3,19.6,12,Most important task,False,0.0,0.092
+sim0100,Morning,9,15,22.2,0.635,0.27,0.037,1.353,3,11.4,low,0.744,2,18.9,5,Task I like most,True,22.5,0.088
+sim0101,Evening,17,23,30.6,0.626,0.136,0.047,1.177,3,14.7,moderate,0.212,3,3.0,3,Task I like most,False,0.0,0.102
+sim0102,Evening,17,11,39.6,0.596,0.207,0.042,1.136,2,21.2,moderate,0.723,1,2.1,4,Closest deadline,False,0.0,0.111
+sim0103,Late Night,21,10,18.6,0.861,0.285,0.095,1.267,5,22.7,moderate,0.444,0;3,2.1,4,Closest deadline,True,15.9,0.11
+sim0104,Evening,20,9,55.9,0.685,0.192,0.03,1.071,3,30.8,high,0.433,1;3;6,21.1,3,Closest deadline,True,8.4,0.145
+sim0105,Late Night,0,17,47.4,0.879,0.106,0.044,1.074,5,20.5,moderate,0.263,4;6,2.8,8,Closest deadline,True,21.3,0.089
+sim0106,Late Night,23,15,20.3,0.8,0.062,0.06,1.045,5,24.8,moderate,0.692,3,9.3,3,Closest deadline,False,0.0,0.074
+sim0107,Evening,17,10,29.7,0.665,0.328,0.041,0.884,3,17.6,moderate,0.605,3,7.6,4,Closest deadline,True,45.0,0.061
+sim0108,Late Night,22,10,39.4,0.821,0.201,0.063,0.825,5,20.3,moderate,0.284,2,5.1,3,Closest deadline,False,0.0,0.127
+sim0109,Evening,20,13,25.1,0.651,0.231,0.089,1.258,2,24.1,moderate,0.42,0;3,11.4,2,Closest deadline,True,24.6,0.078
+sim0110,Morning,11,16,32.1,0.78,0.156,0.065,1.162,4,19.2,moderate,1.0,6;7,7.5,4,Closest deadline,False,0.0,0.132
+sim0111,Late Night,22,14,23.3,0.706,0.068,0.068,1.029,3,18.8,moderate,0.835,1;6,9.6,4,Task I like most,False,0.0,0.057
+sim0112,Morning,8,16,36.7,0.648,0.312,0.059,0.987,3,21.5,moderate,0.533,4,12.8,5,Easiest task,False,0.0,0.059
+sim0113,Late Night,21,12,63.0,0.579,0.247,0.028,1.091,2,15.4,moderate,0.378,3;7,11.3,3,No clear method,False,0.0,0.125
+sim0114,Evening,18,8,28.2,0.871,0.164,0.067,1.173,4,23.8,moderate,0.4,1;5,6.3,1,No clear method,True,20.3,0.102
+sim0115,Afternoon,13,0,31.0,0.828,0.234,0.08,1.126,5,25.0,moderate,0.928,3;4,13.0,1,Task I like most,False,0.0,0.137
+sim0116,Late Night,21,12,22.6,0.95,0.233,0.045,1.042,5,22.7,moderate,0.371,2;4,9.4,1,Closest deadline,True,45.0,0.054
+sim0117,Evening,17,12,36.4,0.908,0.349,0.026,0.856,5,20.0,moderate,0.512,6,7.6,4,Closest deadline,False,0.0,0.068
+sim0118,Late Night,21,9,15.0,0.839,0.224,0.05,0.758,5,18.3,moderate,0.391,3,6.3,10,Task I like most,True,20.2,0.064
+sim0119,Morning,8,14,25.1,0.804,0.057,0.025,1.342,3,13.0,moderate,0.614,3;5,11.3,6,Task I like most,False,0.0,0.073
+sim0120,Morning,10,19,34.7,0.787,0.148,0.044,1.162,3,26.5,high,0.583,0;2;3,4.1,5,Closest deadline,True,24.7,0.087
+sim0121,Late Night,22,15,40.3,0.778,0.228,0.08,1.255,4,16.2,moderate,0.526,0;3,14.9,3,Closest deadline,False,0.0,0.051
+sim0122,Morning,7,0,52.0,0.815,0.342,0.053,1.253,5,23.9,moderate,0.812,3;5,12.0,5,Most important task,True,45.0,0.099
+sim0123,Late Night,22,11,30.5,0.726,0.277,0.086,1.216,4,15.3,moderate,0.489,6,13.9,3,Hardest task,False,0.0,0.109
+sim0124,Late Night,0,16,23.9,0.53,0.226,0.073,1.371,2,25.7,moderate,0.804,1,7.7,5,Hardest task,True,26.1,0.114
+sim0125,Evening,19,14,48.2,0.727,0.227,0.047,0.844,4,21.8,moderate,0.513,3;5,2.7,1,Closest deadline,False,0.0,0.136
+sim0126,Evening,18,11,21.5,0.748,0.083,0.069,1.096,4,25.7,moderate,0.442,4,5.5,3,No clear method,True,25.2,0.09
+sim0127,Late Night,0,19,22.5,0.719,0.21,0.071,1.003,3,23.9,moderate,1.0,0;1,19.3,5,Closest deadline,True,38.1,0.092
+sim0128,Late Night,22,8,36.8,0.784,0.299,0.071,0.977,5,14.9,moderate,0.673,1,3.1,1,Most important task,True,34.5,0.114
+sim0129,Morning,11,20,30.0,0.566,0.341,0.034,1.281,2,20.3,moderate,0.489,2,3.0,4,Closest deadline,False,0.0,0.079
+sim0130,Morning,8,18,26.9,0.58,0.062,0.028,1.068,3,26.2,high,0.525,3;6,4.0,1,Most important task,False,0.0,0.15
+sim0131,Late Night,23,14,29.3,0.762,0.184,0.047,1.261,3,12.4,low,0.928,7,16.1,1,Closest deadline,True,40.4,0.095
+sim0132,Morning,11,22,60.9,0.601,0.12,0.073,1.451,2,16.4,moderate,0.561,4;6,4.0,5,Closest deadline,True,24.0,0.139
+sim0133,Evening,20,11,21.6,0.671,0.177,0.065,0.847,3,24.4,moderate,1.0,7,14.8,5,Closest deadline,False,0.0,0.079
+sim0134,Late Night,0,8,42.5,0.779,0.314,0.078,1.068,4,22.2,moderate,0.404,1;7,8.6,2,Task I like most,False,0.0,0.116
+sim0135,Evening,19,7,21.9,0.806,0.292,0.092,0.849,4,16.6,moderate,0.279,2;4,9.2,3,Closest deadline,True,45.0,0.107
+sim0136,Morning,8,20,28.4,0.75,0.272,0.039,0.817,4,17.3,moderate,0.843,5;7,9.0,6,Hardest task,False,0.0,0.076
+sim0137,Morning,7,14,28.4,0.77,0.119,0.034,1.281,4,26.1,high,0.479,5;6;7,9.1,2,Most important task,False,0.0,0.147
+sim0138,Late Night,22,9,25.9,0.914,0.091,0.051,0.883,5,20.3,moderate,0.027,4,4.4,5,Easiest task,True,5.7,0.05
+sim0139,Late Night,22,9,17.8,0.747,0.106,0.06,1.162,4,19.3,moderate,0.907,0;4,11.7,1,Closest deadline,True,17.8,0.073
+sim0140,Evening,19,14,28.2,0.847,0.302,0.099,0.947,5,27.0,high,0.8,3;5;6,6.6,4,Closest deadline,False,0.0,0.13
+sim0141,Afternoon,16,8,24.4,0.633,0.212,0.095,1.136,3,20.8,moderate,0.516,3,8.2,3,Closest deadline,True,32.1,0.134
+sim0142,Late Night,22,15,45.0,0.696,0.105,0.033,1.157,2,20.3,moderate,0.406,2;5,2.2,4,Closest deadline,True,45.0,0.137
+sim0143,Evening,17,10,24.9,0.769,0.19,0.038,1.017,5,25.5,moderate,0.564,6,2.2,6,Task I like most,False,0.0,0.124
+sim0144,Late Night,0,12,43.6,0.818,0.069,0.081,1.178,4,19.3,moderate,0.707,2;4,12.7,5,Closest deadline,True,37.4,0.088
+sim0145,Morning,8,16,21.3,0.765,0.329,0.023,0.96,4,18.0,moderate,0.568,3;6,5.5,4,Most important task,True,43.5,0.096
+sim0146,Late Night,22,9,38.0,0.818,0.082,0.03,0.947,5,18.5,moderate,0.751,1,7.7,4,Closest deadline,True,34.1,0.148
+sim0147,Morning,9,21,44.0,0.564,0.067,0.094,1.437,2,25.0,moderate,0.799,0;3,10.0,5,Most important task,False,0.0,0.12
+sim0148,Late Night,23,13,37.4,0.739,0.226,0.049,1.133,3,27.1,high,1.0,4;6,5.8,2,Hardest task,False,0.0,0.109
+sim0149,Late Night,21,16,41.0,0.719,0.29,0.097,0.88,3,17.3,moderate,0.31,0;4,9.1,5,Easiest task,True,34.2,0.065
+sim0150,Evening,17,8,42.9,0.593,0.191,0.072,1.097,2,22.4,moderate,0.434,6;7,2.8,4,Closest deadline,True,6.1,0.143
+sim0151,Morning,8,17,32.4,0.666,0.233,0.083,1.54,3,20.4,moderate,0.786,0;5,6.2,4,Task I like most,False,0.0,0.081
+sim0152,Morning,11,21,30.3,0.754,0.138,0.091,0.966,4,24.5,moderate,0.606,3;4,11.3,2,Hardest task,True,45.0,0.12
+sim0153,Late Night,23,17,29.7,0.552,0.287,0.025,1.389,2,19.1,moderate,0.787,0;4,6.3,6,Closest deadline,False,0.0,0.073
+sim0154,Afternoon,12,22,67.1,0.688,0.316,0.028,1.353,3,20.2,moderate,0.442,3;5,14.9,3,Most important task,False,0.0,0.128
+sim0155,Morning,10,23,67.8,0.701,0.185,0.021,1.472,3,21.5,moderate,0.814,1,12.5,3,No clear method,True,9.3,0.132
+sim0156,Evening,17,23,43.4,0.587,0.326,0.09,0.922,2,25.4,moderate,0.574,0,4.3,2,Easiest task,True,18.8,0.135
+sim0157,Afternoon,13,8,44.0,0.812,0.331,0.044,0.975,5,20.5,moderate,0.114,0,13.6,2,Closest deadline,True,35.0,0.121
+sim0158,Morning,7,17,20.1,0.646,0.178,0.092,1.077,3,21.4,moderate,0.549,2;6,2.6,3,Closest deadline,True,21.7,0.054
+sim0159,Evening,19,11,46.8,0.699,0.105,0.02,1.111,3,20.5,moderate,0.544,3;7,13.6,1,Most important task,False,0.0,0.085
+sim0160,Late Night,22,9,56.8,0.781,0.231,0.099,0.999,4,18.2,moderate,0.384,7,8.6,3,Hardest task,True,16.3,0.121
+sim0161,Afternoon,15,20,39.4,0.889,0.093,0.043,1.171,5,20.1,moderate,0.826,2;5,5.3,4,Closest deadline,False,0.0,0.053
+sim0162,Morning,9,21,25.0,0.699,0.079,0.048,1.286,3,23.0,moderate,0.556,2;5,13.6,8,Hardest task,True,18.9,0.129
+sim0163,Morning,9,21,21.8,0.65,0.108,0.072,1.121,3,21.6,moderate,0.537,4,13.8,5,Most important task,False,0.0,0.094
+sim0164,Late Night,21,12,38.2,0.815,0.291,0.09,0.992,5,23.0,moderate,0.568,2;5,4.8,3,Closest deadline,False,0.0,0.147
+sim0165,Morning,7,17,18.6,0.789,0.118,0.035,0.931,4,13.4,moderate,0.556,1,8.5,3,Hardest task,False,0.0,0.145
+sim0166,Late Night,0,19,24.8,0.76,0.242,0.07,1.259,4,18.5,moderate,1.0,4,5.5,1,Closest deadline,True,45.0,0.059
+sim0167,Morning,7,18,37.2,0.75,0.069,0.022,1.622,3,25.1,moderate,0.259,7,2.1,7,Most important task,True,28.1,0.057
+sim0168,Afternoon,16,0,18.7,0.825,0.304,0.053,1.207,4,24.7,moderate,1.0,0,5.1,5,Task I like most,False,0.0,0.101
+sim0169,Late Night,23,7,26.9,0.867,0.289,0.067,0.907,5,28.1,high,0.466,3;6;7,9.1,4,Task I like most,True,28.5,0.089
+sim0170,Late Night,23,8,20.9,0.898,0.244,0.031,0.729,5,16.9,moderate,0.924,1;4,6.7,5,Closest deadline,True,22.5,0.139
+sim0171,Late Night,23,17,25.7,0.847,0.333,0.055,0.936,5,21.1,moderate,0.456,2;7,14.7,3,Closest deadline,True,12.6,0.064
+sim0172,Evening,17,0,23.7,0.817,0.205,0.04,1.186,5,24.1,moderate,0.469,5,9.2,4,Most important task,False,0.0,0.06
+sim0173,Morning,11,0,32.8,0.758,0.096,0.062,1.162,4,15.4,moderate,0.715,5,14.4,3,Closest deadline,False,0.0,0.138
+sim0174,Afternoon,14,23,30.3,0.753,0.151,0.074,0.72,4,17.5,moderate,0.648,2,8.0,5,Hardest task,True,8.1,0.083
+sim0175,Evening,17,7,29.8,0.77,0.288,0.07,0.986,4,23.4,moderate,0.903,1;7,12.8,1,Closest deadline,True,36.2,0.081
+sim0176,Afternoon,16,10,19.4,0.799,0.26,0.08,1.182,4,16.2,moderate,0.314,7,18.3,4,Hardest task,False,0.0,0.125
+sim0177,Late Night,23,14,30.1,0.768,0.243,0.077,0.777,4,11.0,low,0.464,,14.0,4,Most important task,True,45.0,0.1
+sim0178,Evening,20,12,27.2,0.944,0.31,0.029,1.126,5,12.9,low,0.216,7,2.5,5,Closest deadline,False,0.0,0.101
+sim0179,Morning,10,16,27.7,0.829,0.213,0.091,1.158,5,17.9,moderate,0.342,1,14.2,5,Closest deadline,True,13.7,0.083
+sim0180,Morning,9,18,27.7,0.598,0.263,0.06,0.993,1,27.1,high,0.595,1;4,13.0,6,Easiest task,False,0.0,0.068
+sim0181,Afternoon,13,23,43.8,0.744,0.28,0.083,1.295,3,21.7,moderate,0.976,2,3.0,3,Closest deadline,True,45.0,0.122
+sim0182,Afternoon,16,0,34.0,0.852,0.181,0.043,1.051,4,22.5,moderate,0.896,1;6,10.0,6,Closest deadline,False,0.0,0.1
+sim0183,Late Night,22,17,35.4,0.834,0.339,0.07,0.788,5,16.1,moderate,0.538,2,4.7,4,Closest deadline,True,34.9,0.095
+sim0184,Evening,19,10,16.5,0.762,0.291,0.063,1.148,4,19.2,moderate,0.661,5;7,3.8,4,Closest deadline,False,0.0,0.053
+sim0185,Evening,19,8,24.2,0.856,0.114,0.093,0.828,5,19.6,moderate,0.668,2;7,6.0,5,Easiest task,True,28.0,0.118
+sim0186,Late Night,21,9,35.1,0.854,0.066,0.079,0.991,5,21.9,moderate,0.398,5,9.0,6,Closest deadline,True,45.0,0.093
+sim0187,Morning,7,14,15.7,0.95,0.222,0.075,0.812,5,27.3,high,0.581,4;7,4.3,3,Closest deadline,True,21.5,0.065
+sim0188,Late Night,22,9,28.7,0.726,0.204,0.088,1.265,4,20.1,moderate,0.005,6;7,14.2,8,Closest deadline,False,0.0,0.132
+sim0189,Evening,20,15,38.6,0.933,0.107,0.089,0.987,5,17.4,moderate,0.102,4;7,17.0,2,Most important task,False,0.0,0.059
+sim0190,Evening,20,8,36.6,0.71,0.346,0.046,1.088,3,21.9,moderate,0.592,1,3.0,5,Closest deadline,True,37.8,0.075
+sim0191,Late Night,22,15,15.2,0.738,0.075,0.087,1.175,4,21.1,moderate,0.145,5,14.2,4,No clear method,True,27.8,0.073
+sim0192,Morning,10,21,37.9,0.607,0.132,0.021,1.085,2,17.0,moderate,0.552,0;7,4.0,1,Closest deadline,False,0.0,0.081
+sim0193,Late Night,22,7,81.2,0.864,0.281,0.07,1.007,5,23.7,moderate,1.0,0;7,7.2,5,Most important task,True,40.7,0.053
+sim0194,Evening,18,10,27.2,0.771,0.289,0.043,0.893,5,12.4,low,1.0,6,2.9,4,Hardest task,False,0.0,0.114
+sim0195,Morning,7,19,41.5,0.6,0.262,0.027,1.025,2,22.3,moderate,0.456,2;4,7.0,3,Closest deadline,False,0.0,0.053
+sim0196,Morning,8,13,26.7,0.565,0.051,0.096,1.329,2,20.1,moderate,0.788,1,5.6,4,Closest deadline,False,0.0,0.092
+sim0197,Evening,19,0,42.3,0.616,0.236,0.045,1.131,3,12.7,low,1.0,,8.3,3,Closest deadline,False,0.0,0.063
+sim0198,Late Night,22,8,27.4,0.664,0.213,0.073,1.118,3,25.8,moderate,0.994,3;5,3.4,6,Closest deadline,True,23.8,0.072
+sim0199,Evening,18,8,30.9,0.571,0.153,0.072,1.537,2,21.8,moderate,0.986,0,3.8,5,Most important task,True,45.0,0.059
+sim0200,Late Night,0,9,20.5,0.782,0.334,0.028,0.949,5,20.9,moderate,0.385,6;7,4.9,8,Closest deadline,True,4.0,0.082
+sim0201,Late Night,23,8,30.6,0.789,0.198,0.072,0.825,5,22.3,moderate,0.532,4;7,2.6,3,Closest deadline,True,16.7,0.094
+sim0202,Morning,8,15,70.6,0.717,0.152,0.034,1.187,4,13.0,low,0.179,7,2.2,3,Hardest task,True,4.0,0.086
+sim0203,Evening,17,10,37.9,0.704,0.125,0.056,0.772,4,19.3,moderate,0.435,2,9.6,3,Closest deadline,False,0.0,0.122
+sim0204,Late Night,0,9,38.4,0.808,0.304,0.05,1.138,4,25.6,moderate,0.771,3;5,3.1,1,Task I like most,True,32.4,0.094
+sim0205,Evening,19,13,47.4,0.729,0.305,0.043,1.228,2,18.5,moderate,0.599,0,18.7,5,No clear method,False,0.0,0.09
+sim0206,Evening,18,0,27.4,0.659,0.245,0.066,0.993,3,13.1,moderate,1.0,4;6,7.0,2,Closest deadline,True,34.5,0.095
+sim0207,Late Night,22,10,19.3,0.645,0.116,0.046,1.21,3,15.6,moderate,0.681,1,5.5,1,Most important task,False,0.0,0.112
+sim0208,Morning,9,23,30.1,0.873,0.28,0.041,0.882,5,25.9,moderate,0.276,0;4,13.1,4,Most important task,False,0.0,0.137
+sim0209,Late Night,0,13,29.8,0.642,0.178,0.061,1.209,2,21.4,moderate,0.0,0,4.4,7,Most important task,False,0.0,0.052
+sim0210,Morning,7,23,40.6,0.683,0.192,0.066,1.132,3,17.8,moderate,0.506,3;7,8.5,3,Closest deadline,True,22.8,0.141
+sim0211,Late Night,22,14,19.6,0.859,0.262,0.1,1.064,5,16.6,moderate,0.491,0,7.0,3,Closest deadline,False,0.0,0.129
+sim0212,Morning,8,20,36.4,0.614,0.267,0.064,1.173,2,25.2,moderate,0.418,3,19.2,5,Task I like most,True,9.7,0.078
+sim0213,Morning,7,0,36.3,0.651,0.26,0.049,1.531,3,18.8,moderate,0.758,0,14.0,4,Closest deadline,True,18.6,0.061
+sim0214,Morning,7,14,29.3,0.727,0.343,0.023,0.998,3,22.1,moderate,0.491,2;3,9.4,5,Hardest task,False,0.0,0.127
+sim0215,Late Night,21,12,34.2,0.943,0.152,0.032,1.127,4,18.7,moderate,0.816,3,12.1,7,Closest deadline,True,45.0,0.103
+sim0216,Evening,19,7,37.1,0.783,0.277,0.1,0.819,5,22.9,moderate,0.227,2,13.7,3,Most important task,False,0.0,0.131
+sim0217,Evening,18,7,23.3,0.867,0.348,0.068,0.73,5,16.8,moderate,0.758,7,2.4,7,Closest deadline,True,23.1,0.057
+sim0218,Late Night,0,14,44.4,0.704,0.332,0.07,0.907,3,10.9,low,0.669,3,15.0,5,Most important task,True,43.7,0.13
+sim0219,Late Night,21,14,34.5,0.919,0.272,0.087,1.199,5,22.7,moderate,0.961,4;6,2.2,4,Easiest task,False,0.0,0.06
+sim0220,Afternoon,13,7,32.4,0.831,0.313,0.062,1.182,4,21.4,moderate,0.492,5;7,7.8,4,Task I like most,False,0.0,0.068
+sim0221,Late Night,23,15,21.9,0.874,0.193,0.067,0.759,5,16.7,moderate,0.326,4;5,4.0,9,Closest deadline,False,0.0,0.093
+sim0222,Late Night,0,8,39.7,0.706,0.141,0.032,0.918,4,22.3,moderate,0.789,1;6,3.0,3,Hardest task,False,0.0,0.108
+sim0223,Late Night,22,8,23.3,0.748,0.326,0.05,0.853,4,16.4,moderate,0.507,1;2,14.0,5,Easiest task,True,45.0,0.066
+sim0224,Late Night,23,7,31.2,0.706,0.121,0.022,1.167,3,20.6,moderate,0.497,2;3,8.1,4,Closest deadline,True,4.6,0.14
+sim0225,Evening,19,7,29.2,0.71,0.197,0.064,1.358,4,25.2,moderate,0.415,3,9.4,6,Closest deadline,True,45.0,0.134
+sim0226,Afternoon,15,21,24.3,0.68,0.348,0.039,0.977,3,20.9,moderate,0.647,5;7,3.0,11,Easiest task,True,23.1,0.078
+sim0227,Morning,7,12,23.5,0.741,0.137,0.063,0.911,4,28.7,high,0.78,3;7,12.0,7,Most important task,True,37.0,0.135
+sim0228,Afternoon,15,7,51.6,0.914,0.277,0.046,0.851,5,16.1,moderate,1.0,0,3.9,3,Most important task,True,17.9,0.102
+sim0229,Evening,17,0,39.2,0.843,0.267,0.075,1.118,5,16.9,moderate,0.913,5,4.3,6,Closest deadline,False,0.0,0.105
+sim0230,Evening,19,9,21.4,0.615,0.132,0.098,1.151,3,12.7,low,0.788,,5.1,10,Closest deadline,False,0.0,0.123
+sim0231,Late Night,21,7,32.3,0.691,0.248,0.08,1.431,3,20.5,moderate,0.975,3;5,15.0,3,Closest deadline,False,0.0,0.105
+sim0232,Morning,8,19,25.0,0.674,0.344,0.074,1.669,3,16.6,moderate,0.425,7,2.2,1,Task I like most,False,0.0,0.101
+sim0233,Afternoon,12,21,25.4,0.658,0.346,0.072,1.496,3,15.5,moderate,0.468,7,2.5,3,Hardest task,False,0.0,0.082
+sim0234,Evening,18,0,31.0,0.815,0.115,0.095,1.272,5,23.9,moderate,0.658,6,5.7,3,Most important task,False,0.0,0.14
+sim0235,Late Night,23,14,17.8,0.637,0.05,0.058,1.217,3,19.8,moderate,0.604,2;4,2.2,3,Closest deadline,True,45.0,0.077
+sim0236,Afternoon,15,22,23.7,0.864,0.256,0.093,0.757,5,15.9,moderate,1.0,0;4,14.5,4,Closest deadline,False,0.0,0.058
+sim0237,Morning,7,17,21.9,0.627,0.064,0.081,1.278,3,17.0,moderate,0.477,5,5.6,5,Hardest task,False,0.0,0.15
+sim0238,Late Night,21,7,27.1,0.822,0.283,0.098,1.14,4,16.2,moderate,0.452,6,8.3,5,Closest deadline,False,0.0,0.084
+sim0239,Late Night,22,8,30.5,0.927,0.095,0.056,1.037,5,19.1,moderate,0.536,1,4.7,3,Most important task,True,41.4,0.077
+sim0240,Morning,7,22,20.4,0.748,0.089,0.071,1.096,4,29.8,high,0.433,2;7,9.5,1,Closest deadline,False,0.0,0.073
+sim0241,Evening,18,9,24.3,0.815,0.347,0.025,0.856,5,12.2,low,0.91,1,3.1,5,No clear method,False,0.0,0.1
+sim0242,Morning,11,20,21.6,0.732,0.075,0.042,1.108,4,19.3,moderate,0.849,3;5,5.0,4,Most important task,True,19.0,0.081
+sim0243,Afternoon,16,0,21.6,0.81,0.194,0.087,1.426,4,16.8,moderate,0.99,5,2.1,5,Hardest task,True,42.3,0.094
+sim0244,Late Night,0,12,38.5,0.706,0.055,0.039,0.862,4,19.5,moderate,0.861,3,4.0,4,Most important task,False,0.0,0.104
+sim0245,Morning,8,21,40.7,0.886,0.298,0.026,1.09,5,22.4,moderate,0.419,2;6,13.4,3,Closest deadline,False,0.0,0.062
+sim0246,Late Night,23,7,30.0,0.782,0.076,0.096,1.279,4,18.9,moderate,0.532,0;5,11.8,1,Closest deadline,False,0.0,0.113
+sim0247,Late Night,23,10,24.2,0.766,0.206,0.064,1.05,4,21.6,moderate,0.627,2;3,3.9,4,Closest deadline,False,0.0,0.118
+sim0248,Morning,8,23,37.7,0.93,0.131,0.075,1.198,5,22.2,moderate,1.0,6,3.2,9,Most important task,True,23.6,0.072
+sim0249,Morning,10,23,29.0,0.751,0.332,0.046,1.021,3,21.9,moderate,0.844,2;4,8.4,5,Task I like most,False,0.0,0.125
+sim0250,Morning,7,19,26.2,0.771,0.125,0.07,1.172,4,20.4,moderate,0.704,1;5,12.1,1,Closest deadline,False,0.0,0.086
+sim0251,Evening,20,12,15.2,0.781,0.344,0.038,0.932,5,17.3,moderate,0.191,0;5,13.6,2,Closest deadline,False,0.0,0.136
+sim0252,Late Night,21,7,30.3,0.71,0.071,0.045,1.193,3,15.7,moderate,0.386,2,6.6,3,Easiest task,False,0.0,0.108
+sim0253,Morning,7,18,19.8,0.818,0.261,0.048,0.924,5,19.4,moderate,0.56,1;7,8.2,3,Most important task,True,30.7,0.072
+sim0254,Late Night,0,19,28.2,0.796,0.12,0.063,0.916,4,17.9,moderate,0.937,7,4.3,1,Closest deadline,False,0.0,0.123
+sim0255,Late Night,21,9,25.1,0.801,0.052,0.088,1.304,4,21.9,moderate,0.042,3;6,3.8,4,Closest deadline,False,0.0,0.102
+sim0256,Morning,8,15,33.6,0.524,0.344,0.038,1.23,2,21.8,moderate,0.466,1,6.2,10,Closest deadline,True,45.0,0.106
+sim0257,Late Night,23,16,48.7,0.817,0.133,0.06,1.039,5,12.6,low,0.405,1,5.7,6,Closest deadline,False,0.0,0.084
+sim0258,Morning,9,0,26.0,0.666,0.331,0.043,1.69,2,20.8,moderate,0.561,1;5,2.2,7,Closest deadline,True,31.2,0.126
+sim0259,Late Night,22,11,34.7,0.508,0.136,0.061,1.203,1,21.1,moderate,1.0,4,5.1,2,Task I like most,False,0.0,0.067
+sim0260,Morning,11,22,32.6,0.576,0.182,0.037,1.322,2,25.5,moderate,1.0,2;4,7.2,4,Easiest task,False,0.0,0.148
+sim0261,Late Night,0,9,25.8,0.779,0.195,0.092,1.286,5,22.1,moderate,0.407,6,3.7,5,Closest deadline,True,12.0,0.116
+sim0262,Late Night,0,19,15.9,0.913,0.16,0.08,0.992,5,25.2,moderate,0.821,0,29.5,3,Closest deadline,True,35.3,0.083
+sim0263,Evening,20,12,39.7,0.711,0.31,0.022,1.186,3,25.6,moderate,0.503,4,4.0,4,Most important task,False,0.0,0.139
+sim0264,Morning,7,21,24.0,0.751,0.056,0.024,1.08,3,20.2,moderate,0.222,1;2,2.8,5,No clear method,True,13.0,0.057
+sim0265,Late Night,0,12,43.2,0.95,0.091,0.02,1.047,5,22.7,moderate,0.5,0;2,5.5,5,Closest deadline,True,45.0,0.074
+sim0266,Evening,17,7,26.7,0.761,0.203,0.036,1.043,4,20.5,moderate,0.665,3;4,6.5,4,Closest deadline,True,5.8,0.132
+sim0267,Morning,10,15,43.8,0.803,0.311,0.093,1.002,5,20.5,moderate,0.696,2;4,3.8,5,Most important task,True,21.2,0.146
+sim0268,Evening,20,12,21.9,0.686,0.142,0.069,1.168,3,26.8,high,0.662,3;5;6,24.4,3,Closest deadline,True,32.1,0.095
+sim0269,Evening,18,13,32.5,0.668,0.178,0.04,1.005,3,30.1,high,0.712,0;3;4,5.1,1,Closest deadline,True,11.5,0.114
+sim0270,Late Night,0,8,19.8,0.866,0.153,0.081,1.089,5,27.1,high,0.507,5;6,5.7,3,Hardest task,False,0.0,0.075
+sim0271,Late Night,22,10,34.4,0.727,0.111,0.093,1.068,3,18.4,moderate,0.429,0;4,2.9,5,Hardest task,False,0.0,0.116
+sim0272,Morning,10,22,40.0,0.531,0.145,0.032,1.143,2,30.0,high,0.976,0;6;7,14.8,5,Shortest task,False,0.0,0.053
+sim0273,Morning,7,20,36.1,0.685,0.219,0.051,1.437,3,28.4,high,1.0,4;6;7,8.9,3,No clear method,False,0.0,0.096
+sim0274,Morning,7,20,21.2,0.825,0.295,0.041,0.984,4,23.2,moderate,0.565,4,7.8,1,Task I like most,True,35.5,0.083
+sim0275,Late Night,23,15,42.4,0.794,0.23,0.049,0.944,4,22.0,moderate,0.51,3;6,9.7,2,Closest deadline,False,0.0,0.116
+sim0276,Morning,11,19,17.6,0.801,0.211,0.056,0.856,5,22.7,moderate,0.497,2;6,14.8,5,Closest deadline,False,0.0,0.107
+sim0277,Evening,20,8,32.2,0.638,0.206,0.028,1.314,2,22.3,moderate,0.669,4;5,8.7,3,Most important task,False,0.0,0.056
+sim0278,Afternoon,16,23,28.6,0.689,0.093,0.053,1.066,3,21.8,moderate,0.667,0,6.8,6,Hardest task,False,0.0,0.081
+sim0279,Morning,11,18,42.5,0.861,0.227,0.028,1.081,4,28.8,high,0.531,1;5;7,8.1,7,Most important task,True,25.0,0.097
+sim0280,Late Night,22,10,35.0,0.597,0.109,0.096,1.078,2,19.2,moderate,0.608,2,4.0,3,Task I like most,False,0.0,0.084
+sim0281,Evening,20,11,16.9,0.704,0.251,0.056,1.081,4,21.5,moderate,0.591,0;7,3.8,3,Closest deadline,True,45.0,0.056
+sim0282,Late Night,23,14,42.9,0.688,0.249,0.032,1.291,3,17.5,moderate,0.76,2,5.5,5,Closest deadline,False,0.0,0.138
+sim0283,Late Night,0,7,55.5,0.704,0.335,0.065,1.205,4,20.2,moderate,0.179,6,13.8,4,Closest deadline,False,0.0,0.099
+sim0284,Morning,8,17,25.4,0.718,0.214,0.065,1.132,3,15.5,moderate,0.652,0,3.4,4,Closest deadline,True,24.3,0.11
+sim0285,Morning,8,21,13.2,0.801,0.053,0.069,1.106,5,17.9,moderate,0.892,3,13.4,4,Hardest task,True,25.0,0.127
+sim0286,Late Night,22,14,34.5,0.732,0.163,0.07,1.003,4,10.0,low,0.426,,8.6,3,Closest deadline,True,36.2,0.108
+sim0287,Late Night,23,18,35.2,0.854,0.055,0.062,1.238,5,24.2,moderate,0.568,7,14.2,3,Closest deadline,False,0.0,0.071
+sim0288,Evening,20,9,42.4,0.628,0.102,0.067,1.043,2,16.3,moderate,1.0,1;3,11.7,3,Closest deadline,True,45.0,0.052
+sim0289,Late Night,0,15,22.9,0.698,0.297,0.028,1.204,3,22.8,moderate,0.616,1,5.6,8,Closest deadline,False,0.0,0.126
+sim0290,Morning,7,17,20.7,0.532,0.08,0.081,1.361,2,25.7,moderate,1.0,7,2.3,4,Closest deadline,False,0.0,0.057
+sim0291,Afternoon,16,0,37.4,0.699,0.324,0.05,1.335,3,22.3,moderate,0.532,4;7,11.6,8,Hardest task,False,0.0,0.114
+sim0292,Evening,18,0,32.1,0.736,0.198,0.039,1.046,3,17.2,moderate,0.327,0,8.8,1,Closest deadline,False,0.0,0.058
+sim0293,Afternoon,12,19,26.0,0.521,0.267,0.027,1.372,2,29.4,high,0.902,4;5;6,7.6,5,Shortest task,True,38.8,0.149
+sim0294,Morning,7,23,34.3,0.77,0.248,0.052,1.007,5,22.3,moderate,1.0,0;5,5.6,1,Closest deadline,False,0.0,0.111
+sim0295,Evening,19,13,40.4,0.738,0.111,0.048,1.168,4,17.8,moderate,0.503,4;5,4.1,3,Closest deadline,False,0.0,0.12
+sim0296,Evening,18,13,27.2,0.919,0.192,0.036,1.094,5,16.2,moderate,0.465,3;5,6.7,2,Closest deadline,True,4.0,0.083
+sim0297,Late Night,23,14,35.4,0.778,0.204,0.064,0.958,4,24.5,moderate,0.538,4;7,6.3,5,Closest deadline,False,0.0,0.11
+sim0298,Late Night,22,14,44.6,0.663,0.103,0.077,1.378,3,14.2,moderate,0.753,1,2.9,4,Closest deadline,True,4.0,0.081
+sim0299,Late Night,21,11,10.0,0.535,0.302,0.062,1.11,2,19.8,moderate,0.532,0;6,3.6,8,Closest deadline,True,34.4,0.133
+sim0300,Late Night,23,8,24.3,0.773,0.283,0.09,1.142,3,21.1,moderate,0.809,0;5,7.6,4,Closest deadline,False,0.0,0.097
+sim0301,Late Night,22,8,22.9,0.804,0.168,0.072,0.897,5,26.9,high,1.0,0;1;7,6.2,3,Task I like most,False,0.0,0.119
+sim0302,Morning,10,16,35.0,0.642,0.073,0.073,1.134,3,17.8,moderate,0.939,4;7,3.4,4,Closest deadline,False,0.0,0.051
+sim0303,Late Night,22,17,41.5,0.818,0.116,0.08,1.578,4,18.6,moderate,0.389,4,5.2,5,Closest deadline,False,0.0,0.066
+sim0304,Morning,11,20,27.2,0.842,0.222,0.05,1.205,4,24.9,moderate,0.557,3,17.9,4,Most important task,False,0.0,0.132
+sim0305,Evening,19,10,19.2,0.794,0.068,0.033,0.986,4,12.7,low,0.882,3,14.0,2,Task I like most,True,29.5,0.124
+sim0306,Afternoon,14,0,30.3,0.607,0.324,0.043,1.229,2,24.1,moderate,1.0,0;4,6.8,3,Closest deadline,True,45.0,0.093
+sim0307,Morning,7,22,36.1,0.682,0.292,0.091,1.184,3,28.5,high,0.505,3;5,11.9,4,Most important task,True,26.6,0.09
+sim0308,Late Night,0,12,29.8,0.906,0.157,0.025,0.902,4,14.5,moderate,0.49,7,5.1,3,Task I like most,False,0.0,0.069
+sim0309,Late Night,0,8,38.3,0.776,0.162,0.025,1.105,5,7.4,low,0.318,0,5.6,2,Most important task,False,0.0,0.114
+sim0310,Late Night,23,13,35.0,0.778,0.279,0.051,1.205,5,18.5,moderate,0.409,1,8.0,4,Closest deadline,True,45.0,0.136
+sim0311,Late Night,22,9,32.0,0.742,0.149,0.04,0.875,4,16.9,moderate,0.479,7,6.4,2,No clear method,False,0.0,0.069
+sim0312,Late Night,21,11,18.2,0.861,0.135,0.054,1.274,5,21.4,moderate,0.773,6,9.6,2,Closest deadline,False,0.0,0.095
+sim0313,Late Night,0,10,18.8,0.561,0.177,0.051,1.446,2,13.4,moderate,0.733,6,3.4,4,Closest deadline,False,0.0,0.093
+sim0314,Afternoon,14,22,39.4,0.842,0.091,0.036,1.145,4,19.0,moderate,0.72,4;5,13.9,5,Most important task,False,0.0,0.054
+sim0315,Morning,10,19,31.7,0.79,0.275,0.051,1.348,5,20.0,moderate,0.812,1;3,3.2,3,Most important task,True,14.9,0.075
+sim0316,Late Night,23,13,18.1,0.632,0.322,0.059,1.004,3,15.4,moderate,0.58,1,2.3,3,Task I like most,False,0.0,0.073
+sim0317,Late Night,22,8,22.3,0.806,0.235,0.05,1.417,4,17.2,moderate,0.621,3,11.7,3,Task I like most,False,0.0,0.07
+sim0318,Morning,8,17,25.3,0.619,0.058,0.057,1.192,2,31.9,high,0.678,3;6,8.5,4,Closest deadline,True,10.6,0.109
+sim0319,Late Night,0,7,14.5,0.729,0.317,0.078,1.249,3,26.5,high,0.986,3;5,13.2,3,No clear method,False,0.0,0.141
+sim0320,Afternoon,15,8,62.4,0.667,0.263,0.033,1.074,3,17.3,moderate,0.379,3;6,8.6,3,Task I like most,False,0.0,0.145
+sim0321,Late Night,23,8,54.6,0.746,0.171,0.04,1.376,4,23.0,moderate,0.483,1;3,8.0,5,Closest deadline,False,0.0,0.146
+sim0322,Morning,9,19,40.5,0.692,0.268,0.06,1.317,3,11.4,low,0.601,6,14.5,4,Hardest task,False,0.0,0.127
+sim0323,Afternoon,13,7,24.1,0.798,0.261,0.09,0.965,4,21.1,moderate,0.667,0;5,9.3,4,Closest deadline,True,45.0,0.147
+sim0324,Evening,20,9,41.0,0.836,0.11,0.031,0.999,5,17.3,moderate,0.681,6,4.3,3,Most important task,True,28.7,0.082
+sim0325,Late Night,0,11,22.3,0.678,0.245,0.037,1.131,3,14.3,moderate,0.947,1;2,2.6,1,Closest deadline,False,0.0,0.126
+sim0326,Morning,9,0,34.9,0.781,0.19,0.031,1.241,4,15.0,moderate,0.889,2,4.0,1,Closest deadline,True,10.3,0.094
+sim0327,Late Night,21,12,46.2,0.764,0.255,0.081,1.061,4,23.9,moderate,1.0,3;5,14.3,5,Closest deadline,True,8.1,0.078
+sim0328,Morning,9,17,62.5,0.633,0.31,0.052,0.876,3,14.6,moderate,0.848,1;7,12.1,4,Most important task,True,4.0,0.149
+sim0329,Morning,11,21,33.1,0.865,0.347,0.041,1.086,5,28.7,high,0.494,0;3,14.9,8,Most important task,True,20.9,0.135
+sim0330,Late Night,22,16,22.6,0.838,0.227,0.066,0.765,5,12.9,low,0.788,,4.6,1,Task I like most,True,39.4,0.065
+sim0331,Late Night,21,14,33.9,0.809,0.058,0.061,1.364,5,17.7,moderate,0.481,7,2.1,3,Closest deadline,False,0.0,0.077
+sim0332,Afternoon,13,18,21.9,0.931,0.218,0.078,1.098,5,30.4,high,0.763,2;5;6,18.1,3,Closest deadline,False,0.0,0.136
+sim0333,Late Night,21,15,21.5,0.871,0.201,0.069,0.99,5,13.9,moderate,0.499,1;7,5.6,7,Easiest task,False,0.0,0.12
+sim0334,Morning,9,23,37.5,0.738,0.309,0.061,1.406,4,20.8,moderate,0.219,2;6,11.7,4,Closest deadline,True,28.6,0.119
+sim0335,Morning,8,22,49.3,0.448,0.083,0.021,1.59,1,19.2,moderate,0.52,0;6,5.8,1,Hardest task,False,0.0,0.076
+sim0336,Morning,7,14,26.3,0.61,0.225,0.036,1.158,2,27.3,high,0.532,4;6,7.1,3,Hardest task,False,0.0,0.118
+sim0337,Late Night,23,17,27.5,0.804,0.325,0.045,1.104,4,32.6,high,0.821,2;5,11.8,5,Most important task,True,20.2,0.149
+sim0338,Morning,10,20,35.1,0.769,0.193,0.035,0.962,4,16.8,moderate,0.958,2;7,9.2,5,Task I like most,False,0.0,0.087
+sim0339,Late Night,23,13,34.7,0.742,0.316,0.065,1.098,4,17.4,moderate,0.185,3,4.7,3,Most important task,True,14.7,0.095
+sim0340,Late Night,0,9,27.6,0.736,0.209,0.068,1.227,3,26.4,high,0.471,3;6;7,16.5,4,Closest deadline,False,0.0,0.065
+sim0341,Evening,20,9,27.6,0.688,0.06,0.042,1.494,3,7.2,low,1.0,,6.9,4,Hardest task,True,39.5,0.108
+sim0342,Evening,19,11,16.2,0.72,0.233,0.062,1.383,3,15.7,moderate,0.376,6,8.0,3,Closest deadline,True,38.8,0.119
+sim0343,Late Night,21,11,25.0,0.672,0.145,0.071,1.317,3,21.8,moderate,1.0,2,5.2,4,Task I like most,False,0.0,0.098
+sim0344,Evening,18,10,36.8,0.781,0.247,0.06,1.203,4,14.1,moderate,0.744,0;2,8.6,3,Closest deadline,False,0.0,0.122
+sim0345,Evening,18,9,18.8,0.891,0.164,0.091,1.145,4,17.1,moderate,0.801,3;6,2.5,3,Task I like most,False,0.0,0.103
+sim0346,Afternoon,15,10,22.4,0.678,0.197,0.023,1.065,3,15.6,moderate,0.502,1,2.6,3,Most important task,False,0.0,0.106
+sim0347,Late Night,0,15,28.2,0.788,0.261,0.099,1.674,3,7.8,low,0.428,2,5.3,1,Hardest task,False,0.0,0.084
+sim0348,Morning,10,15,35.0,0.83,0.076,0.046,1.086,5,28.7,high,0.0,3;4;7,6.2,4,Most important task,True,25.1,0.085
+sim0349,Morning,8,21,26.0,0.737,0.169,0.084,1.031,3,28.6,high,0.662,0;1,6.6,2,No clear method,True,45.0,0.146
+sim0350,Morning,10,17,41.4,0.768,0.208,0.076,1.356,4,25.7,moderate,0.36,1,9.6,5,Closest deadline,False,0.0,0.098
+sim0351,Evening,19,9,29.8,0.66,0.287,0.054,0.998,3,14.0,moderate,0.672,2;5,12.4,2,Most important task,True,40.0,0.083
+sim0352,Late Night,22,9,18.4,0.587,0.215,0.068,1.034,2,28.6,high,0.838,4;5,14.6,4,Closest deadline,True,45.0,0.127
+sim0353,Evening,17,0,38.9,0.685,0.169,0.028,0.964,3,27.7,high,0.497,0;2;5,3.1,6,Most important task,True,18.9,0.104
+sim0354,Late Night,23,14,25.5,0.789,0.239,0.068,0.854,4,27.6,high,0.355,0;4;6,13.8,6,Closest deadline,True,34.9,0.051
+sim0355,Late Night,0,19,18.5,0.819,0.209,0.091,0.981,5,15.7,moderate,1.0,4,14.0,1,Closest deadline,False,0.0,0.131
+sim0356,Late Night,22,7,46.8,0.744,0.195,0.028,1.329,4,20.0,moderate,0.671,4;6,5.1,4,Most important task,False,0.0,0.11
+sim0357,Late Night,0,15,18.1,0.611,0.339,0.051,1.066,2,28.2,high,0.548,1;3;4,14.7,2,Closest deadline,True,31.6,0.101
+sim0358,Late Night,0,19,42.5,0.806,0.266,0.096,0.93,5,20.4,moderate,0.329,0;7,5.9,3,Closest deadline,True,28.6,0.121
+sim0359,Morning,8,22,20.9,0.831,0.24,0.081,0.835,5,15.6,moderate,0.393,3,19.2,1,Hardest task,False,0.0,0.077
+sim0360,Late Night,0,11,18.7,0.689,0.131,0.024,0.952,4,19.3,moderate,0.717,2;3,5.1,5,Most important task,False,0.0,0.107
+sim0361,Late Night,22,11,45.7,0.682,0.311,0.043,1.161,2,17.0,moderate,0.981,4,2.7,1,Shortest task,True,31.4,0.082
+sim0362,Morning,11,23,33.3,0.885,0.078,0.088,0.97,5,20.2,moderate,0.562,5,6.2,2,Hardest task,True,45.0,0.084
+sim0363,Evening,17,10,20.5,0.756,0.221,0.084,1.341,4,11.7,low,0.803,1,14.8,5,No clear method,True,9.1,0.092
+sim0364,Evening,19,8,38.4,0.756,0.157,0.025,1.086,4,23.7,moderate,0.969,1;2,9.9,7,Closest deadline,True,16.7,0.076
+sim0365,Late Night,22,10,39.2,0.67,0.052,0.099,1.187,3,17.3,moderate,0.799,2,9.4,2,Most important task,False,0.0,0.09
+sim0366,Morning,7,12,25.9,0.934,0.091,0.073,1.012,5,18.5,moderate,0.629,5;6,4.1,3,Closest deadline,True,45.0,0.053
+sim0367,Late Night,21,15,37.3,0.636,0.137,0.076,1.665,2,24.7,moderate,0.761,4,8.1,5,Task I like most,False,0.0,0.097
+sim0368,Afternoon,12,23,43.2,0.861,0.315,0.086,1.155,5,18.7,moderate,0.868,4,2.1,4,Most important task,False,0.0,0.052
+sim0369,Morning,11,17,46.3,0.768,0.272,0.077,0.923,4,12.6,low,0.945,,6.2,1,Closest deadline,True,35.4,0.066
+sim0370,Late Night,0,8,18.3,0.639,0.322,0.071,1.349,2,15.8,moderate,0.617,1;2,8.2,12,Closest deadline,False,0.0,0.116
+sim0371,Evening,20,11,34.8,0.73,0.188,0.046,0.962,4,17.9,moderate,0.515,3,7.0,1,Closest deadline,True,45.0,0.054
+sim0372,Morning,8,0,31.5,0.718,0.196,0.031,1.342,3,22.5,moderate,0.561,1;4,8.3,5,Easiest task,False,0.0,0.105
+sim0373,Late Night,23,17,28.9,0.883,0.263,0.031,1.025,5,14.0,moderate,0.736,1,5.8,8,Closest deadline,False,0.0,0.116
+sim0374,Morning,9,21,24.6,0.64,0.094,0.026,1.13,2,23.8,moderate,0.443,3;7,9.2,5,No clear method,False,0.0,0.093
+sim0375,Late Night,23,11,26.3,0.744,0.167,0.046,0.956,4,26.5,high,0.931,0;3;7,5.1,3,Shortest task,False,0.0,0.127
+sim0376,Morning,10,18,34.3,0.761,0.301,0.036,0.96,4,21.0,moderate,0.304,7,8.8,2,Easiest task,True,18.0,0.096
+sim0377,Late Night,21,8,27.0,0.871,0.077,0.049,0.704,5,15.2,moderate,0.369,1;2,19.3,2,Closest deadline,True,30.8,0.142
+sim0378,Evening,19,13,21.0,0.669,0.292,0.029,1.261,3,22.4,moderate,0.812,1;3,3.8,6,Most important task,False,0.0,0.098
+sim0379,Morning,10,15,22.2,0.672,0.132,0.054,1.248,2,13.1,moderate,0.46,4,9.1,5,Easiest task,True,35.5,0.1
+sim0380,Afternoon,14,7,22.2,0.66,0.15,0.06,1.067,3,19.9,moderate,0.456,0;7,27.9,5,Most important task,False,0.0,0.052
+sim0381,Morning,9,22,44.8,0.803,0.204,0.09,0.959,5,8.5,low,0.396,4,3.8,3,Hardest task,False,0.0,0.086
+sim0382,Late Night,21,15,36.1,0.719,0.15,0.097,1.004,4,15.6,moderate,0.567,5,5.9,5,Most important task,True,23.4,0.132
+sim0383,Late Night,21,9,35.3,0.617,0.116,0.075,1.175,2,14.2,moderate,0.694,4,5.6,3,Easiest task,False,0.0,0.08
+sim0384,Late Night,0,15,28.4,0.574,0.335,0.026,1.057,2,11.7,low,0.474,7,8.2,8,Closest deadline,False,0.0,0.051
+sim0385,Afternoon,14,0,80.1,0.869,0.322,0.086,0.818,5,20.5,moderate,0.591,4,5.7,11,Task I like most,False,0.0,0.112
+sim0386,Afternoon,15,21,32.2,0.666,0.281,0.079,1.332,3,12.2,low,0.227,,4.7,11,Most important task,True,38.2,0.092
+sim0387,Morning,10,23,36.1,0.918,0.301,0.061,1.242,5,24.0,moderate,0.281,0;3,2.2,6,Hardest task,False,0.0,0.139
+sim0388,Morning,8,14,22.7,0.733,0.296,0.038,0.847,5,24.0,moderate,0.467,0;6,13.8,4,Most important task,True,45.0,0.054
+sim0389,Late Night,21,9,31.3,0.7,0.348,0.034,1.227,3,17.5,moderate,0.622,5;6,7.3,2,No clear method,True,27.1,0.09
+sim0390,Morning,7,18,29.4,0.783,0.173,0.038,0.97,5,14.5,moderate,0.0,3;4,9.2,4,Closest deadline,True,20.0,0.108
+sim0391,Late Night,23,15,34.9,0.789,0.284,0.054,1.046,5,21.2,moderate,0.737,0;3,7.3,4,Closest deadline,False,0.0,0.077
+sim0392,Late Night,21,12,24.4,0.674,0.15,0.039,1.052,3,13.4,moderate,1.0,2;6,5.6,5,Task I like most,True,22.5,0.09
+sim0393,Evening,19,7,22.6,0.884,0.13,0.092,1.02,5,23.6,moderate,1.0,1,3.6,2,Task I like most,True,19.1,0.092
+sim0394,Afternoon,14,8,37.9,0.72,0.078,0.027,1.101,5,17.8,moderate,0.249,1;3,8.6,3,No clear method,False,0.0,0.118
+sim0395,Morning,11,20,32.8,0.642,0.122,0.077,1.378,3,21.0,moderate,0.496,7,9.8,1,Most important task,False,0.0,0.068
+sim0396,Morning,11,21,27.3,0.782,0.09,0.067,1.157,3,20.1,moderate,0.618,5;7,2.7,2,Hardest task,True,41.4,0.075
+sim0397,Morning,10,20,32.6,0.755,0.291,0.035,1.26,4,11.8,low,0.702,,6.3,11,No clear method,False,0.0,0.119
+sim0398,Late Night,21,11,30.4,0.839,0.136,0.037,1.058,4,11.6,low,0.847,7,5.3,5,Hardest task,True,22.4,0.105
+sim0399,Evening,17,12,19.2,0.763,0.055,0.035,0.973,4,24.8,moderate,0.521,5,2.1,5,Most important task,False,0.0,0.119
+sim0400,Late Night,22,17,39.9,0.757,0.158,0.044,0.894,5,13.3,moderate,0.8,0,17.1,5,Closest deadline,True,41.3,0.121
+sim0401,Morning,7,18,23.5,0.489,0.336,0.035,1.185,2,20.9,moderate,0.926,0,17.2,5,Most important task,False,0.0,0.133
+sim0402,Morning,10,16,28.7,0.619,0.294,0.066,1.347,2,10.8,low,0.412,,11.2,6,Task I like most,False,0.0,0.069
+sim0403,Late Night,22,14,23.6,0.878,0.159,0.075,0.914,5,23.1,moderate,0.544,2,6.1,4,Most important task,True,9.9,0.11
+sim0404,Late Night,23,18,32.7,0.796,0.128,0.075,1.117,4,17.9,moderate,0.763,0,13.7,4,Hardest task,True,5.4,0.066
+sim0405,Evening,18,13,37.0,0.818,0.17,0.092,0.987,3,20.1,moderate,0.527,0;4,14.4,8,Easiest task,False,0.0,0.147
+sim0406,Evening,20,8,34.4,0.55,0.133,0.022,1.137,2,16.2,moderate,0.413,0;7,7.4,4,Task I like most,False,0.0,0.12
+sim0407,Morning,11,17,38.0,0.552,0.129,0.096,1.279,3,15.6,moderate,0.889,0;1,13.8,3,Closest deadline,False,0.0,0.074
+sim0408,Morning,10,18,36.7,0.75,0.173,0.087,0.971,3,14.3,moderate,0.527,2;3,12.7,5,Closest deadline,False,0.0,0.143
+sim0409,Late Night,21,13,29.5,0.591,0.244,0.039,1.109,2,21.2,moderate,0.977,5;7,3.7,5,Most important task,False,0.0,0.126
+sim0410,Afternoon,13,8,17.9,0.822,0.113,0.069,0.999,5,23.8,moderate,0.552,1;2,25.4,5,Closest deadline,False,0.0,0.108
+sim0411,Late Night,21,12,23.1,0.58,0.329,0.036,1.588,2,17.0,moderate,0.58,0;2,9.3,5,Closest deadline,False,0.0,0.125
+sim0412,Evening,17,22,17.1,0.842,0.163,0.066,0.776,5,15.3,moderate,0.683,1;7,11.5,6,Hardest task,True,23.4,0.07
+sim0413,Afternoon,14,7,32.2,0.734,0.281,0.046,1.272,4,17.0,moderate,0.784,0,12.0,5,Closest deadline,False,0.0,0.076
+sim0414,Late Night,23,11,20.5,0.852,0.122,0.048,1.076,4,21.9,moderate,0.833,1;3,4.7,1,Closest deadline,False,0.0,0.105
+sim0415,Late Night,0,10,30.1,0.793,0.222,0.063,1.038,4,23.5,moderate,0.487,6,3.8,5,Closest deadline,True,32.7,0.075
+sim0416,Evening,20,11,27.6,0.857,0.184,0.036,0.908,5,32.9,high,0.692,4;7,9.6,6,Closest deadline,False,0.0,0.148
+sim0417,Late Night,23,15,50.7,0.766,0.222,0.053,1.063,5,12.5,low,0.627,5,18.7,4,Task I like most,True,16.5,0.081
+sim0418,Evening,18,9,53.3,0.621,0.328,0.062,1.265,2,22.9,moderate,0.554,5,6.0,6,Most important task,False,0.0,0.087
+sim0419,Late Night,23,7,51.1,0.561,0.11,0.081,1.463,2,25.1,moderate,0.588,3;7,5.7,1,Closest deadline,False,0.0,0.126
+sim0420,Morning,9,18,29.4,0.866,0.161,0.054,0.909,5,22.4,moderate,0.313,1;5,7.4,3,Hardest task,False,0.0,0.143
+sim0421,Late Night,0,13,38.2,0.76,0.053,0.075,1.069,4,25.3,moderate,0.546,3,6.2,2,Closest deadline,False,0.0,0.117
+sim0422,Late Night,0,7,22.4,0.832,0.111,0.064,1.055,4,14.8,moderate,0.745,0;3,3.1,12,Easiest task,True,20.7,0.137
+sim0423,Late Night,0,16,19.1,0.896,0.225,0.037,0.923,5,16.7,moderate,0.848,6,4.4,5,Hardest task,True,25.7,0.133
+sim0424,Late Night,21,11,28.2,0.718,0.292,0.036,1.36,3,22.7,moderate,0.371,4,2.4,3,Most important task,False,0.0,0.13
+sim0425,Morning,7,22,26.0,0.635,0.215,0.036,1.204,2,17.8,moderate,0.634,3,16.5,2,Closest deadline,True,6.8,0.114
+sim0426,Morning,8,21,37.0,0.682,0.184,0.076,1.126,3,29.0,high,0.589,1;4;7,18.3,4,Closest deadline,False,0.0,0.104
+sim0427,Morning,9,21,46.8,0.558,0.2,0.071,1.25,2,22.2,moderate,0.8,4;7,8.6,8,Closest deadline,False,0.0,0.059
+sim0428,Evening,19,0,31.1,0.635,0.058,0.091,1.315,3,22.9,moderate,0.938,1;6,4.4,4,Most important task,False,0.0,0.126
+sim0429,Evening,20,9,20.2,0.702,0.077,0.032,1.234,3,21.4,moderate,0.4,3,11.1,4,No clear method,False,0.0,0.07
+sim0430,Late Night,22,17,47.9,0.618,0.184,0.084,1.351,2,17.0,moderate,0.777,6,3.5,3,Closest deadline,False,0.0,0.053
+sim0431,Late Night,23,11,38.7,0.747,0.29,0.077,1.108,3,15.8,moderate,0.571,4,4.3,2,Closest deadline,False,0.0,0.143
+sim0432,Morning,7,23,18.4,0.749,0.334,0.089,1.109,4,23.3,moderate,0.743,0;6,8.0,1,Closest deadline,False,0.0,0.103
+sim0433,Morning,8,16,38.0,0.816,0.258,0.08,0.957,4,17.6,moderate,0.798,3;4,17.7,4,Closest deadline,False,0.0,0.114
+sim0434,Late Night,0,9,19.5,0.551,0.215,0.079,1.737,2,30.9,high,0.378,0;1,6.6,12,Most important task,False,0.0,0.111
+sim0435,Morning,8,16,27.0,0.702,0.187,0.076,1.103,3,24.4,moderate,0.924,6;7,9.3,3,Task I like most,True,15.6,0.113
+sim0436,Afternoon,16,23,15.1,0.721,0.092,0.055,1.156,4,18.2,moderate,0.638,1,3.1,3,Most important task,False,0.0,0.114
+sim0437,Morning,7,19,39.3,0.712,0.176,0.038,1.416,3,18.8,moderate,0.727,5,3.6,4,Hardest task,True,10.4,0.076
+sim0438,Late Night,22,8,42.9,0.695,0.065,0.044,0.904,3,25.2,moderate,0.829,5,8.6,6,Easiest task,True,26.2,0.091
+sim0439,Evening,19,9,29.1,0.772,0.255,0.04,1.1,4,28.5,high,0.758,0;2;4,9.9,3,Closest deadline,True,45.0,0.114
+sim0440,Late Night,23,18,24.9,0.646,0.257,0.068,1.016,2,29.8,high,0.449,3;6,6.4,10,Easiest task,True,35.5,0.057
+sim0441,Late Night,0,14,27.7,0.851,0.127,0.023,1.088,5,22.3,moderate,0.78,4;5,4.3,6,Task I like most,True,29.6,0.101
+sim0442,Late Night,21,7,39.8,0.817,0.089,0.023,0.761,5,21.7,moderate,0.546,0,7.7,5,Closest deadline,False,0.0,0.085
+sim0443,Evening,18,11,30.0,0.617,0.202,0.094,1.154,3,18.9,moderate,0.463,0,9.0,4,Shortest task,False,0.0,0.086
+sim0444,Late Night,0,11,45.8,0.834,0.17,0.076,0.992,5,32.0,high,1.0,2;3;5,2.0,2,Task I like most,False,0.0,0.128
+sim0445,Morning,7,18,28.7,0.746,0.176,0.084,1.498,4,20.9,moderate,0.521,1;3,8.0,4,Shortest task,True,44.2,0.107
+sim0446,Late Night,0,8,30.3,0.616,0.268,0.038,1.246,2,15.9,moderate,0.393,6,11.9,4,Most important task,False,0.0,0.116
+sim0447,Late Night,21,15,36.2,0.751,0.285,0.064,1.269,3,17.1,moderate,0.526,3;7,7.0,4,Closest deadline,True,29.5,0.129
+sim0448,Afternoon,16,23,10.0,0.635,0.314,0.09,1.521,3,14.2,moderate,0.155,4;6,14.6,3,Hardest task,False,0.0,0.146
+sim0449,Late Night,22,14,37.8,0.888,0.284,0.068,0.918,5,14.9,moderate,0.64,3;5,8.5,5,Task I like most,True,32.7,0.109
+sim0450,Evening,17,0,17.4,0.753,0.07,0.058,1.059,4,23.0,moderate,0.723,7,17.0,4,Closest deadline,True,10.6,0.091
+sim0451,Morning,8,18,28.0,0.64,0.2,0.032,1.042,4,22.9,moderate,0.504,0;5,4.2,6,Closest deadline,False,0.0,0.11
+sim0452,Evening,19,7,45.1,0.76,0.172,0.085,1.155,3,31.1,high,0.369,1;2;3,5.9,6,Closest deadline,True,39.7,0.073
+sim0453,Late Night,0,10,24.4,0.66,0.275,0.097,1.08,3,19.4,moderate,0.702,1;6,4.2,5,Closest deadline,True,45.0,0.085
+sim0454,Morning,11,18,39.6,0.898,0.267,0.056,1.111,5,26.6,high,0.532,2;6;7,5.3,2,Closest deadline,False,0.0,0.08
+sim0455,Morning,10,19,30.6,0.571,0.146,0.093,0.9,2,27.0,high,0.747,4;7,8.5,3,Most important task,True,21.3,0.137
+sim0456,Morning,11,23,16.4,0.92,0.134,0.098,1.042,5,22.5,moderate,0.199,5,3.7,2,Closest deadline,False,0.0,0.089
+sim0457,Evening,20,15,33.9,0.715,0.053,0.076,0.953,5,22.4,moderate,1.0,0,4.6,5,Closest deadline,False,0.0,0.105
+sim0458,Evening,19,7,34.8,0.811,0.196,0.078,1.05,4,18.8,moderate,0.416,5,8.6,2,Most important task,False,0.0,0.126
+sim0459,Evening,18,0,28.8,0.887,0.159,0.069,1.065,5,19.1,moderate,0.326,0,13.2,3,Closest deadline,True,4.0,0.057
+sim0460,Late Night,21,11,46.2,0.636,0.325,0.058,0.92,2,15.6,moderate,0.33,6,18.5,9,Task I like most,False,0.0,0.07
+sim0461,Morning,7,15,49.8,0.748,0.158,0.029,0.905,4,27.6,high,0.462,0;5,9.1,2,Closest deadline,True,20.7,0.052
+sim0462,Late Night,23,10,24.5,0.667,0.206,0.058,1.029,3,18.1,moderate,0.768,0;1,3.4,3,Hardest task,False,0.0,0.123
+sim0463,Evening,19,10,14.9,0.835,0.305,0.069,1.062,4,16.4,moderate,0.347,6,4.5,4,No clear method,False,0.0,0.137
+sim0464,Late Night,21,15,30.0,0.602,0.145,0.032,1.351,2,23.0,moderate,0.641,5,3.8,4,Closest deadline,False,0.0,0.144
+sim0465,Late Night,23,7,22.1,0.931,0.188,0.029,1.171,5,12.8,low,0.635,1,7.6,10,Closest deadline,False,0.0,0.091
+sim0466,Late Night,0,18,58.0,0.622,0.199,0.082,1.32,3,22.8,moderate,0.543,2;7,2.1,4,Closest deadline,False,0.0,0.093
+sim0467,Late Night,0,14,32.3,0.606,0.22,0.04,1.041,2,15.2,moderate,0.756,3,2.9,4,Closest deadline,True,4.0,0.1
+sim0468,Late Night,23,18,45.4,0.634,0.348,0.083,1.01,4,27.1,high,0.84,1;7,17.5,4,Closest deadline,True,10.3,0.148
+sim0469,Late Night,21,7,44.9,0.671,0.255,0.083,1.28,3,27.4,high,0.96,1;3,13.4,6,No clear method,True,36.4,0.08
+sim0470,Morning,9,14,20.0,0.95,0.212,0.092,1.239,5,25.9,moderate,0.676,6,6.7,2,Closest deadline,False,0.0,0.093
+sim0471,Afternoon,15,10,41.0,0.625,0.23,0.024,1.105,3,16.0,moderate,0.795,3,11.3,2,Task I like most,False,0.0,0.055
+sim0472,Late Night,0,19,23.2,0.527,0.098,0.051,1.082,2,24.3,moderate,0.799,0;6,5.4,3,Closest deadline,False,0.0,0.143
+sim0473,Morning,11,20,29.5,0.605,0.221,0.034,0.916,3,14.8,moderate,0.608,4,17.4,2,No clear method,True,21.8,0.139
+sim0474,Late Night,0,17,22.5,0.782,0.247,0.086,1.027,5,19.9,moderate,0.833,3;7,5.3,3,Closest deadline,True,28.0,0.105
+sim0475,Morning,10,21,28.9,0.848,0.154,0.078,1.093,5,24.9,moderate,0.669,0,13.8,4,Hardest task,False,0.0,0.081
+sim0476,Afternoon,12,21,31.2,0.8,0.075,0.076,1.015,4,16.0,moderate,0.775,6,8.5,2,No clear method,False,0.0,0.107
+sim0477,Late Night,0,14,29.4,0.933,0.303,0.064,1.073,5,16.3,moderate,0.613,3;7,4.7,1,Closest deadline,True,33.0,0.124
+sim0478,Morning,8,19,18.4,0.651,0.157,0.04,1.015,3,23.1,moderate,0.723,3;6,3.5,4,No clear method,False,0.0,0.136
+sim0479,Morning,10,23,40.6,0.675,0.3,0.06,1.52,3,18.3,moderate,0.406,3,4.3,3,Closest deadline,False,0.0,0.109
+sim0480,Morning,11,22,31.3,0.75,0.124,0.048,1.075,4,21.4,moderate,0.477,7,12.2,1,No clear method,False,0.0,0.075
+sim0481,Evening,18,11,24.6,0.779,0.217,0.038,0.966,4,23.3,moderate,0.828,2;7,5.8,9,Hardest task,True,45.0,0.06
+sim0482,Late Night,0,8,28.0,0.734,0.337,0.092,1.177,4,20.6,moderate,0.359,4;6,26.7,2,Closest deadline,False,0.0,0.145
+sim0483,Evening,18,10,23.6,0.841,0.106,0.078,0.827,5,14.1,moderate,0.072,3;5,2.6,4,Closest deadline,False,0.0,0.109
+sim0484,Morning,7,15,30.8,0.644,0.075,0.085,1.264,3,19.9,moderate,0.539,0;6,2.1,5,Closest deadline,False,0.0,0.104
+sim0485,Morning,7,18,31.7,0.802,0.252,0.076,0.754,4,24.2,moderate,0.358,0;1,17.8,5,Most important task,False,0.0,0.065
+sim0486,Afternoon,13,8,27.2,0.646,0.217,0.04,1.091,3,21.9,moderate,0.516,4,4.0,4,Task I like most,False,0.0,0.058
+sim0487,Morning,7,20,47.9,0.674,0.293,0.088,0.962,3,22.3,moderate,0.714,1,5.4,2,Closest deadline,True,41.6,0.103
+sim0488,Evening,20,8,34.3,0.71,0.202,0.062,1.048,3,19.6,moderate,0.775,2;5,3.6,3,No clear method,True,17.8,0.087
+sim0489,Afternoon,15,9,27.7,0.818,0.26,0.038,1.004,3,17.1,moderate,0.662,0;4,8.7,8,Closest deadline,False,0.0,0.145
+sim0490,Morning,11,23,23.0,0.712,0.2,0.036,1.067,2,19.5,moderate,0.571,2;6,9.5,5,Closest deadline,False,0.0,0.135
+sim0491,Evening,20,9,20.1,0.631,0.272,0.097,1.002,3,23.7,moderate,0.411,4,8.8,4,Shortest task,False,0.0,0.142
+sim0492,Evening,19,9,34.6,0.566,0.092,0.02,1.329,2,19.1,moderate,0.625,5,7.0,3,Task I like most,False,0.0,0.136
+sim0493,Late Night,21,7,39.4,0.732,0.134,0.045,0.843,4,23.5,moderate,0.767,6,2.5,4,Closest deadline,True,45.0,0.126
+sim0494,Afternoon,15,23,20.7,0.722,0.161,0.068,1.142,4,15.0,moderate,0.999,1;3,9.2,3,Task I like most,False,0.0,0.074
+sim0495,Late Night,23,11,31.1,0.601,0.223,0.071,1.234,2,25.6,moderate,0.394,4;7,8.1,1,Task I like most,False,0.0,0.129
+sim0496,Morning,11,0,37.6,0.686,0.271,0.043,1.076,3,21.4,moderate,0.523,4;5,13.1,5,Closest deadline,False,0.0,0.103
+sim0497,Late Night,21,16,36.9,0.739,0.104,0.061,1.353,3,12.7,low,0.704,3,5.6,2,Most important task,False,0.0,0.072
+sim0498,Morning,7,20,38.0,0.85,0.065,0.069,0.828,5,19.2,moderate,0.379,0,6.0,5,Hardest task,True,44.9,0.123
+sim0499,Late Night,21,8,29.1,0.615,0.296,0.093,1.264,3,20.9,moderate,0.494,4;5,16.7,3,Most important task,True,22.5,0.095
