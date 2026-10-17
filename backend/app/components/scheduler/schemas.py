@@ -476,6 +476,20 @@ class StressDecisionIn(BaseModel):
 
 
 # ===========================================================================
+# C3 -> C4 WEEKLY SUMMARY (DeviationSignal)
+# ===========================================================================
+class WeeklySummarySentOut(BaseModel):
+    week_start: str                                              # Monday (Sri Lanka time), e.g. "2026-10-12"
+    status: Literal["SENT", "ALREADY_SENT", "TRACKING_OFF"]
+    event_id: str | None = None
+    task_completion_rate: float | None = None
+    missed_sessions: int | None = None
+    task_load: int | None = None
+    deadline_density: float | None = None
+    semester_phase: str | None = None
+
+
+# ===========================================================================
 # OLD ENDPOINTS (kept so the current frontend keeps working)
 # ===========================================================================
 class FocusIn(BaseModel):

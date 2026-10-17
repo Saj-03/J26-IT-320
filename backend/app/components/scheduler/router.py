@@ -15,6 +15,7 @@ from app.components.scheduler import (
 )
 from app.components.scheduler.models import Task, FocusSession, ScheduleChange
 from app.components.scheduler.engine import stress_rules
+from app.shared.integration import c3_weekly_summary as weekly_summary
 
 router = APIRouter()
 
@@ -231,6 +232,17 @@ def stress_decide(change_id: str, data: schemas.StressDecisionIn,
 def stress_restore(change_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Undo an accepted proposal - back to the plan I had before."""
     return stress_service.restore(db, user, change_id)
+
+
+# ===========================================================================
+# C3 -> C4 WEEKLY SUMMARY
+# ===========================================================================
+@router.post("/integration/weekly-summary", response_model=list[schemas.WeeklySummarySentOut])
+def send_weekly_summary(weeks: int = Query(1, ge=1, le=weekly_summary.MAX_BACKFILL_WEEKS,
+                                           description="how many finished weeks to send (oldest first)"),
+                        db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Send my last finished week(s) to Component 4. Safe to repeat - each week is sent once."""
+    return weekly_summary.send_recent_weeks(db, user, weeks)
 
 
 @router.get("/plan")
