@@ -22,6 +22,9 @@ export const resumeFocus = (id) => api.post(`/scheduler/focus/${id}/resume`).the
 export const endFocus = (id, rating) =>
   api.post(`/scheduler/focus/${id}/end`, rating ? { focus_rating: rating } : {}).then((r) => r.data);
 
+// --- Attention profile (M1 model): best / worst hours, capacity, chance per hour ---
+export const getAttentionProfile = () => api.get("/scheduler/attention/profile").then((r) => r.data);
+
 // --- Stress adaptation (uses Component 4's wellbeing signal) ---
 // status -> (propose) -> decide: accepted / edited (keep = positions) / rejected -> restore (undo)
 export const getStressStatus = () => api.get("/scheduler/stress/status").then((r) => r.data);
