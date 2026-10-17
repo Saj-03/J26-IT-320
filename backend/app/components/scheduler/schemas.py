@@ -394,6 +394,26 @@ class SettingsUpdate(BaseModel):
 
 
 # ===========================================================================
+# STRESS ADAPTATION (Module F)
+# ===========================================================================
+StressAction = Literal["none", "propose_changes", "already_proposed", "off"]
+
+
+class StressStatusOut(BaseModel):
+    """What the scheduler does with Component 4's latest wellbeing signal."""
+    level: Literal["LOW", "MODERATE", "HIGH"] | None   # None = no signal shared
+    risk_score: float | None
+    trend: Literal["FALLING", "STABLE", "RISING"] | None
+    signal_event_id: str | None
+    signal_received_at: datetime | None
+    fresh: bool                      # received in the last 24 h
+    adaptation_on: bool              # student's own switch (settings)
+    mode: str                        # experiment mode
+    action: StressAction             # what happens next
+    reason: str                      # plain-language explanation for the student
+
+
+# ===========================================================================
 # OLD ENDPOINTS (kept so the current frontend keeps working)
 # ===========================================================================
 class FocusIn(BaseModel):

@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.core.dependencies import get_current_user
 from app.components.scheduler import (
-    schemas, service, task_service, commitment_service, focus_service, settings_service,
+    schemas, service, task_service, commitment_service, focus_service, settings_service, stress_service,
 )
 from app.components.scheduler.models import Task, FocusSession, ScheduleChange
 from app.components.scheduler.engine import stress_rules
@@ -191,6 +191,15 @@ def get_settings(db: Session = Depends(get_db), user=Depends(get_current_user)):
 def update_settings(data: schemas.SettingsUpdate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Change my settings (send only what changed). Experiment mode can't be changed here."""
     return settings_service.update_settings(db, user, data)
+
+
+# ===========================================================================
+# STRESS ADAPTATION  (FR-06, FR-07) - uses Component 4's wellbeing signal
+# ===========================================================================
+@router.get("/stress/status", response_model=schemas.StressStatusOut)
+def stress_status(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Latest wellbeing signal and what the scheduler will do with it (nothing is changed here)."""
+    return stress_service.stress_status(db, user)
 
 
 @router.get("/plan")
