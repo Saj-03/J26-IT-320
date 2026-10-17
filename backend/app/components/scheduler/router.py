@@ -208,6 +208,18 @@ def task_safety(db: Session = Depends(get_db), user=Depends(get_current_user)):
     return stress_service.task_safety(db, user)
 
 
+@router.post("/stress/propose", response_model=schemas.StressProposalOut, status_code=status.HTTP_201_CREATED)
+def stress_propose(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Suggest a lighter plan (409 + reason if not needed now). Nothing changes until I accept."""
+    return stress_service.propose(db, user)
+
+
+@router.get("/stress/proposals", response_model=list[schemas.StressProposalOut])
+def stress_proposals(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Suggestions still waiting for my decision."""
+    return stress_service.list_proposals(db, user)
+
+
 @router.get("/plan")
 def plan(adaptive: bool = True, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """adaptive=false gives the STATIC baseline used in the controlled pilot."""

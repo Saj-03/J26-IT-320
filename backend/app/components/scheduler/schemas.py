@@ -428,6 +428,28 @@ class TaskSafetyOut(BaseModel):
     locked: list[TaskSafetyRow]
 
 
+class ProposedChange(BaseModel):
+    """One suggested change. action: move (to a later time) / split (into pieces) / rest (add a break)."""
+    action: Literal["move", "split", "rest"]
+    task_id: str | None
+    title: str
+    reason: str
+    to: str | None = None            # move: new planned start (UTC, ISO)
+    pieces: list[int] | None = None  # split: minutes per piece
+    minutes: int | None = None       # rest: length of the break
+
+
+class StressProposalOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    signal_event_id: str | None
+    reason: str                      # one-sentence summary for the student
+    change_set: list[ProposedChange]
+    decision: str                    # proposed / accepted / edited / rejected / restored
+    created_at: datetime
+
+
 # ===========================================================================
 # OLD ENDPOINTS (kept so the current frontend keeps working)
 # ===========================================================================
