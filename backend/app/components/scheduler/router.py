@@ -12,6 +12,7 @@ from app.db.session import get_db
 from app.core.dependencies import get_current_user
 from app.components.scheduler import (
     schemas, service, task_service, commitment_service, focus_service, settings_service, stress_service,
+    attention_service,
 )
 from app.components.scheduler.models import Task, FocusSession, ScheduleChange
 from app.components.scheduler.engine import stress_rules
@@ -177,6 +178,15 @@ def rate_focus(session_id: str, data: schemas.FocusRatingIn,
                db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Give (or change) the 1-5 "how was your focus?" rating after ending."""
     return focus_service.rate_session(db, user, session_id, data.focus_rating)
+
+
+# ===========================================================================
+# ATTENTION PROFILE  (FR-05, FR-13, FR-15) - from the M1 model
+# ===========================================================================
+@router.get("/attention/profile", response_model=schemas.AttentionProfileOut)
+def attention_profile(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """My best / worst focus hours, focus capacity and suggested session length (M1)."""
+    return attention_service.attention_profile(db, user)
 
 
 # ===========================================================================

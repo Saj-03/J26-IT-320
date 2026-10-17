@@ -15,6 +15,7 @@ import { getActiveFocus, getTimerRecommendation, listTasks, startFocus } from '.
 const SOURCE_TITLE = {
     student_fixed: 'Your fixed timer',
     static_default: 'Standard Pomodoro',
+    m1_model: 'AI suggestion from your focus history',
     history_rules: 'Based on your recent focus history',
     survey: 'Based on your usual focus length',
     default: 'Still learning',

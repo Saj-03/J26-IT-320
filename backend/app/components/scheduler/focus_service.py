@@ -76,12 +76,12 @@ def recommend_timer(db: Session, user) -> dict:
 
       1. student fixed their own timer in settings  -> use it
       2. static mode (pilot baseline)               -> always 25 / 5
-      3. adaptive mode, enough history              -> learned from past sessions
-      4. adaptive mode, no history yet              -> onboarding survey answer
-      5. nothing known                              -> 25 / 5
-
-    TODO (Step 6): step 3 will use the M1 Focus Success Network instead of rules.
+      3. enough history + M1 model available        -> M1 Focus Success Network (attention_service)
+      4. enough history, no model                   -> rules (median of completed sessions)
+      5. no history yet                             -> onboarding survey answer
+      6. nothing known                              -> 25 / 5
     """
+    from app.components.scheduler.attention_service import m1_timer   # here to avoid an import loop
     s = get_settings(db, user)
 
     # 1. Student's own fixed timer always wins (student control)
@@ -95,7 +95,12 @@ def recommend_timer(db: Session, user) -> dict:
         return {"focus_minutes": DEFAULT_FOCUS, "break_minutes": DEFAULT_BREAK, "source": "static_default",
                 "reason": "Standard 25-minute Pomodoro"}
 
-    # 3. Adaptive mode with enough history -> learn from completed sessions
+    # 3. Enough history -> ask the M1 model (None if not enough data or no model)
+    m1 = m1_timer(db, user)
+    if m1:
+        return m1
+
+    # 4. No model -> learn from completed sessions with simple rules
     done = (db.query(FocusSession)
               .filter(FocusSession.user_id == user.id, FocusSession.completed.is_(True))
               .all())
@@ -104,13 +109,13 @@ def recommend_timer(db: Session, user) -> dict:
         return {**timer, "source": "history_rules",
                 "reason": f"Based on your last {len(done)} completed sessions"}
 
-    # 4. Not enough history yet -> use what the student told us in the survey
+    # 5. Not enough history yet -> use what the student told us in the survey
     if s and s.usual_focus_minutes and s.usual_focus_minutes != DEFAULT_FOCUS:
         m = max(15, min(s.usual_focus_minutes, 50))
         return {"focus_minutes": m, "break_minutes": break_for(m), "source": "survey",
                 "reason": "Based on how long you said you usually focus"}
 
-    # 5. Nothing known
+    # 6. Nothing known
     return {"focus_minutes": DEFAULT_FOCUS, "break_minutes": DEFAULT_BREAK, "source": "default",
             "reason": "Starting with a standard 25-minute session until we learn your pattern"}
 

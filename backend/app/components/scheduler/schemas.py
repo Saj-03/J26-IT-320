@@ -247,7 +247,7 @@ class ConflictOut(BaseModel):
 # ===========================================================================
 # FOCUS SESSIONS  (FR-05, FR-15)
 # ===========================================================================
-TimerSource = Literal["student_fixed", "static_default", "history_rules", "survey", "default"]
+TimerSource = Literal["student_fixed", "static_default", "m1_model", "history_rules", "survey", "default"]
 
 
 class TimerRecommendationOut(BaseModel):
@@ -473,6 +473,26 @@ class StressDecisionIn(BaseModel):
         if self.decision != "edited" and self.keep is not None:
             raise ValueError("keep is only used when decision is edited")
         return self
+
+
+# ===========================================================================
+# ATTENTION PROFILE (M1)
+# ===========================================================================
+class HourChance(BaseModel):
+    hour: int                        # 0..23, Sri Lanka time
+    chance: float                    # M1: chance a 25-min session at this hour is completed
+
+
+class AttentionProfileOut(BaseModel):
+    source: Literal["m1_model", "not_enough_history", "model_unavailable"]
+    reason: str
+    sessions_used: int
+    min_sessions: int
+    hourly: list[HourChance] | None = None
+    peak_hours: list[int] | None = None        # best 3, best first
+    low_hours: list[int] | None = None         # worst 3, worst first
+    capacity_minutes: int | None = None        # longest session before success drops
+    recommended_focus: int | None = None       # suggested Pomodoro (15-50)
 
 
 # ===========================================================================
