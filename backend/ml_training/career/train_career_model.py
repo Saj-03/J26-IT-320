@@ -260,9 +260,9 @@ def write_report(ctx: dict) -> None:
     L = ["# ACRDS career model - training and evaluation report", "",
          f"Generated {ctx['trained_at']} by `ml_training/career/train_career_model.py`.", "",
          "## Data", "",
-         f"- Labelled survey responses: **{ctx['n']}** (after removing bulk-duplicated submissions; "
+         f"- Labelled survey responses: **{ctx['n']}** (after removing fake and duplicated submissions; "
          "see `data_preparation_report.md`).",
-         f"- Classes (career family): " + ", ".join(f"{c} ({n})" for c, n in ctx["class_counts"].items()),
+         "- Classes (career family): " + ", ".join(f"{c} ({n})" for c, n in ctx["class_counts"].items()),
          f"- Features: {ctx['n_features_full']} (full profile) / 9 (skills only). "
          "Stated career area and preferred role are excluded (label leakage).",
          f"- Validation: nested CV - outer {ctx['repeats']} x 5-fold repeated stratified, inner 3-fold grid search.",

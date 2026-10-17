@@ -4,7 +4,7 @@ Generated 2026-10-15 06:19 UTC by `ml_training/career/train_career_model.py`.
 
 ## Data
 
-- Labelled survey responses: **140** (after removing bulk-duplicated submissions; see `data_preparation_report.md`).
+- Labelled survey responses: **140** (after removing fake and duplicated submissions; see `data_preparation_report.md`).
 - Classes (career family): business (34), cybersecurity (8), data (11), design (6), other (37), software (44)
 - Features: 73 (full profile) / 9 (skills only). Stated career area and preferred role are excluded (label leakage).
 - Validation: nested CV - outer 5 x 5-fold repeated stratified, inner 3-fold grid search.

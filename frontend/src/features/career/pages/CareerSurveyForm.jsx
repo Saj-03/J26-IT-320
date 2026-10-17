@@ -9,7 +9,7 @@ import { Field, SelectField } from "../../../shared/components/ui/Field";
 import { apiErrorMessage } from "../../../shared/api/client";
 import { cn } from "../../../shared/lib/cn";
 import { recommendCareers } from "../api/careerApi";
-import { careerSession, useCareerFlow } from "../utils/careerSession";
+import { careerSession, surveyDraft, useCareerFlow } from "../utils/careerSession";
 import { DEMO_PROFILE, EMPTY_PROFILE, FACULTY_CAREER_OPTIONS, OPTIONS, SKILLS } from "../constants";
 import { ui } from "../theme";
 
@@ -33,7 +33,7 @@ function Rating({ label, value, onChange }) {
       <span className="text-sm font-semibold text-charcoal-light">{label}</span>
       <div className="flex gap-1.5">
         {[1, 2, 3, 4, 5].map((n) => (
-          <button key={n} type="button" onClick={() => onChange(n)} aria-label={`${label} ${n}`}
+          <button key={n} type="button" onClick={() => onChange(n)} aria-label={`${label} ${n}`} aria-pressed={n === value}
             className={cn("w-9 h-9 rounded-xl text-sm font-bold transition-colors",
               n === value ? ui.choiceOn : ui.choiceOff, "border")}>
             {n}
@@ -44,19 +44,31 @@ function Rating({ label, value, onChange }) {
   );
 }
 
-// Select-all-that-apply chips. `selected` is an array of chosen options.
-function Chips({ label, options, selected, onToggle }) {
+// Select-all-that-apply chips. `selected` is an array of chosen options; `max` limits how many.
+function Chips({ label, options, selected, onToggle, max }) {
+  const full = max != null && selected.length >= max;
   return (
     <div className="sm:col-span-2">
-      <p className="text-sm font-semibold text-charcoal-light mb-2">{label}</p>
+      <p className="text-sm font-semibold text-charcoal-light mb-2">
+        {label}
+        {max != null && (
+          <span className={cn("ml-2 text-xs font-bold", full ? "text-[#1F5F53]" : "text-charcoal-muted")}>
+            {selected.length} of {max} selected
+          </span>
+        )}
+      </p>
       <div className="flex flex-wrap gap-2">
-        {options.map((item) => (
-          <button key={item} type="button" onClick={() => onToggle(item)}
-            className={cn("rounded-full px-3.5 py-1.5 text-sm font-semibold border transition-colors",
-              selected.includes(item) ? ui.choiceOn : ui.choiceOff)}>
-            {item}
-          </button>
-        ))}
+        {options.map((item) => {
+          const on = selected.includes(item);
+          return (
+            <button key={item} type="button" onClick={() => onToggle(item)} aria-pressed={on}
+              disabled={full && !on} title={full && !on ? `You can choose up to ${max}` : undefined}
+              className={cn("rounded-full px-3.5 py-1.5 text-sm font-semibold border transition-colors",
+                "disabled:opacity-40 disabled:cursor-not-allowed", on ? ui.choiceOn : ui.choiceOff)}>
+              {item}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -93,7 +105,8 @@ const REQUIRED_FIELDS = ["academic_status", "employment_status", "faculty_field"
 
 export default function CareerSurveyForm() {
   const navigate = useNavigate();
-  const [form, setForm] = useState(() => careerSession.get().profile || EMPTY_PROFILE);
+  // An unfinished draft wins over the last submitted profile, so a refresh never loses answers.
+  const [form, setForm] = useState(() => surveyDraft.get() || careerSession.get().profile || EMPTY_PROFILE);
   const { flow: saved, ready } = useCareerFlow();
   // Show the student's saved answers once they load (only if they have not started typing).
   useEffect(() => {
@@ -102,6 +115,10 @@ export default function CareerSurveyForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [demoFilled, setDemoFilled] = useState(false);
+  useEffect(() => {
+    if (form === EMPTY_PROFILE) surveyDraft.clear(); // e.g. "Clear demo profile"
+    else surveyDraft.save(form);
+  }, [form]);
 
   const set = (name, value) => setForm((f) => ({ ...f, [name]: value }));
   // First click fills the demo profile; second click resets the whole form (even after manual edits).
@@ -130,6 +147,7 @@ export default function CareerSurveyForm() {
       // A new profile invalidates any earlier gap analysis / roadmap.
       careerSession.update({ profile, recommendations: result.recommendations, persona: result.persona,
                              selectedCareer: null, gapAnalysis: null, roadmap: null });
+      surveyDraft.clear();
       navigate("/app/career/recommendations");
     } catch (err) {
       setError(apiErrorMessage(err));
@@ -159,6 +177,7 @@ export default function CareerSurveyForm() {
         <span className="text-xs font-bold text-[#1F5F53] whitespace-nowrap">
           {answered} of {REQUIRED_FIELDS.length} answered
         </span>
+        <span className="hidden sm:inline text-[11px] text-charcoal-muted whitespace-nowrap">· answers kept if you refresh</span>
       </div>
 
       <form className="space-y-5" onSubmit={submit}>
@@ -219,7 +238,7 @@ export default function CareerSurveyForm() {
           <Chips label="Type of career-related work (select all that apply)" options={OPTIONS.career_related_work_type}
             selected={toList(form.career_related_work_type)} onToggle={toggleText("career_related_work_type")} />
           <Chips label="What support do you need? (up to 3)" options={OPTIONS.career_support_needed}
-            selected={form.career_support_needed}
+            selected={form.career_support_needed} max={3}
             onToggle={(item) => set("career_support_needed", toggle(form.career_support_needed, item))} />
         </Section>
 

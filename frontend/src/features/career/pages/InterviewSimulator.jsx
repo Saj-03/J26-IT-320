@@ -12,6 +12,7 @@ import FeedbackCard from "../components/interview/FeedbackCard";
 import InterviewReport from "../components/interview/InterviewReport";
 import useSpeechRecognition from "../hooks/useSpeechRecognition";
 import useFaceMetrics from "../hooks/useFaceMetrics";
+import useSpeechSynthesis from "../hooks/useSpeechSynthesis";
 import { evaluateInterviewAnswer, getCareers, getCoachFeedback, getInterviewQuestions, getInterviewReport, health,
   saveInterviewReport } from "../api/careerApi";
 import { careerSession } from "../utils/careerSession";
@@ -22,6 +23,7 @@ const QUESTION_SETS = 4;
 export default function InterviewSimulator() {
   const navigate = useNavigate();
   const speech = useSpeechRecognition();
+  const tts = useSpeechSynthesis();
   const [careers, setCareers] = useState([]);
   const [settings, setSettings] = useState(() => {
     const flow = careerSession.get();
@@ -31,6 +33,9 @@ export default function InterviewSimulator() {
       variant: 0,
       consent: false,
       useLlm: true,
+      readAloud: true, // interviewer voice (text-to-speech in the browser)
+      voiceURI: "",
+      rate: 1,
     };
   });
   const [llm, setLlm] = useState({ enabled: false }); // is an LLM provider configured on the server?
@@ -55,6 +60,14 @@ export default function InterviewSimulator() {
   const question = session?.questions[index];
   const feedback = results[index];
   const isLast = session && index === session.questions.length - 1;
+
+  const readAloud = settings.readAloud && tts.supported;
+  const readQuestion = () => question && tts.speak(question.question, { voiceURI: settings.voiceURI, rate: settings.rate });
+  // The interviewer asks each new question; stop talking when the interview stage ends.
+  useEffect(() => {
+    if (stage === "interview" && readAloud && question) readQuestion();
+    else tts.cancel();
+  }, [stage, question?.id]);
 
   const beginQuestion = () => {
     speech.reset();
@@ -84,6 +97,7 @@ export default function InterviewSimulator() {
 
   const submit = async (text) => {
     speech.stop();
+    tts.cancel();
     setBusy(true);
     setError("");
     const qIndex = index;
@@ -174,14 +188,16 @@ export default function InterviewSimulator() {
 
       {stage === "setup" && (
         <InterviewSetup careers={careers} settings={settings} onChange={setSettings} onStart={() => start()}
-          speechSupported={speech.supported} speechProblem={speech.problem} llm={llm} busy={busy} error={error} />
+          speechSupported={speech.supported} speechProblem={speech.problem} llm={llm} busy={busy} error={error}
+          tts={tts} />
       )}
 
       {stage === "interview" && question && (
         <div className={settings.mode === "camera" ? "grid lg:grid-cols-[1fr_320px] gap-5 items-start" : "space-y-5"}>
           <div className="space-y-5 min-w-0">
             <AnswerPanel question={question} index={index} total={session.questions.length} voice={voice}
-              speech={speech} answer={answer} setAnswer={setAnswer} onSubmit={submit} busy={busy} locked={!!feedback} />
+              speech={speech} answer={answer} setAnswer={setAnswer} onSubmit={submit} busy={busy} locked={!!feedback}
+              interviewer={{ enabled: readAloud, speaking: tts.speaking, read: readQuestion, stop: tts.cancel }} />
 
             {error && <p className="text-sm font-semibold text-red-600 bg-red-50 rounded-2xl px-4 py-3">{error}</p>}
 

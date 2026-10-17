@@ -1,4 +1,4 @@
-import { KeyboardIcon, MicIcon, VideoIcon, ShieldCheckIcon, PlayIcon, SparklesIcon } from "lucide-react";
+import { KeyboardIcon, MicIcon, VideoIcon, ShieldCheckIcon, PlayIcon, SparklesIcon, Volume2Icon } from "lucide-react";
 import { SelectField } from "../../../../shared/components/ui/Field";
 import { cn } from "../../../../shared/lib/cn";
 import Card from "../CareerCard";
@@ -6,6 +6,7 @@ import Button from "../CareerButton";
 import { ETHICS_NOTES } from "../../constants";
 import { ui } from "../../theme";
 import MicCheck from "./MicCheck";
+import SpeakerCheck from "./SpeakerCheck";
 
 const MODES = [
   { id: "text", icon: KeyboardIcon, title: "Typed answers", desc: "Type your answers. Scores content only.", needsSpeech: false },
@@ -15,8 +16,9 @@ const MODES = [
 
 const PROVIDER_NAME = { gemini: "Google Gemini", openai: "OpenAI", claude: "Anthropic Claude" };
 
-export default function InterviewSetup({ careers, settings, onChange, onStart, speechSupported, speechProblem, llm, busy, error }) {
+export default function InterviewSetup({ careers, settings, onChange, onStart, speechSupported, speechProblem, llm, busy, error, tts }) {
   const set = (key, value) => onChange({ ...settings, [key]: value });
+  const merge = (patch) => onChange({ ...settings, ...patch });
   const usesMedia = settings.mode !== "text";
 
   return (
@@ -54,7 +56,22 @@ export default function InterviewSetup({ careers, settings, onChange, onStart, s
               Voice modes are unavailable: {speechProblem} Typed answers still work.
             </p>
           )}
-          {usesMedia && <div className="mt-3"><MicCheck /></div>}
+        </div>
+
+        {/* Device checks: interviewer voice (all modes) and microphone (voice modes) */}
+        <div className="space-y-3">
+          <label className="flex items-start gap-2 text-sm text-charcoal-light cursor-pointer">
+            <input type="checkbox" className="mt-1 accent-[#5DBFA9]" checked={settings.readAloud}
+              disabled={!tts.supported} onChange={(e) => set("readAloud", e.target.checked)} />
+            <span>
+              <span className="font-semibold text-charcoal flex items-center gap-1">
+                <Volume2Icon size={14} /> Interviewer reads each question aloud
+              </span>
+              Feels more like a real interview. Uses your browser&apos;s voice; nothing is sent to the server.
+            </span>
+          </label>
+          {settings.readAloud && <SpeakerCheck tts={tts} voiceURI={settings.voiceURI} rate={settings.rate} onChange={merge} />}
+          {usesMedia && <MicCheck />}
         </div>
       </Card>
 
