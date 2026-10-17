@@ -1,6 +1,6 @@
 """Unit tests for Step 3.2 synthetic students (small hand-made priors, no files needed)."""
 from ml_training.scheduler.simulate_students import (
-    PEAK_HOURS, MIN_PEAK_LOW_GAP, SIM_WEEKS, hour_gap, make_students,
+    PEAK_HOURS, MIN_PEAK_LOW_GAP, SELF_REPORT_RIGHT, SIM_WEEKS, hour_gap, make_students,
 )
 
 PRIORS = {
@@ -25,11 +25,17 @@ def test_hour_gap_goes_round_midnight():
     assert hour_gap(0, 12) == 12
 
 
-def test_peak_matches_productive_time_and_low_is_far():
+def test_habit_matches_survey_answer_and_low_is_far():
     df = make_students(300, 1, PRIORS)
     for row in df.itertuples():
-        assert row.peak_hour in PEAK_HOURS[row.productive_time]
+        assert row.habit_hour in PEAK_HOURS[row.productive_time]
         assert hour_gap(row.peak_hour, row.low_hour) >= MIN_PEAK_LOW_GAP
+
+
+def test_survey_answer_is_right_only_for_some_students():
+    df = make_students(3000, 5, PRIORS)
+    right = [row.peak_hour in PEAK_HOURS[row.productive_time] for row in df.itertuples()]
+    assert abs(sum(right) / len(right) - SELF_REPORT_RIGHT) < 0.03
 
 
 def test_survey_shares_are_kept():

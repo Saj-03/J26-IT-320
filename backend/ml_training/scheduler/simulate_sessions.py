@@ -121,8 +121,9 @@ def choose_timer(rng: np.random.Generator, capacity: float) -> int:
 
 
 def day_start_hours(rng: np.random.Generator, p: dict, n: int) -> list[float]:
-    """n start times (study-day hours 7..26), some near the habit hour, the rest anywhere."""
-    habit = p["peak_hour"] if p["peak_hour"] >= DAY_FIRST_HOUR else p["peak_hour"] + 24
+    """n start times (study-day hours 7..26), some near the habit hour, the rest anywhere.
+    The habit hour is when they THINK they focus best - not always the real peak."""
+    habit = p["habit_hour"] if p["habit_hour"] >= DAY_FIRST_HOUR else p["habit_hour"] + 24
     hours = [habit + rng.normal(0, 1.5) if rng.random() < AT_HABIT_HOUR
              else rng.uniform(DAY_FIRST_HOUR, DAY_LAST_HOUR - 1) for _ in range(n)]
     return sorted(float(np.clip(h, DAY_FIRST_HOUR, DAY_LAST_HOUR - 1)) for h in hours)

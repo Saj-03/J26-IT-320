@@ -40,6 +40,9 @@ PEAK_HOURS = {
 }
 STUDY_HOURS = list(range(7, 24)) + [0]   # hours a student could study at
 MIN_PEAK_LOW_GAP = 5                     # the worst hour is at least 5 h away from the best one
+# assumption: the survey answer ("I'm most productive at night") is right for 60% of students.
+# The rest really focus best at another time - finding that is the scheduler's job.
+SELF_REPORT_RIGHT = 0.6
 
 # Survey bins -> (min, max) numbers. Open bins get a sensible upper end.
 STUDY_HOURS_RANGE = {
@@ -80,9 +83,15 @@ def pss_level(score: float) -> str:
 
 def make_student(rng: np.random.Generator, priors: dict, student_id: str) -> dict:
     """One fake student with a hidden profile."""
-    # --- When they focus best / worst (survey) ---
+    # --- When they THINK they focus best (survey) -> when they usually study ---
     productive_time = pick(rng, priors["productive_time"])
-    peak_hour = int(rng.choice(PEAK_HOURS[productive_time]))
+    habit_hour = int(rng.choice(PEAK_HOURS[productive_time]))
+
+    # --- When they REALLY focus best / worst (hidden) ---
+    if rng.random() < SELF_REPORT_RIGHT:
+        peak_hour = int(rng.choice(PEAK_HOURS[productive_time]))
+    else:
+        peak_hour = int(rng.choice([h for h in STUDY_HOURS if h not in PEAK_HOURS[productive_time]]))
     far_hours = [h for h in STUDY_HOURS if hour_gap(h, peak_hour) >= MIN_PEAK_LOW_GAP]
     low_hour = int(rng.choice(far_hours))
 
@@ -113,8 +122,9 @@ def make_student(rng: np.random.Generator, priors: dict, student_id: str) -> dic
 
     return {
         "student_id": student_id,
-        "productive_time": productive_time,
-        "peak_hour": peak_hour,
+        "productive_time": productive_time,   # survey answer (what they believe)
+        "habit_hour": habit_hour,             # when they usually start studying
+        "peak_hour": peak_hour,               # hidden truth: best hour
         "low_hour": low_hour,
         # assumption: median ~30 min (Pomodoro-like), most students 15-60 min
         "capacity_minutes": round(float(np.clip(rng.lognormal(np.log(30), 0.35), 10, 90)), 1),

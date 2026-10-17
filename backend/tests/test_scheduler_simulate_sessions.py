@@ -8,14 +8,14 @@ from ml_training.scheduler.simulate_sessions import (
 
 # One "normal" hidden profile; tests change one value at a time
 BASE = {
-    "student_id": "sim0000", "peak_hour": 20, "low_hour": 9, "capacity_minutes": 30.0,
+    "student_id": "sim0000", "habit_hour": 21, "peak_hour": 20, "low_hour": 9, "capacity_minutes": 30.0,
     "base_success": 0.65, "heavy_penalty": 0.2, "fatigue_per_session": 0.05,
     "stress_sensitivity": 0.6, "stress_weeks": "1", "study_hours_per_week": 10.0, "noise": 0.1,
 }
 
 
 def profiles(n=5):
-    return pd.DataFrame([{**BASE, "student_id": f"sim{i:04d}", "peak_hour": [8, 14, 19, 22, 0][i % 5]}
+    return pd.DataFrame([{**BASE, "student_id": f"sim{i:04d}", "habit_hour": [8, 14, 19, 22, 0][i % 5]}
                          for i in range(n)])
 
 
