@@ -15,17 +15,25 @@ Decision order (first match wins):
   7. MODERATE / HIGH                           -> "propose_changes"
 
 GET only reads - no audit rows here. Proposals (F3) are audited when they are made.
+
+SAFETY (step F2): before any change is suggested, every task is checked.
+A task is LOCKED (never changed for stress) when it is:
+  finished / cancelled / missed, being worked on now, marked fixed by the student,
+  past its deadline, due within 48 h, top priority (5), or a parent task with steps
+  (its steps are checked instead). Everything else is CHANGEABLE.
 """
 from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
 from app.core.config import settings as app_settings
-from app.components.scheduler.models import ScheduleChange
+from app.components.scheduler.models import ScheduleChange, Task
 from app.components.scheduler.settings_service import get_settings
 from app.shared.integration.models import SignalEvent
 
 SIGNAL_MAX_AGE = timedelta(hours=app_settings.RISK_SIGNAL_MAX_AGE_HOURS)   # same rule as the integration validator
+URGENT_WINDOW = timedelta(hours=app_settings.URGENT_DEADLINE_WINDOW_HOURS)  # due within 48 h = never moved
+TOP_PRIORITY = 5
 PROPOSAL_COOLDOWN = timedelta(hours=24)
 LEVEL_RANK = {"LOW": 0, "MODERATE": 1, "HIGH": 2}
 STRESS_TRIGGER = "wellbeing_signal"     # ScheduleChange.trigger for stress proposals
@@ -93,3 +101,47 @@ def stress_status(db: Session, user, now: datetime | None = None) -> dict:
     if earlier and LEVEL_RANK[level] <= LEVEL_RANK[proposed_level(db, earlier)]:
         return decide("already_proposed", "We already suggested lighter changes today.")
     return decide("propose_changes", f"Your wellbeing signal is {level.lower()} - we can suggest a lighter plan.")
+
+
+# ---------------------------------------------------------------------------
+# F2 - Safety: which tasks may be changed for stress?
+# ---------------------------------------------------------------------------
+def time_left(deadline: datetime, now: datetime) -> str:
+    """'due in 20 hours' / 'due in 3 days' - for the plain-language reasons."""
+    hours = (deadline - now).total_seconds() / 3600
+    return f"due in {round(hours)} hours" if hours < 48 else f"due in {round(hours / 24)} days"
+
+
+def lock_reason(task: Task, now: datetime, has_steps: bool = False) -> str | None:
+    """Why this task must NOT be changed for stress, or None if it is safe to change.
+    The first matching rule is the reason shown to the student."""
+    if task.status in ("done", "cancelled", "missed"):
+        return f"already {task.status}"
+    if task.status == "in_progress":
+        return "you are working on it now"
+    if not task.is_flexible:
+        return "you marked it as fixed"
+    if task.deadline <= now:
+        return "its deadline has passed"
+    if task.deadline - now <= URGENT_WINDOW:
+        return f"{time_left(task.deadline, now)} - too close to move"
+    if task.priority >= TOP_PRIORITY:
+        return "top priority"
+    if has_steps:
+        return "its steps are checked one by one"
+    return None
+
+
+def task_safety(db: Session, user, now: datetime | None = None) -> dict:
+    """Split the student's tasks into changeable and locked, each with a reason (earliest deadline first)."""
+    now = now or datetime.utcnow()
+    tasks = db.query(Task).filter(Task.user_id == user.id).order_by(Task.deadline).all()
+    parents = {t.parent_id for t in tasks if t.parent_id}
+
+    changeable, locked = [], []
+    for t in tasks:
+        reason = lock_reason(t, now, has_steps=t.id in parents)
+        row = {"task_id": t.id, "title": t.title, "deadline": t.deadline, "priority": t.priority,
+               "cognitive_load": t.cognitive_load, "reason": reason or f"flexible, {time_left(t.deadline, now)}"}
+        (locked if reason else changeable).append(row)
+    return {"changeable": changeable, "locked": locked}

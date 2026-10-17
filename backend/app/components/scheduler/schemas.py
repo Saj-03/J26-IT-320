@@ -413,6 +413,21 @@ class StressStatusOut(BaseModel):
     reason: str                      # plain-language explanation for the student
 
 
+class TaskSafetyRow(BaseModel):
+    task_id: str
+    title: str
+    deadline: datetime
+    priority: int
+    cognitive_load: str
+    reason: str                      # why it is locked / why it may be changed
+
+
+class TaskSafetyOut(BaseModel):
+    """Which tasks stress-based changes may touch (changeable) and which never (locked)."""
+    changeable: list[TaskSafetyRow]
+    locked: list[TaskSafetyRow]
+
+
 # ===========================================================================
 # OLD ENDPOINTS (kept so the current frontend keeps working)
 # ===========================================================================

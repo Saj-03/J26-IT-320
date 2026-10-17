@@ -202,6 +202,12 @@ def stress_status(db: Session = Depends(get_db), user=Depends(get_current_user))
     return stress_service.stress_status(db, user)
 
 
+@router.get("/stress/task-safety", response_model=schemas.TaskSafetyOut)
+def task_safety(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Which of my tasks may be changed when I'm stressed, and why the others are locked."""
+    return stress_service.task_safety(db, user)
+
+
 @router.get("/plan")
 def plan(adaptive: bool = True, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """adaptive=false gives the STATIC baseline used in the controlled pilot."""
