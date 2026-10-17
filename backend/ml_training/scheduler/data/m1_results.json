@@ -1,0 +1,102 @@
+{
+  "training": {
+    "sessions": {
+      "train": 25358,
+      "validation": 5073,
+      "test": 10237
+    },
+    "epochs": [
+      {
+        "epoch": 1,
+        "val_log_loss": 0.6365
+      },
+      {
+        "epoch": 2,
+        "val_log_loss": 0.6332
+      },
+      {
+        "epoch": 3,
+        "val_log_loss": 0.6312
+      },
+      {
+        "epoch": 4,
+        "val_log_loss": 0.6317
+      },
+      {
+        "epoch": 5,
+        "val_log_loss": 0.6335
+      },
+      {
+        "epoch": 6,
+        "val_log_loss": 0.6303
+      },
+      {
+        "epoch": 7,
+        "val_log_loss": 0.6296
+      },
+      {
+        "epoch": 8,
+        "val_log_loss": 0.6334
+      },
+      {
+        "epoch": 9,
+        "val_log_loss": 0.6289
+      },
+      {
+        "epoch": 10,
+        "val_log_loss": 0.6284
+      },
+      {
+        "epoch": 11,
+        "val_log_loss": 0.6292
+      },
+      {
+        "epoch": 12,
+        "val_log_loss": 0.6302
+      },
+      {
+        "epoch": 13,
+        "val_log_loss": 0.6297
+      },
+      {
+        "epoch": 14,
+        "val_log_loss": 0.6337
+      }
+    ]
+  },
+  "success": {
+    "online_student_rate": {
+      "auc": 0.6416,
+      "brier": 0.2318,
+      "log_loss": 0.6555
+    },
+    "online_hour_rate": {
+      "auc": 0.6557,
+      "brier": 0.2312,
+      "log_loss": 0.6566
+    },
+    "M1": {
+      "auc": 0.7043,
+      "brier": 0.2154,
+      "log_loss": 0.6194
+    },
+    "ceiling": {
+      "auc": 0.7848,
+      "brier": 0.1869,
+      "log_loss": 0.553
+    }
+  },
+  "peak_hour": {
+    "M1": {
+      "mean_error_hours": 2.768,
+      "within_1h": 0.552,
+      "within_2h": 0.678
+    }
+  },
+  "capacity": {
+    "M1": {
+      "mae_next_sessions": 15.92,
+      "mae_hidden": 6.01
+    }
+  }
+}

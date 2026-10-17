@@ -137,7 +137,7 @@ def run(sessions: pd.DataFrame, profiles: pd.DataFrame) -> dict:
 def print_table(title: str, results: dict) -> None:
     print(f"\n{title}")
     for name, scores in results.items():
-        print(f"  {name:<14}" + "  ".join(f"{k}={v}" for k, v in scores.items()))
+        print(f"  {name:<20}" + "  ".join(f"{k}={v}" for k, v in scores.items()))
 
 
 def main() -> None:
