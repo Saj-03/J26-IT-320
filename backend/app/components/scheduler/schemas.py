@@ -339,6 +339,8 @@ class FocusEndOut(BaseModel):
     xp_awarded: int          # 0 if the session was not completed
     total_xp: int
     level: int
+    streak: int = 0          # study days in a row
+    new_badges: list[str] = []   # badge codes earned by this session (show a celebration)
 
 
 class FocusStartOut(BaseModel):
@@ -473,6 +475,36 @@ class StressDecisionIn(BaseModel):
         if self.decision != "edited" and self.keep is not None:
             raise ValueError("keep is only used when decision is edited")
         return self
+
+
+# ===========================================================================
+# GAMIFICATION PROGRESS (Module G)
+# ===========================================================================
+class StreakOut(BaseModel):
+    current: int                     # study days in a row
+    today_done: bool                 # a completed session today already?
+    freeze_left_this_week: int       # 1 missed day per week is forgiven
+    stress_days_skipped: int         # HIGH-stress days that did not break the streak
+
+
+class BadgeOut(BaseModel):
+    code: str
+    emoji: str
+    title: str
+    description: str                 # how to earn it
+    earned: bool
+    earned_at: datetime | None
+    progress: int                    # towards target (capped at target)
+    target: int
+
+
+class ProgressOut(BaseModel):
+    total_xp: int
+    level: int
+    xp_to_next_level: int
+    streak: StreakOut
+    badges: list[BadgeOut]
+    new_badges: list[str]            # earned just now
 
 
 # ===========================================================================

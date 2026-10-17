@@ -274,8 +274,13 @@ def end_session(db: Session, user, session_id: str, data: FocusEndIn,
           actual=session.actual_minutes, pauses=session.pause_count, completed=session.completed,
           xp=xp, rated=data.focus_rating is not None)
     db.commit()
+
+    # 7. Streak + badges (a finished session may earn a new badge)
+    from app.components.scheduler.progress_service import check_progress   # here to avoid an import loop
+    progress = check_progress(db, user, now)
     db.refresh(session)
-    return {"session": session, "xp_awarded": xp, **xp_status(db, user)}
+    return {"session": session, "xp_awarded": xp, "total_xp": progress["total_xp"], "level": progress["level"],
+            "streak": progress["streak"]["current"], "new_badges": progress["new_badges"]}
 
 
 def is_completed(actual_minutes: int, planned_minutes: int) -> bool:

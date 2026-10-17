@@ -12,7 +12,7 @@ from app.db.session import get_db
 from app.core.dependencies import get_current_user
 from app.components.scheduler import (
     schemas, service, task_service, commitment_service, focus_service, settings_service, stress_service,
-    attention_service,
+    attention_service, progress_service,
 )
 from app.components.scheduler.models import Task, FocusSession, ScheduleChange
 from app.components.scheduler.engine import stress_rules
@@ -178,6 +178,15 @@ def rate_focus(session_id: str, data: schemas.FocusRatingIn,
                db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Give (or change) the 1-5 "how was your focus?" rating after ending."""
     return focus_service.rate_session(db, user, session_id, data.focus_rating)
+
+
+# ===========================================================================
+# GAMIFICATION  (FR-10)
+# ===========================================================================
+@router.get("/progress", response_model=schemas.ProgressOut)
+def progress(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """My XP, level, streak and badges (any newly reached badge is given now)."""
+    return progress_service.check_progress(db, user)
 
 
 # ===========================================================================
