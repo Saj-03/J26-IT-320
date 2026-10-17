@@ -27,6 +27,10 @@ PROPOSALS (step F3): only CHANGEABLE tasks, nothing is applied until the student
   HIGH     -> split heavy tasks into 25-min pieces, move up to 3 lighter tasks 3 days later,
               add a 30-min rest block
   A task is only moved if there is still at least 1 day + its own time left before the deadline.
+
+DECISIONS (step F4): the student accepts all, keeps only some (edited), or rejects.
+  Each kept change is safety-checked AGAIN (things may have changed since the proposal).
+  Applied changes can be undone ("restore") - moved tasks go back, created pieces/breaks are removed.
 """
 from datetime import datetime, timedelta
 
@@ -34,7 +38,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.config import settings as app_settings
-from app.components.scheduler.models import ScheduleChange, Task
+from app.components.scheduler.models import Commitment, ScheduleChange, Task
 from app.components.scheduler.settings_service import get_settings
 from app.components.scheduler.task_service import audit
 from app.shared.integration.models import SignalEvent
@@ -263,3 +267,107 @@ def list_proposals(db: Session, user) -> list[ScheduleChange]:
                       ScheduleChange.decision == "proposed")
               .order_by(ScheduleChange.created_at.desc())
               .all())
+
+
+# ---------------------------------------------------------------------------
+# F4 - Decide: accept / edit (keep some) / reject, and restore (undo)
+# ---------------------------------------------------------------------------
+def get_own_proposal(db: Session, user, change_id: str) -> ScheduleChange:
+    change = db.get(ScheduleChange, change_id)
+    if change is None or change.user_id != user.id or change.trigger != STRESS_TRIGGER:
+        raise HTTPException(404, "Proposal not found")
+    return change
+
+
+def apply_one(db: Session, user, item: dict, now: datetime) -> dict:
+    """Apply one change. Returns the item + what happened (applied / skipped + reason, ids it created)."""
+    done = dict(item)
+    if item["action"] == "rest":
+        start = (now + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
+        block = Commitment(user_id=user.id, title="Rest break", kind="protected_block", is_recurring=False,
+                           start_at=start, end_at=start + timedelta(minutes=item["minutes"]))
+        db.add(block)
+        db.flush()
+        return done | {"applied": True, "created_ids": [block.id]}
+
+    task = db.get(Task, item["task_id"])
+    has_steps = task is not None and db.query(Task.id).filter(Task.parent_id == task.id).first() is not None
+    why_not = "task was deleted" if task is None else lock_reason(task, now, has_steps)
+    if why_not:                                          # safety check again at decision time
+        return done | {"applied": False, "skipped_because": why_not}
+
+    if item["action"] == "move":
+        task.scheduled_start = datetime.fromisoformat(item["to"])
+        return done | {"applied": True}
+
+    # split -> one step (subtask) per piece; the parent stays as the "big task"
+    pieces = [Task(user_id=user.id, parent_id=task.id, title=f"{task.title} (part {i}/{len(item['pieces'])})",
+                   description=task.description, task_type=task.task_type, deadline=task.deadline,
+                   estimated_minutes=minutes, priority=task.priority, is_flexible=True,
+                   cognitive_load=task.cognitive_load, source="scheduler")
+              for i, minutes in enumerate(item["pieces"], start=1)]
+    db.add_all(pieces)
+    db.flush()
+    return done | {"applied": True, "created_ids": [p.id for p in pieces]}
+
+
+def decide(db: Session, user, change_id: str, decision: str, keep: list[int] | None = None,
+           now: datetime | None = None) -> ScheduleChange:
+    """accepted = apply all, edited = apply only the `keep` positions, rejected = apply nothing."""
+    now = now or datetime.utcnow()
+    change = get_own_proposal(db, user, change_id)
+    if change.decision != "proposed":
+        raise HTTPException(409, f"This proposal was already {change.decision}")
+
+    if decision == "edited":
+        if not keep or any(i < 0 or i >= len(change.change_set) for i in keep):
+            raise HTTPException(422, "keep must list the positions of the changes you want (0, 1, ...)")
+        chosen = [change.change_set[i] for i in sorted(set(keep))]
+    else:
+        chosen = change.change_set if decision == "accepted" else []
+
+    applied = [apply_one(db, user, item, now) for item in chosen]
+    change.decision = decision
+    change.decided_at = now
+    change.edited_change_set = applied                   # what was really applied (or skipped, and why)
+    audit(db, user.id, "stress_proposal_decided", change_id=change.id, decision=decision,
+          offered=[c["action"] for c in change.change_set],
+          applied=[a["action"] for a in applied if a["applied"]],
+          skipped=[a["action"] for a in applied if not a["applied"]])
+    db.commit()
+    return change
+
+
+def restore(db: Session, user, change_id: str, now: datetime | None = None) -> ScheduleChange:
+    """Undo an accepted/edited proposal: moved tasks go back, unstarted pieces and future breaks are removed."""
+    now = now or datetime.utcnow()
+    change = get_own_proposal(db, user, change_id)
+    if change.decision not in ("accepted", "edited"):
+        raise HTTPException(409, "Only an accepted proposal can be undone")
+
+    before = {p["task_id"]: p for p in change.previous_plan or []}
+    kept = []                                            # things we could NOT undo (already started / done)
+    for item in change.edited_change_set or []:
+        if not item["applied"]:
+            continue
+        if item["action"] == "move":
+            task = db.get(Task, item["task_id"])
+            if task is not None:
+                old = before.get(task.id, {}).get("scheduled_start")
+                task.scheduled_start = datetime.fromisoformat(old) if old else None
+        elif item["action"] == "split":
+            for piece in db.query(Task).filter(Task.id.in_(item["created_ids"])).all():
+                if piece.status == "pending":
+                    db.delete(piece)
+                else:
+                    kept.append(piece.title)
+        elif item["action"] == "rest":
+            for block in db.query(Commitment).filter(Commitment.id.in_(item["created_ids"])).all():
+                if block.start_at > now:
+                    db.delete(block)
+
+    change.decision = "restored"
+    change.decided_at = now
+    audit(db, user.id, "stress_proposal_restored", change_id=change.id, kept_started_pieces=kept)
+    db.commit()
+    return change

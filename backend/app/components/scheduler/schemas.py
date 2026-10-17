@@ -439,6 +439,13 @@ class ProposedChange(BaseModel):
     minutes: int | None = None       # rest: length of the break
 
 
+class AppliedChange(ProposedChange):
+    """A change after the student's decision: was it really applied?"""
+    applied: bool
+    skipped_because: str | None = None   # e.g. "you are working on it now" (safety re-check)
+    created_ids: list[str] | None = None  # pieces / break created (removed again by restore)
+
+
 class StressProposalOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -448,6 +455,24 @@ class StressProposalOut(BaseModel):
     change_set: list[ProposedChange]
     decision: str                    # proposed / accepted / edited / rejected / restored
     created_at: datetime
+    decided_at: datetime | None
+    applied: list[AppliedChange] | None = Field(default=None, validation_alias="edited_change_set")
+
+
+class StressDecisionIn(BaseModel):
+    """accepted = all changes, edited = only the positions in `keep`, rejected = none."""
+    model_config = ConfigDict(extra="forbid")
+
+    decision: Literal["accepted", "edited", "rejected"]
+    keep: list[int] | None = None    # only for "edited", e.g. [0, 2]
+
+    @model_validator(mode="after")
+    def keep_only_when_edited(self):
+        if self.decision == "edited" and not self.keep:
+            raise ValueError("send keep (which changes to apply) when decision is edited")
+        if self.decision != "edited" and self.keep is not None:
+            raise ValueError("keep is only used when decision is edited")
+        return self
 
 
 # ===========================================================================

@@ -220,6 +220,19 @@ def stress_proposals(db: Session = Depends(get_db), user=Depends(get_current_use
     return stress_service.list_proposals(db, user)
 
 
+@router.post("/stress/proposals/{change_id}/decision", response_model=schemas.StressProposalOut)
+def stress_decide(change_id: str, data: schemas.StressDecisionIn,
+                  db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Accept all, keep only some (edited), or reject. Each change is safety-checked again."""
+    return stress_service.decide(db, user, change_id, data.decision, data.keep)
+
+
+@router.post("/stress/proposals/{change_id}/restore", response_model=schemas.StressProposalOut)
+def stress_restore(change_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Undo an accepted proposal - back to the plan I had before."""
+    return stress_service.restore(db, user, change_id)
+
+
 @router.get("/plan")
 def plan(adaptive: bool = True, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """adaptive=false gives the STATIC baseline used in the controlled pilot."""
