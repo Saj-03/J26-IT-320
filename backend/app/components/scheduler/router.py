@@ -11,10 +11,11 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.core.dependencies import get_current_user
 from app.components.scheduler import (
-    schemas, service, task_service, commitment_service, focus_service, settings_service,
+    schemas, service, task_service, commitment_service, focus_service, settings_service, stress_service,
 )
 from app.components.scheduler.models import Task, FocusSession, ScheduleChange
 from app.components.scheduler.engine import stress_rules
+from app.shared.integration import c3_weekly_summary as weekly_summary
 
 router = APIRouter()
 
@@ -191,6 +192,57 @@ def get_settings(db: Session = Depends(get_db), user=Depends(get_current_user)):
 def update_settings(data: schemas.SettingsUpdate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Change my settings (send only what changed). Experiment mode can't be changed here."""
     return settings_service.update_settings(db, user, data)
+
+
+# ===========================================================================
+# STRESS ADAPTATION  (FR-06, FR-07) - uses Component 4's wellbeing signal
+# ===========================================================================
+@router.get("/stress/status", response_model=schemas.StressStatusOut)
+def stress_status(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Latest wellbeing signal and what the scheduler will do with it (nothing is changed here)."""
+    return stress_service.stress_status(db, user)
+
+
+@router.get("/stress/task-safety", response_model=schemas.TaskSafetyOut)
+def task_safety(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Which of my tasks may be changed when I'm stressed, and why the others are locked."""
+    return stress_service.task_safety(db, user)
+
+
+@router.post("/stress/propose", response_model=schemas.StressProposalOut, status_code=status.HTTP_201_CREATED)
+def stress_propose(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Suggest a lighter plan (409 + reason if not needed now). Nothing changes until I accept."""
+    return stress_service.propose(db, user)
+
+
+@router.get("/stress/proposals", response_model=list[schemas.StressProposalOut])
+def stress_proposals(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Suggestions still waiting for my decision."""
+    return stress_service.list_proposals(db, user)
+
+
+@router.post("/stress/proposals/{change_id}/decision", response_model=schemas.StressProposalOut)
+def stress_decide(change_id: str, data: schemas.StressDecisionIn,
+                  db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Accept all, keep only some (edited), or reject. Each change is safety-checked again."""
+    return stress_service.decide(db, user, change_id, data.decision, data.keep)
+
+
+@router.post("/stress/proposals/{change_id}/restore", response_model=schemas.StressProposalOut)
+def stress_restore(change_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Undo an accepted proposal - back to the plan I had before."""
+    return stress_service.restore(db, user, change_id)
+
+
+# ===========================================================================
+# C3 -> C4 WEEKLY SUMMARY
+# ===========================================================================
+@router.post("/integration/weekly-summary", response_model=list[schemas.WeeklySummarySentOut])
+def send_weekly_summary(weeks: int = Query(1, ge=1, le=weekly_summary.MAX_BACKFILL_WEEKS,
+                                           description="how many finished weeks to send (oldest first)"),
+                        db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Send my last finished week(s) to Component 4. Safe to repeat - each week is sent once."""
+    return weekly_summary.send_recent_weeks(db, user, weeks)
 
 
 @router.get("/plan")

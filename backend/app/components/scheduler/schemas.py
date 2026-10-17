@@ -394,6 +394,102 @@ class SettingsUpdate(BaseModel):
 
 
 # ===========================================================================
+# STRESS ADAPTATION (Module F)
+# ===========================================================================
+StressAction = Literal["none", "propose_changes", "already_proposed", "off"]
+
+
+class StressStatusOut(BaseModel):
+    """What the scheduler does with Component 4's latest wellbeing signal."""
+    level: Literal["LOW", "MODERATE", "HIGH"] | None   # None = no signal shared
+    risk_score: float | None
+    trend: Literal["FALLING", "STABLE", "RISING"] | None
+    signal_event_id: str | None
+    signal_received_at: datetime | None
+    fresh: bool                      # received in the last 24 h
+    adaptation_on: bool              # student's own switch (settings)
+    mode: str                        # experiment mode
+    action: StressAction             # what happens next
+    reason: str                      # plain-language explanation for the student
+
+
+class TaskSafetyRow(BaseModel):
+    task_id: str
+    title: str
+    deadline: datetime
+    priority: int
+    cognitive_load: str
+    reason: str                      # why it is locked / why it may be changed
+
+
+class TaskSafetyOut(BaseModel):
+    """Which tasks stress-based changes may touch (changeable) and which never (locked)."""
+    changeable: list[TaskSafetyRow]
+    locked: list[TaskSafetyRow]
+
+
+class ProposedChange(BaseModel):
+    """One suggested change. action: move (to a later time) / split (into pieces) / rest (add a break)."""
+    action: Literal["move", "split", "rest"]
+    task_id: str | None
+    title: str
+    reason: str
+    to: str | None = None            # move: new planned start (UTC, ISO)
+    pieces: list[int] | None = None  # split: minutes per piece
+    minutes: int | None = None       # rest: length of the break
+
+
+class AppliedChange(ProposedChange):
+    """A change after the student's decision: was it really applied?"""
+    applied: bool
+    skipped_because: str | None = None   # e.g. "you are working on it now" (safety re-check)
+    created_ids: list[str] | None = None  # pieces / break created (removed again by restore)
+
+
+class StressProposalOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    signal_event_id: str | None
+    reason: str                      # one-sentence summary for the student
+    change_set: list[ProposedChange]
+    decision: str                    # proposed / accepted / edited / rejected / restored
+    created_at: datetime
+    decided_at: datetime | None
+    applied: list[AppliedChange] | None = Field(default=None, validation_alias="edited_change_set")
+
+
+class StressDecisionIn(BaseModel):
+    """accepted = all changes, edited = only the positions in `keep`, rejected = none."""
+    model_config = ConfigDict(extra="forbid")
+
+    decision: Literal["accepted", "edited", "rejected"]
+    keep: list[int] | None = None    # only for "edited", e.g. [0, 2]
+
+    @model_validator(mode="after")
+    def keep_only_when_edited(self):
+        if self.decision == "edited" and not self.keep:
+            raise ValueError("send keep (which changes to apply) when decision is edited")
+        if self.decision != "edited" and self.keep is not None:
+            raise ValueError("keep is only used when decision is edited")
+        return self
+
+
+# ===========================================================================
+# C3 -> C4 WEEKLY SUMMARY (DeviationSignal)
+# ===========================================================================
+class WeeklySummarySentOut(BaseModel):
+    week_start: str                                              # Monday (Sri Lanka time), e.g. "2026-10-12"
+    status: Literal["SENT", "ALREADY_SENT", "TRACKING_OFF"]
+    event_id: str | None = None
+    task_completion_rate: float | None = None
+    missed_sessions: int | None = None
+    task_load: int | None = None
+    deadline_density: float | None = None
+    semester_phase: str | None = None
+
+
+# ===========================================================================
 # OLD ENDPOINTS (kept so the current frontend keeps working)
 # ===========================================================================
 class FocusIn(BaseModel):

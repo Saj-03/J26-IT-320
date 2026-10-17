@@ -1,0 +1,57 @@
+{
+  "data": {
+    "students": 500,
+    "train_sessions": 30431,
+    "test_sessions": 10237,
+    "test_completed_rate": 0.5542
+  },
+  "success": {
+    "global_rate": {
+      "auc": 0.5,
+      "brier": 0.2471,
+      "log_loss": 0.6874
+    },
+    "student_rate": {
+      "auc": 0.6376,
+      "brier": 0.2328,
+      "log_loss": 0.6575
+    },
+    "hour_rules": {
+      "auc": 0.6398,
+      "brier": 0.2368,
+      "log_loss": 0.6693
+    },
+    "ceiling": {
+      "auc": 0.7848,
+      "brier": 0.1869,
+      "log_loss": 0.553
+    }
+  },
+  "peak_hour": {
+    "survey_answer": {
+      "mean_error_hours": 3.648,
+      "within_1h": 0.426,
+      "within_2h": 0.598
+    },
+    "most_used": {
+      "mean_error_hours": 3.836,
+      "within_1h": 0.362,
+      "within_2h": 0.51
+    },
+    "hour_rules": {
+      "mean_error_hours": 4.074,
+      "within_1h": 0.336,
+      "within_2h": 0.476
+    }
+  },
+  "capacity": {
+    "default_25": {
+      "mae_next_sessions": 9.25,
+      "mae_hidden": 9.65
+    },
+    "median_rule": {
+      "mae_next_sessions": 8.29,
+      "mae_hidden": 9.14
+    }
+  }
+}

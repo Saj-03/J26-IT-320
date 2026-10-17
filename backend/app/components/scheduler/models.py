@@ -38,7 +38,7 @@ def new_id() -> str:
 COGNITIVE_LOADS = ("low", "medium", "heavy")        # predicted by M2, student can change it
 TASK_STATUSES = ("pending", "in_progress", "done", "missed", "cancelled")
 TASK_TYPES = ("assignment", "exam_prep", "lecture_review", "project", "reading", "career", "other")
-TASK_SOURCES = ("student", "career", "physical")      # who created the task
+TASK_SOURCES = ("student", "career", "physical", "scheduler")   # who created the task (scheduler = stress split)
 COMMITMENT_KINDS = ("lecture", "work", "extracurricular", "personal", "protected_block")
 EXPERIMENT_MODES = ("static", "adaptive", "attention_only")
 CHANGE_DECISIONS = ("proposed", "accepted", "edited", "rejected", "restored")
