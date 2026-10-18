@@ -36,6 +36,7 @@ export const initialAssessment = {
     barriers: ['Academic workload', 'Lack of time'],
 
     // Step 3: Goals & Current Activity
+    primaryGoal: 'fitness',
     goals: ['Improve overall fitness', 'Increase physical activity'],
     activityLevel: 'Moderately active',
     exerciseFreq: 3,
@@ -261,6 +262,17 @@ export function StepStressBarriers({ state, set }) {
 export function StepGoals({ state, set }) {
     return (
         <div className="space-y-6">
+            <div>
+                <p className="text-sm font-semibold text-charcoal-light mb-1">🎯 Primary Goal</p>
+                <p className="text-xs text-charcoal-muted mb-3">Choose the main outcome you want your plan to focus on.</p>
+                <SelectField label="Primary goal" value={state.primaryGoal || 'fitness'} onChange={(e) => set('primaryGoal', e.target.value)}>
+                    <option value="fitness">Fitness</option>
+                    <option value="weight_loss">Manage body weight</option>
+                    <option value="strength">Build strength</option>
+                    <option value="mobility">Flexibility &amp; mobility</option>
+                </SelectField>
+            </div>
+
             <div>
                 <p className="text-sm font-semibold text-charcoal-light mb-1">
                     What are your main physical wellbeing goals?
