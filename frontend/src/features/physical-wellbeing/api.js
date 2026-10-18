@@ -18,6 +18,7 @@ export const deleteHabit = (id) => api.delete(`/physical/habits/${id}`).then((r)
 export const habitDone = (id) => api.post(`/physical/habits/${id}/done`).then((r) => r.data);
 export const getPeerChallenges = () => api.get('/physical/challenges').then((r) => r.data);
 export const createPeerChallenge = (challenge) => api.post('/physical/challenges', challenge).then((r) => r.data);
+export const deletePeerChallenge = (id) => api.delete(`/physical/challenges/${id}`).then((r) => r.data);
 export const updatePeerChallengeScore = (id, amount) => api.post(`/physical/challenges/${id}/score`, { amount }).then((r) => r.data);
 export const getInvitedChallenge = (code, token) => api.get(`/physical/challenges/invite/${encodeURIComponent(code)}`, {
   headers: token ? { 'X-Challenge-Token': token } : {},

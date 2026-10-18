@@ -19,7 +19,7 @@ router = APIRouter()
 def _challenge_payload(db: Session, challenge: PeerChallenge, member_id: str | None = None) -> dict:
     members = (db.query(PeerChallengeMember)
                .filter_by(challenge_id=challenge.id)
-               .order_by(PeerChallengeMember.score.desc(), PeerChallengeMember.joined_at.asc())
+               .order_by(PeerChallengeMember.joined_at.asc())
                .all())
     mine = next((member for member in members if member.id == member_id), None) if member_id else None
     return {
@@ -32,8 +32,15 @@ def _challenge_payload(db: Session, challenge: PeerChallenge, member_id: str | N
         "ends_at": challenge.ends_at.isoformat(),
         "invite_code": challenge.invite_code,
         "my_score": mine.score if mine else None,
-        "leaderboard": [
-            {"nickname": member.nickname, "score": member.score, "is_me": bool(mine and member.id == mine.id)}
+        "team_score": sum(member.score for member in members),
+        "participant_count": len(members),
+        "invitee_count": sum(1 for member in members if member.user_id is None),
+        "participants": [
+            {
+                "nickname": member.nickname,
+                "has_contributed": member.score > 0,
+                "is_me": bool(mine and member.id == mine.id),
+            }
             for member in members
         ],
     }
@@ -86,6 +93,19 @@ def create_peer_challenge(data: schemas.PeerChallengeCreateIn, db: Session = Dep
     return _challenge_payload(db, challenge, member.id)
 
 
+@router.delete("/challenges/{challenge_id}")
+def delete_peer_challenge(challenge_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    challenge = db.get(PeerChallenge, challenge_id)
+    if not challenge:
+        raise HTTPException(404, "Challenge not found")
+    if challenge.owner_id != user.id:
+        raise HTTPException(403, "Only the challenge owner can delete it")
+    db.query(PeerChallengeMember).filter_by(challenge_id=challenge.id).delete(synchronize_session=False)
+    db.delete(challenge)
+    db.commit()
+    return {"ok": True}
+
+
 @router.get("/challenges/invite/{invite_code}")
 def get_invited_challenge(
     invite_code: str,
@@ -126,6 +146,10 @@ def join_peer_challenge(
             existing.nickname = nickname
             db.commit()
             return {"challenge": _challenge_payload(db, challenge, existing.id), "participant_token": participant_token}
+
+    member_count = db.query(PeerChallengeMember).filter_by(challenge_id=challenge.id).count()
+    if member_count >= 6:
+        raise HTTPException(409, "This squad is full (6 people max)")
 
     token = secrets.token_urlsafe(32)
     member = PeerChallengeMember(
