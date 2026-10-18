@@ -15,6 +15,7 @@ import {
 } from '../components/AssessmentSteps';
 import { saveProfile } from '../api';
 import { apiErrorMessage } from '../../../shared/api/client';
+import useStudent from '../../../shared/hooks/useStudent';
 
 // Map study hour strings to numeric hours (matches survey STUDY_MAP)
 const STUDY_HOUR_MAP = {
@@ -147,6 +148,7 @@ const steps = [
 
 export function PhysicalAssessment() {
   const navigate = useNavigate();
+  const student = useStudent();
   const [step, setStep] = useState(0);
   const [state, setState] = useState(initialAssessment);
   const [saving, setSaving] = useState(false);
@@ -159,6 +161,7 @@ export function PhysicalAssessment() {
     setError('');
     try {
       await saveProfile(toProfile(state));
+      localStorage.setItem(`wellbeing-buddy-gender:${student.email || 'guest'}`, state.gender);
       navigate('/physical-setup/generating');
     }
     catch (err) {
