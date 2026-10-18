@@ -98,7 +98,7 @@ function FitBar({ value }) {
 }
 
 export default function CareerFitQuiz() {
-  useLanguage();
+  const lang = useLanguage();
   const navigate = useNavigate();
   const { flow, ready } = useCareerFlow();
   const { profile, recommendations } = flow;
@@ -126,6 +126,13 @@ export default function CareerFitQuiz() {
   // Saved results arrive from the database after the first render: show them instead of the intro.
   useEffect(() => { if (ready && hasSaved && !quiz) setPhase((p) => (p === "intro" ? "result" : p)); }, [ready, hasSaved, quiz]);
   useEffect(() => { headingRef.current?.focus(); }, [phase, index]); // keyboard / screen-reader users follow each question
+  // Language switched mid-quiz: reload the same questions (same ids and order) in the new language; progress is kept.
+  const quizLang = useRef(lang);
+  useEffect(() => {
+    if (!quiz || quizLang.current === lang || !recommendations?.length) return;
+    quizLang.current = lang;
+    getFitQuiz(recommendations.map((r) => r.career_id), variant).then(setQuiz).catch(() => {});
+  }, [lang, quiz, variant, recommendations]);
 
   if (!ready && !recommendations?.length) return <CareerSkeleton variant="cards" label={t("Loading your saved results…")} />;
   if (!profile || !recommendations?.length) {
@@ -155,6 +162,7 @@ export default function CareerFitQuiz() {
     setError("");
     try {
       const q = await getFitQuiz(careerIds, nextVariant);
+      quizLang.current = lang;
       setQuiz(q);
       setVariant(nextVariant);
       setInterests({});
@@ -211,6 +219,9 @@ export default function CareerFitQuiz() {
       const perfect = all.length > 0 && bestRun >= all.length;
       const finalXp = xp + XP.enjoy + (perfect ? XP.perfect : 0);
       if (perfect) addXp(XP.perfect + XP.enjoy); else addXp(XP.enjoy);
+      setAnswers(all);
+      setPicked(null);
+      setFeedback(null);
       careerSession.update({
         fitQuiz: { careerIds, variant, answers: payload, result, xp: finalXp, maxXp, perfect, playedAt: new Date().toISOString() },
       });
@@ -218,7 +229,7 @@ export default function CareerFitQuiz() {
       celebrate("big", originOf(event?.currentTarget));
       requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
     } catch (err) {
-      setError(apiErrorMessage(err));
+      setError(apiErrorMessage(err)); // the last answer stays on screen, so the student can simply tap again
     } finally {
       setBusy(false);
     }
@@ -227,14 +238,14 @@ export default function CareerFitQuiz() {
   const rateEnjoyment = (value, event) => {
     const scenario = quiz.scenarios[index];
     const all = [...answers, { career_id: scenario.career_id, question_id: scenario.id, option: picked, enjoyment: value }];
-    setAnswers(all);
-    setPicked(null);
-    setFeedback(null);
     if (index + 1 < totalScenarios) {
+      setAnswers(all);
+      setPicked(null);
+      setFeedback(null);
       addXp(XP.enjoy);
       setIndex(index + 1);
     } else {
-      finish(all, event);
+      finish(all, event); // answers are stored only when the result is saved (a failed save can be retried)
     }
   };
 
