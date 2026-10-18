@@ -84,7 +84,7 @@ export function Tasks() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-brand-700 bg-brand-50 rounded-full px-2.5 py-1">
-                  <SparklesIcon size={11}/> Broken into {steps.length} steps
+                  <SparklesIcon size={11}/> Broken into {steps.length} {steps.length === 1 ? 'step' : 'steps'}
                 </span>
                 <span className="text-xs font-semibold text-charcoal-muted">Due {dayText(featured.deadline)}</span>
               </div>
@@ -93,7 +93,7 @@ export function Tasks() {
 
               <div className="mt-4 max-w-md">
                 <div className="flex justify-between text-xs font-semibold text-charcoal-muted mb-1.5">
-                  <span>{stepsDone} of {steps.length} steps done</span>
+                  <span>{stepsDone} of {steps.length} {steps.length === 1 ? 'step' : 'steps'} done</span>
                   <span>{Math.round(stepsDone / steps.length * 100)}%</span>
                 </div>
                 <ProgressBar value={stepsDone / steps.length * 100}/>

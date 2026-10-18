@@ -1,25 +1,36 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FlameIcon, TargetIcon, RefreshCwIcon, SunriseIcon, FlagIcon, ShieldIcon, AwardIcon, MoonIcon, SnowflakeIcon } from "lucide-react";
+import { SnowflakeIcon, ShieldIcon } from "lucide-react";
 import { PageHeader } from "../shared/components/layout/PageHeader";
 import { Card } from "../shared/components/ui/Card";
 import { ProgressBar } from "../shared/components/ui/ProgressBar";
-import { badges, challenges } from "../shared/lib/data";
-import useStudent from "../shared/hooks/useStudent";
+import api from "../shared/api/client";
+import { useAuth } from "../shared/context/AuthContext";
+import useProgress from "../features/scheduler/hooks/useProgress";
+import { levelName, toDate } from "../features/scheduler/lib";
 import { cn } from "../shared/lib/cn";
-const iconMap = {
-    target: TargetIcon,
-    refresh: RefreshCwIcon,
-    sunrise: SunriseIcon,
-    flag: FlagIcon,
-    flame: FlameIcon,
-    shield: ShieldIcon,
-    award: AwardIcon,
-    moon: MoonIcon
-};
+
+// XP, level, streak and badges all come from GET /scheduler/progress (Component 3, Module G).
+const XP_PER_LEVEL = 200;          // same as the backend (level = 1 + XP / 200)
+const CALENDAR_DAYS = 35;          // 5 weeks
+const DAY_CHANGE_HOUR = 3;         // work until 03:00 counts to the day before (same as the backend)
+
 export function Progress() {
-    const student = useStudent();
-    const xpPct = Math.round(student.xp / student.xpToNext * 100);
+    const { user } = useAuth();
+    const progress = useProgress(user?.id);
+    const studyDays = useStudyDays();
+
+    if (!progress) {
+        return <div className="space-y-6">
+          <PageHeader title="Your Progress" subtitle="Momentum you’ve built — celebrated the way it deserves."/>
+          <Card padding="lg"><p className="text-sm text-charcoal-muted">Loading your progress…</p></Card>
+        </div>;
+    }
+
+    const { total_xp: xp, level, xp_to_next_level: toGo, streak, badges } = progress;
+    const levelPct = Math.round((XP_PER_LEVEL - toGo) / XP_PER_LEVEL * 100);
+    const earned = badges.filter((b) => b.earned).length;
+
     return <div className="space-y-6">
       <PageHeader title="Your Progress" subtitle="Momentum you’ve built — celebrated the way it deserves."/>
 
@@ -29,36 +40,29 @@ export function Progress() {
           <div className="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-brand-50" aria-hidden/>
           <div className="relative flex flex-col sm:flex-row sm:items-center gap-6">
             <div className="w-24 h-24 rounded-3xl bg-brand-500 text-white flex flex-col items-center justify-center shadow-glow shrink-0">
-              <span className="text-3xl font-extrabold leading-none">{student.level}</span>
+              <span className="text-3xl font-extrabold leading-none">{level}</span>
               <span className="text-[10px] font-bold uppercase tracking-wider mt-1">Level</span>
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-extrabold text-charcoal">{student.levelName}</h2>
-              <p className="text-sm text-charcoal-muted">{student.xp.toLocaleString()} XP earned so far</p>
+              <h2 className="text-2xl font-extrabold text-charcoal">{levelName(level)}</h2>
+              <p className="text-sm text-charcoal-muted">{xp.toLocaleString()} XP earned so far</p>
               <div className="mt-3">
                 <div className="flex justify-between text-xs font-semibold text-charcoal-muted mb-1.5">
-                  <span>Progress to Level {student.level + 1}</span>
-                  <span>{xpPct}%</span>
+                  <span>Progress to Level {level + 1}</span>
+                  <span>{levelPct}%</span>
                 </div>
-                <ProgressBar value={xpPct} height={10}/>
-                <p className="text-xs text-charcoal-muted mt-1.5">
-                  {(student.xpToNext - student.xp).toLocaleString()} XP to go
-                </p>
+                <ProgressBar value={levelPct} height={10}/>
+                <p className="text-xs text-charcoal-muted mt-1.5">{toGo.toLocaleString()} XP to go</p>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3 mt-6">
-            {[{
-                l: 'XP Today',
-                v: '215'
-            }, {
-                l: 'Weekly XP',
-                v: '1,340'
-            }, {
-                l: 'Monthly XP',
-                v: '5,890'
-            }].map((s) => <div key={s.l} className="bg-cream rounded-2xl p-4 text-center">
+            {[
+                { l: 'Total XP', v: xp.toLocaleString() },
+                { l: 'Badges earned', v: `${earned} / ${badges.length}` },
+                { l: 'Study days (5 weeks)', v: studyDays ? studyDays.size : '–' },
+            ].map((s) => <div key={s.l} className="bg-cream rounded-2xl p-4 text-center">
                 <p className="text-xl font-extrabold text-charcoal">{s.v}</p>
                 <p className="text-xs font-semibold text-charcoal-muted mt-0.5">{s.l}</p>
               </div>)}
@@ -70,14 +74,24 @@ export function Progress() {
           <h3 className="font-bold text-charcoal">Keep Your Momentum</h3>
           <div className="flex-1 flex flex-col items-center justify-center py-4">
             <div className="text-5xl">🔥</div>
-            <p className="text-3xl font-extrabold text-charcoal mt-2">{student.streak} Days</p>
-            <p className="text-sm text-charcoal-muted">Current streak</p>
+            <p className="text-3xl font-extrabold text-charcoal mt-2">{streak.current} {streak.current === 1 ? 'Day' : 'Days'}</p>
+            <p className="text-sm text-charcoal-muted">
+              Current streak{streak.today_done ? ' · today done ✓' : ' · finish a session today to grow it'}
+            </p>
           </div>
-          <StreakCalendar />
+          <StreakCalendar days={studyDays}/>
           <div className="mt-4 bg-sky-50 rounded-2xl p-3 flex items-center gap-2">
             <SnowflakeIcon size={16} className="text-sky-500"/>
-            <p className="text-xs font-semibold text-sky-700">{student.freezeTokens} Streak Freeze Tokens available</p>
+            <p className="text-xs font-semibold text-sky-700">
+              {streak.freeze_left_this_week} streak freeze left this week (1 missed day per week is forgiven)
+            </p>
           </div>
+          {streak.stress_days_skipped > 0 && <div className="mt-2 bg-brand-50 rounded-2xl p-3 flex items-center gap-2">
+              <ShieldIcon size={16} className="text-brand-600"/>
+              <p className="text-xs font-semibold text-brand-700">
+                {streak.stress_days_skipped} stressful {streak.stress_days_skipped === 1 ? 'day' : 'days'} did not break your streak
+              </p>
+            </div>}
           <p className="text-xs text-charcoal-muted mt-3 text-center">One difficult day should not erase your progress.</p>
         </Card>
       </div>
@@ -85,83 +99,56 @@ export function Progress() {
       {/* Badges */}
       <div>
         <h3 className="text-lg font-bold text-charcoal mb-3">Badges</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {badges.map((b, i) => {
-            const Icon = iconMap[b.icon] ?? AwardIcon;
-            return <motion.div key={b.name} initial={{
-                    opacity: 0,
-                    scale: 0.9
-                }} whileInView={{
-                    opacity: 1,
-                    scale: 1
-                }} viewport={{
-                    once: true
-                }} transition={{
-                    delay: i * 0.04
-                }}>
-                <Card padding="sm" className={cn('flex flex-col items-center text-center', !b.earned && 'opacity-55')}>
-                  <div className={cn('w-14 h-14 rounded-2xl flex items-center justify-center mb-3', b.earned ? 'bg-brand-500 text-white shadow-glow' : 'bg-black/[0.05] text-charcoal-muted')}>
-                    <Icon size={24}/>
-                  </div>
-                  <p className="text-sm font-bold text-charcoal">{b.name}</p>
-                  <p className="text-[11px] text-charcoal-muted mt-0.5 leading-tight">{b.desc}</p>
-                  {!b.earned && <span className="text-[10px] font-bold text-charcoal-muted mt-2 uppercase tracking-wide">Locked</span>}
-                </Card>
-              </motion.div>;
-        })}
-        </div>
-      </div>
-
-      {/* Weekly challenges */}
-      <div>
-        <h3 className="text-lg font-bold text-charcoal mb-3">Weekly Challenges</h3>
-        <div className="grid md:grid-cols-3 gap-4">
-          {challenges.map((c) => {
-            const pct = Math.round(c.progress / c.total * 100);
-            const done = c.progress >= c.total;
-            return <Card key={c.title} padding="lg">
-                <div className="flex items-start justify-between">
-                  <h4 className="font-bold text-charcoal">{c.title}</h4>
-                  <span className="text-xs font-bold bg-brand-50 text-brand-700 rounded-full px-2.5 py-1 shrink-0">
-                    +{c.reward} XP
-                  </span>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {badges.map((b, i) => <motion.div key={b.code} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.04 }}>
+              <Card padding="sm" className={cn('flex flex-col items-center text-center h-full', !b.earned && 'opacity-60')}>
+                <div className={cn('w-14 h-14 rounded-2xl flex items-center justify-center mb-3 text-2xl', b.earned ? 'bg-brand-500 shadow-glow' : 'bg-black/[0.05] grayscale')}>
+                  {b.emoji}
                 </div>
-                <p className="text-sm text-charcoal-muted mt-1 leading-relaxed">{c.desc}</p>
-                <div className="mt-4">
-                  <div className="flex justify-between text-xs font-semibold text-charcoal-muted mb-1.5">
-                    <span>{done ? 'Completed 🎉' : 'In progress'}</span>
-                    <span>
-                      {c.progress}/{c.total}
-                    </span>
-                  </div>
-                  <ProgressBar value={pct} color={done ? 'bg-sage' : 'bg-brand-500'}/>
-                </div>
-              </Card>;
-        })}
+                <p className="text-sm font-bold text-charcoal">{b.title}</p>
+                <p className="text-[11px] text-charcoal-muted mt-0.5 leading-tight">{b.description}</p>
+                {b.earned
+                    ? <span className="text-[10px] font-bold text-brand-600 mt-2 uppercase tracking-wide">
+                        Earned {toDate(b.earned_at)?.toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                      </span>
+                    : <div className="w-full mt-2">
+                        <ProgressBar value={Math.round(b.progress / b.target * 100)}/>
+                        <p className="text-[10px] font-bold text-charcoal-muted mt-1">{b.progress} / {b.target}</p>
+                      </div>}
+              </Card>
+            </motion.div>)}
         </div>
       </div>
     </div>;
 }
-function StreakCalendar() {
-    // 5 weeks x 7 days
-    const cells = Array.from({
-        length: 35
-    }).map((_, i) => {
-        if (i === 12)
-            return 'freeze';
-        if (i === 8 || i === 19)
-            return 'missed';
-        if (i > 34 - 14)
-            return 'done';
-        return i % 3 === 0 ? 'done' : i % 5 === 0 ? 'idle' : 'done';
+
+// Study days (with a completed focus session) in the last 5 weeks, as "YYYY-MM-DD" in local time
+function useStudyDays() {
+    const [days, setDays] = useState(null);
+    useEffect(() => {
+        const from = new Date(Date.now() - CALENDAR_DAYS * 86400000);
+        api.get("/scheduler/focus/history", { params: { from: from.toISOString(), completed: true, limit: 200 } })
+            .then((r) => setDays(new Set(r.data.items.map((s) => dayKey(toDate(s.started_at))))))
+            .catch(() => setDays(new Set()));
+    }, []);
+    return days;
+}
+
+const dayKey = (d) => {
+    const x = new Date(d.getTime() - DAY_CHANGE_HOUR * 3600000);
+    return `${x.getFullYear()}-${x.getMonth() + 1}-${x.getDate()}`;
+};
+
+// Last 5 weeks, oldest first: green = studied, grey = no session, outline = today
+function StreakCalendar({ days }) {
+    const today = new Date();
+    const cells = Array.from({ length: CALENDAR_DAYS }, (_, i) => {
+        const d = new Date(today.getTime() - (CALENDAR_DAYS - 1 - i) * 86400000);
+        return { key: dayKey(d), label: d.toLocaleDateString([], { month: 'short', day: 'numeric' }), isToday: i === CALENDAR_DAYS - 1 };
     });
-    const styles = {
-        done: 'bg-brand-500',
-        missed: 'bg-black/[0.08]',
-        idle: 'bg-black/[0.05]',
-        freeze: 'bg-sky-400'
-    };
     return <div className="grid grid-cols-7 gap-1.5">
-      {cells.map((c, i) => <span key={i} className={cn('aspect-square rounded-md', styles[c])} title={c}/>)}
+      {cells.map((c) => <span key={c.key} title={c.label}
+            className={cn('aspect-square rounded-md', days?.has(c.key) ? 'bg-brand-500' : 'bg-black/[0.06]', c.isToday && 'ring-2 ring-brand-300')}/>)}
     </div>;
 }

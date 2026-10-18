@@ -47,6 +47,10 @@ export function getGreeting(date = new Date()) {
     return 'Good evening';
 }
 
+// Name shown next to the level number (level = 1 + XP / 200, from the backend)
+const LEVEL_NAMES = ['Starter', 'Learner', 'Explorer', 'Achiever', 'Scholar', 'Expert', 'Master'];
+export const levelName = (level) => LEVEL_NAMES[Math.min(level, LEVEL_NAMES.length) - 1] ?? 'Starter';
+
 // "9 AM – 11 AM" style label for a list of peak hours like [20, 21, 19]
 export function hoursLabel(hours) {
     if (!hours?.length) return '';

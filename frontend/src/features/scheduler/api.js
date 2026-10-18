@@ -1,13 +1,19 @@
 // All HTTP calls for this feature -> /api/scheduler
 import api from "../../shared/api/client";
 
+// XP / streak / badges may have changed -> tell useProgress to reload (sidebar level etc.)
+const progressChanged = (r) => {
+  window.dispatchEvent(new Event("scheduler:progress"));
+  return r.data;
+};
+
 // --- Tasks ---
 export const listTasks = () => api.get("/scheduler/tasks").then((r) => r.data);
 export const getTask = (id) => api.get(`/scheduler/tasks/${id}`).then((r) => r.data);     // + subtasks
 export const createTask = (task) => api.post("/scheduler/tasks", task).then((r) => r.data);
 export const updateTask = (id, changes) => api.patch(`/scheduler/tasks/${id}`, changes).then((r) => r.data);
 export const deleteTask = (id) => api.delete(`/scheduler/tasks/${id}`);
-export const finishTask = (id) => api.post(`/scheduler/tasks/${id}/complete`).then((r) => r.data);  // done + XP
+export const finishTask = (id) => api.post(`/scheduler/tasks/${id}/complete`).then(progressChanged);  // done + XP
 
 // --- Plan, free time, commitments ---
 export const buildPlan = () => api.get("/scheduler/plan").then((r) => r.data);     // places pending tasks
@@ -23,7 +29,7 @@ export const startFocus = (body) => api.post("/scheduler/focus/start", body).the
 export const pauseFocus = (id) => api.post(`/scheduler/focus/${id}/pause`).then((r) => r.data);
 export const resumeFocus = (id) => api.post(`/scheduler/focus/${id}/resume`).then((r) => r.data);
 export const endFocus = (id, rating) =>
-  api.post(`/scheduler/focus/${id}/end`, rating ? { focus_rating: rating } : {}).then((r) => r.data);
+  api.post(`/scheduler/focus/${id}/end`, rating ? { focus_rating: rating } : {}).then(progressChanged);
 
 // --- Attention profile (M1 model): best / worst hours, capacity, chance per hour ---
 export const getAttentionProfile = () => api.get("/scheduler/attention/profile").then((r) => r.data);
