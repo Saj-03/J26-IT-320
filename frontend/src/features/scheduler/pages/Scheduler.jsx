@@ -18,7 +18,7 @@ import PlannedTasks from '../components/PlannedTasks';
 import Commitments from '../components/Commitments';
 import { categoryStyles } from '../../../shared/lib/data';
 import { apiErrorMessage } from '../../../shared/api/client';
-import { finishTask, getAttentionProfile, getPlan, getStressStatus, listCommitments, listTasks, planMyWeek, updateTask, utcMs } from '../api';
+import { finishTask, getAttentionProfile, getPlan, getRecovery, getStressStatus, listCommitments, listTasks, planMyWeek, updateTask, utcMs } from '../api';
 import { LOAD_LABEL, hoursList, isOpen, stressStyles } from '../lib';
 import { cn } from '../../../shared/lib/cn';
 
@@ -83,6 +83,7 @@ export function Scheduler() {
     const [commitments, setCommitments] = useState([]);
     const [stress, setStress] = useState(null);
     const [peaks, setPeaks] = useState([]);                 // M1 best hours, e.g. [21, 20, 16]
+    const [recovery, setRecovery] = useState(null);         // FR-09: missed sessions + recovery preview
     const [failed, setFailed] = useState(false);
     const [selected, setSelected] = useState(null);         // a block of a task
     const [error, setError] = useState('');
@@ -97,6 +98,7 @@ export function Scheduler() {
             .catch(() => setFailed(true));
         getStressStatus().then(setStress).catch(() => {});
         getAttentionProfile().then((p) => setPeaks(p.source === 'm1_model' ? p.peak_hours : [])).catch(() => {});
+        getRecovery().then(setRecovery).catch(() => setRecovery(null));
     };
     useEffect(load, [reloadKey]);   // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -135,6 +137,29 @@ export function Scheduler() {
           action={<Button onClick={runPlanner} disabled={planning}>
               <SparklesIcon size={16}/> {planning ? 'Planning…' : 'Plan my week'}
             </Button>}/>
+
+      {/* FR-09: missed study sessions -> recovery plan preview (applied only when the student says so) */}
+      {recovery?.missed.length > 0 && !result &&
+        <Card padding="lg" className="border border-brand-100 bg-brand-50/60">
+          <div className="flex items-start gap-3">
+            <ClockIcon size={20} className="text-brand-600 mt-0.5 shrink-0"/>
+            <div className="flex-1 min-w-0 space-y-2">
+              <p className="font-bold text-charcoal">
+                You missed {recovery.missed.length} study {recovery.missed.length === 1 ? 'session' : 'sessions'}. That's okay - here is a new plan.
+              </p>
+              <ul className="text-sm text-charcoal-light space-y-0.5">
+                {recovery.moves.map((m) => <li key={m.task_id}>• <b>{m.title}</b> → continues {new Date(utcMs(m.new_start)).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })}</li>)}
+              </ul>
+              {recovery.deadlines_ok ?
+                <p className="text-sm font-semibold text-emerald-700">✓ Every deadline still fits.</p> :
+                recovery.at_risk.map((u) => <p key={u.task_id} className="text-sm text-charcoal flex items-start gap-2">
+                    <AlertTriangleIcon size={15} className="text-amber-500 mt-0.5 shrink-0"/>
+                    <span><b>{u.title}</b>: {formatMinutes(u.minutes)} no longer fits before its deadline. Free some time or talk to your lecturer early.</span>
+                  </p>)}
+              <Button size="sm" onClick={runPlanner} disabled={planning}><SparklesIcon size={15}/> {planning ? 'Planning…' : 'Apply new plan'}</Button>
+            </div>
+          </div>
+        </Card>}
 
       {/* A study session sits on top of a lecture / commitment -> offer to plan again */}
       {clashes.length > 0 &&

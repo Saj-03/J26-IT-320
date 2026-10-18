@@ -153,3 +153,63 @@ def test_moving_or_deleting_a_task_removes_its_plan_pieces(env):
 
     assert client.delete(f"/api/scheduler/tasks/{b['id']}").status_code == 204      # no foreign-key error
     assert db.query(PlannedSession).count() == 0
+
+
+def test_suggested_steps_fit_the_focus_length_and_are_created_once(env):
+    client, db, current, _ = env
+    evening_person(db, current["user"])                       # M1 history -> M1 timer
+    soon = (datetime.utcnow() + timedelta(days=5)).isoformat()
+    big = client.post("/api/scheduler/tasks", json={"title": "Report", "deadline": soon,
+                                                     "estimated_minutes": 180, "cognitive_load": "heavy"}).json()
+    preview = client.get(f"/api/scheduler/tasks/{big['id']}/suggested-steps").json()
+    focus = preview["focus_minutes"]
+    assert preview["source"] == "m1_model"
+    assert sum(s["minutes"] for s in preview["steps"]) == 180
+    assert all(s["minutes"] <= focus for s in preview["steps"])
+    assert preview["steps"][0]["title"] == f"Report - step 1/{len(preview['steps'])}"
+    assert db.query(Task).filter_by(parent_id=big["id"]).count() == 0             # preview saves nothing
+
+    created = client.post(f"/api/scheduler/tasks/{big['id']}/suggested-steps")
+    assert created.status_code == 200
+    subtasks = created.json()["subtasks"]
+    assert [s["estimated_minutes"] for s in subtasks] == [s["minutes"] for s in preview["steps"]]
+    assert all(s["cognitive_load"] == "heavy" for s in subtasks)
+    assert client.post(f"/api/scheduler/tasks/{big['id']}/suggested-steps").status_code == 409   # only once
+
+
+def test_missed_pieces_get_a_recovery_preview_and_apply_clears_them(env):
+    _, db, current, _ = env
+    me = current["user"]
+    t = add_task(db, me, "Essay", 100, due_days=4)
+    planner.build_plan(db, me, NOW)
+    first = db.query(PlannedSession).order_by(PlannedSession.start).first()
+    pieces = db.query(PlannedSession).count()
+
+    later = first.end + timedelta(minutes=5)                       # the first piece is over, never started
+    preview = planner.recovery_preview(db, me, later)
+    assert [m["task_id"] for m in preview["missed"]] == [t.id]
+    assert preview["moves"][0]["new_start"] >= later                # moved to the future
+    assert preview["deadlines_ok"] and not preview["at_risk"]
+    assert db.query(PlannedSession).count() == pieces               # preview saved nothing
+
+    planner.build_plan(db, me, later)                               # student applies the recovery plan
+    assert planner.recovery_preview(db, me, later + timedelta(minutes=1))["missed"] == []
+    assert sum(p.minutes for p in db.query(PlannedSession).filter(PlannedSession.start >= later)) == 100
+
+
+def test_started_pieces_are_not_missed_and_tight_deadlines_are_flagged(env):
+    _, db, current, _ = env
+    me = current["user"]
+    t = add_task(db, me, "Essay", 100, due_days=4)
+    planner.build_plan(db, me, NOW)
+    first = db.query(PlannedSession).order_by(PlannedSession.start).first()
+    db.add(FocusSession(user_id=me.id, task_id=t.id, started_at=first.start, ended_at=first.end,
+                        planned_minutes=50, actual_minutes=50, completed=True)); db.commit()
+    assert planner.recovery_preview(db, me, first.end + timedelta(minutes=5))["missed"] == []
+
+    rush = add_task(db, me, "Rush", 50, due_days=0.6)
+    planner.build_plan(db, me, NOW)
+    piece = db.query(PlannedSession).filter_by(task_id=rush.id).order_by(PlannedSession.end.desc()).first()
+    late = rush.deadline - timedelta(minutes=30)                    # too late to do 50 min now
+    preview = planner.recovery_preview(db, me, max(late, piece.end + timedelta(minutes=1)))
+    assert not preview["deadlines_ok"] and preview["at_risk"][0]["task_id"] == rush.id

@@ -12,7 +12,7 @@ from app.db.session import get_db
 from app.core.dependencies import get_current_user
 from app.components.scheduler import (
     schemas, service, task_service, commitment_service, focus_service, settings_service, stress_service,
-    attention_service, progress_service, planner_service,
+    attention_service, progress_service, planner_service, research_service,
 )
 from app.components.scheduler.models import Task, FocusSession, ScheduleChange
 from app.components.scheduler.engine import m1_predictor, stress_rules
@@ -45,6 +45,19 @@ def list_tasks(
 @router.get("/tasks/{task_id}", response_model=schemas.TaskDetailOut)
 def get_task(task_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """One task with its subtasks."""
+    return task_service.get_task_detail(db, user, task_id)
+
+
+@router.get("/tasks/{task_id}/suggested-steps", response_model=schemas.SuggestedStepsOut)
+def suggested_steps(task_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Preview: this task cut into steps that fit my focus length (FR-03). Nothing is saved."""
+    return planner_service.suggest_steps(db, user, task_id)
+
+
+@router.post("/tasks/{task_id}/suggested-steps", response_model=schemas.TaskDetailOut)
+def create_suggested_steps(task_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Create the suggested steps as subtasks (only if the task has no steps yet)."""
+    planner_service.create_suggested_steps(db, user, task_id)
     return task_service.get_task_detail(db, user, task_id)
 
 
@@ -205,6 +218,13 @@ def get_plan(db: Session = Depends(get_db), user=Depends(get_current_user)):
     return planner_service.plan_view(db, user)
 
 
+@router.get("/plan/recovery", response_model=schemas.RecoveryOut)
+def plan_recovery(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """FR-09: planned sessions I missed + where a new plan would put that work (preview, nothing saved).
+    Apply it with POST /plan."""
+    return planner_service.recovery_preview(db, user)
+
+
 # ===========================================================================
 # ATTENTION PROFILE  (FR-05, FR-13, FR-15) - from the M1 model
 # ===========================================================================
@@ -313,3 +333,25 @@ def complete(task_id: str, db: Session = Depends(get_db), user=Depends(get_curre
     if not t or t.user_id != user.id:
         raise HTTPException(404)
     return service.complete_task(db, user, t)
+
+
+# ===========================================================================
+# PILOT STUDY  (researcher only) - experiment mode per participant (proposal 3.1)
+# ===========================================================================
+@router.get("/research/me", response_model=schemas.ResearcherOut)
+def research_me(user=Depends(get_current_user)):
+    """Am I a researcher? (the frontend shows the pilot controls only then)"""
+    return {"is_researcher": research_service.is_researcher(user)}
+
+
+@router.get("/research/participants", response_model=schemas.ParticipantsOut)
+def research_participants(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Consenting participants by research ID with their mode and activity. Researchers only."""
+    return research_service.participants(db, user)
+
+
+@router.patch("/research/participants/{research_id}", response_model=schemas.ParticipantModeOut)
+def research_set_mode(research_id: str, data: schemas.ParticipantModeIn,
+                      db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Set a participant's experiment mode (static / adaptive / attention_only) and AB/BA group."""
+    return research_service.set_mode(db, user, research_id, data.mode, data.pilot_group)

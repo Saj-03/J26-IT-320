@@ -597,3 +597,75 @@ class PlanBuiltOut(PlanOut):
     attention_source: str            # m1_model / survey / none
     peak_hours: list[int]            # M1 best hours (Sri Lanka clock), empty if not from M1
     unplaced: list[UnplacedTaskOut]
+
+
+class SuggestedStep(BaseModel):
+    title: str
+    minutes: int
+    load: str
+
+
+class SuggestedStepsOut(BaseModel):
+    """FR-03: a task cut into steps that fit the student's focus length (M1 / rules / survey)."""
+    task_id: str
+    focus_minutes: int
+    source: str                      # m1_model / history_rules / survey / static_default / default ...
+    reason: str
+    steps: list[SuggestedStep]
+
+
+class MissedPieceOut(BaseModel):
+    task_id: str
+    title: str
+    start: datetime
+    end: datetime
+    minutes: int
+    piece: int
+    of: int
+
+
+class RecoveryMoveOut(BaseModel):
+    task_id: str
+    title: str
+    new_start: datetime              # first new time of that task's work
+
+
+class RecoveryOut(BaseModel):
+    """FR-09: missed study sessions + a recovery plan preview (nothing saved until the student applies it)."""
+    missed: list[MissedPieceOut]
+    moves: list[RecoveryMoveOut]
+    at_risk: list[UnplacedTaskOut]   # deadlines rechecked: work that no longer fits
+    deadlines_ok: bool
+
+
+# ===========================================================================
+# PILOT STUDY (researcher only) - experiment mode per participant, by research_id
+# ===========================================================================
+class ParticipantOut(BaseModel):
+    research_id: str                 # pseudonymous - no name / email (NFR-05)
+    mode: str
+    pilot_group: str | None
+    completed_sessions: int
+    tasks_done: int
+    last_active: datetime | None
+
+
+class ParticipantsOut(BaseModel):
+    participants: list[ParticipantOut]
+    without_consent: int             # students not shown because they did not consent
+
+
+class ParticipantModeIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    mode: Literal["static", "adaptive", "attention_only"] | None = None
+    pilot_group: Literal["AB", "BA", ""] | None = None     # "" clears it
+
+
+class ParticipantModeOut(BaseModel):
+    research_id: str
+    mode: str
+    pilot_group: str | None
+
+
+class ResearcherOut(BaseModel):
+    is_researcher: bool

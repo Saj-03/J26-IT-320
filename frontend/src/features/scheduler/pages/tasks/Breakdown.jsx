@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { PlusIcon, PencilIcon, Trash2Icon, CheckIcon, AlertTriangleIcon } from 'lucide-react';
+import { PlusIcon, PencilIcon, Trash2Icon, CheckIcon, AlertTriangleIcon, SparklesIcon } from 'lucide-react';
 import { PageHeader } from '../../../../shared/components/layout/PageHeader';
 import { Card } from '../../../../shared/components/ui/Card';
 import { Button } from '../../../../shared/components/ui/Button';
@@ -12,7 +12,7 @@ import { Field, SelectField } from '../../../../shared/components/ui/Field';
 import { ErrorState, LoadingState } from '../../../../shared/components/ui/States';
 import { LoadPicker, EstimatedTime, SectionTitle, formatMinutes } from '../../components/PlanPrimitives';
 import { apiErrorMessage } from '../../../../shared/api/client';
-import { createTask, deleteTask, getAttentionProfile, getTask, updateTask } from '../../api';
+import { createSuggestedSteps, createTask, deleteTask, getAttentionProfile, getTask, suggestSteps, updateTask } from '../../api';
 import { LOAD_LABEL, LOAD_VALUE, dayText } from '../../lib';
 
 const EMPTY_DRAFT = { title: '', load: 'Medium', minutes: 30 };
@@ -28,10 +28,15 @@ export function TaskBreakdown() {
     const [editing, setEditing] = useState(null);
     const [adding, setAdding] = useState(false);
     const [draft, setDraft] = useState(EMPTY_DRAFT);
+    const [suggestion, setSuggestion] = useState(null);   // FR-03: steps sized to my focus length
 
     const load = () => {
         setFailed(false);
-        getTask(id).then(setTask).catch(() => setFailed(true));
+        getTask(id).then((t) => {
+            setTask(t);
+            if (!t.subtasks.length && !t.parent_id) suggestSteps(t.id).then(setSuggestion).catch(() => setSuggestion(null));
+            else setSuggestion(null);
+        }).catch(() => setFailed(true));
     };
     useEffect(() => {
         if (!id) return navigate('/app/tasks', { replace: true });
@@ -88,6 +93,27 @@ export function TaskBreakdown() {
         {/* Steps */}
         <div className="lg:col-span-2">
           <SectionTitle title="Steps" subtitle="Edit or remove anything that doesn’t fit."/>
+          {steps.length === 0 && suggestion?.steps.length > 1 &&
+            <Card padding="lg" className="border border-brand-100 bg-brand-50/60 mb-3">
+              <div className="flex items-start gap-3">
+                <span className="w-9 h-9 rounded-2xl bg-brand-500 text-white flex items-center justify-center shrink-0"><SparklesIcon size={16}/></span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-charcoal">Suggested: {suggestion.steps.length} steps of about {formatMinutes(suggestion.steps[0].minutes)}</p>
+                  <p className="text-sm text-charcoal-muted mt-0.5">
+                    Each step fits one {suggestion.focus_minutes}-minute focus session
+                    {suggestion.source === 'm1_model' ? ' (learned from your focus history)' : ''}. You can rename or change them after.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {suggestion.steps.map((s, i) => <span key={i} className="text-xs font-semibold bg-white rounded-full px-3 py-1 text-charcoal-light">
+                        Step {i + 1} · {formatMinutes(s.minutes)}
+                      </span>)}
+                  </div>
+                  <Button size="sm" className="mt-4" onClick={() => run(createSuggestedSteps(task.id))}>
+                    <SparklesIcon size={15}/> Use these steps
+                  </Button>
+                </div>
+              </div>
+            </Card>}
           {steps.length === 0 &&
             <Card padding="lg"><p className="text-sm text-charcoal-muted">No steps yet. Add the first small step you can finish in one focus session.</p></Card>}
           <div className="space-y-3">

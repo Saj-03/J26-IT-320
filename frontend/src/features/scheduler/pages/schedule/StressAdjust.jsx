@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckIcon, ArrowRightIcon, LeafIcon, XIcon, LockIcon, RotateCcwIcon, Undo2Icon, ScissorsIcon, CalendarClockIcon, CoffeeIcon } from 'lucide-react';
+import { CheckIcon, ArrowRightIcon, LeafIcon, XIcon, LockIcon, RotateCcwIcon, Undo2Icon, ScissorsIcon, CalendarClockIcon, CoffeeIcon, InfoIcon } from 'lucide-react';
 import { PageHeader } from '../../../../shared/components/layout/PageHeader';
 import { Card } from '../../../../shared/components/ui/Card';
 import { Button } from '../../../../shared/components/ui/Button';
@@ -220,5 +220,14 @@ export function StressAdjust() {
             </Card>
           </motion.div>}
       </AnimatePresence>
+
+      {/* NFR-12: planning aid, not a diagnosis - with a support pathway */}
+      <p className="flex items-start gap-2 text-xs text-charcoal-muted leading-relaxed">
+        <InfoIcon size={14} className="mt-0.5 shrink-0"/>
+        <span>
+          ThriveU only adjusts your study plan. It is a planning aid, not a medical or psychological diagnosis.
+          If you feel overwhelmed or unsafe, please talk to the university counselling service or someone you trust.
+        </span>
+      </p>
     </div>);
 }

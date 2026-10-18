@@ -13,12 +13,16 @@ export const getTask = (id) => api.get(`/scheduler/tasks/${id}`).then((r) => r.d
 export const createTask = (task) => api.post("/scheduler/tasks", task).then((r) => r.data);
 export const updateTask = (id, changes) => api.patch(`/scheduler/tasks/${id}`, changes).then((r) => r.data);
 export const deleteTask = (id) => api.delete(`/scheduler/tasks/${id}`);
+// FR-03: the task cut into steps that fit my focus length (GET = preview, POST = create them)
+export const suggestSteps = (id) => api.get(`/scheduler/tasks/${id}/suggested-steps`).then((r) => r.data);
+export const createSuggestedSteps = (id) => api.post(`/scheduler/tasks/${id}/suggested-steps`).then((r) => r.data);
 export const finishTask = (id) => api.post(`/scheduler/tasks/${id}/complete`).then(progressChanged);  // done + XP
 
 // --- Plan, free time, commitments ---
 // "Plan my week" = CP-SAT scheduler (Module D): POST builds a new plan, GET reads the saved one
 export const planMyWeek = () => api.post("/scheduler/plan").then((r) => r.data);
 export const getPlan = () => api.get("/scheduler/plan").then((r) => r.data);
+export const getRecovery = () => api.get("/scheduler/plan/recovery").then((r) => r.data);   // FR-09 missed -> preview
 export const getAvailability = (days = 7) => api.get("/scheduler/availability", { params: { days } }).then((r) => r.data);
 export const listCommitments = () => api.get("/scheduler/commitments").then((r) => r.data);
 export const createCommitment = (item) => api.post("/scheduler/commitments", item).then((r) => r.data);
