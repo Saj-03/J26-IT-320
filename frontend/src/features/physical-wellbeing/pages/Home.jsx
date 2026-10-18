@@ -23,6 +23,7 @@ export function PhysicalHome() {
   const buddyImage = buddyGender.toLowerCase() === 'female'
     ? '/img/wellbeing-buddy-female.png'
     : '/img/wellbeing-buddy-male.png';
+  const checkInKey = `wellbeing-buddy-checkin:${student?.email || 'guest'}:${new Date().toLocaleDateString('en-CA')}`;
 
   const [recomData, setRecomData] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -35,6 +36,7 @@ export function PhysicalHome() {
   const [buddyChoice, setBuddyChoice] = useState(null);
   const [buddyExit, setBuddyExit] = useState(false);
   const [buddyScheduled, setBuddyScheduled] = useState(false);
+  const [checkInDoneForToday, setCheckInDoneForToday] = useState(() => localStorage.getItem(checkInKey) === 'true');
 
   useEffect(() => {
     Promise.all([
@@ -46,8 +48,8 @@ export function PhysicalHome() {
       setRecomData(rec);
       setProfile(prof);
       setActivitySummary(act);
-      setFeedback(act?.today?.workout_feedback ?? null);
-      // Only show a happy/sad reaction after the student answers in this visit.
+      // A backend answer from earlier today must not look like a fresh click.
+      setFeedback(null);
       setBuddyChoice(null);
       setHabits(Array.isArray(habs) ? habs : []);
       setLoading(false);
@@ -55,9 +57,13 @@ export function PhysicalHome() {
   }, []);
 
   useEffect(() => {
+    setCheckInDoneForToday(localStorage.getItem(checkInKey) === 'true');
+  }, [checkInKey]);
+
+  useEffect(() => {
     // Wait for today's saved check-in before scheduling the prompt. If the user
     // has already answered today, don't replay the buddy's reaction on refresh.
-    if (loading || feedback !== null || buddyScheduled) return;
+    if (loading || checkInDoneForToday || buddyScheduled) return;
     const snoozeKey = `wellbeing-buddy-snooze-${new Date().toLocaleDateString('en-CA')}`;
     const snoozeUntil = Number(localStorage.getItem(snoozeKey) || 0);
     const delay = Math.max(1800, snoozeUntil - Date.now());
@@ -66,7 +72,7 @@ export function PhysicalHome() {
       setBuddyScheduled(true);
     }, delay);
     return () => window.clearTimeout(timer);
-  }, [loading, feedback, buddyScheduled]);
+  }, [loading, checkInDoneForToday, buddyScheduled]);
 
   // Real stats
   const todaySteps = activitySummary?.today?.steps || 0;
@@ -116,6 +122,8 @@ export function PhysicalHome() {
         did_workout: didWorkout,
         workout_minutes: didWorkout ? Number(topWorkout?.minutes || topWorkout?.duration_mins || 20) : 0
       });
+      localStorage.setItem(checkInKey, 'true');
+      setCheckInDoneForToday(true);
       setFeedback(didWorkout);
       const refreshed = await getActivitySummary().catch(() => null);
       if (refreshed) setActivitySummary(refreshed);
@@ -177,7 +185,7 @@ export function PhysicalHome() {
                   <p className="text-xs font-semibold text-amber-700">{feedback === null ? 'A quick check-in' : 'Your wellbeing buddy'}</p>
                   <p className="mt-0.5 text-base font-extrabold text-charcoal">
                     {feedback === null
-                      ? `Hey, ${student?.name?.split?.(' ')[0] || 'there'}! Did you complete a workout today?`
+                      ? `Hey, ${student?.name?.split?.(' ')[0] || 'there'}! Did you work out today?`
                       : feedback
                         ? 'Thanks for checking in! Your effort helps shape your next plan.'
                         : 'That’s okay. We can try a smaller goal next time.'}
@@ -225,7 +233,7 @@ export function PhysicalHome() {
             <div className="min-w-0 flex-1 pr-1">
               <p className="text-xs font-bold text-brand-700">Your wellbeing buddy</p>
               <p className="mt-0.5 text-sm font-semibold text-charcoal">
-                {feedback === null
+                {!checkInDoneForToday
                   ? `Hey, ${student?.name?.split?.(' ')[0] || 'there'}! Did you work out today?`
                   : 'I’m here whenever you need me.'}
               </p>
@@ -233,7 +241,7 @@ export function PhysicalHome() {
               {feedbackSaving && <p className="mt-1 text-[11px] text-brand-700">Saving your answer…</p>}
             </div>
           </div>
-          {feedback === null && (
+          {!checkInDoneForToday && (
             <div className="mt-2 flex flex-wrap justify-end gap-1.5">
               <Button size="sm" disabled={feedbackSaving} onClick={() => answerWorkout(true)}>Yes</Button>
               <Button size="sm" variant="outline" disabled={feedbackSaving} onClick={() => answerWorkout(false)}>Not today</Button>
