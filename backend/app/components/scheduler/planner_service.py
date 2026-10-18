@@ -70,12 +70,11 @@ def free_time(db: Session, user, fixed: list[Task], now: datetime) -> list[tuple
 # ---------------------------------------------------------------------------
 # 2. How to plan (depends on the experiment mode)
 # ---------------------------------------------------------------------------
-def attention_fit(db: Session, user, settings: dict, piece_minutes: int, now: datetime):
+def attention_fit(db: Session, user, settings: dict, profile: dict, piece_minutes: int, now: datetime):
     """(fit function for the engine, where it came from).  fit(hour, minutes, load) -> chance 0..1"""
     if settings["mode"] == "static":
         return None, "none"
 
-    profile = attention_service.attention_profile(db, user, now)
     if profile["source"] == "m1_model":
         sessions = attention_service.usable_sessions(db, user)
         hours = attention_service.study_hours(db, user)
@@ -91,12 +90,15 @@ def attention_fit(db: Session, user, settings: dict, piece_minutes: int, now: da
     return None, "none"
 
 
-def piece_size(db: Session, user, settings: dict) -> tuple[int, int, str]:
-    """(focus minutes, break minutes, source).  Static mode = plain 1-hour calendar blocks."""
-    if settings["mode"] == "static":
+def piece_size(db: Session, user, settings: dict, profile: dict) -> tuple[int, int, str]:
+    """(focus minutes, break minutes, source) - same order as the focus timer suggestion."""
+    if settings["mode"] == "static":                                   # baseline: plain 1-hour blocks
         m = cp_scheduler.STATIC_PIECE_MINUTES
         return m, break_for(m), "static_default"
-    timer = recommend_timer(db, user)
+    if not settings["fixed_timer_minutes"] and profile["source"] == "m1_model":
+        m = profile["recommended_focus"]                               # M1 (profile already computed)
+        return m, break_for(m), "m1_model"
+    timer = recommend_timer(db, user)                                  # fixed timer / rules / survey
     return timer["focus_minutes"], timer["break_minutes"], timer["source"]
 
 
@@ -108,8 +110,10 @@ def build_plan(db: Session, user, now: datetime | None = None) -> dict:
     now = now or datetime.utcnow()
     settings = get_settings(db, user)
     tasks, fixed = open_tasks(db, user, now)
-    focus, rest, timer_source = piece_size(db, user, settings)
-    fit, attention_source = attention_fit(db, user, settings, focus, now)
+    profile = ({"source": "static"} if settings["mode"] == "static"   # baseline: no attention at all
+               else attention_service.attention_profile(db, user, now))   # M1 once, used twice below
+    focus, rest, timer_source = piece_size(db, user, settings, profile)
+    fit, attention_source = attention_fit(db, user, settings, profile, focus, now)
 
     items = [WorkItem(t.id, work_left(t), t.deadline, t.priority, t.cognitive_load) for t in tasks]
     result = cp_scheduler.schedule(items, free_time(db, user, fixed, now), now,
@@ -142,6 +146,7 @@ def build_plan(db: Session, user, now: datetime | None = None) -> dict:
     return {**plan_view(db, user, now), "plan_id": plan_id, "status": result["status"],
             "latency_ms": latency_ms, "focus_minutes": focus, "break_minutes": rest,
             "timer_source": timer_source, "attention_source": attention_source,
+            "peak_hours": profile["peak_hours"] if attention_source == "m1_model" else [],
             "unplaced": unplaced_view(tasks, result["unplaced"])}
 
 

@@ -45,6 +45,12 @@ def available() -> bool:
     return _load() is not None
 
 
+def warm_up_in_background() -> None:
+    """Load PyTorch + the model while the server starts (~2 s), so the first student request is fast."""
+    import threading
+    threading.Thread(target=_load, daemon=True, name="m1-warm-up").start()
+
+
 def history_frame(sessions) -> pd.DataFrame:
     """FocusSession rows -> the table m1_features expects (Sri Lanka hour, study day, ...)."""
     rows = [{

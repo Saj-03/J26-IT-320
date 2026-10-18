@@ -64,6 +64,8 @@ def test_adaptive_plan_puts_heavy_work_in_the_m1_peak(env):
     assert out["attention_source"] == "m1_model" and out["timer_source"] == "m1_model"
     assert out["sessions"] and all(abs(sl(x["start"]).hour - 20) <= 1 for x in out["sessions"])
     assert all(x["chance"] is not None for x in out["sessions"])
+    assert any(abs(h - 20) <= 1 for h in out["peak_hours"])
+    assert all(sl(x["start"]).hour in out["peak_hours"] for x in out["sessions"])
 
 
 def test_static_mode_is_the_plain_baseline(env):

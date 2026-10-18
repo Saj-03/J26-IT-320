@@ -17,14 +17,13 @@ import { LoadBadge, SectionTitle, formatMinutes } from '../components/PlanPrimit
 import PlannedTasks from '../components/PlannedTasks';
 import { categoryStyles } from '../../../shared/lib/data';
 import { apiErrorMessage } from '../../../shared/api/client';
-import { finishTask, getPlan, getStressStatus, listCommitments, listTasks, planMyWeek, updateTask, utcMs } from '../api';
+import { finishTask, getAttentionProfile, getPlan, getStressStatus, listCommitments, listTasks, planMyWeek, updateTask, utcMs } from '../api';
 import { LOAD_LABEL, hoursLabel, isOpen, stressStyles } from '../lib';
 import { cn } from '../../../shared/lib/cn';
 
 const DAY_COUNT = 7;
 const FIRST_HOUR = 6, LAST_HOUR = 24, ROW_HOURS = 2, ROW_PX = 64;          // grid 06:00 - 24:00
 const HOURS = Array.from({ length: (LAST_HOUR - FIRST_HOUR) / ROW_HOURS }, (_, i) => `${String(FIRST_HOUR + i * ROW_HOURS).padStart(2, '0')}:00`);
-const GOOD_CHANCE = 0.7;          // M1 chance at or above this -> marked as a best-hours piece
 
 // What each kind of block looks like (colours from the shared category styles)
 const KIND_STYLE = { task: 'academic', lecture: 'career', work: 'work', protected_block: 'recovery', personal: 'personal', extracurricular: 'social' };
@@ -82,6 +81,7 @@ export function Scheduler() {
     const [plan, setPlan] = useState([]);
     const [commitments, setCommitments] = useState([]);
     const [stress, setStress] = useState(null);
+    const [peaks, setPeaks] = useState([]);                 // M1 best hours, e.g. [21, 20, 16]
     const [failed, setFailed] = useState(false);
     const [selected, setSelected] = useState(null);         // a block of a task
     const [error, setError] = useState('');
@@ -95,6 +95,7 @@ export function Scheduler() {
             .then(([t, c, p]) => { setTasks(t); setCommitments(c); setPlan(p.sessions); })
             .catch(() => setFailed(true));
         getStressStatus().then(setStress).catch(() => {});
+        getAttentionProfile().then((p) => setPeaks(p.source === 'm1_model' ? p.peak_hours : [])).catch(() => {});
     };
     useEffect(load, [reloadKey]);   // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -121,6 +122,7 @@ export function Scheduler() {
             .finally(() => setPlanning(false));
     };
     const isMissed = (b) => isOpen(b.task) && b.end.getTime() < Date.now();
+    const inPeak = (b) => !!b.piece && peaks.includes(b.start.getHours());     // placed in an M1 best hour
 
     return (<div className="space-y-6">
       <PageHeader title="Smart Schedule"
@@ -196,7 +198,7 @@ export function Scheduler() {
                 const colW = `calc((100% - 56px) / 7)`;
                 const px = (min) => (min - FIRST_HOUR * 60) / (ROW_HOURS * 60) * ROW_PX;
                 const done = b.task?.status === 'done';
-                const peak = b.piece?.chance >= GOOD_CHANCE;
+                const peak = inPeak(b);
                 return (<div key={i} onClick={() => b.task && setSelected(b)} title={blockTitle(b)}
                     className={cn('absolute rounded-xl border p-1.5 overflow-hidden', cat.bg, cat.ring, b.task && 'cursor-pointer', done && 'opacity-50')}
                     style={{ left: `calc(56px + ${b.day} * ${colW})`, top: `${px(start)}px`, width: `calc(${colW} - 6px)`,
@@ -236,7 +238,7 @@ export function Scheduler() {
                       <p className={cn('text-sm font-bold text-charcoal mt-1', b.task.status === 'done' && 'line-through')}>{b.title}</p>
                       {b.piece && <p className="text-[11px] font-semibold text-charcoal-muted mt-0.5">
                           {b.piece.of > 1 && `Part ${b.piece.piece} of ${b.piece.of}`}
-                          {b.piece.chance != null && `${b.piece.of > 1 ? ' · ' : ''}${Math.round(b.piece.chance * 100)}% focus chance${b.piece.chance >= GOOD_CHANCE ? ' 🔥' : ''}`}
+                          {b.piece.chance != null && `${b.piece.of > 1 ? ' · ' : ''}${Math.round(b.piece.chance * 100)}% focus chance${inPeak(b) ? ' 🔥 best hours' : ''}`}
                         </p>}
                       {isMissed(b) && <span className="text-[11px] font-bold text-brand-600">Missed · tap to reschedule</span>}
                     </button>)}
@@ -290,9 +292,7 @@ function blockTitle(b) {
 // Summary of the last "Plan my week": what was placed, how, and what did not fit
 function PlanResult({ result, onClose }) {
     const heavy = result.sessions.filter((s) => s.load === 'heavy');
-    const heavyGood = heavy.filter((s) => s.chance >= GOOD_CHANCE).length;
-    const goodHours = [...new Set(result.sessions.filter((s) => s.chance >= GOOD_CHANCE)
-        .map((s) => new Date(utcMs(s.start)).getHours()))];
+    const heavyGood = heavy.filter((s) => result.peak_hours.includes(new Date(utcMs(s.start)).getHours())).length;
     return (<Card padding="lg" className="border border-brand-100 bg-brand-50/60">
       <div className="flex items-start gap-3">
         <span className="w-10 h-10 rounded-2xl bg-brand-500 text-white flex items-center justify-center shrink-0"><SparklesIcon size={18}/></span>
@@ -302,9 +302,9 @@ function PlanResult({ result, onClose }) {
             {result.focus_minutes}-minute parts with {result.break_minutes}-minute breaks, placed using {ATTENTION_WORD[result.attention_source] ?? 'your free time'}
             {result.mode === 'static' && ' (standard plan)'} · around lectures and before every deadline · {(result.latency_ms / 1000).toFixed(1)} s
           </p>
-          {heavy.length > 0 && result.attention_source !== 'none' &&
+          {heavy.length > 0 && result.peak_hours.length > 0 &&
             <p className="text-sm font-semibold text-brand-700 mt-2">
-              🔥 {heavyGood} of {heavy.length} heavy parts are in your best focus hours{goodHours.length ? ` (${hoursLabel(goodHours)})` : ''}.
+              🔥 {heavyGood} of {heavy.length} heavy parts are in your best focus hours ({hoursLabel(result.peak_hours)}).
             </p>}
           {result.unplaced.length > 0 &&
             <div className="mt-3 rounded-2xl bg-white p-3 space-y-1">

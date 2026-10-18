@@ -595,4 +595,5 @@ class PlanBuiltOut(PlanOut):
     break_minutes: int
     timer_source: str                # m1_model / history_rules / survey / static_default ...
     attention_source: str            # m1_model / survey / none
+    peak_hours: list[int]            # M1 best hours (Sri Lanka clock), empty if not from M1
     unplaced: list[UnplacedTaskOut]

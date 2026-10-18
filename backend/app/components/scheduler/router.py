@@ -15,10 +15,11 @@ from app.components.scheduler import (
     attention_service, progress_service, planner_service,
 )
 from app.components.scheduler.models import Task, FocusSession, ScheduleChange
-from app.components.scheduler.engine import stress_rules
+from app.components.scheduler.engine import m1_predictor, stress_rules
 from app.shared.integration import c3_weekly_summary as weekly_summary
 
 router = APIRouter()
+m1_predictor.warm_up_in_background()      # load the M1 model now, not on the first student's request
 
 
 # ===========================================================================
