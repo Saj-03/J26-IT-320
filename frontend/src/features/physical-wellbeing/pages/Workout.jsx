@@ -123,6 +123,38 @@ export function PhysicalWorkout() {
                         </motion.svg>
                         <span className="text-xs font-bold text-sky-900">Messi-style celebration! ⚽</span>
                     </motion.div>}
+                    {false && <motion.div
+                        initial={{ x: -180, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ type: 'spring', stiffness: 75, damping: 14, delay: 0.15 }}
+                        className="mx-auto mt-2 flex w-fit items-center gap-3 rounded-2xl border border-violet-100 bg-violet-50 px-4 py-2"
+                    >
+                        <motion.svg viewBox="0 0 16 20" shapeRendering="crispEdges" className="h-16 w-14" animate={{ y: [0, -2, 0] }} transition={{ duration: 0.42, repeat: Infinity }} role="img" aria-label="Cute pixel art AI friend celebrating your workout">
+                            {/* Pixel antenna and friendly square face */}
+                            <rect x="7" y="0" width="2" height="2" fill="#8b5cf6" />
+                            <rect x="6" y="2" width="4" height="1" fill="#a78bfa" />
+                            <rect x="3" y="4" width="10" height="7" rx="1" fill="#c4b5fd" />
+                            <rect x="4" y="5" width="8" height="5" fill="#f5f3ff" />
+                            <rect x="5" y="6" width="1" height="1" fill="#5b21b6" />
+                            <rect x="10" y="6" width="1" height="1" fill="#5b21b6" />
+                            <rect x="4" y="8" width="1" height="1" fill="#f9a8d4" />
+                            <rect x="11" y="8" width="1" height="1" fill="#f9a8d4" />
+                            <rect x="6" y="8" width="1" height="1" fill="#7c3aed" />
+                            <rect x="7" y="9" width="2" height="1" fill="#7c3aed" />
+                            <rect x="9" y="8" width="1" height="1" fill="#7c3aed" />
+                            {/* Bright little robot body, arms, and feet */}
+                            <rect x="5" y="12" width="6" height="5" fill="#8b5cf6" />
+                            <rect x="6" y="13" width="4" height="2" fill="#ddd6fe" />
+                            <rect x="7" y="14" width="2" height="1" fill="#22d3ee" />
+                            <rect x="3" y="12" width="2" height="2" fill="#a78bfa" />
+                            <rect x="11" y="12" width="2" height="2" fill="#a78bfa" />
+                            <rect x="5" y="17" width="2" height="2" fill="#6d28d9" />
+                            <rect x="9" y="17" width="2" height="2" fill="#6d28d9" />
+                            <rect x="4" y="19" width="3" height="1" fill="#22d3ee" />
+                            <rect x="9" y="19" width="3" height="1" fill="#22d3ee" />
+                        </motion.svg>
+                        <span className="text-xs font-bold text-violet-900">Your pixel friend is proud of you! ✨</span>
+                    </motion.div>}
                     <h1 className="text-2xl font-extrabold text-charcoal mt-3">Workout Completed!</h1>
                     <p className="text-sm text-charcoal-muted mt-1">{workoutTitle}</p>
 

@@ -203,7 +203,6 @@ def get_activity_summary(db: Session = Depends(get_db), user=Depends(get_current
     # Today's activity
     today_log = db.query(ActivityLog).filter_by(user_id=user.id, day=today).first()
     today_feedback = db.query(WorkoutFeedback).filter_by(user_id=user.id, day=today).first()
-    today_feedback = db.query(WorkoutFeedback).filter_by(user_id=user.id, day=today).first()
     
     # Last 7 days history
     seven_days_ago = today - datetime.timedelta(days=6)
@@ -235,7 +234,6 @@ def get_activity_summary(db: Session = Depends(get_db), user=Depends(get_current
             "steps": today_log.steps if today_log else 0,
             "exercise_minutes": today_log.exercise_minutes if today_log else 0,
             "completed_recommendation": today_log.completed_recommendation if today_log else False,
-            "workout_feedback": today_feedback.did_workout if today_feedback else None,
             "workout_feedback": today_feedback.did_workout if today_feedback else None,
             "has_logged_today": today_log is not None
         },
