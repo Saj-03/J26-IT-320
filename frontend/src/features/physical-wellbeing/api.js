@@ -9,6 +9,8 @@ export const getRecommendations = (isExamPeriod = false, useBaseline = false) =>
     api.get("/physical/recommendations", { params: { is_exam_period: isExamPeriod, use_baseline: useBaseline } }).then((r) => r.data);
 export const getWeekPlan = (isExamPeriod = false, useBaseline = false, daysCount = 7) =>
     api.get("/physical/week-plan", { params: { is_exam_period: isExamPeriod, use_baseline: useBaseline, days_count: daysCount } }).then((r) => r.data);
+export const getWeekPlanHistory = () => api.get("/physical/week-plan/history").then((r) => r.data);
+export const getWeekPlanSnapshot = (id) => api.get(`/physical/week-plan/history/${id}`).then((r) => r.data);
 export const getActivitySummary = () => api.get("/physical/activity").then((r) => r.data);
 export const logActivity = (a) => api.post("/physical/activity", a);
 export const saveWorkoutFeedback = (feedback) => api.post("/physical/activity/workout-feedback", feedback).then((r) => r.data);

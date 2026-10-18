@@ -9,7 +9,7 @@ from app.core.dependencies import get_current_user
 from app.components.physical_wellbeing import schemas, service
 from app.components.physical_wellbeing.models import (
     WellbeingProfile, ActivityLog, Habit, WorkoutFeedback,
-    PeerChallenge, PeerChallengeMember,
+    PhysicalPlanSnapshot, PeerChallenge, PeerChallengeMember,
 )
 from app.components.physical_wellbeing.ml import recommender
 
@@ -362,12 +362,67 @@ def get_week_plan(
         raise HTTPException(404, "Create your wellbeing profile first")
     
     profile_dict = _attach_behavior_history(db, user.id, _profile_to_dict(p))
-    return recommender.generate_week_plan(
+    plan = recommender.generate_week_plan(
         profile_dict,
         is_exam_period=is_exam_period,
         use_baseline=use_baseline,
         num_days=days_count
     )
+    plan_date = datetime.date.today()
+    snapshot = db.query(PhysicalPlanSnapshot).filter_by(
+        user_id=user.id,
+        plan_date=plan_date,
+        days_count=days_count,
+        is_exam_period=is_exam_period,
+        use_baseline=use_baseline,
+    ).first()
+    if snapshot:
+        snapshot.plan_data = plan
+        snapshot.created_at = datetime.datetime.utcnow()
+    else:
+        db.add(PhysicalPlanSnapshot(
+            user_id=user.id,
+            plan_date=plan_date,
+            days_count=days_count,
+            is_exam_period=is_exam_period,
+            use_baseline=use_baseline,
+            plan_data=plan,
+        ))
+    db.commit()
+    return plan
+
+
+@router.get("/week-plan/history")
+def list_week_plan_history(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    snapshots = (db.query(PhysicalPlanSnapshot)
+                 .filter_by(user_id=user.id)
+                 .order_by(PhysicalPlanSnapshot.plan_date.desc(), PhysicalPlanSnapshot.created_at.desc())
+                 .limit(90).all())
+    return [
+        {
+            "id": snapshot.id,
+            "plan_date": snapshot.plan_date.isoformat(),
+            "days_count": snapshot.days_count,
+            "is_exam_period": snapshot.is_exam_period,
+            "use_baseline": snapshot.use_baseline,
+            "model_version": snapshot.plan_data.get("model_version", "Saved plan"),
+            "created_at": snapshot.created_at.isoformat(),
+        }
+        for snapshot in snapshots
+    ]
+
+
+@router.get("/week-plan/history/{snapshot_id}")
+def get_week_plan_snapshot(snapshot_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    snapshot = db.query(PhysicalPlanSnapshot).filter_by(id=snapshot_id, user_id=user.id).first()
+    if not snapshot:
+        raise HTTPException(404, "Saved plan not found")
+    return {
+        "id": snapshot.id,
+        "plan_date": snapshot.plan_date.isoformat(),
+        "days_count": snapshot.days_count,
+        "plan": snapshot.plan_data,
+    }
 
 
 @router.post("/activity/workout-feedback")

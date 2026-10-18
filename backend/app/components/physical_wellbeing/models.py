@@ -62,6 +62,19 @@ class Habit(Base):
     last_done: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
+class PhysicalPlanSnapshot(Base):
+    """A dated copy of a generated wellbeing schedule for the user's plan history."""
+    __tablename__ = "physical_plan_snapshots"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    plan_date: Mapped[date] = mapped_column(Date, index=True)
+    days_count: Mapped[int] = mapped_column(Integer)
+    is_exam_period: Mapped[bool] = mapped_column(Boolean, default=False)
+    use_baseline: Mapped[bool] = mapped_column(Boolean, default=False)
+    plan_data: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 class PeerChallenge(Base):
     """A private, invite-only challenge. Stores no wellbeing profile data."""
     __tablename__ = "physical_peer_challenges"

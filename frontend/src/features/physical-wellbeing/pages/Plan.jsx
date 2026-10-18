@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckIcon, PlayIcon, ClockIcon, XIcon, PlusIcon, MinusIcon,
-  CalendarIcon, SparklesIcon, AlertCircleIcon, ShieldCheckIcon,
+  CalendarIcon, HistoryIcon, SparklesIcon, AlertCircleIcon, ShieldCheckIcon,
   UtensilsIcon, DumbbellIcon, FlameIcon, LayersIcon
 } from 'lucide-react';
 import { PageHeader } from '../../../shared/components/layout/PageHeader';
@@ -12,7 +12,7 @@ import { Button } from '../../../shared/components/ui/Button';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { PhysicalNav } from '../components/PhysicalNav';
 import { AdaptedChip } from '../components/Shared';
-import { getWeekPlan, getRecommendations, getProfile } from '../api';
+import { getWeekPlan, getWeekPlanHistory, getWeekPlanSnapshot, getProfile } from '../api';
 import { cn } from '../../../shared/lib/cn';
 
 const slotMeta = {
@@ -37,6 +37,12 @@ export function PhysicalPlan() {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [historyMode, setHistoryMode] = useState(false);
+  const [historyRecords, setHistoryRecords] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState('');
+  const [loadingSnapshotId, setLoadingSnapshotId] = useState('');
+  const [viewingSavedPlan, setViewingSavedPlan] = useState(false);
 
   // Today timeline statuses
   const [statuses, setStatuses] = useState({});
@@ -62,8 +68,48 @@ export function PhysicalPlan() {
   };
 
   useEffect(() => {
-    fetchPlan();
-  }, [isExamPeriod, useBaseline, daysCount]);
+    if (!viewingSavedPlan) fetchPlan();
+  }, [isExamPeriod, useBaseline, daysCount, viewingSavedPlan]);
+
+  const openHistory = async () => {
+    setHistoryLoading(true);
+    setHistoryError('');
+    try {
+      setHistoryRecords(await getWeekPlanHistory());
+      setHistoryMode(true);
+    } catch (err) {
+      setHistoryError('Could not load your saved plan history. Please try again.');
+      setHistoryMode(true);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const openSnapshot = async (record) => {
+    setLoadingSnapshotId(record.id);
+    setHistoryError('');
+    try {
+      const saved = await getWeekPlanSnapshot(record.id);
+      setPlanData(saved.plan);
+      setUserProfile(saved.plan?.user_preferences || null);
+      setDaysCount(saved.days_count);
+      setIsExamPeriod(Boolean(record.is_exam_period));
+      setUseBaseline(Boolean(record.use_baseline));
+      setSelectedDayIdx(0);
+      setActiveTab('week');
+      setViewingSavedPlan(true);
+      setHistoryMode(false);
+    } catch (err) {
+      setHistoryError('Could not open that saved plan. Please try again.');
+    } finally {
+      setLoadingSnapshotId('');
+    }
+  };
+
+  const returnToCurrentPlan = () => {
+    setHistoryMode(false);
+    setViewingSavedPlan(false);
+  };
 
   const setStatus = (id, s) => setStatuses((prev) => ({ ...prev, [id]: s }));
 
@@ -90,6 +136,7 @@ export function PhysicalPlan() {
               <button
                 key={tf.count}
                 onClick={() => setDaysCount(tf.count)}
+                disabled={viewingSavedPlan}
                 className={cn(
                   'px-3 py-1.5 rounded-full text-xs font-bold transition-all',
                   daysCount === tf.count
@@ -115,6 +162,7 @@ export function PhysicalPlan() {
             </button>
             <button
               onClick={() => setActiveTab('today')}
+                disabled={viewingSavedPlan}
               className={cn(
                 'flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all',
                 activeTab === 'today' ? 'bg-brand-500 text-white shadow-soft' : 'text-charcoal-light hover:text-charcoal'
@@ -123,10 +171,26 @@ export function PhysicalPlan() {
               <ClockIcon size={14} /> Today's Schedule
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={openHistory}
+            disabled={historyLoading}
+            className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.08] bg-white px-3.5 py-2 text-xs font-bold text-charcoal shadow-sm transition hover:border-brand-300 hover:text-brand-700 disabled:opacity-60"
+          >
+            <HistoryIcon size={14} /> {historyLoading ? 'Loading…' : 'Past Plans'}
+          </button>
         </div>
       </div>
 
       <PhysicalNav />
+
+      {viewingSavedPlan && (
+        <Card padding="sm" className="flex flex-wrap items-center justify-between gap-3 border border-brand-200 bg-brand-50/80">
+          <p className="text-sm font-semibold text-brand-900">Viewing a saved plan from {planData?.days?.[0]?.date || 'an earlier date'}.</p>
+          <Button size="sm" variant="outline" onClick={returnToCurrentPlan}>Back to current plan</Button>
+        </Card>
+      )}
 
       {/* Model & Research Evaluation Control Bar */}
       <Card padding="sm" className="bg-gradient-to-r from-cream via-white to-brand-50/40 border border-brand-200/50">
@@ -151,6 +215,7 @@ export function PhysicalPlan() {
             {/* Exam Period Toggle */}
             <button
               onClick={() => setIsExamPeriod(!isExamPeriod)}
+              disabled={viewingSavedPlan}
               className={cn(
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold transition-all border',
                 isExamPeriod
@@ -164,6 +229,7 @@ export function PhysicalPlan() {
             {/* Model Toggle for Research Demonstration */}
             <button
               onClick={() => setUseBaseline(!useBaseline)}
+              disabled={viewingSavedPlan}
               className={cn(
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold transition-all border',
                 useBaseline
@@ -286,6 +352,37 @@ export function PhysicalPlan() {
           <AlertCircleIcon size={24} className="text-rose-600 mx-auto mb-2" />
           <p className="font-bold text-rose-800">{error}</p>
           <Button size="sm" className="mt-4" onClick={fetchPlan}>Try Again</Button>
+        </Card>
+      ) : historyMode ? (
+        <Card padding="lg" className="space-y-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-extrabold text-charcoal">Past plan history</h2>
+              <p className="mt-1 text-sm text-charcoal-muted">Open a saved schedule to review its workouts and meals.</p>
+            </div>
+            <Button size="sm" variant="outline" onClick={returnToCurrentPlan}>Back to current plan</Button>
+          </div>
+          {historyError && <p role="alert" className="rounded-xl bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">{historyError}</p>}
+          {historyRecords.length ? (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {historyRecords.map((record) => (
+                <button key={record.id} type="button" onClick={() => openSnapshot(record)} disabled={Boolean(loadingSnapshotId)} className="rounded-2xl border border-black/[0.07] bg-cream p-4 text-left transition hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50 disabled:opacity-60">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-extrabold text-charcoal">{new Date(`${record.plan_date}T00:00:00`).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    <CalendarIcon size={16} className="text-brand-600" />
+                  </div>
+                  <p className="mt-2 text-xs font-semibold text-charcoal-muted">{record.days_count}-day plan · {record.use_baseline ? 'Baseline model' : 'Adaptive model'}{record.is_exam_period ? ' · Exam mode' : ''}</p>
+                  <p className="mt-2 text-xs font-bold text-brand-700">{loadingSnapshotId === record.id ? 'Opening…' : 'View this plan →'}</p>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-black/15 bg-cream/60 p-8 text-center">
+              <span className="text-3xl">🗓️</span>
+              <p className="mt-2 font-bold text-charcoal">No saved plans yet</p>
+              <p className="mt-1 text-sm text-charcoal-muted">Your schedule will appear here after you open the plan page.</p>
+            </div>
+          )}
         </Card>
       ) : activeTab === 'week' ? (
         /* ── CUSTOM-DAY WEEK PLAN VIEW ── */
