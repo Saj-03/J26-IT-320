@@ -84,10 +84,15 @@ def _attach_behavior_history(db: Session, user_id: str, profile_dict: dict) -> d
     count = len(feedback)
     completed = sum(1 for item in feedback if item.did_workout)
     rate = completed / count if count else None
+    difficulty_answers = [item.difficulty for item in feedback if item.did_workout and item.difficulty]
+    hard_sessions = sum(1 for answer in difficulty_answers if answer in {"Difficult", "Very Difficult"})
     target = int(profile_dict.get("available_minutes", 20))
     if count >= 3 and rate < 0.5:
         target = max(10, round(target * 0.75))
         reason = "shorter_sessions_after_recent_missed_workouts"
+    elif len(difficulty_answers) >= 2 and hard_sessions / len(difficulty_answers) >= 0.5:
+        target = max(10, round(target * 0.75))
+        reason = "shorter_sessions_after_difficult_feedback"
     elif count >= 3 and rate >= 0.8:
         target = min(target, 30)
         reason = "maintaining_duration_after_consistent_workouts"
@@ -97,6 +102,9 @@ def _attach_behavior_history(db: Session, user_id: str, profile_dict: dict) -> d
         "check_ins": count,
         "completed": completed,
         "completion_rate": round(rate, 2) if rate is not None else None,
+        "difficulty_responses": len(difficulty_answers),
+        "difficult_sessions": hard_sessions,
+        "latest_difficulty": difficulty_answers[0] if difficulty_answers else None,
         "target_minutes": target,
         "reason": reason,
     }
@@ -175,16 +183,24 @@ def save_workout_feedback(data: schemas.WorkoutFeedbackIn, db: Session = Depends
         previous_minutes = feedback.workout_minutes
         feedback.did_workout = data.did_workout
         feedback.workout_minutes = data.workout_minutes if data.did_workout else 0
+        if data.difficulty is not None:
+            feedback.difficulty = data.difficulty
         activity = db.query(ActivityLog).filter_by(user_id=user.id, day=data.day).first()
-        if activity and was_completed and not data.did_workout:
+        if data.did_workout:
+            minute_delta = data.workout_minutes - (previous_minutes if was_completed else 0)
+            if activity:
+                activity.exercise_minutes = max(0, activity.exercise_minutes + minute_delta)
+                activity.completed_recommendation = True
+            else:
+                db.add(ActivityLog(user_id=user.id, day=data.day, steps=0,
+                                   exercise_minutes=data.workout_minutes, completed_recommendation=True))
+        elif was_completed and activity:
             activity.exercise_minutes = max(0, activity.exercise_minutes - previous_minutes)
             activity.completed_recommendation = False
-        elif activity and not was_completed and data.did_workout:
-            activity.exercise_minutes += data.workout_minutes
-            activity.completed_recommendation = True
     else:
         feedback = WorkoutFeedback(user_id=user.id, day=data.day, did_workout=data.did_workout,
-                                   workout_minutes=data.workout_minutes if data.did_workout else 0)
+                                   workout_minutes=data.workout_minutes if data.did_workout else 0,
+                                   difficulty=data.difficulty)
         db.add(feedback)
         if data.did_workout:
             activity = db.query(ActivityLog).filter_by(user_id=user.id, day=data.day).first()

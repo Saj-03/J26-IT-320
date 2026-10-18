@@ -49,6 +49,7 @@ class WorkoutFeedback(Base):
     day: Mapped[date] = mapped_column(Date)
     did_workout: Mapped[bool] = mapped_column(Boolean)
     workout_minutes: Mapped[int] = mapped_column(Integer, default=0)
+    difficulty: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 class Habit(Base):

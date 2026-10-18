@@ -10,6 +10,9 @@ import { SectionTitle } from '../components/Shared';
 import { getActivitySummary, getHabits, getProfile, getRecommendations } from '../api';
 
 function adaptationSummary(reason, checkIns, completionRate) {
+  if (reason === 'shorter_sessions_after_difficult_feedback') {
+    return 'Your recent workout ratings show that sessions have felt difficult. The recommender has shortened the target duration to make the next session more manageable.';
+  }
   if (reason === 'shorter_sessions_after_recent_missed_workouts') {
     return 'Recent workout check-ins show that shorter sessions may be easier to keep up with. The recommender has adjusted the target duration.';
   }
@@ -48,6 +51,7 @@ export function PhysicalAdaptation() {
   const adaptation = data.recommendations?.behavior_adaptation || {};
   const checkIns = Number(adaptation.check_ins) || 0;
   const completed = Number(adaptation.completed) || 0;
+  const difficultyResponses = Number(adaptation.difficulty_responses) || 0;
   const completionRate = typeof adaptation.completion_rate === 'number' ? adaptation.completion_rate : null;
   const weeklyMinutes = Number(data.activity?.weekly_totals?.exercise_minutes) || 0;
   const weeklySteps = Number(data.activity?.weekly_totals?.steps) || 0;
@@ -75,7 +79,13 @@ export function PhysicalAdaptation() {
       value: data.habits.length ? `${doneHabits} of ${data.habits.length} completed` : 'No habits tracked',
       detail: data.habits.length ? 'Habit progress is shown as context; workout adaptation uses explicit workout check-ins.' : 'Add habits to track daily routines alongside your activity.',
     },
-  ], [checkIns, completed, completionRate, weeklyMinutes, weeklySteps, doneHabits, data.habits]);
+    {
+      icon: Clock3Icon,
+      label: 'Workout difficulty',
+      value: adaptation.latest_difficulty || 'No rating yet',
+      detail: difficultyResponses ? `${adaptation.difficult_sessions || 0} of ${difficultyResponses} rated sessions were difficult or very difficult.` : 'Rate completed workouts to help tune future session length.',
+    },
+  ], [checkIns, completed, completionRate, difficultyResponses, adaptation.latest_difficulty, adaptation.difficult_sessions, weeklyMinutes, weeklySteps, doneHabits, data.habits]);
 
   return (
     <div className="space-y-6">

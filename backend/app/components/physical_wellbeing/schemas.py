@@ -36,6 +36,7 @@ class WorkoutFeedbackIn(BaseModel):
     day: date
     did_workout: bool
     workout_minutes: int = Field(default=0, ge=0, le=240)
+    difficulty: Optional[str] = None
 
 
 class HabitIn(BaseModel):

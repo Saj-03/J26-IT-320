@@ -35,9 +35,13 @@ app.add_middleware(
 # Create tables (for development; use Alembic migrations in production)
 Base.metadata.create_all(bind=engine)
 # Keep existing development databases compatible with newly added profile fields.
-if "assessment_data" not in {column["name"] for column in inspect(engine).get_columns("wellbeing_profiles")}:
-    with engine.begin() as connection:
+profile_columns = {column["name"] for column in inspect(engine).get_columns("wellbeing_profiles")}
+feedback_columns = {column["name"] for column in inspect(engine).get_columns("workout_feedback")}
+with engine.begin() as connection:
+    if "assessment_data" not in profile_columns:
         connection.execute(text("ALTER TABLE wellbeing_profiles ADD COLUMN assessment_data JSON"))
+    if "difficulty" not in feedback_columns:
+        connection.execute(text("ALTER TABLE workout_feedback ADD COLUMN difficulty VARCHAR"))
 
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth (shared)"])
 app.include_router(integration_router, prefix="/api/integration", tags=["Integration signals (shared)"])

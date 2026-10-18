@@ -6,7 +6,7 @@ import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { ProgressRing } from '../../../shared/components/ui/ProgressRing';
 import { featuredExercise } from '../data';
-import { getRecommendations } from '../api';
+import { getRecommendations, saveWorkoutFeedback } from '../api';
 import { cn } from '../../../shared/lib/cn';
 import { PoseTracker } from '../components/PoseTracker';
 
@@ -32,6 +32,8 @@ export function PhysicalWorkout() {
     const [running, setRunning] = useState(false);
     const [finished, setFinished] = useState(false);
     const [feeling, setFeeling] = useState(null);
+    const [savingCompletion, setSavingCompletion] = useState(false);
+    const [saveError, setSaveError] = useState('');
     const [poseTracking, setPoseTracking] = useState(false);
 
     useEffect(() => {
@@ -92,6 +94,27 @@ export function PhysicalWorkout() {
     };
 
     const pct = step ? ((step.seconds - left) / step.seconds) * 100 : 0;
+
+    const finishAndSave = async (includeFeedback) => {
+        setSavingCompletion(true);
+        setSaveError('');
+        const now = new Date();
+        const day = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        try {
+            await saveWorkoutFeedback({
+                day,
+                did_workout: true,
+                workout_minutes: Math.max(1, workoutMins - 2),
+                difficulty: includeFeedback && feeling !== null ? feelings[feeling].label : null,
+            });
+            navigate('/app/physical');
+        } catch (err) {
+            console.error('Could not save workout completion:', err);
+            setSaveError(err?.response?.data?.detail || 'Could not save your workout. Check your connection and try again.');
+        } finally {
+            setSavingCompletion(false);
+        }
+    };
 
     if (finished) {
         return (
@@ -202,10 +225,11 @@ export function PhysicalWorkout() {
                         </AnimatePresence>
                     </Card>
 
-                    <Button size="lg" fullWidth className="mt-5" disabled={feeling === null} onClick={() => navigate('/app/physical')}>
-                        <CheckIcon size={18} /> Save & Finish
+                    {saveError && <p role="alert" className="mt-4 text-sm font-semibold text-rose-700">{saveError}</p>}
+                    <Button size="lg" fullWidth className="mt-5" disabled={feeling === null || savingCompletion} onClick={() => finishAndSave(true)}>
+                        <CheckIcon size={18} /> {savingCompletion ? 'Saving…' : 'Save & Finish'}
                     </Button>
-                    <button onClick={() => navigate('/app/physical')} className="mt-2 text-sm font-semibold text-charcoal-muted hover:text-charcoal py-2">
+                    <button disabled={savingCompletion} onClick={() => finishAndSave(false)} className="mt-2 text-sm font-semibold text-charcoal-muted hover:text-charcoal py-2 disabled:opacity-50">
                         Skip feedback
                     </button>
                 </motion.div>
