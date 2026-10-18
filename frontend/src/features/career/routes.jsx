@@ -6,6 +6,7 @@ import InterviewPage from "./pages/InterviewPage";
 import CareerDashboard from "./pages/CareerDashboard";
 import CareerSurveyForm from "./pages/CareerSurveyForm";
 import CareerRecommendations from "./pages/CareerRecommendations";
+import CareerFitQuiz from "./pages/CareerFitQuiz";
 import SkillGapAnalysis from "./pages/SkillGapAnalysis";
 import Roadmap from "./pages/Roadmap";
 import InterviewSimulator from "./pages/InterviewSimulator";
@@ -15,10 +16,11 @@ import CVBuilder from "./pages/CVBuilder";
 export default function careerRoutes() {
   return (
     <>
-      {/* ACRDS flow: survey -> recommendations -> gap analysis -> roadmap -> CV (optional) -> interview */}
+      {/* ACRDS flow: survey -> recommendations (+ optional Career Fit Quiz) -> gap analysis -> roadmap -> CV (optional) -> interview */}
       <Route path="career" element={<CareerDashboard />} />
       <Route path="career/survey" element={<CareerSurveyForm />} />
       <Route path="career/recommendations" element={<CareerRecommendations />} />
+      <Route path="career/fit-quiz" element={<CareerFitQuiz />} />
       <Route path="career/gap-analysis" element={<SkillGapAnalysis />} />
       <Route path="career/roadmap" element={<Roadmap />} />
       <Route path="career/cv" element={<CVBuilder />} />

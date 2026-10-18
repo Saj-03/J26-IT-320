@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ClipboardListIcon, GaugeIcon, ColumnsIcon } from "lucide-react";
+import { ClipboardListIcon, GaugeIcon, ColumnsIcon, Gamepad2Icon, TrophyIcon } from "lucide-react";
 import { PageHeader } from "../../../shared/components/layout/PageHeader";
 import Card from "../components/CareerCard";
 import CareerPage from "../components/CareerPage";
@@ -10,8 +10,8 @@ import CareerSkeleton from "../components/CareerSkeleton";
 import Reveal from "../components/Reveal";
 import { toast } from "../utils/toast";
 import { apiErrorMessage } from "../../../shared/api/client";
-import { getCareers, getGapAnalysis } from "../api/careerApi";
-import { careerSession, useCareerFlow } from "../utils/careerSession";
+import { getCareers } from "../api/careerApi";
+import { chooseCareer, currentFitQuiz, useCareerFlow } from "../utils/careerSession";
 import RecommendationCard from "../components/RecommendationCard";
 import CareerCompare from "../components/CareerCompare";
 import InfoTip from "../components/InfoTip";
@@ -23,7 +23,8 @@ const MAX_COMPARE = 3;
 export default function CareerRecommendations() {
   useLanguage(); // re-render when the language changes
   const navigate = useNavigate();
-  const { flow: { profile, recommendations, persona }, ready } = useCareerFlow();
+  const { flow, ready } = useCareerFlow();
+  const { profile, recommendations, persona } = flow;
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState("");
   const [careers, setCareers] = useState({}); // career_id -> full career (required skill levels for comparing)
@@ -57,13 +58,15 @@ export default function CareerRecommendations() {
       : ids.length < MAX_COMPARE ? [...ids, rec.career_id] : ids));
   };
   const compared = recommendations.filter((r) => compareIds.includes(r.career_id));
+  const fitQuiz = currentFitQuiz(flow);
+  const fitById = Object.fromEntries((fitQuiz?.result.results || []).map((r) => [r.career_id, r]));
+  const bestFit = fitQuiz?.result.results[0];
 
   const select = async (rec) => {
     setBusyId(rec.career_id);
     setError("");
     try {
-      const gap = await getGapAnalysis({ career_id: rec.career_id, profile });
-      careerSession.update({ selectedCareer: rec, gapAnalysis: gap, roadmap: null, roadmapProgress: null });
+      await chooseCareer(rec, profile);
       navigate("/app/career/gap-analysis");
     } catch (err) {
       setError(apiErrorMessage(err));
@@ -98,6 +101,28 @@ export default function CareerRecommendations() {
           </div>
         </Card>
       )}
+      {/* Career Fit Quiz: a short game that helps the student choose one of the 5 (advisory only) */}
+      <Card padding="md" className="flex flex-col sm:flex-row sm:items-center gap-4 bg-gradient-to-r from-[#D0F2F7]/80 to-[#E3FFD6]/80">
+        <span className="w-12 h-12 rounded-2xl bg-[#9ADBCC] text-[#12352E] flex items-center justify-center shrink-0">
+          {bestFit ? <TrophyIcon size={24} /> : <Gamepad2Icon size={24} />}
+        </span>
+        <div className="flex-1 min-w-0">
+          {bestFit ? (
+            <>
+              <p className="font-extrabold text-charcoal">{t("Career Fit Quiz: your best fit is {career} ({fit}%)", { career: bestFit.career_name, fit: bestFit.fit })}</p>
+              <p className="text-sm text-charcoal-light">{t("Your ranking below is unchanged. Pick any career to see your skill gaps.")}</p>
+            </>
+          ) : (
+            <>
+              <p className="font-extrabold text-charcoal">{t("Not sure which one to choose? Play the Career Fit Quiz")}</p>
+              <p className="text-sm text-charcoal-light">{t("11 quick questions, about 3 minutes. Find which of your 5 careers fits you best, then select it.")}</p>
+            </>
+          )}
+        </div>
+        <Button className="shrink-0" variant={bestFit ? "soft" : "primary"} onClick={() => navigate("/app/career/fit-quiz")}>
+          <Gamepad2Icon size={16} /> {bestFit ? t("See quiz results") : t("Play the quiz")}
+        </Button>
+      </Card>
       {error && <p className="text-sm font-semibold text-red-600 bg-red-50 rounded-2xl px-4 py-3">{error}</p>}
       {showCompare && compared.length >= 2 && (
         <div ref={compareRef} className="scroll-mt-24">
@@ -107,7 +132,7 @@ export default function CareerRecommendations() {
       )}
       {recommendations.map((rec, i) => (
         <Reveal key={rec.career_id} index={i}>
-          <RecommendationCard rec={rec} rank={i + 1}
+          <RecommendationCard rec={rec} rank={i + 1} fit={fitById[rec.career_id]}
             onSelect={select} busy={busyId === rec.career_id}
             compared={compareIds.includes(rec.career_id)} compareDisabled={compareIds.length >= MAX_COMPARE}
             onCompare={Object.keys(careers).length ? toggleCompare : undefined} />

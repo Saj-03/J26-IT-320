@@ -1,0 +1,392 @@
+{
+ "_source": "O*NET 30.2 Interests.txt (CC BY 4.0), Occupational Interest scores 1-7, averaged over the occupations in onet_codes. Built by ml_training/career/build_onet_interests.py.",
+ "careers": {
+  "software_engineer": {
+   "onet_codes": [
+    "15-1252.00"
+   ],
+   "riasec": {
+    "R": 3.61,
+    "I": 6.05,
+    "A": 2.37,
+    "S": 1.81,
+    "E": 1.87,
+    "C": 5.62
+   }
+  },
+  "data_analyst": {
+   "onet_codes": [
+    "15-2051.01"
+   ],
+   "riasec": {
+    "R": 1.24,
+    "I": 5.41,
+    "A": 1.93,
+    "S": 1.85,
+    "E": 4.42,
+    "C": 5.79
+   }
+  },
+  "business_analyst": {
+   "onet_codes": [
+    "13-1111.00",
+    "15-1211.00"
+   ],
+   "riasec": {
+    "R": 2.32,
+    "I": 5.92,
+    "A": 1.8,
+    "S": 2.36,
+    "E": 3.52,
+    "C": 5.99
+   }
+  },
+  "ui_ux_designer": {
+   "onet_codes": [
+    "27-1024.00",
+    "15-1254.00"
+   ],
+   "riasec": {
+    "R": 3.18,
+    "I": 3.93,
+    "A": 5.06,
+    "S": 2.19,
+    "E": 3.2,
+    "C": 4.47
+   }
+  },
+  "qa_engineer": {
+   "onet_codes": [
+    "15-1253.00"
+   ],
+   "riasec": {
+    "R": 3.8,
+    "I": 5.76,
+    "A": 1.69,
+    "S": 1.53,
+    "E": 1.57,
+    "C": 5.67
+   }
+  },
+  "cybersecurity_analyst": {
+   "onet_codes": [
+    "15-1212.00"
+   ],
+   "riasec": {
+    "R": 3.56,
+    "I": 5.4,
+    "A": 1.34,
+    "S": 2.11,
+    "E": 2.85,
+    "C": 6.08
+   }
+  },
+  "network_engineer": {
+   "onet_codes": [
+    "15-1241.00",
+    "15-1244.00"
+   ],
+   "riasec": {
+    "R": 4.12,
+    "I": 4.66,
+    "A": 1.62,
+    "S": 2.2,
+    "E": 3.33,
+    "C": 5.62
+   }
+  },
+  "database_administrator": {
+   "onet_codes": [
+    "15-1242.00"
+   ],
+   "riasec": {
+    "R": 2.83,
+    "I": 4.83,
+    "A": 1.2,
+    "S": 2.29,
+    "E": 2.94,
+    "C": 6.61
+   }
+  },
+  "project_manager": {
+   "onet_codes": [
+    "15-1299.09"
+   ],
+   "riasec": {
+    "R": 1.73,
+    "I": 3.87,
+    "A": 1.77,
+    "S": 2.67,
+    "E": 5.91,
+    "C": 5.31
+   }
+  },
+  "digital_marketing_executive": {
+   "onet_codes": [
+    "13-1161.01",
+    "13-1161.00"
+   ],
+   "riasec": {
+    "R": 1.04,
+    "I": 4.19,
+    "A": 2.9,
+    "S": 2.62,
+    "E": 5.53,
+    "C": 4.65
+   }
+  },
+  "civil_engineer": {
+   "onet_codes": [
+    "17-2051.00"
+   ],
+   "riasec": {
+    "R": 6.43,
+    "I": 5.15,
+    "A": 2.21,
+    "S": 1.69,
+    "E": 2.66,
+    "C": 4.61
+   }
+  },
+  "mechanical_engineer": {
+   "onet_codes": [
+    "17-2141.00"
+   ],
+   "riasec": {
+    "R": 6.39,
+    "I": 5.12,
+    "A": 2.02,
+    "S": 1.22,
+    "E": 1.97,
+    "C": 4.83
+   }
+  },
+  "electrical_engineer": {
+   "onet_codes": [
+    "17-2071.00",
+    "17-2072.00"
+   ],
+   "riasec": {
+    "R": 6.13,
+    "I": 5.63,
+    "A": 2.08,
+    "S": 1.66,
+    "E": 2.03,
+    "C": 4.55
+   }
+  },
+  "research_assistant": {
+   "onet_codes": [
+    "19-4061.00"
+   ],
+   "riasec": {
+    "R": 2.38,
+    "I": 6.08,
+    "A": 1.89,
+    "S": 2.67,
+    "E": 2.27,
+    "C": 5.93
+   }
+  },
+  "laboratory_technician": {
+   "onet_codes": [
+    "29-2012.00",
+    "19-4021.00"
+   ],
+   "riasec": {
+    "R": 5.8,
+    "I": 5.62,
+    "A": 1.1,
+    "S": 2.42,
+    "E": 1.16,
+    "C": 5.23
+   }
+  },
+  "finance_analyst": {
+   "onet_codes": [
+    "13-2011.00",
+    "13-2031.00"
+   ],
+   "riasec": {
+    "R": 1.07,
+    "I": 3.65,
+    "A": 1.33,
+    "S": 2.19,
+    "E": 4.39,
+    "C": 7.0
+   }
+  },
+  "hr_executive": {
+   "onet_codes": [
+    "13-1071.00"
+   ],
+   "riasec": {
+    "R": 1.03,
+    "I": 2.52,
+    "A": 1.35,
+    "S": 3.78,
+    "E": 5.67,
+    "C": 5.52
+   }
+  },
+  "public_health_assistant": {
+   "onet_codes": [
+    "21-1091.00",
+    "21-1094.00"
+   ],
+   "riasec": {
+    "R": 1.83,
+    "I": 4.39,
+    "A": 2.38,
+    "S": 6.37,
+    "E": 3.37,
+    "C": 3.67
+   }
+  },
+  "health_administrator": {
+   "onet_codes": [
+    "11-9111.00"
+   ],
+   "riasec": {
+    "R": 2.05,
+    "I": 3.75,
+    "A": 1.45,
+    "S": 4.4,
+    "E": 5.95,
+    "C": 5.17
+   }
+  },
+  "graphic_designer": {
+   "onet_codes": [
+    "27-1024.00"
+   ],
+   "riasec": {
+    "R": 3.38,
+    "I": 2.86,
+    "A": 7.0,
+    "S": 2.16,
+    "E": 3.43,
+    "C": 3.92
+   }
+  },
+  "content_creator": {
+   "onet_codes": [
+    "27-1014.00",
+    "27-4032.00"
+   ],
+   "riasec": {
+    "R": 3.42,
+    "I": 2.34,
+    "A": 6.3,
+    "S": 2.07,
+    "E": 2.85,
+    "C": 3.44
+   }
+  },
+  "content_writer": {
+   "onet_codes": [
+    "27-3043.00",
+    "27-3042.00"
+   ],
+   "riasec": {
+    "R": 1.89,
+    "I": 3.47,
+    "A": 5.46,
+    "S": 2.43,
+    "E": 3.36,
+    "C": 4.33
+   }
+  },
+  "public_relations_executive": {
+   "onet_codes": [
+    "27-3031.00"
+   ],
+   "riasec": {
+    "R": 1.0,
+    "I": 2.72,
+    "A": 4.68,
+    "S": 3.94,
+    "E": 5.82,
+    "C": 3.45
+   }
+  },
+  "teacher": {
+   "onet_codes": [
+    "25-2031.00"
+   ],
+   "riasec": {
+    "R": 2.73,
+    "I": 3.19,
+    "A": 3.77,
+    "S": 7.0,
+    "E": 2.9,
+    "C": 3.61
+   }
+  },
+  "education_coordinator": {
+   "onet_codes": [
+    "25-9031.00"
+   ],
+   "riasec": {
+    "R": 1.62,
+    "I": 4.04,
+    "A": 3.56,
+    "S": 6.16,
+    "E": 4.26,
+    "C": 3.98
+   }
+  },
+  "legal_assistant": {
+   "onet_codes": [
+    "23-2011.00"
+   ],
+   "riasec": {
+    "R": 1.74,
+    "I": 5.04,
+    "A": 2.24,
+    "S": 3.12,
+    "E": 3.92,
+    "C": 5.28
+   }
+  },
+  "compliance_officer": {
+   "onet_codes": [
+    "13-1041.00"
+   ],
+   "riasec": {
+    "R": 2.51,
+    "I": 3.07,
+    "A": 1.0,
+    "S": 2.97,
+    "E": 4.08,
+    "C": 6.33
+   }
+  },
+  "community_development_officer": {
+   "onet_codes": [
+    "21-1093.00"
+   ],
+   "riasec": {
+    "R": 1.28,
+    "I": 2.8,
+    "A": 1.95,
+    "S": 6.09,
+    "E": 3.61,
+    "C": 4.57
+   }
+  },
+  "counselling_assistant": {
+   "onet_codes": [
+    "21-1012.00"
+   ],
+   "riasec": {
+    "R": 1.0,
+    "I": 3.3,
+    "A": 3.13,
+    "S": 7.0,
+    "E": 3.92,
+    "C": 4.09
+   }
+  }
+ }
+}

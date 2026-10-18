@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRightIcon, CrownIcon, ChevronDownIcon } from "lucide-react";
+import { ArrowRightIcon, CrownIcon, ChevronDownIcon, Gamepad2Icon, TrophyIcon } from "lucide-react";
 import Card from "./CareerCard";
 import Button from "./CareerButton";
 import InfoTip from "./InfoTip";
@@ -26,7 +26,8 @@ function BadgeRow({ title, skills, tone, empty }) {
 }
 
 // One recommended career. The explanation is folded away (except for the best match) to keep the list scannable.
-export default function RecommendationCard({ rec, rank, onSelect, busy, compared, onCompare, compareDisabled }) {
+// `fit` = this career's Career Fit Quiz result, when the student played it.
+export default function RecommendationCard({ rec, rank, fit, onSelect, busy, compared, onCompare, compareDisabled }) {
   const best = rank === 1;
   const [whyOpen, setWhyOpen] = useState(best);
   const whyId = `why-${rec.career_id}`;
@@ -57,6 +58,13 @@ export default function RecommendationCard({ rec, rank, onSelect, busy, compared
               {best && (
                 <span className="flex items-center gap-1 rounded-full bg-[#9ADBCC] text-[#12352E] px-2.5 py-0.5 text-xs font-bold">
                   <CrownIcon size={12} /> {t("Best match")}
+                </span>
+              )}
+              {fit && (
+                <span className={cn("flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold",
+                  fit.rank === 1 ? "bg-[#FFD27A] text-[#5A3B00]" : "bg-[#D0F2F7] text-[#24566A]")}>
+                  {fit.rank === 1 ? <TrophyIcon size={12} /> : <Gamepad2Icon size={12} />}
+                  {fit.rank === 1 ? t("Quiz best fit {n}%", { n: fit.fit }) : t("Quiz fit {n}%", { n: fit.fit })}
                 </span>
               )}
               <span className={`text-xs font-bold ${ui.accentText}`}>{rec.career_area}</span>

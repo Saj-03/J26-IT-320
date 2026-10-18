@@ -20,6 +20,17 @@ export const getGapAnalysis = (payload) => api.post("/career/gap-analysis", payl
 /** payload: { career_id, profile } */
 export const generateRoadmap = (payload) => api.post("/career/roadmap", payload, lang()).then(data);
 
+// ---- Career Fit Quiz (after the top 5; helps the student choose, never changes the ranking) ----
+/** careerIds in the recommended order -> { variant, interest_questions, scenarios, advisory } */
+export const getFitQuiz = (careerIds, variant = 0) =>
+  api.get("/career/fit-quiz", lang({ career_ids: careerIds.join(","), variant })).then(data);
+
+/** { question_id, option } -> { points, max_points, best_option, result, why } (instant feedback) */
+export const checkFitAnswer = (payload) => api.post("/career/fit-quiz/check", payload, lang()).then(data);
+
+/** { interests: {question_id: option_id}, scenarios: [{ career_id, question_id, option, enjoyment }] } -> fit % for each career */
+export const scoreFitQuiz = (answers) => api.post("/career/fit-quiz/score", answers, lang()).then(data);
+
 // ---- AI Interview Simulator ----
 /** -> { career_id, career_name, variant, questions: [{ id, category, question, question_en, tip }], privacy_notes } */
 export const getInterviewQuestions = (careerId, variant = 0) =>

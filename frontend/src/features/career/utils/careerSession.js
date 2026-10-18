@@ -3,7 +3,7 @@
 // (PUT /api/career/me/state), so the flow is still there after logging in again or on another device.
 import { useEffect, useState } from "react";
 import {
-  clearSavedState, generateRoadmap, getGapAnalysis, getSavedState, recommendCareers, saveSavedState,
+  clearSavedState, generateRoadmap, getGapAnalysis, getSavedState, recommendCareers, saveSavedState, scoreFitQuiz,
 } from "../api/careerApi";
 import { getLanguage, setLanguage } from "../i18n";
 
@@ -98,6 +98,8 @@ export const careerSession = {
       if (flow.gapAnalysis) patch.gapAnalysis = await getGapAnalysis({ career_id: careerId, profile: flow.profile });
       if (flow.roadmap) patch.roadmap = await generateRoadmap({ career_id: careerId, profile: flow.profile });
     }
+    // Career Fit Quiz: same answers, scored again only for the translated career names and summary.
+    if (flow.fitQuiz?.answers) patch.fitQuiz = { ...flow.fitQuiz, result: await scoreFitQuiz(flow.fitQuiz.answers) };
     if (getLanguage() === lang) careerSession.update(patch); // ignore if the student switched again meanwhile
   },
   /** Load the student's saved flow. A cache from another account in this browser is replaced. */
@@ -123,6 +125,19 @@ export const careerSession = {
     surveyDraft.clear();
   },
 };
+
+/** Select one of the recommended careers: load its skill gaps and start a fresh roadmap. */
+export async function chooseCareer(rec, profile) {
+  const gap = await getGapAnalysis({ career_id: rec.career_id, profile });
+  careerSession.update({ selectedCareer: rec, gapAnalysis: gap, roadmap: null, roadmapProgress: null });
+}
+
+/** The saved Career Fit Quiz, if it was played on the current top 5 (a new survey makes it out of date). */
+export function currentFitQuiz(flow) {
+  const quiz = flow.fitQuiz;
+  const ids = (flow.recommendations || []).map((r) => r.career_id).join(",");
+  return quiz?.result && quiz.careerIds?.join(",") === ids ? quiz : null;
+}
 
 /** Switch the career pages to another language and translate the saved results. */
 export async function changeLanguage(code) {

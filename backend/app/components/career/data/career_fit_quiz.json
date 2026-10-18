@@ -1,0 +1,1583 @@
+{
+ "_note": "Career Fit Quiz (shown after the top 5 careers). Round 1: 6 interest questions - each option is one Holland RIASEC type and every type appears 3 times. Round 2: one 'day in the job' scenario per recommended career; points = one value per option (10 best, 5 reasonable, 0 weak). The quiz helps the student choose among the 5; it never changes the trained ranking.",
+ "interest_questions": [
+  {
+   "id": "fq_i1",
+   "question": "On a free afternoon, which would you pick?",
+   "options": [
+    {
+     "id": "a",
+     "type": "R",
+     "text": "Fix or build something with my hands"
+    },
+    {
+     "id": "b",
+     "type": "I",
+     "text": "Solve a puzzle or find out how something works"
+    },
+    {
+     "id": "c",
+     "type": "A",
+     "text": "Draw, design or write something of my own"
+    }
+   ]
+  },
+  {
+   "id": "fq_i2",
+   "question": "In a group project, which part do you volunteer for?",
+   "options": [
+    {
+     "id": "a",
+     "type": "S",
+     "text": "Helping teammates understand the topic"
+    },
+    {
+     "id": "b",
+     "type": "E",
+     "text": "Leading the group and presenting the work"
+    },
+    {
+     "id": "c",
+     "type": "C",
+     "text": "Organising the plan, files and deadlines"
+    }
+   ]
+  },
+  {
+   "id": "fq_i3",
+   "question": "Which job task sounds best to you?",
+   "options": [
+    {
+     "id": "a",
+     "type": "R",
+     "text": "Setting up equipment, machines or systems"
+    },
+    {
+     "id": "b",
+     "type": "S",
+     "text": "Teaching, guiding or caring for people"
+    },
+    {
+     "id": "c",
+     "type": "C",
+     "text": "Keeping records accurate and well organised"
+    }
+   ]
+  },
+  {
+   "id": "fq_i4",
+   "question": "Which compliment would make you proudest?",
+   "options": [
+    {
+     "id": "a",
+     "type": "I",
+     "text": "\"You found the answer nobody else could.\""
+    },
+    {
+     "id": "b",
+     "type": "A",
+     "text": "\"That idea is so original!\""
+    },
+    {
+     "id": "c",
+     "type": "E",
+     "text": "\"You convinced everyone to say yes.\""
+    }
+   ]
+  },
+  {
+   "id": "fq_i5",
+   "question": "Where would you most like to work?",
+   "options": [
+    {
+     "id": "a",
+     "type": "R",
+     "text": "Outdoors, on a site or in a workshop or lab"
+    },
+    {
+     "id": "b",
+     "type": "S",
+     "text": "Among people: a school, clinic or community"
+    },
+    {
+     "id": "c",
+     "type": "E",
+     "text": "A busy office where I make decisions"
+    }
+   ]
+  },
+  {
+   "id": "fq_i6",
+   "question": "What would you enjoy learning next?",
+   "options": [
+    {
+     "id": "a",
+     "type": "I",
+     "text": "How data or science explains the world"
+    },
+    {
+     "id": "b",
+     "type": "A",
+     "text": "Photography, video or design tools"
+    },
+    {
+     "id": "c",
+     "type": "C",
+     "text": "Spreadsheets, accounting or office systems"
+    }
+   ]
+  }
+ ],
+ "scenarios": {
+  "software_engineer": [
+   {
+    "id": "se_c1",
+    "skill": "problem_solving",
+    "scenario": "Users report that the app crashes when they upload a photo. You cannot reproduce it on your own computer.",
+    "options": [
+     "Restart the server and hope it stops",
+     "Ask for the device, steps and error logs, then reproduce it and write a test for it",
+     "Tell users to stop uploading photos"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "Good engineers collect evidence first (steps, logs, device), reproduce the bug and add a test so it never comes back."
+   },
+   {
+    "id": "se_c2",
+    "skill": "teamwork",
+    "scenario": "A teammate's pull request works, but the code is hard to read and has no tests.",
+    "options": [
+     "Leave polite, specific comments and suggest adding tests",
+     "Approve it quickly so the team is not slowed down",
+     "Rewrite all of it yourself without telling them"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Code review is teamwork: clear, respectful comments improve the code and help your teammate learn."
+   },
+   {
+    "id": "se_c3",
+    "skill": "documentation",
+    "scenario": "You finished a new API endpoint one day before the deadline.",
+    "options": [
+     "Start the next feature immediately",
+     "Explain it only when someone asks",
+     "Write a short README and examples so others can use it"
+    ],
+    "points": [
+     5,
+     0,
+     10
+    ],
+    "why": "Short documentation saves the whole team time. Starting the next task is fine, but undocumented code slows others down."
+   }
+  ],
+  "data_analyst": [
+   {
+    "id": "da_c1",
+    "skill": "data_analysis",
+    "scenario": "Monthly sales suddenly dropped 40% in your dashboard.",
+    "options": [
+     "Report the drop to management immediately",
+     "Check the data source and missing records first, then explain the cause",
+     "Delete that month from the chart"
+    ],
+    "points": [
+     5,
+     10,
+     0
+    ],
+    "why": "A sudden change is often a data problem. Checking the data before reporting avoids wrong decisions."
+   },
+   {
+    "id": "da_c2",
+    "skill": "communication",
+    "scenario": "A manager with no technical background asks what your analysis found.",
+    "options": [
+     "Show one clear chart and three key points in simple words",
+     "Send the full spreadsheet with all formulas",
+     "Explain the statistical tests in detail"
+    ],
+    "points": [
+     10,
+     0,
+     5
+    ],
+    "why": "Analysts must turn numbers into a simple story the audience can act on."
+   },
+   {
+    "id": "da_c3",
+    "skill": "problem_solving",
+    "scenario": "Your dataset has many duplicate and blank rows.",
+    "options": [
+     "Use it as it is",
+     "Remove everything that looks strange",
+     "Clean it with clear rules and record what you changed"
+    ],
+    "points": [
+     0,
+     5,
+     10
+    ],
+    "why": "Data cleaning should follow clear, written rules so the results can be trusted and repeated."
+   }
+  ],
+  "business_analyst": [
+   {
+    "id": "ba_c1",
+    "skill": "communication",
+    "scenario": "Two departments want opposite features in the new system.",
+    "options": [
+     "Pick the department you like more",
+     "Meet both, find the real needs behind the requests and suggest a solution",
+     "Build both features without asking"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "Business analysts find the real problem behind each request and help people agree."
+   },
+   {
+    "id": "ba_c2",
+    "skill": "documentation",
+    "scenario": "Developers keep asking what a requirement means.",
+    "options": [
+     "Rewrite it as a clear user story with acceptance criteria",
+     "Tell them to guess",
+     "Explain it again verbally each time"
+    ],
+    "points": [
+     10,
+     0,
+     5
+    ],
+    "why": "Clear written requirements (user stories and acceptance criteria) prevent repeated confusion."
+   },
+   {
+    "id": "ba_c3",
+    "skill": "data_analysis",
+    "scenario": "Management asks whether a new process actually saved time.",
+    "options": [
+     "Say yes because everyone seems happy",
+     "Run a staff survey only",
+     "Compare the time taken before and after using real records"
+    ],
+    "points": [
+     0,
+     5,
+     10
+    ],
+    "why": "Decisions should be based on evidence. A survey helps, but real before/after data is stronger."
+   }
+  ],
+  "ui_ux_designer": [
+   {
+    "id": "ux_c1",
+    "skill": "research",
+    "scenario": "Users keep missing the 'Checkout' button.",
+    "options": [
+     "Make every button bigger",
+     "Watch a few users try it, then test a clearer design",
+     "Add a long instruction text"
+    ],
+    "points": [
+     5,
+     10,
+     0
+    ],
+    "why": "UX design starts with observing real users, then testing a fix."
+   },
+   {
+    "id": "ux_c2",
+    "skill": "creativity",
+    "scenario": "The client wants the app to look 'modern' but cannot explain more.",
+    "options": [
+     "Show 2-3 mood boards and quick sketches to choose a direction",
+     "Copy a popular app exactly",
+     "Use only your favourite colours"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Showing options early turns a vague wish into a clear direction."
+   },
+   {
+    "id": "ux_c3",
+    "skill": "teamwork",
+    "scenario": "A developer says your design is too hard to build before the deadline.",
+    "options": [
+     "Insist on the original design",
+     "Let the developer change it however they like",
+     "Discuss together and simplify it while keeping the main user goal"
+    ],
+    "points": [
+     0,
+     5,
+     10
+    ],
+    "why": "Designers and developers find a balance that keeps the user experience good and the deadline realistic."
+   }
+  ],
+  "qa_engineer": [
+   {
+    "id": "qa_c1",
+    "skill": "problem_solving",
+    "scenario": "A bug appears only sometimes when you test the login page.",
+    "options": [
+     "Ignore it because it is rare",
+     "Try different inputs, browsers and timings to find the pattern",
+     "Mark the test as passed"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "Intermittent bugs are found by changing one condition at a time until the pattern appears."
+   },
+   {
+    "id": "qa_c2",
+    "skill": "documentation",
+    "scenario": "You found a serious bug and need to report it.",
+    "options": [
+     "Write the steps, expected vs actual result, screenshots and severity",
+     "Send a message saying 'login is broken'",
+     "Fix the code yourself without reporting"
+    ],
+    "points": [
+     10,
+     0,
+     5
+    ],
+    "why": "A good bug report lets a developer reproduce and fix the bug quickly."
+   },
+   {
+    "id": "qa_c3",
+    "skill": "communication",
+    "scenario": "The release is tomorrow, but two medium bugs are still open.",
+    "options": [
+     "Hide the bugs to avoid delaying",
+     "Block the release without explaining",
+     "Explain the risks to the team so they can decide"
+    ],
+    "points": [
+     0,
+     5,
+     10
+    ],
+    "why": "QA gives clear information about risk; the team then makes an informed decision."
+   }
+  ],
+  "cybersecurity_analyst": [
+   {
+    "id": "cy_c1",
+    "skill": "problem_solving",
+    "scenario": "Staff received an email asking them to 'confirm their password' on a strange website.",
+    "options": [
+     "Do nothing because it is only an email",
+     "Warn staff, block the link and check who already clicked it",
+     "Delete your own copy only"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "Phishing needs a quick response: warn, block and find affected users."
+   },
+   {
+    "id": "cy_c2",
+    "skill": "data_analysis",
+    "scenario": "You see hundreds of failed logins for one account at 2 a.m.",
+    "options": [
+     "Investigate the source, lock the account and alert the owner",
+     "Assume the user forgot their password",
+     "Turn off the logging"
+    ],
+    "points": [
+     10,
+     5,
+     0
+    ],
+    "why": "Many failed logins can be a brute-force attack. Investigate and protect the account."
+   },
+   {
+    "id": "cy_c3",
+    "skill": "communication",
+    "scenario": "Employees keep using weak passwords.",
+    "options": [
+     "Shout at them in a meeting",
+     "Write a 40-page policy nobody reads",
+     "Run short, friendly training and turn on multi-factor authentication"
+    ],
+    "points": [
+     0,
+     5,
+     10
+    ],
+    "why": "Security improves with simple training and good technical controls such as MFA."
+   }
+  ],
+  "network_engineer": [
+   {
+    "id": "ne_c1",
+    "skill": "problem_solving",
+    "scenario": "One office floor has no internet, but the others work.",
+    "options": [
+     "Restart every device in the building",
+     "Check the switch, cables and settings for that floor step by step",
+     "Wait until tomorrow"
+    ],
+    "points": [
+     5,
+     10,
+     0
+    ],
+    "why": "Narrowing the problem down to the affected area is faster and safer."
+   },
+   {
+    "id": "ne_c2",
+    "skill": "documentation",
+    "scenario": "You changed the router settings to fix an issue.",
+    "options": [
+     "Record the change, the reason and how to undo it",
+     "Remember it yourself",
+     "Tell one colleague"
+    ],
+    "points": [
+     10,
+     0,
+     5
+    ],
+    "why": "Recording changes makes the network easier to fix later and is standard practice."
+   },
+   {
+    "id": "ne_c3",
+    "skill": "digital_literacy",
+    "scenario": "The company wants guest Wi-Fi for visitors.",
+    "options": [
+     "Give visitors the staff Wi-Fi password",
+     "Refuse guest Wi-Fi",
+     "Create a separate guest network isolated from staff systems"
+    ],
+    "points": [
+     0,
+     0,
+     10
+    ],
+    "why": "A separate, isolated guest network keeps company systems safe."
+   }
+  ],
+  "database_administrator": [
+   {
+    "id": "db_c1",
+    "skill": "problem_solving",
+    "scenario": "A report query that used to take 2 seconds now takes 2 minutes.",
+    "options": [
+     "Buy a bigger server immediately",
+     "Look at the query plan and add a suitable index",
+     "Tell users to run it at night"
+    ],
+    "points": [
+     5,
+     10,
+     0
+    ],
+    "why": "Checking the query plan finds the real cause; more hardware is expensive and may not help."
+   },
+   {
+    "id": "db_c2",
+    "skill": "digital_literacy",
+    "scenario": "Your manager asks if the database could be restored after a disaster.",
+    "options": [
+     "Test restoring the latest backup on a separate server",
+     "Say yes without checking",
+     "Make one copy on your laptop"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "A backup is only useful if it can be restored, so test it regularly."
+   },
+   {
+    "id": "db_c3",
+    "skill": "documentation",
+    "scenario": "A developer needs read access to customer data for testing.",
+    "options": [
+     "Give full admin access",
+     "Email them the whole database",
+     "Give read-only access to masked test data and record the approval"
+    ],
+    "points": [
+     0,
+     0,
+     10
+    ],
+    "why": "Give the minimum access needed and protect personal data."
+   }
+  ],
+  "project_manager": [
+   {
+    "id": "pm_c1",
+    "skill": "leadership",
+    "scenario": "The project is two weeks behind schedule.",
+    "options": [
+     "Hide it from the client",
+     "Find the cause, re-plan with the team and inform the client early",
+     "Ask everyone to work every night"
+    ],
+    "points": [
+     0,
+     10,
+     5
+    ],
+    "why": "Good project managers are honest, find the cause and re-plan together."
+   },
+   {
+    "id": "pm_c2",
+    "skill": "communication",
+    "scenario": "The client asks for a big new feature in the middle of the project.",
+    "options": [
+     "Explain the impact on time and cost and agree on a decision",
+     "Accept it without changing the plan",
+     "Refuse without discussion"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Scope changes are managed by showing the impact and agreeing together."
+   },
+   {
+    "id": "pm_c3",
+    "skill": "teamwork",
+    "scenario": "Two team members keep arguing in meetings.",
+    "options": [
+     "Remove one from the project",
+     "Ignore it",
+     "Talk to them, understand the issue and agree on clear roles"
+    ],
+    "points": [
+     0,
+     0,
+     10
+    ],
+    "why": "Managers handle conflict early by listening and clarifying roles."
+   }
+  ],
+  "digital_marketing_executive": [
+   {
+    "id": "dm_c1",
+    "skill": "data_analysis",
+    "scenario": "An ad gets many clicks but almost no sales.",
+    "options": [
+     "Spend more money on the same ad",
+     "Check the landing page and who is clicking, then test changes",
+     "Stop all advertising"
+    ],
+    "points": [
+     0,
+     10,
+     5
+    ],
+    "why": "Marketers use data to find where people drop off and test improvements."
+   },
+   {
+    "id": "dm_c2",
+    "skill": "creativity",
+    "scenario": "You need a social media post for a new product launch.",
+    "options": [
+     "Create a short, eye-catching post that shows the benefit for the customer",
+     "Copy a competitor's post",
+     "Write a long technical description"
+    ],
+    "points": [
+     10,
+     0,
+     5
+    ],
+    "why": "Good marketing content is short, original and focused on the customer."
+   },
+   {
+    "id": "dm_c3",
+    "skill": "communication",
+    "scenario": "A customer posts an angry comment about late delivery.",
+    "options": [
+     "Delete the comment",
+     "Argue publicly",
+     "Reply politely, apologise and move the details to a private message"
+    ],
+    "points": [
+     0,
+     0,
+     10
+    ],
+    "why": "A calm, public reply protects the brand and helps the customer."
+   }
+  ],
+  "civil_engineer": [
+   {
+    "id": "ce_c1",
+    "skill": "problem_solving",
+    "scenario": "During construction you notice cracks in a newly poured concrete slab.",
+    "options": [
+     "Cover them with paint",
+     "Stop work in that area, inspect the cause and consult the design team",
+     "Continue to stay on schedule"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "Safety comes first: investigate structural issues before continuing."
+   },
+   {
+    "id": "ce_c2",
+    "skill": "documentation",
+    "scenario": "The contractor changed a material without approval.",
+    "options": [
+     "Record it, check whether it meets the specification and report it",
+     "Accept it because it is cheaper",
+     "Ignore it"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Engineers keep records and make sure materials meet the approved specification."
+   },
+   {
+    "id": "ce_c3",
+    "skill": "teamwork",
+    "scenario": "Heavy rain is forecast for the week you planned to pour the foundations.",
+    "options": [
+     "Pour anyway",
+     "Cancel the project",
+     "Agree a new schedule with the site team and protect the work area"
+    ],
+    "points": [
+     0,
+     0,
+     10
+    ],
+    "why": "Planning around weather with the team protects quality and safety."
+   }
+  ],
+  "mechanical_engineer": [
+   {
+    "id": "me_c1",
+    "skill": "problem_solving",
+    "scenario": "A factory machine keeps overheating.",
+    "options": [
+     "Turn it off and on again",
+     "Check cooling, load and maintenance records to find the cause",
+     "Increase its speed"
+    ],
+    "points": [
+     5,
+     10,
+     0
+    ],
+    "why": "Root-cause analysis (cooling, load, maintenance) fixes the problem for good."
+   },
+   {
+    "id": "me_c2",
+    "skill": "creativity",
+    "scenario": "You must reduce the weight of a part without making it weaker.",
+    "options": [
+     "Test new shapes or materials with CAD and simulation",
+     "Use a thinner part and hope",
+     "Keep the same design"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Engineers explore design options and test them before building."
+   },
+   {
+    "id": "me_c3",
+    "skill": "documentation",
+    "scenario": "A technician asks how to service the new pump you designed.",
+    "options": [
+     "Explain it once on the phone",
+     "Tell them to work it out",
+     "Prepare a clear maintenance guide with drawings"
+    ],
+    "points": [
+     5,
+     0,
+     10
+    ],
+    "why": "Written guides with drawings make maintenance safe and repeatable."
+   }
+  ],
+  "electrical_engineer": [
+   {
+    "id": "ee_c1",
+    "skill": "problem_solving",
+    "scenario": "A circuit breaker in a building keeps tripping.",
+    "options": [
+     "Replace it with a bigger breaker",
+     "Measure the load and check the wiring for faults",
+     "Tape the switch on"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "A tripping breaker is a warning. Find the overload or fault; never bypass it."
+   },
+   {
+    "id": "ee_c2",
+    "skill": "teamwork",
+    "scenario": "A colleague wants to work on a panel without switching off the power to save time.",
+    "options": [
+     "Insist on isolating the power and following lock-out procedures",
+     "Let them, they are experienced",
+     "Leave the site"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Electrical safety procedures protect lives and are never skipped."
+   },
+   {
+    "id": "ee_c3",
+    "skill": "research",
+    "scenario": "The client wants to reduce electricity costs.",
+    "options": [
+     "Tell them to use fewer lights",
+     "Recommend the most expensive system",
+     "Study their usage and suggest options such as solar or efficient lighting with savings estimates"
+    ],
+    "points": [
+     5,
+     0,
+     10
+    ],
+    "why": "Good engineers analyse the usage and compare options with costs and benefits."
+   }
+  ],
+  "research_assistant": [
+   {
+    "id": "ra_c1",
+    "skill": "research",
+    "scenario": "Your results do not support the hypothesis your supervisor expected.",
+    "options": [
+     "Change the data so it fits",
+     "Report the results honestly and check the method",
+     "Delete the results"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "Research integrity means reporting results honestly, even unexpected ones."
+   },
+   {
+    "id": "ra_c2",
+    "skill": "documentation",
+    "scenario": "You are collecting survey data from 200 people.",
+    "options": [
+     "Use a clear data sheet, label every variable and back it up",
+     "Keep notes in your head",
+     "Store it in random files"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Organised, backed-up data makes analysis reliable and repeatable."
+   },
+   {
+    "id": "ra_c3",
+    "skill": "data_analysis",
+    "scenario": "You need to compare the test scores of two student groups.",
+    "options": [
+     "Compare only the highest scores",
+     "Guess by looking at the numbers",
+     "Use a suitable statistical test and report the averages and the spread"
+    ],
+    "points": [
+     5,
+     0,
+     10
+    ],
+    "why": "A proper statistical test shows whether a difference is real or just chance."
+   }
+  ],
+  "laboratory_technician": [
+   {
+    "id": "lt_c1",
+    "skill": "documentation",
+    "scenario": "You notice a sample label is unclear.",
+    "options": [
+     "Guess which sample it is",
+     "Set it aside, report it and follow the lab's procedure",
+     "Throw it away quietly"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "Accurate labelling is essential. Uncertain samples must be reported, not guessed."
+   },
+   {
+    "id": "lt_c2",
+    "skill": "problem_solving",
+    "scenario": "Your test results look very different from usual.",
+    "options": [
+     "Check the equipment calibration and controls, then repeat the test",
+     "Report them anyway",
+     "Change the numbers to normal values"
+    ],
+    "points": [
+     10,
+     5,
+     0
+    ],
+    "why": "Unusual results should be checked (calibration and controls) before reporting."
+   },
+   {
+    "id": "lt_c3",
+    "skill": "teamwork",
+    "scenario": "A colleague is not wearing gloves when handling chemicals.",
+    "options": [
+     "Say nothing",
+     "Report them without speaking to them",
+     "Politely remind them of the safety rules"
+    ],
+    "points": [
+     0,
+     5,
+     10
+    ],
+    "why": "Everyone shares responsibility for lab safety; a friendly reminder comes first."
+   }
+  ],
+  "finance_analyst": [
+   {
+    "id": "fa_c1",
+    "skill": "data_analysis",
+    "scenario": "This month's expenses are 25% above the budget.",
+    "options": [
+     "Increase the budget",
+     "Break the expenses down by category to find the cause",
+     "Ignore it until the year end"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "Variance analysis finds which costs went over and why."
+   },
+   {
+    "id": "fa_c2",
+    "skill": "communication",
+    "scenario": "You present a financial forecast to the board.",
+    "options": [
+     "Show the key numbers, the assumptions and the risks clearly",
+     "Show 50 pages of tables",
+     "Show only the good news"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Decision makers need clear key figures, assumptions and risks, not only good news."
+   },
+   {
+    "id": "fa_c3",
+    "skill": "problem_solving",
+    "scenario": "A payment record does not match the bank statement.",
+    "options": [
+     "Adjust the figure so it matches",
+     "Ask the bank to change its statement",
+     "Trace the transaction and find the difference"
+    ],
+    "points": [
+     0,
+     0,
+     10
+    ],
+    "why": "Reconciliation means finding the real difference, never forcing the numbers."
+   }
+  ],
+  "hr_executive": [
+   {
+    "id": "hr_c1",
+    "skill": "communication",
+    "scenario": "An employee tells you privately they feel bullied by their manager.",
+    "options": [
+     "Tell the manager immediately in public",
+     "Listen, keep it confidential and follow the grievance procedure",
+     "Tell them to ignore it"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "HR handles complaints fairly, confidentially and by the correct procedure."
+   },
+   {
+    "id": "hr_c2",
+    "skill": "teamwork",
+    "scenario": "A department needs to hire quickly.",
+    "options": [
+     "Agree the role needs with the manager and use a fair interview process",
+     "Hire the first person who applies",
+     "Hire a friend"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Fair, structured hiring finds the right person and avoids bias."
+   },
+   {
+    "id": "hr_c3",
+    "skill": "documentation",
+    "scenario": "Staff keep asking the same questions about leave rules.",
+    "options": [
+     "Answer each email separately",
+     "Stop answering",
+     "Create a simple FAQ and share it on the intranet"
+    ],
+    "points": [
+     5,
+     0,
+     10
+    ],
+    "why": "A clear FAQ saves time and gives everyone the same correct information."
+   }
+  ],
+  "public_health_assistant": [
+   {
+    "id": "ph_c1",
+    "skill": "communication",
+    "scenario": "Dengue cases are rising in a village.",
+    "options": [
+     "Only put up a poster in English",
+     "Run an awareness session on removing standing water, in the local language",
+     "Wait for the hospital to act"
+    ],
+    "points": [
+     5,
+     10,
+     0
+    ],
+    "why": "Clear education in the community's language helps prevent the spread."
+   },
+   {
+    "id": "ph_c2",
+    "skill": "data_analysis",
+    "scenario": "You collect weekly case numbers from clinics.",
+    "options": [
+     "Record them in a table and look for trends by area",
+     "Keep them on paper only",
+     "Report only the total"
+    ],
+    "points": [
+     10,
+     0,
+     5
+    ],
+    "why": "Tracking trends by area shows where action is needed."
+   },
+   {
+    "id": "ph_c3",
+    "skill": "teamwork",
+    "scenario": "A school wants to run a health camp.",
+    "options": [
+     "Do it alone",
+     "Tell them it is not your job",
+     "Plan it with teachers, health staff and parents"
+    ],
+    "points": [
+     5,
+     0,
+     10
+    ],
+    "why": "Public health work depends on partnerships with the community."
+   }
+  ],
+  "health_administrator": [
+   {
+    "id": "ha_c1",
+    "skill": "problem_solving",
+    "scenario": "Patients wait over three hours at the outpatient clinic.",
+    "options": [
+     "Add more chairs",
+     "Study the patient flow and change the appointment system",
+     "Tell patients to come later"
+    ],
+    "points": [
+     5,
+     10,
+     0
+    ],
+    "why": "Analysing the process fixes the cause of the delay, not only the symptom."
+   },
+   {
+    "id": "ha_c2",
+    "skill": "digital_literacy",
+    "scenario": "The hospital is moving to electronic patient records.",
+    "options": [
+     "Plan training, a test run and data protection rules",
+     "Switch everything overnight",
+     "Keep paper records only"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Change needs planning, staff training and protection of patient data."
+   },
+   {
+    "id": "ha_c3",
+    "skill": "leadership",
+    "scenario": "Nurses complain about unfair shift schedules.",
+    "options": [
+     "Ignore it",
+     "Let each nurse choose any shift",
+     "Meet them, review the schedule rules and create a fair rota"
+    ],
+    "points": [
+     0,
+     5,
+     10
+    ],
+    "why": "Leaders listen and create fair, clear rules."
+   }
+  ],
+  "graphic_designer": [
+   {
+    "id": "gd_c1",
+    "skill": "creativity",
+    "scenario": "A client asks for a logo for a new eco-friendly café.",
+    "options": [
+     "Use a free template",
+     "Research the brand, sketch several ideas and present the best",
+     "Use your favourite font"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "Strong designs come from understanding the brand and exploring ideas."
+   },
+   {
+    "id": "gd_c2",
+    "skill": "communication",
+    "scenario": "The client says 'I don't like it' without explaining why.",
+    "options": [
+     "Ask specific questions about colours, style and feeling",
+     "Start again from nothing",
+     "Argue that the design is good"
+    ],
+    "points": [
+     10,
+     5,
+     0
+    ],
+    "why": "Asking specific questions turns vague feedback into clear changes."
+   },
+   {
+    "id": "gd_c3",
+    "skill": "digital_literacy",
+    "scenario": "The design must work on a website and on a large banner.",
+    "options": [
+     "Send a small JPG",
+     "Ask the printer to resize it",
+     "Create vector files and versions for print and web"
+    ],
+    "points": [
+     0,
+     0,
+     10
+    ],
+    "why": "Vector files and the right formats keep designs sharp everywhere."
+   }
+  ],
+  "content_creator": [
+   {
+    "id": "cc_c1",
+    "skill": "creativity",
+    "scenario": "Your videos are getting fewer views.",
+    "options": [
+     "Post the same video again",
+     "Look at audience data and try new formats and topics",
+     "Buy fake followers"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "Creators learn from their audience data and experiment with new ideas."
+   },
+   {
+    "id": "cc_c2",
+    "skill": "communication",
+    "scenario": "A brand offers to pay you to promote their product.",
+    "options": [
+     "Accept only if it fits your audience and clearly mark it as sponsored",
+     "Promote it without saying it is paid",
+     "Promote anything that pays"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Honest, clearly marked sponsorships keep your audience's trust."
+   },
+   {
+    "id": "cc_c3",
+    "skill": "digital_literacy",
+    "scenario": "You want to use music in your video.",
+    "options": [
+     "Use any popular song",
+     "Lower the volume so nobody notices",
+     "Use licensed or copyright-free music"
+    ],
+    "points": [
+     0,
+     0,
+     10
+    ],
+    "why": "Respecting copyright avoids takedowns and legal problems."
+   }
+  ],
+  "content_writer": [
+   {
+    "id": "cw_c1",
+    "skill": "research",
+    "scenario": "You must write an article about a health topic you know little about.",
+    "options": [
+     "Copy text from a website",
+     "Read trusted sources, take notes and write in your own words",
+     "Write from your own opinion"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "Good writers research trusted sources and never plagiarise."
+   },
+   {
+    "id": "cw_c2",
+    "skill": "communication",
+    "scenario": "Your article is accurate but long and hard to read.",
+    "options": [
+     "Use headings, short paragraphs and simple words",
+     "Add more details",
+     "Make the font smaller"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Clear structure and simple language make content easy to read."
+   },
+   {
+    "id": "cw_c3",
+    "skill": "documentation",
+    "scenario": "The editor sends many comments on your draft.",
+    "options": [
+     "Ignore the comments you disagree with",
+     "Rewrite everything",
+     "Go through each comment, edit and explain any you disagree with"
+    ],
+    "points": [
+     0,
+     5,
+     10
+    ],
+    "why": "Professionals handle feedback carefully and discuss points respectfully."
+   }
+  ],
+  "public_relations_executive": [
+   {
+    "id": "pr_c1",
+    "skill": "communication",
+    "scenario": "A false rumour about your company is spreading online.",
+    "options": [
+     "Stay silent",
+     "Quickly share a clear, factual statement",
+     "Attack the people sharing it"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "In a crisis, a fast, factual statement protects the organisation's reputation."
+   },
+   {
+    "id": "pr_c2",
+    "skill": "creativity",
+    "scenario": "You need media coverage for a charity event.",
+    "options": [
+     "Write a press release with a human story and contact relevant journalists",
+     "Send a generic email to all journalists",
+     "Hope they notice"
+    ],
+    "points": [
+     10,
+     5,
+     0
+    ],
+    "why": "A strong story sent to the right journalists gets coverage."
+   },
+   {
+    "id": "pr_c3",
+    "skill": "teamwork",
+    "scenario": "The CEO must give a TV interview tomorrow.",
+    "options": [
+     "Let the CEO improvise",
+     "Cancel the interview",
+     "Prepare key messages and practise likely questions with the CEO"
+    ],
+    "points": [
+     0,
+     0,
+     10
+    ],
+    "why": "PR teams prepare spokespeople with key messages and practice."
+   }
+  ],
+  "teacher": [
+   {
+    "id": "te_c1",
+    "skill": "communication",
+    "scenario": "Half the class did not understand today's lesson.",
+    "options": [
+     "Move on to the next topic",
+     "Explain it again in a different way with examples and check understanding",
+     "Give extra homework"
+    ],
+    "points": [
+     0,
+     10,
+     5
+    ],
+    "why": "Good teachers check understanding and try a different approach."
+   },
+   {
+    "id": "te_c2",
+    "skill": "leadership",
+    "scenario": "A student keeps disturbing the class.",
+    "options": [
+     "Talk to them privately to understand the reason and agree on expectations",
+     "Shout at them",
+     "Send them out every day"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Understanding the reason behind behaviour works better than punishment alone."
+   },
+   {
+    "id": "te_c3",
+    "skill": "creativity",
+    "scenario": "Students find a topic boring.",
+    "options": [
+     "Read from the textbook",
+     "Skip the topic",
+     "Use a game, a real-life example or a group activity"
+    ],
+    "points": [
+     0,
+     0,
+     10
+    ],
+    "why": "Active, real-life learning keeps students interested."
+   }
+  ],
+  "education_coordinator": [
+   {
+    "id": "ec_c1",
+    "skill": "leadership",
+    "scenario": "Teachers are not using the new curriculum.",
+    "options": [
+     "Send a strict memo",
+     "Run training, ask what support they need and follow up",
+     "Do nothing"
+    ],
+    "points": [
+     5,
+     10,
+     0
+    ],
+    "why": "Change succeeds with training, support and follow-up."
+   },
+   {
+    "id": "ec_c2",
+    "skill": "data_analysis",
+    "scenario": "Exam results in one subject dropped this year.",
+    "options": [
+     "Compare results by class and topic to find where learning dropped",
+     "Blame the students",
+     "Change the exam"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Analysing results by class and topic shows where support is needed."
+   },
+   {
+    "id": "ec_c3",
+    "skill": "documentation",
+    "scenario": "You are organising a school-wide workshop.",
+    "options": [
+     "Plan it in your head",
+     "Ask people on the day",
+     "Make a written plan with dates, roles and resources and share it"
+    ],
+    "points": [
+     0,
+     0,
+     10
+    ],
+    "why": "A shared written plan keeps everyone coordinated."
+   }
+  ],
+  "legal_assistant": [
+   {
+    "id": "la_c1",
+    "skill": "documentation",
+    "scenario": "A court filing deadline is in two days and one document is missing.",
+    "options": [
+     "Submit without it",
+     "Tell the lawyer immediately and request the document",
+     "Wait until the last day"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "Deadlines are critical in law, so raise problems early."
+   },
+   {
+    "id": "la_c2",
+    "skill": "research",
+    "scenario": "The lawyer asks you to find past cases similar to the current one.",
+    "options": [
+     "Search legal databases and summarise the relevant cases",
+     "Search only the first web result",
+     "Guess based on memory"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Legal research uses reliable databases and clear summaries."
+   },
+   {
+    "id": "la_c3",
+    "skill": "communication",
+    "scenario": "A friend asks about a client's case.",
+    "options": [
+     "Tell them a little",
+     "Share it if they promise not to tell",
+     "Politely refuse because client information is confidential"
+    ],
+    "points": [
+     0,
+     0,
+     10
+    ],
+    "why": "Client confidentiality is a core legal duty."
+   }
+  ],
+  "compliance_officer": [
+   {
+    "id": "co_c1",
+    "skill": "problem_solving",
+    "scenario": "You find a department is not following a data-protection rule.",
+    "options": [
+     "Ignore it if nothing went wrong",
+     "Document it, explain the risk and agree a fix with a deadline",
+     "Report them to the media"
+    ],
+    "points": [
+     0,
+     10,
+     0
+    ],
+    "why": "Compliance means finding issues, explaining the risk and fixing them."
+   },
+   {
+    "id": "co_c2",
+    "skill": "communication",
+    "scenario": "A new regulation affects how the company stores customer data.",
+    "options": [
+     "Summarise what changes for each team and train them",
+     "Email the full law text",
+     "Wait for an inspection"
+    ],
+    "points": [
+     10,
+     5,
+     0
+    ],
+    "why": "Staff need a clear summary of what to do differently."
+   },
+   {
+    "id": "co_c3",
+    "skill": "documentation",
+    "scenario": "An auditor asks for proof that staff completed training.",
+    "options": [
+     "Say everyone did it",
+     "Create records quickly now",
+     "Show the training records and attendance logs"
+    ],
+    "points": [
+     0,
+     0,
+     10
+    ],
+    "why": "Accurate records are the evidence of compliance; never create false ones."
+   }
+  ],
+  "community_development_officer": [
+   {
+    "id": "cd_c1",
+    "skill": "communication",
+    "scenario": "You want to start a project to improve clean water in a village.",
+    "options": [
+     "Decide the project yourself",
+     "Meet the villagers first to understand their needs and ideas",
+     "Copy a project from another country"
+    ],
+    "points": [
+     0,
+     10,
+     5
+    ],
+    "why": "Community projects work best when the community helps plan them."
+   },
+   {
+    "id": "cd_c2",
+    "skill": "leadership",
+    "scenario": "Volunteers are losing interest in the project.",
+    "options": [
+     "Recognise their work, give clear roles and share progress",
+     "Replace them all",
+     "Continue alone"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Recognition, clear roles and visible progress keep volunteers motivated."
+   },
+   {
+    "id": "cd_c3",
+    "skill": "documentation",
+    "scenario": "A donor asks what impact their funding had.",
+    "options": [
+     "Say it went well",
+     "Ask for more money",
+     "Share a short report with numbers, photos and stories"
+    ],
+    "points": [
+     0,
+     0,
+     10
+    ],
+    "why": "Clear impact reports build trust with donors."
+   }
+  ],
+  "counselling_assistant": [
+   {
+    "id": "ca_c1",
+    "skill": "communication",
+    "scenario": "A student comes to you upset and starts crying.",
+    "options": [
+     "Tell them to calm down",
+     "Listen calmly, show empathy and let them speak",
+     "Give advice immediately"
+    ],
+    "points": [
+     0,
+     10,
+     5
+    ],
+    "why": "Active, empathetic listening is the first step in counselling."
+   },
+   {
+    "id": "ca_c2",
+    "skill": "problem_solving",
+    "scenario": "A student says something that suggests they may harm themselves.",
+    "options": [
+     "Follow the safeguarding procedure and involve the qualified counsellor",
+     "Keep it secret as they asked",
+     "Ignore it"
+    ],
+    "points": [
+     10,
+     0,
+     0
+    ],
+    "why": "Safety comes before confidentiality: follow safeguarding procedures."
+   },
+   {
+    "id": "ca_c3",
+    "skill": "documentation",
+    "scenario": "After a session you need to write notes.",
+    "options": [
+     "Write them in a shared notebook",
+     "Post them in a group chat",
+     "Write factual notes and store them securely"
+    ],
+    "points": [
+     0,
+     0,
+     10
+    ],
+    "why": "Counselling notes must be factual and stored securely."
+   }
+  ]
+ }
+}

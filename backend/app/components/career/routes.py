@@ -20,6 +20,11 @@ from app.components.career.schemas import (
     CVAssistResponse,
     CVDocument,
     CVOut,
+    FitCheckRequest,
+    FitCheckResponse,
+    FitQuizOut,
+    FitScoreRequest,
+    FitScoreResponse,
     InterviewAnswerRequest,
     InterviewHistoryIn,
     InterviewHistoryItem,
@@ -43,7 +48,7 @@ from app.components.career.services.interview_questions import get_question, sel
 from app.components.career.services.llm_feedback import generate_llm_feedback, llm_status
 from app.components.career.services.persona import assign_persona, load_persona_model
 from app.components.career.services.recommender import recommend_careers
-from app.components.career.services import cv_assistant, cv_store, saved_state
+from app.components.career.services import cv_assistant, cv_store, fit_quiz, saved_state
 from app.components.career.services.roadmap import career_milestones, generate_roadmap
 
 router = APIRouter()
@@ -165,6 +170,50 @@ def interview_report(body: InterviewReportRequest, language: str = Language):
     career = _career_or_404(body.career_id)
     return build_report(i18n.career_field(career, "career_name", language), [to_dict(r) for r in body.results],
                         language)
+
+
+# ---------------------------------------------------------------------------
+# Career Fit Quiz - a short game after the top 5 careers that helps the student choose one.
+# Advisory only: the trained ranking is not changed, and the student can still select any career.
+# ---------------------------------------------------------------------------
+MAX_QUIZ_CAREERS = 5
+
+
+@router.get("/fit-quiz", response_model=FitQuizOut)
+def get_fit_quiz(career_ids: str = Query(..., max_length=400, description="Comma-separated, in the recommended order"),
+                 variant: int = Query(0, ge=0, le=100), language: str = Language):
+    ids = list(dict.fromkeys(c.strip() for c in career_ids.split(",") if c.strip()))
+    if not 1 <= len(ids) <= MAX_QUIZ_CAREERS:
+        raise HTTPException(422, f"Send 1-{MAX_QUIZ_CAREERS} career ids")
+    scenarios = []
+    for career_id in ids:
+        career = _career_or_404(career_id)
+        if not fit_quiz.has_quiz(career_id):
+            raise HTTPException(404, f"No fit quiz for '{career_id}'")
+        scenarios.append(fit_quiz.public_scenario(fit_quiz.scenario_for(career_id, variant), career, language))
+    return {"variant": variant, "interest_questions": fit_quiz.interest_questions(language),
+            "scenarios": scenarios, "advisory": i18n.t(language, "fit_advisory")}
+
+
+@router.post("/fit-quiz/check", response_model=FitCheckResponse)
+def check_fit_answer(body: FitCheckRequest, language: str = Language):
+    """Instant feedback for one 'day in the job' answer."""
+    try:
+        result = fit_quiz.check_answer(body.question_id, body.option, language)
+    except ValueError as err:
+        raise HTTPException(422, str(err))
+    if result is None:
+        raise HTTPException(404, f"Unknown question_id '{body.question_id}'")
+    return result
+
+
+@router.post("/fit-quiz/score", response_model=FitScoreResponse)
+def score_fit_quiz(body: FitScoreRequest, language: str = Language):
+    careers = {a.career_id: _career_or_404(a.career_id) for a in body.scenarios}
+    try:
+        return fit_quiz.score_quiz(body.interests, [to_dict(a) for a in body.scenarios], careers, language)
+    except ValueError as err:
+        raise HTTPException(422, str(err))
 
 
 # ---------------------------------------------------------------------------

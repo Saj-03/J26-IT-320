@@ -62,6 +62,8 @@ TEXT = {
         "ms_interview_title": "Practise interviews",
         "ms_interview_desc": "Answer real {career} interview questions in the AI Interview Simulator and get feedback.",
         "ms_interview_when": "Before you apply",
+        "fit_summary": "Your best fit from the quiz is {career} ({fit}% fit).",
+        "fit_advisory": "The quiz helps you choose. It does not change your recommended ranking, and you can pick any of the 5 careers.",
         # interview feedback
         "pace_slow": "Your pace was {wpm} words/min. Try speaking a little faster (aim for {low}-{high}).",
         "pace_fast": "Your pace was {wpm} words/min. Slow down slightly for clarity (aim for {low}-{high}).",
@@ -122,6 +124,8 @@ TEXT = {
         "ms_interview_title": "සම්මුඛ පරීක්ෂණ පුහුණු වන්න",
         "ms_interview_desc": "AI සම්මුඛ පරීක්ෂණ සිමියුලේටරයේ සැබෑ {career} සම්මුඛ ප්‍රශ්නවලට පිළිතුරු දී ප්‍රතිපෝෂණ ලබා ගන්න.",
         "ms_interview_when": "අයදුම් කිරීමට පෙර",
+        "fit_summary": "ප්‍රශ්නාවලියට අනුව ඔබට වඩාත්ම ගැළපෙන්නේ {career} ({fit}% ගැළපීම).",
+        "fit_advisory": "මෙම ප්‍රශ්නාවලිය තෝරා ගැනීමට උදව් කරයි. එය ඔබේ නිර්දේශිත පිළිවෙළ වෙනස් නොකරයි; වෘත්තීන් 5න් ඕනෑම එකක් තෝරා ගත හැක.",
         "pace_slow": "ඔබේ කතා කිරීමේ වේගය විනාඩියට වචන {wpm}කි. මඳක් වේගයෙන් කතා කිරීමට උත්සාහ කරන්න (ඉලක්කය {low}-{high}).",
         "pace_fast": "ඔබේ කතා කිරීමේ වේගය විනාඩියට වචන {wpm}කි. පැහැදිලි බව සඳහා මඳක් සෙමින් කතා කරන්න (ඉලක්කය {low}-{high}).",
         "pace_good": "හොඳ කතා කිරීමේ වේගයක් (විනාඩියට වචන {wpm}).",
@@ -183,6 +187,8 @@ TEXT = {
         "ms_interview_title": "நேர்காணல் பயிற்சி செய்யவும்",
         "ms_interview_desc": "AI நேர்காணல் சிமுலேட்டரில் உண்மையான {career} நேர்காணல் கேள்விகளுக்குப் பதிலளித்து கருத்துகளைப் பெறுங்கள்.",
         "ms_interview_when": "விண்ணப்பிக்கும் முன்",
+        "fit_summary": "வினாடி வினாவின்படி உங்களுக்கு மிகவும் பொருந்துவது {career} ({fit}% பொருத்தம்).",
+        "fit_advisory": "இந்த வினாடி வினா தேர்வு செய்ய உதவுகிறது. இது உங்கள் பரிந்துரை வரிசையை மாற்றாது; 5 தொழில்களில் எதையும் நீங்கள் தேர்வு செய்யலாம்.",
         "pace_slow": "உங்கள் பேச்சு வேகம் நிமிடத்திற்கு {wpm} சொற்கள். சற்று வேகமாகப் பேச முயற்சிக்கவும் (இலக்கு {low}-{high}).",
         "pace_fast": "உங்கள் பேச்சு வேகம் நிமிடத்திற்கு {wpm} சொற்கள். தெளிவுக்காகச் சற்று மெதுவாகப் பேசவும் (இலக்கு {low}-{high}).",
         "pace_good": "நல்ல பேச்சு வேகம் (நிமிடத்திற்கு {wpm} சொற்கள்).",
@@ -264,6 +270,21 @@ def career_list(career: dict, field: str, lang: str) -> list[str]:
 
 def question_field(question: dict, field: str, lang: str) -> str:
     return _lookup(lang, "questions", question["id"], field) or question[field]
+
+
+def fit_interest(question_id: str, lang: str) -> dict:
+    """Career Fit Quiz round 1: {question, options: {option_id: text}} or {} (English is used)."""
+    return _lookup(lang, "fit_interest", question_id) or {}
+
+
+def fit_scenario(scenario_id: str, scenario: dict, lang: str) -> dict:
+    """Career Fit Quiz round 2 text; English if the translation is missing or has a different option count."""
+    tr = _lookup(lang, "fit_scenarios", scenario_id) or {}
+    options = tr.get("options")
+    if not isinstance(options, list) or len(options) != len(scenario["options"]):
+        options = list(scenario["options"])
+    return {"scenario": tr.get("scenario") or scenario["scenario"], "options": options,
+            "why": tr.get("why") or scenario["why"]}
 
 
 def plan_field(skill_key: str, field: str, english: str, lang: str) -> str:

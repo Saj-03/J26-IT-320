@@ -298,6 +298,92 @@ class InterviewReport(BaseModel):
 # ---------------------------------------------------------------------------
 # Saved progress (per logged-in student)
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Career Fit Quiz (after the top 5 careers; helps the student choose, never changes the ranking)
+# ---------------------------------------------------------------------------
+class FitInterestOption(BaseModel):
+    id: str
+    text: str
+
+
+class FitInterestQuestion(BaseModel):
+    id: str
+    question: str
+    options: list[FitInterestOption]
+
+
+class FitScenario(BaseModel):
+    id: str
+    career_id: str
+    career_name: str
+    skill: str
+    skill_label: str
+    scenario: str
+    options: list[str]
+
+
+class FitQuizOut(BaseModel):
+    variant: int
+    interest_questions: list[FitInterestQuestion]
+    scenarios: list[FitScenario]
+    advisory: str
+
+
+class FitCheckRequest(BaseModel):
+    question_id: str = Field(max_length=40)
+    option: int = Field(ge=0, le=5)
+
+
+class FitCheckResponse(BaseModel):
+    question_id: str
+    option: int
+    points: int
+    max_points: int
+    best_option: int
+    result: Literal["best", "good", "miss"]
+    why: str
+
+
+class FitScenarioAnswer(BaseModel):
+    career_id: str = Field(max_length=60)
+    question_id: str = Field(max_length=40)
+    option: int = Field(ge=0, le=5)
+    enjoyment: int = Field(ge=0, le=2, description="0 not for me, 1 maybe, 2 love it")
+
+
+class FitScoreRequest(BaseModel):
+    interests: dict[str, str] = Field(description="interest question id -> option id")
+    scenarios: list[FitScenarioAnswer] = Field(min_length=1, max_length=5,
+                                               description="In the recommended order (used to break ties)")
+
+    @field_validator("interests")
+    @classmethod
+    def _small(cls, v):
+        if len(v) > 20:
+            raise ValueError("too many answers")
+        return v
+
+
+class FitResult(BaseModel):
+    career_id: str
+    career_name: str
+    fit: int
+    interest_match: int
+    enjoyment: int
+    scenario_points: int
+    career_types: list[str]
+    rank: int
+
+
+class FitScoreResponse(BaseModel):
+    interest_profile: dict[str, int]
+    top_types: list[str]
+    results: list[FitResult]
+    best_fit_career_id: Optional[str] = None
+    summary: str
+    advisory: str
+
+
 class SavedStateIn(BaseModel):
     data: dict
 
