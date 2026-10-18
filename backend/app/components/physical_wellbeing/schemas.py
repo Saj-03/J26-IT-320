@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class ProfileIn(BaseModel):
+    assessment_data: dict[str, Any] = Field(default_factory=dict)
     goal: str = "fitness"
     goals: list[str] = []
     activity_level: str = "medium"

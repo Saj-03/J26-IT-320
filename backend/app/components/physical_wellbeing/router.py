@@ -28,6 +28,7 @@ def get_profile(db: Session = Depends(get_db), user=Depends(get_current_user)):
     if not p:
         raise HTTPException(404, "No profile found. Complete the assessment first.")
     return {
+        "assessment_data": p.assessment_data or {},
         "goal": p.goal or "fitness",
         "goals": p.goals or ([p.goal] if p.goal else ["fitness"]),
         "activity_level": p.activity_level or "medium",

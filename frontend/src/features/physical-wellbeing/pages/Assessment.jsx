@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
@@ -13,7 +13,7 @@ import {
   StepExerciseSafety,
   StepNutrition
 } from '../components/AssessmentSteps';
-import { saveProfile } from '../api';
+import { getProfile, saveProfile } from '../api';
 import { apiErrorMessage } from '../../../shared/api/client';
 import useStudent from '../../../shared/hooks/useStudent';
 
@@ -119,6 +119,7 @@ const toProfile = (s) => {
   else if (actStr.includes('highly') || actStr.includes('very active')) activity_level = 'high';
 
   return {
+    assessment_data: s,
     goal: primaryGoal,
     goals: goalsArr,
     activity_level,
@@ -153,16 +154,84 @@ export function PhysicalAssessment() {
   const student = useStudent();
   const [step, setStep] = useState(0);
   const genderKey = `wellbeing-buddy-gender:${student.email || 'guest'}`;
-  const [state, setState] = useState(() => ({
-    ...initialAssessment,
-    gender: localStorage.getItem(genderKey) || initialAssessment.gender,
-  }));
+  const assessmentKey = `wellbeing-assessment:${student.email || 'guest'}`;
+  const savedAssessmentKey = `wellbeing-assessment-saved:${student.email || 'guest'}`;
+  const [state, setState] = useState(() => {
+    let savedAnswers = null;
+    try { savedAnswers = JSON.parse(localStorage.getItem(assessmentKey) || 'null'); } catch { /* ignore invalid draft */ }
+    return {
+      ...initialAssessment,
+      ...savedAnswers,
+      gender: savedAnswers?.gender || localStorage.getItem(genderKey) || initialAssessment.gender,
+    };
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    getProfile().then((profile) => {
+      if (profile.assessment_data && Object.keys(profile.assessment_data).length) {
+        setState({ ...initialAssessment, ...profile.assessment_data });
+        localStorage.setItem(assessmentKey, JSON.stringify(profile.assessment_data));
+        localStorage.setItem(savedAssessmentKey, 'true');
+        return;
+      }
+      // Reuse the complete assessment only after it was successfully submitted.
+      // Unsaved browser drafts must never override the saved profile on edit.
+      if (localStorage.getItem(savedAssessmentKey) === 'true') {
+        try {
+          const savedAnswers = JSON.parse(localStorage.getItem(assessmentKey) || 'null');
+          if (savedAnswers) {
+            setState({ ...initialAssessment, ...savedAnswers });
+            return;
+          }
+        } catch { /* fall back to the profile returned by the server */ }
+      }
+      const activityLevel = ({ low: 'Lightly active', medium: 'Moderately active', high: 'Highly active' })[profile.activity_level] || initialAssessment.activityLevel;
+      const diet = ({ any: 'No specific preference', veg: 'Vegetarian', vegan: 'Vegan', 'non-veg': 'Non-Vegetarian' })[profile.diet_pref] || initialAssessment.diet;
+      const mealStyle = ({ sri_lankan: 'Sri Lankan meals', western: 'International meals', both: 'Combination of both' })[profile.meal_style] || initialAssessment.mealStyle;
+      const preferredTime = String(profile.preferred_time || initialAssessment.preferredTime).replace(/^./, (c) => c.toUpperCase());
+      const minutes = Number(profile.available_minutes) || 20;
+      const availableTime = minutes <= 15 ? 'Less than 15 minutes' : minutes <= 25 ? '15–30 minutes' : minutes <= 40 ? '31–45 minutes' : minutes <= 52 ? '46–60 minutes' : 'More than 60 minutes';
+      const h = Number(initialAssessment.height) / 100;
+      const height = Number(initialAssessment.height);
+      const weight = Math.round(Math.sqrt((Number(profile.bmi) || 22) * h * h));
+      const limitations = String(profile.physical_limitations || '');
+      const merged = {
+        ...initialAssessment,
+        primaryGoal: ['fitness', 'weight_loss', 'weight_gain', 'strength', 'mobility'].includes(profile.goal) ? profile.goal : 'custom',
+        primaryGoalText: ['fitness', 'weight_loss', 'weight_gain', 'strength', 'mobility'].includes(profile.goal) ? '' : (profile.goal || ''),
+        goals: Array.isArray(profile.goals) ? profile.goals : initialAssessment.goals,
+        activityLevel,
+        availableTime,
+        equipment: Array.isArray(profile.equipment) && profile.equipment.length ? profile.equipment : initialAssessment.equipment,
+        diet,
+        mealStyle,
+        allergies: profile.allergies || '',
+        avoid: profile.avoid_foods || '',
+        favourites: profile.favourite_foods || '',
+        preferredTime,
+        activities: Array.isArray(profile.preferred_activities) && profile.preferred_activities.length ? profile.preferred_activities : initialAssessment.activities,
+        sleep: Number(profile.sleep_hours) || initialAssessment.sleep,
+        stressLevel: Number(profile.stress_score) || initialAssessment.stressLevel,
+        burnoutLevel: Number(profile.burnout_score) || initialAssessment.burnoutLevel,
+        height: String(height),
+        weight: String(weight),
+        limitationChoice: limitations && limitations.toLowerCase() !== 'none' ? 'yes' : 'no',
+        limitationNote: limitations && limitations.toLowerCase() !== 'none' ? limitations : '',
+      };
+      setState(merged);
+      localStorage.setItem(assessmentKey, JSON.stringify(merged));
+    }).catch(() => {});
+  }, [assessmentKey]);
+
   const set = (key, value) => {
     if (key === 'gender') localStorage.setItem(genderKey, value);
-    setState((s) => ({ ...s, [key]: value }));
+    setState((s) => {
+      const next = { ...s, [key]: value };
+      localStorage.setItem(assessmentKey, JSON.stringify(next));
+      return next;
+    });
   };
 
   const finish = async () => {
@@ -171,7 +240,9 @@ export function PhysicalAssessment() {
     try {
       // Keep the companion choice even if profile creation needs to be retried.
       localStorage.setItem(genderKey, state.gender);
+      localStorage.setItem(assessmentKey, JSON.stringify(state));
       await saveProfile(toProfile(state));
+      localStorage.setItem(savedAssessmentKey, 'true');
       navigate('/physical-setup/generating');
     }
     catch (err) {

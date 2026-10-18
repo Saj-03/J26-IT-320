@@ -14,6 +14,7 @@ import useStudent from '../../../shared/hooks/useStudent';
 const GOAL_LABELS = {
   fitness: 'Improve Physical Fitness',
   weight_loss: 'Weight Management',
+  weight_gain: 'Gain Weight',
   lose: 'Weight Loss',
   tone: 'Muscle Tone & Strength',
   strength: 'Strength & Conditioning',
@@ -32,6 +33,7 @@ const DIET_LABELS = {
 
 function buildRows(p) {
   if (!p) return [];
+  const a = p.assessment_data || {};
   const lims = (p.physical_limitations || 'none').split(',').filter(x => x && x !== 'none');
   const goalsStr = (p.goals && Array.isArray(p.goals) && p.goals.length)
     ? p.goals.map(g => GOAL_LABELS[g] || g).join(', ')
@@ -42,13 +44,27 @@ function buildRows(p) {
     : (p.meal_style === 'western' ? 'International Healthy' : 'Sri Lankan & International');
 
   return [
-    { emoji: '🎯', label: 'Primary Goals', value: goalsStr },
+    { emoji: '🎯', label: 'Primary Goal', value: GOAL_LABELS[p.goal] || p.goal || 'General Fitness' },
+    { emoji: '✨', label: 'Other Goals', value: goalsStr },
     { emoji: '⏱️', label: 'Available Workout Time', value: `${p.available_minutes || 20} min (Strictly Constrained)` },
+    { emoji: '🏋️', label: 'Equipment', value: Array.isArray(p.equipment) && p.equipment.length ? p.equipment.join(', ') : 'No equipment listed' },
+    { emoji: '🏃', label: 'Preferred Activities', value: Array.isArray(p.preferred_activities) && p.preferred_activities.length ? p.preferred_activities.join(', ') : 'No activities listed' },
     { emoji: '🥗', label: 'Dietary Preference', value: DIET_LABELS[p.diet_pref] || p.diet_pref },
     { emoji: '🍛', label: 'Cuisine Style', value: mealStyleStr },
     { emoji: '🦵', label: 'Physical Limitations', value: lims.length ? lims.join(', ') : 'None Reported (All exercises safe)' },
     { emoji: '🚫', label: 'Foods to Avoid', value: p.avoid_foods || 'None' },
     { emoji: '🥜', label: 'Food Allergies', value: p.allergies || 'None' },
+    { emoji: '❤️', label: 'Favourite Foods', value: p.favourite_foods || 'None listed' },
+    { emoji: '🧑', label: 'Age', value: a.age ? `${a.age} years` : 'Not saved' },
+    { emoji: '⚧️', label: 'Gender', value: a.gender || 'Not saved' },
+    { emoji: '📏', label: 'Height / Weight', value: a.height && a.weight ? `${a.height} cm / ${a.weight} kg` : 'Not saved' },
+    { emoji: '📖', label: 'Study Hours', value: a.studyHours || 'Not saved' },
+    { emoji: '📝', label: 'Academic Tasks', value: a.academicTasks || 'Not saved' },
+    { emoji: '🧠', label: 'Stress / Burnout', value: a.stressLevel && a.burnoutLevel ? `${a.stressLevel} / 5 stress · ${a.burnoutLevel} / 5 burnout` : 'Not saved' },
+    { emoji: '🚧', label: 'Barriers', value: Array.isArray(a.barriers) && a.barriers.length ? a.barriers.join(', ') : 'None listed' },
+    { emoji: '🌱', label: 'Nutrition Goals', value: Array.isArray(a.nutritionGoals) && a.nutritionGoals.length ? a.nutritionGoals.join(', ') : 'None listed' },
+    { emoji: '🍽️', label: 'Meal Source', value: a.mealSource || 'Not saved' },
+    { emoji: '📅', label: 'Exercise Frequency', value: a.exerciseFreq !== undefined ? `${a.exerciseFreq} days / week` : 'Not saved' },
     { emoji: '🌅', label: 'Preferred Exercise Time', value: p.preferred_time ? (p.preferred_time.charAt(0).toUpperCase() + p.preferred_time.slice(1)) : 'Morning' },
     { emoji: '📊', label: 'Activity Level', value: LEVEL_LABELS[p.activity_level] || p.activity_level },
     { emoji: '😴', label: 'Sleep Target', value: `${p.sleep_hours || 7} hours / night` },
@@ -66,10 +82,24 @@ export function PhysicalProfile() {
 
   useEffect(() => {
     getProfile()
-      .then(setProfile)
+      .then((savedProfile) => {
+        let localAnswers = null;
+        try {
+          const savedKey = `wellbeing-assessment-saved:${student.email || 'guest'}`;
+          if (localStorage.getItem(savedKey) === 'true') {
+            localAnswers = JSON.parse(localStorage.getItem(`wellbeing-assessment:${student.email || 'guest'}`) || 'null');
+          }
+        } catch { /* ignore invalid local draft */ }
+        setProfile({
+          ...savedProfile,
+          assessment_data: savedProfile.assessment_data && Object.keys(savedProfile.assessment_data).length
+            ? savedProfile.assessment_data
+            : (localAnswers || {}),
+        });
+      })
       .catch(() => setProfile(null))
       .finally(() => setProfileLoading(false));
-  }, []);
+  }, [student.email]);
 
   const rows = buildRows(profile);
 
