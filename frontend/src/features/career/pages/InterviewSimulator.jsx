@@ -17,6 +17,7 @@ import { evaluateInterviewAnswer, getCareers, getCoachFeedback, getInterviewQues
   saveInterviewReport } from "../api/careerApi";
 import { careerSession, useCareerFlow } from "../utils/careerSession";
 import { t, useLanguage } from "../i18n";
+import { toast } from "../utils/toast";
 
 const QUESTION_SETS = 4;
 const DEFAULT_CAREER = "software_engineer";
@@ -136,6 +137,7 @@ export default function InterviewSimulator() {
       // 1) Scores and rule-based feedback come back quickly - show them straight away.
       const result = await evaluateInterviewAnswer({ ...payload, use_llm: false });
       setResults((prev) => Object.assign([...prev], { [qIndex]: result }));
+      toast.success(t("Feedback ready: {n}/100", { n: Math.round(result.overall_score) }));
     } catch (err) {
       setError(apiErrorMessage(err));
       return;
@@ -148,6 +150,7 @@ export default function InterviewSimulator() {
     try {
       const { llm_feedback: coach } = await getCoachFeedback({ ...payload, use_llm: true });
       if (coach) {
+        toast.info(t("AI coach feedback added"), { emoji: "🤖" });
         setResults((prev) => prev[qIndex]?.question_id === payload.question_id
           ? Object.assign([...prev], { [qIndex]: { ...prev[qIndex], llm_feedback: coach } })
           : prev);

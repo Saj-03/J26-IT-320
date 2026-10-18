@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { ArrowRightIcon, CalendarCheckIcon, InfoIcon, ListPlusIcon, MapIcon, MicIcon, PartyPopperIcon, XIcon } from "lucide-react";
 import { PageHeader } from "../../../shared/components/layout/PageHeader";
 import Card from "../components/CareerCard";
 import CareerPage from "../components/CareerPage";
 import Button from "../components/CareerButton";
-import { EmptyState, LoadingState } from "../../../shared/components/ui/States";
+import { EmptyState } from "../../../shared/components/ui/States";
 import { careerSession, useCareerFlow } from "../utils/careerSession";
 import RoadmapItem from "../components/RoadmapItem";
 import { nextRoadmapStep, roadmapStats } from "../utils/roadmapProgress";
@@ -13,6 +14,12 @@ import PrintButton from "../components/PrintButton";
 import CareerMilestones from "../components/CareerMilestones";
 import TaskManagerDialog from "../components/TaskManagerDialog";
 import { addRoadmapToTaskManager } from "../utils/taskManagerBridge";
+import CareerSkeleton from "../components/CareerSkeleton";
+import Reveal from "../components/Reveal";
+import { CountUp } from "../hooks/useCountUp";
+import { celebrate, originOf } from "../utils/celebrate";
+import { toast } from "../utils/toast";
+import { ROADMAP_PART_KEYS } from "../utils/roadmapProgress";
 import { skillLabel } from "../constants";
 import { t, useLanguage } from "../i18n";
 
@@ -28,7 +35,7 @@ export default function Roadmap() {
   const [taskNotice, setTaskNotice] = useState("");
   const closeDialog = useCallback(() => setDialogOpen(false), []);
 
-  if (!ready && !roadmap) return <LoadingState label={t("Loading your saved roadmap…")} />;
+  if (!ready && !roadmap) return <CareerSkeleton variant="roadmap" label={t("Loading your saved roadmap…")} />;
   if (!roadmap) {
     return (
       <Card>
@@ -47,10 +54,30 @@ export default function Roadmap() {
     setProgress(next);
     careerSession.update({ roadmapProgress: next }); // saved to the database with the rest of the flow
   };
-  const toggle = (skill, part) =>
-    saveProgress({ ...progress, [skill]: { ...progress[skill], [part]: !progress[skill]?.[part] } });
-  const toggleMilestone = (id) =>
-    saveProgress({ ...progress, milestones: { ...progress.milestones, [id]: !progress.milestones?.[id] } });
+  // Ticking something off: a toast, a confetti burst from the pressed button, a bigger one when everything is done.
+  const toggle = (skill, part) => {
+    const next = { ...progress, [skill]: { ...progress[skill], [part]: !progress[skill]?.[part] } };
+    const origin = originOf(document.activeElement);
+    saveProgress(next);
+    if (!next[skill][part]) return toast.info(t("Marked as not done"));
+    if (roadmapStats(roadmap, next).pct === 100) {
+      celebrate("big");
+      return toast.success(t("Roadmap complete. Well done!"), { emoji: "🎉" });
+    }
+    if (ROADMAP_PART_KEYS.every((k) => next[skill][k])) {
+      celebrate("small", origin);
+      return toast.success(t("All {skill} activities done!", { skill: skillLabel(skill) }), { emoji: "🌟" });
+    }
+    toast.success(t("Nice! Marked as done."));
+  };
+  const toggleMilestone = (id) => {
+    const done = !progress.milestones?.[id];
+    const origin = originOf(document.activeElement);
+    saveProgress({ ...progress, milestones: { ...progress.milestones, [id]: done } });
+    if (!done) return toast.info(t("Marked as not done"));
+    celebrate("small", origin);
+    toast.success(t("Milestone reached!"), { emoji: "🏁" });
+  };
 
   // The selected career goes with the navigation, so the simulator loads its questions straight away.
   const goToInterview = () => navigate("/app/career/interview", { state: { careerId: roadmap.career_id } });
@@ -97,7 +124,7 @@ export default function Roadmap() {
           <Card padding="lg" className="grid md:grid-cols-[1fr_1.2fr] gap-5 items-center">
             <div className="space-y-2">
               <p className="text-xs font-bold uppercase tracking-wide text-charcoal-muted">{t("Your progress")}</p>
-              <p className="text-3xl font-extrabold text-charcoal">{pct}%</p>
+              <p className="text-3xl font-extrabold text-charcoal"><CountUp value={pct} suffix="%" /></p>
               <div className="h-2.5 rounded-full bg-[#E3FFD6] overflow-hidden" role="progressbar"
                 aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={t("Roadmap progress")}>
                 <div className="h-full rounded-full bg-gradient-to-r from-[#9ADBCC] to-[#5DBFA9] transition-all duration-500"
@@ -130,8 +157,10 @@ export default function Roadmap() {
             <h2 id="skill-steps-title" className="text-lg font-extrabold text-charcoal">{t("Close your skill gaps")}</h2>
             <ol className="space-y-5">
               {items.map((item, i) => (
-                <RoadmapItem key={item.skill} item={item} step={i + 1} last={i === items.length - 1}
-                  done={progress[item.skill]} onToggle={(part) => toggle(item.skill, part)} />
+                <Reveal as="li" key={item.skill} index={i} className="list-none">
+                  <RoadmapItem as="div" item={item} step={i + 1} last={i === items.length - 1}
+                    done={progress[item.skill]} onToggle={(part) => toggle(item.skill, part)} />
+                </Reveal>
               ))}
             </ol>
           </section>
@@ -166,6 +195,20 @@ export default function Roadmap() {
           </Button>
         </div>
       </Card>
+
+      {/* Phone: the next step is always one thumb-tap away (sits above the app's bottom navigation) */}
+      {createPortal(
+        <div className="acrds-no-print sm:hidden fixed inset-x-3 bottom-20 z-40 flex gap-2 rounded-full bg-[#FFFBF0]/95 backdrop-blur border border-[#9ADBCC]/60 shadow-lift p-1.5">
+          <Button variant="outline" size="sm" aria-label={t("Add to Task Manager")} onClick={() => setDialogOpen(true)} className="px-3">
+            <ListPlusIcon size={18} />
+          </Button>
+          <Button size="sm" onClick={goToInterview} className="flex-1">
+            <MicIcon size={16} /> {t("Continue to AI Interview Simulator")}
+          </Button>
+        </div>,
+        document.body,
+      )}
+      <div className="h-16 sm:hidden" aria-hidden />
 
       <TaskManagerDialog open={dialogOpen} busy={taskBusy} onConfirm={confirmTaskManager} onClose={closeDialog} />
     </CareerPage>

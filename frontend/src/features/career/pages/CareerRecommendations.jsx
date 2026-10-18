@@ -5,7 +5,10 @@ import { PageHeader } from "../../../shared/components/layout/PageHeader";
 import Card from "../components/CareerCard";
 import CareerPage from "../components/CareerPage";
 import Button from "../components/CareerButton";
-import { EmptyState, LoadingState } from "../../../shared/components/ui/States";
+import { EmptyState } from "../../../shared/components/ui/States";
+import CareerSkeleton from "../components/CareerSkeleton";
+import Reveal from "../components/Reveal";
+import { toast } from "../utils/toast";
 import { apiErrorMessage } from "../../../shared/api/client";
 import { getCareers, getGapAnalysis } from "../api/careerApi";
 import { careerSession, useCareerFlow } from "../utils/careerSession";
@@ -34,7 +37,7 @@ export default function CareerRecommendations() {
     if (showCompare) compareRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [showCompare]);
 
-  if (!ready && !recommendations?.length) return <LoadingState label={t("Loading your saved results…")} />;
+  if (!ready && !recommendations?.length) return <CareerSkeleton variant="cards" label={t("Loading your saved results…")} />;
   if (!profile || !recommendations?.length) {
     return (
       <Card>
@@ -46,6 +49,10 @@ export default function CareerRecommendations() {
   }
 
   const toggleCompare = (rec) => {
+    if (!compareIds.includes(rec.career_id) && compareIds.length >= MAX_COMPARE) {
+      toast.info(t("You can compare up to {max} careers.", { max: MAX_COMPARE }));
+      return;
+    }
     setCompareIds((ids) => (ids.includes(rec.career_id) ? ids.filter((id) => id !== rec.career_id)
       : ids.length < MAX_COMPARE ? [...ids, rec.career_id] : ids));
   };
@@ -60,6 +67,7 @@ export default function CareerRecommendations() {
       navigate("/app/career/gap-analysis");
     } catch (err) {
       setError(apiErrorMessage(err));
+      toast.error(t("Could not load the skill gaps. Please try again."));
     } finally {
       setBusyId(null);
     }
@@ -98,10 +106,12 @@ export default function CareerRecommendations() {
         </div>
       )}
       {recommendations.map((rec, i) => (
-        <RecommendationCard key={rec.career_id} rec={rec} rank={i + 1}
-          onSelect={select} busy={busyId === rec.career_id}
-          compared={compareIds.includes(rec.career_id)} compareDisabled={compareIds.length >= MAX_COMPARE}
-          onCompare={Object.keys(careers).length ? toggleCompare : undefined} />
+        <Reveal key={rec.career_id} index={i}>
+          <RecommendationCard rec={rec} rank={i + 1}
+            onSelect={select} busy={busyId === rec.career_id}
+            compared={compareIds.includes(rec.career_id)} compareDisabled={compareIds.length >= MAX_COMPARE}
+            onCompare={Object.keys(careers).length ? toggleCompare : undefined} />
+        </Reveal>
       ))}
 
       {/* Floating compare bar (above the phone bottom navigation) */}

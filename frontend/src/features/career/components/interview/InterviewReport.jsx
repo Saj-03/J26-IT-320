@@ -1,5 +1,8 @@
 import { RotateCcwIcon, MapIcon, TargetIcon } from "lucide-react";
-import { ProgressRing } from "../../../../shared/components/ui/ProgressRing";
+import { useEffect } from "react";
+import AnimatedRing from "../AnimatedRing";
+import { celebrate } from "../../utils/celebrate";
+import { toast } from "../../utils/toast";
 import Card from "../CareerCard";
 import Button from "../CareerButton";
 import ScoreBar from "./ScoreBar";
@@ -12,14 +15,25 @@ const area = (key) => t(AREA_LABEL[key]);
 
 // Summary of a full practice session.
 export default function InterviewReport({ report, results, onRestart, onRoadmap }) {
+  // A good practice score gets a celebration; every finished interview gets a toast.
+  useEffect(() => {
+    if (report.overall_score >= 70) {
+      celebrate("big");
+      toast.success(t("Great interview! Score {n}/100", { n: Math.round(report.overall_score) }), { emoji: "🏆" });
+    } else {
+      toast.success(t("Interview complete. See your report below."));
+    }
+  }, [report]);
   return (
     <div className="space-y-5">
       <Card padding="lg">
         <div className="flex flex-col sm:flex-row items-center gap-6">
-          <ProgressRing value={report.overall_score} size={130} stroke={12} color={INK.ring} track={PALETTE.lime}>
-            <span className="text-3xl font-extrabold text-charcoal">{Math.round(report.overall_score)}</span>
-            <span className="text-xs font-semibold text-charcoal-muted">{t("overall")}</span>
-          </ProgressRing>
+          <AnimatedRing value={report.overall_score} size={130} stroke={12} color={INK.ring} track={PALETTE.lime}>
+            {(v) => <>
+              <span className="text-3xl font-extrabold text-charcoal">{v}</span>
+              <span className="text-xs font-semibold text-charcoal-muted">{t("overall")}</span>
+            </>}
+          </AnimatedRing>
           <div className="space-y-2 text-center sm:text-left">
             <p className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${ui.iconTile}`}>{report.readiness_band}</p>
             <h2 className="text-xl font-extrabold text-charcoal">{t("{career} interview practice", { career: report.career_name })}</h2>

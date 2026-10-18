@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { cn } from "../../../shared/lib/cn";
 import { skillLabel } from "../constants";
 import { ui } from "../theme";
@@ -8,6 +9,12 @@ const BAR = { Strong: "bg-[#5DBFA9]", "Needs Improvement": "bg-[#7FC8D6]", "Crit
 // Skill gap as bars: the filled part is the student's level, the dark marker is the required level.
 // `status` is an English code from the API (Strong / Needs Improvement / Critical Gap), translated for display.
 export default function GapTable({ gaps }) {
+  // bars grow from 0 to the student's level just after the table appears
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-4 text-xs font-semibold text-charcoal-muted">
@@ -32,7 +39,7 @@ export default function GapTable({ gaps }) {
                 skill: skillLabel(g.skill), current: g.current_level, required: g.required_level,
               })}>
               <div className={cn("h-full rounded-full transition-all duration-700", BAR[g.status])}
-                style={{ width: `${(g.current_level / 5) * 100}%` }} />
+                style={{ width: shown ? `${(g.current_level / 5) * 100}%` : "0%" }} />
               <span className="absolute -top-1 h-5 w-1 rounded-full bg-[#34477A]"
                 style={{ left: `calc(${(g.required_level / 5) * 100}% - 2px)` }} />
             </div>

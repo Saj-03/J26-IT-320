@@ -3,6 +3,7 @@ import { LanguagesIcon, Loader2Icon } from "lucide-react";
 import { cn } from "../../../shared/lib/cn";
 import { LANGUAGES, t, useLanguage } from "../i18n";
 import { changeLanguage } from "../utils/careerSession";
+import { toast } from "../utils/toast";
 
 // English / සිංහල / தமிழ் switch. Changing it also translates the student's saved results.
 // `large` = the big chooser shown at the start of the survey.
@@ -17,6 +18,7 @@ export default function LanguageSwitcher({ large = false, className }) {
     setError(false);
     try {
       await changeLanguage(code);
+      toast.success(t("Language changed"));
     } catch {
       setError(true); // the page text is already switched; saved results update next time
     } finally {

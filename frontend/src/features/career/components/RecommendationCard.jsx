@@ -3,7 +3,7 @@ import { ArrowRightIcon, CrownIcon, ChevronDownIcon } from "lucide-react";
 import Card from "./CareerCard";
 import Button from "./CareerButton";
 import InfoTip from "./InfoTip";
-import { ProgressRing } from "../../../shared/components/ui/ProgressRing";
+import AnimatedRing from "./AnimatedRing";
 import { cn } from "../../../shared/lib/cn";
 import SkillBadge from "./SkillBadge";
 import { GLOSSARY, matchLabel } from "../constants";
@@ -37,10 +37,12 @@ export default function RecommendationCard({ rec, rank, onSelect, busy, compared
       <div className={cn("h-1.5", best ? "bg-gradient-to-r from-[#9ADBCC] via-[#D0F2F7] to-[#9EB2DB]" : "bg-[#C7F2D1]")} />
       <div className="p-5 sm:p-7 flex flex-col sm:flex-row gap-5">
         <div className="flex sm:flex-col items-center gap-3 shrink-0">
-          <ProgressRing value={rec.match_percentage} size={96} stroke={9} color={INK.ring} track={PALETTE.lime}>
-            <span className="text-xl font-extrabold text-charcoal">{Math.round(rec.match_percentage)}%</span>
-            <span className="text-[10px] font-semibold text-charcoal-muted">{t("match")}</span>
-          </ProgressRing>
+          <AnimatedRing value={rec.match_percentage} size={96} stroke={9} color={INK.ring} track={PALETTE.lime}>
+            {(v) => <>
+              <span className="text-xl font-extrabold text-charcoal">{v}%</span>
+              <span className="text-[10px] font-semibold text-charcoal-muted">{t("match")}</span>
+            </>}
+          </AnimatedRing>
           <div className="flex sm:flex-col items-center gap-2">
             <span className="w-9 h-9 rounded-full bg-[#9EB2DB]/30 text-[#34477A] text-sm font-extrabold flex items-center justify-center">
               #{rank}
@@ -91,7 +93,7 @@ export default function RecommendationCard({ rec, rank, onSelect, busy, compared
               {t("Why this career?")}
             </button>
             {whyOpen && (
-              <p id={whyId} className={`mt-2 text-sm text-charcoal-light ${ui.highlight} rounded-2xl p-3 border-l-4 border-[#9ADBCC]`}>
+              <p id={whyId} className={`acrds-fade mt-2 text-sm text-charcoal-light ${ui.highlight} rounded-2xl p-3 border-l-4 border-[#9ADBCC]`}>
                 {rec.explanation}
               </p>
             )}
@@ -104,8 +106,8 @@ export default function RecommendationCard({ rec, rank, onSelect, busy, compared
             {onCompare && (
               <label className={cn("flex items-center gap-2 text-sm font-semibold text-charcoal-light cursor-pointer",
                 compareDisabled && !compared && "opacity-50 cursor-not-allowed")}>
-                <input type="checkbox" className="accent-[#5DBFA9] w-4 h-4" checked={compared}
-                  disabled={compareDisabled && !compared} onChange={() => onCompare(rec)} />
+                <input type="checkbox" className="accent-[#5DBFA9] w-5 h-5 sm:w-4 sm:h-4" checked={compared}
+                  aria-disabled={compareDisabled && !compared} onChange={() => onCompare(rec)} />
                 {t("Compare")}
               </label>
             )}

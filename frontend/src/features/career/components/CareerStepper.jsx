@@ -36,7 +36,7 @@ export default function CareerStepper({ current }) {
             <li key={step.key}>
               <button type="button" disabled={!step.open(flow)} onClick={() => navigate(step.to)}
                 aria-label={`${t("Step {n}", { n: i + 1 })}: ${t(step.label)}`} aria-current={i === index ? "step" : undefined}
-                className={cn("block h-1.5 w-full rounded-full",
+                className={cn("block h-1.5 w-full rounded-full transition-colors duration-500",
                   i === index ? "bg-[#1F5F53]" : step.done(flow) ? "bg-[#5DBFA9]" : "bg-[#9EB2DB]/40")} />
             </li>
           ))}
@@ -55,7 +55,7 @@ export default function CareerStepper({ current }) {
               <button type="button" disabled={!open} onClick={() => navigate(step.to)}
                 aria-current={active ? "step" : undefined}
                 className={cn("flex items-center gap-2 rounded-full pl-1 pr-3 py-1 text-xs font-bold transition-colors",
-                  active ? "bg-[#9ADBCC] text-[#12352E] shadow-sm"
+                  active ? "bg-[#9ADBCC] text-[#12352E] shadow-sm acrds-glow"
                     : open ? "text-[#1F5F53] hover:bg-[#E3FFD6]" : "text-charcoal-muted cursor-not-allowed")}>
                 <span className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[11px]",
                   active ? "bg-[#FFFBF0] text-[#1F5F53]"

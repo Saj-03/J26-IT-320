@@ -15,6 +15,9 @@ import InfoTip from "../components/InfoTip";
 import { nextRoadmapStep, roadmapStats } from "../utils/roadmapProgress";
 import { ui } from "../theme";
 import { t, useLanguage } from "../i18n";
+import Reveal from "../components/Reveal";
+import { CountUp } from "../hooks/useCountUp";
+import { toast } from "../utils/toast";
 
 const LOCALE = { en: "en-GB", si: "si-LK", ta: "ta-LK" };
 
@@ -46,6 +49,7 @@ export default function CareerDashboard() {
     setResetError("");
     try {
       await reset();
+      toast.info(t("Your career progress was reset."));
     } catch {
       setResetError(t("Could not reset your progress. Check your connection and try again."));
     } finally {
@@ -131,17 +135,17 @@ export default function CareerDashboard() {
           <Stat icon={TrophyIcon} label={t("Top match")} value={top ? top.career_name : "—"}
             sub={top ? t("{n}% match", { n: Math.round(top.match_percentage) }) : t("Complete the survey")} />
           <Stat icon={TargetIcon} label={t("Readiness")} help={GLOSSARY.readiness}
-            value={flow.gapAnalysis ? `${Math.round(flow.gapAnalysis.readiness_percentage)}%` : "—"}
+            value={flow.gapAnalysis ? <CountUp value={flow.gapAnalysis.readiness_percentage} suffix="%" /> : "—"}
             sub={flow.gapAnalysis ? flow.gapAnalysis.career_name : t("Select a career")} />
           <Stat icon={GaugeIcon} label={t("Skill stage")} help={GLOSSARY.persona} value={flow.persona?.name || "—"}
             sub={flow.persona ? t("avg {n}/5", { n: flow.persona.average_skill_level }) : t("From your survey")} />
-          <Stat icon={MicIcon} label={t("Last interview")} help={GLOSSARY.interviewScore} value={lastInterview != null ? `${Math.round(lastInterview)}/100` : "—"}
+          <Stat icon={MicIcon} label={t("Last interview")} help={GLOSSARY.interviewScore} value={lastInterview != null ? <CountUp value={lastInterview} suffix="/100" /> : "—"}
             sub={lastInterview != null ? t("practice score") : t("Not practised yet")} />
         </div>
       </section>
 
       {/* Next best action */}
-      <Card padding="none" className="overflow-hidden border-2 border-[#9ADBCC]">
+      <Card padding="none" className="overflow-hidden border-2 border-[#9ADBCC] acrds-glow">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-5 sm:p-6 bg-[#FFFBF0]">
           <span className="w-12 h-12 rounded-2xl bg-[#9ADBCC] text-[#12352E] flex items-center justify-center shrink-0">
             <CompassIcon size={24} />
@@ -170,7 +174,8 @@ export default function CareerDashboard() {
         {steps.map((s, i) => {
           const Icon = s.icon;
           return (
-            <Card key={s.title} padding="none" hover className="flex flex-col overflow-hidden">
+            <Reveal key={s.title} index={i} className="flex">
+            <Card padding="none" hover className="flex flex-col overflow-hidden w-full">
               <div className={cn("h-1.5", s.accent)} />
               <div className="p-6 flex flex-col flex-1">
                 <div className="flex items-center gap-3 mb-3">
@@ -198,6 +203,7 @@ export default function CareerDashboard() {
                 </Button>
               </div>
             </Card>
+            </Reveal>
           );
         })}
       </div>

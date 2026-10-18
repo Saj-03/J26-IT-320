@@ -5,8 +5,11 @@ import { PageHeader } from "../../../shared/components/layout/PageHeader";
 import Card from "../components/CareerCard";
 import CareerPage from "../components/CareerPage";
 import Button from "../components/CareerButton";
-import { ProgressRing } from "../../../shared/components/ui/ProgressRing";
-import { EmptyState, LoadingState } from "../../../shared/components/ui/States";
+import AnimatedRing from "../components/AnimatedRing";
+import CareerSkeleton from "../components/CareerSkeleton";
+import { toast } from "../utils/toast";
+import { celebrate } from "../utils/celebrate";
+import { EmptyState } from "../../../shared/components/ui/States";
 import { apiErrorMessage } from "../../../shared/api/client";
 import { generateRoadmap } from "../api/careerApi";
 import { careerSession, useCareerFlow } from "../utils/careerSession";
@@ -42,7 +45,7 @@ export default function SkillGapAnalysis() {
   const [error, setError] = useState("");
   const [changes, setChanges] = useState({}); // what-if levels the student has changed (skill -> level)
 
-  if (!ready && !gapAnalysis) return <LoadingState label={t("Loading your saved results…")} />;
+  if (!ready && !gapAnalysis) return <CareerSkeleton variant="gap" label={t("Loading your saved results…")} />;
   if (!profile || !gapAnalysis) {
     return (
       <Card>
@@ -64,9 +67,12 @@ export default function SkillGapAnalysis() {
     try {
       const roadmap = await generateRoadmap({ career_id: gapAnalysis.career_id, profile });
       careerSession.update({ roadmap, roadmapProgress: {} }); // a new roadmap starts with nothing ticked
+      celebrate("small");
+      toast.success(t("Your roadmap is ready!"), { emoji: "🗺️" });
       navigate("/app/career/roadmap");
     } catch (err) {
       setError(apiErrorMessage(err));
+      toast.error(t("Could not build your roadmap. Please try again."));
     } finally {
       setBusy(false);
     }
@@ -83,10 +89,12 @@ export default function SkillGapAnalysis() {
       {/* Summary: readiness, plain-language next step, and the main action */}
       <Card padding="lg">
         <div className="flex flex-col sm:flex-row items-center gap-6">
-          <ProgressRing value={gapAnalysis.readiness_percentage} size={120} stroke={11} color={INK.ring} track={PALETTE.lime}>
-            <span className="text-2xl font-extrabold text-charcoal">{Math.round(gapAnalysis.readiness_percentage)}%</span>
+          <AnimatedRing value={gapAnalysis.readiness_percentage} size={120} stroke={11} color={INK.ring} track={PALETTE.lime}>
+            {(v) => <>
+            <span className="text-2xl font-extrabold text-charcoal">{v}%</span>
             <span className="text-xs font-semibold text-charcoal-muted">{t("ready")}</span>
-          </ProgressRing>
+            </>}
+          </AnimatedRing>
           <div className="flex-1 space-y-3 text-center sm:text-left">
             <h3 className="font-bold text-charcoal">
               {t("Career readiness")} <InfoTip label={t("Readiness")} align="left">{GLOSSARY.readiness}</InfoTip>

@@ -13,6 +13,8 @@ import { careerSession, surveyDraft, useCareerFlow } from "../utils/careerSessio
 import { DEMO_PROFILE, EMPTY_PROFILE, FACULTY_CAREER_OPTIONS, OPTIONS, SKILLS } from "../constants";
 import { ui } from "../theme";
 import { getLanguage, t, useLanguage } from "../i18n";
+import { toast } from "../utils/toast";
+import { celebrate } from "../utils/celebrate";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 
 const pretty = (name) => name.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
@@ -130,6 +132,8 @@ export default function CareerSurveyForm() {
   const toggleDemo = () => {
     setForm(demoFilled ? EMPTY_PROFILE : DEMO_PROFILE);
     setDemoFilled(!demoFilled);
+    if (demoFilled) toast.info(t("Form cleared"));
+    else toast.success(t("Demo profile filled. Check the answers, then submit."), { emoji: "✨" });
   };
   // Faculty controls the career dropdowns: changing it clears the previous area and role.
   const setFaculty = (_, faculty) =>
@@ -154,9 +158,12 @@ export default function CareerSurveyForm() {
                              selectedCareer: null, gapAnalysis: null, roadmap: null, roadmapProgress: null,
                              language: getLanguage() });
       surveyDraft.clear();
+      celebrate("small");
+      toast.success(t("Your top 5 careers are ready!"), { emoji: "🎯" });
       navigate("/app/career/recommendations");
     } catch (err) {
       setError(apiErrorMessage(err));
+      toast.error(t("Could not get recommendations. Please try again."));
     } finally {
       setBusy(false);
     }

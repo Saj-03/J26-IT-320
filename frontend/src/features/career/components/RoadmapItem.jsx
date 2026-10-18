@@ -18,7 +18,7 @@ function Part({ icon: Icon, label, value, done, onToggle }) {
         done ? "border-[#5DBFA9] bg-[#C7F2D1]/50" : "border-[#9ADBCC]/40 bg-white hover:bg-[#E3FFD6]")}>
       <span className={cn("w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors",
         done ? "bg-[#5DBFA9] text-white" : ui.iconTile)}>
-        {done ? <CheckIcon size={16} strokeWidth={3} /> : <Icon size={16} />}
+        {done ? <CheckIcon size={16} strokeWidth={3} className="acrds-pop" /> : <Icon size={16} />}
       </span>
       <span className="min-w-0">
         <span className="block text-xs font-bold uppercase tracking-wide text-charcoal-muted">
@@ -33,12 +33,12 @@ function Part({ icon: Icon, label, value, done, onToggle }) {
 
 // One step on the roadmap timeline: node on the left line, card on the right.
 // `done` = { course, project, task } booleans; `onToggle(part)` ticks a part on or off.
-export default function RoadmapItem({ item, step, last = false, done = {}, onToggle }) {
+export default function RoadmapItem({ item, step, last = false, done = {}, onToggle, as: Tag = "li" }) {
   const high = item.priority === "High";
   const finished = ROADMAP_PARTS.filter((p) => done[p.key]).length;
   const complete = finished === ROADMAP_PARTS.length;
   return (
-    <li className="relative pl-12 sm:pl-14">
+    <Tag className="relative pl-12 sm:pl-14">
       {!last && <span aria-hidden className="absolute left-[19px] sm:left-[23px] top-10 bottom-[-20px] w-0.5 bg-[#9ADBCC]/70" />}
       <span className={cn("absolute left-0 top-3 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center",
         "text-sm font-extrabold ring-4 ring-[#FFFBF0] transition-colors",
@@ -67,6 +67,6 @@ export default function RoadmapItem({ item, step, last = false, done = {}, onTog
           ))}
         </div>
       </Card>
-    </li>
+    </Tag>
   );
 }
