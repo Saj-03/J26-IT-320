@@ -1,161 +1,202 @@
-import React, { useState } from 'react';
+// SMART SCHEDULE - this week from the API: planned tasks (scheduled_start) + commitments
+// (lectures, work, protected rest blocks), the wellbeing banner (Component 4 signal) and week progress.
+// Tasks without a time get "Find a time" (reschedule page: free slots ranked by M1).
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { SparklesIcon, CheckCircle2Icon, ArrowRightIcon, CheckIcon, ClockIcon, SkipForwardIcon, BrainIcon } from 'lucide-react';
+import { ArrowRightIcon, CheckIcon, ClockIcon, SkipForwardIcon, BrainIcon } from 'lucide-react';
 import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
-import { LoadBadge, SectionTitle } from '../components/PlanPrimitives';
+import { ErrorState, LoadingState } from '../../../shared/components/ui/States';
+import { LoadBadge, SectionTitle, formatMinutes } from '../components/PlanPrimitives';
 import PlannedTasks from '../components/PlannedTasks';
 import { categoryStyles } from '../../../shared/lib/data';
-import { focusStudent, stressStyles, weekDays, weekSchedule, calendarDays as days, calendarHours as hours, calendarBlocks as blocks, calendarLegend as legend } from '../data';
+import { apiErrorMessage } from '../../../shared/api/client';
+import { finishTask, getStressStatus, listCommitments, listTasks, updateTask, utcMs } from '../api';
+import { LOAD_LABEL, isOpen, stressStyles } from '../lib';
 import { cn } from '../../../shared/lib/cn';
-// [ITEM 8] Calendar data now comes from data.js (same source as every other page)
+
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const FIRST_HOUR = 6, LAST_HOUR = 24, ROW_HOURS = 2, ROW_PX = 64;          // grid 06:00 - 24:00
+const HOURS = Array.from({ length: (LAST_HOUR - FIRST_HOUR) / ROW_HOURS }, (_, i) => `${String(FIRST_HOUR + i * ROW_HOURS).padStart(2, '0')}:00`);
+
+// What each kind of block looks like (colours from the shared category styles)
+const KIND_STYLE = { task: 'academic', lecture: 'career', work: 'work', protected_block: 'recovery', personal: 'personal', extracurricular: 'social' };
+const LEGEND = [['academic', 'Study task'], ['career', 'Lecture'], ['work', 'Work'], ['recovery', 'Rest / protected'], ['personal', 'Personal']];
+const STRESS_WORD = { LOW: 'Low', MODERATE: 'Medium', HIGH: 'High' };
+
+const monday = (d = new Date()) => { const m = new Date(d); m.setHours(0, 0, 0, 0); m.setDate(m.getDate() - ((m.getDay() + 6) % 7)); return m; };
+const minutesOfDay = (d) => d.getHours() * 60 + d.getMinutes();
+const hm = (text) => { const [h, m] = text.split(':').map(Number); return h * 60 + m; };     // "09:30:00" -> 570
+
+// All blocks of this week: {day 0-6, startMin, endMin, title, kind, task?}
+function weekBlocks(tasks, commitments, weekStart) {
+    const weekEnd = new Date(weekStart.getTime() + 7 * 86400000);
+    const blocks = [];
+    for (const t of tasks) {
+        if (!t.scheduled_start) continue;
+        const s = new Date(utcMs(t.scheduled_start));
+        if (s < weekStart || s >= weekEnd) continue;
+        blocks.push({ day: (s.getDay() + 6) % 7, startMin: minutesOfDay(s), endMin: minutesOfDay(s) + t.estimated_minutes,
+                      title: t.title, kind: 'task', task: t });
+    }
+    for (const c of commitments) {
+        if (c.is_recurring) {                                   // weekly, times are Sri Lanka clock times
+            blocks.push({ day: c.weekday, startMin: hm(c.start_time), endMin: hm(c.end_time), title: c.title, kind: c.kind });
+        } else if (c.start_at) {
+            const s = new Date(utcMs(c.start_at)), e = new Date(utcMs(c.end_at));
+            if (s >= weekStart && s < weekEnd)
+                blocks.push({ day: (s.getDay() + 6) % 7, startMin: minutesOfDay(s), endMin: minutesOfDay(s) + (e - s) / 60000, title: c.title, kind: c.kind });
+        }
+    }
+    return blocks;
+}
+
 export function Scheduler() {
     const navigate = useNavigate();
-    const [view, setView] = useState('Week');
-    const [optimised, setOptimised] = useState(false);
-    const [sessions, setSessions] = useState(weekSchedule);
+    const [tasks, setTasks] = useState(null);
+    const [commitments, setCommitments] = useState([]);
+    const [stress, setStress] = useState(null);
+    const [failed, setFailed] = useState(false);
     const [selected, setSelected] = useState(null);
-    const stress = stressStyles[focusStudent.stress];
-    const totalSessions = sessions.filter((b) => b.load !== 'Break').length;
-    const doneSessions = sessions.filter((b) => b.status === 'done' && b.load !== 'Break').length;
-    const update = (id, status) => {
-        setSessions((bs) => bs.map((b) => b.id === id ? { ...b, status } : b));
-        setSelected(null);
-    };
-    return (<div className="space-y-6">
-      <PageHeader title="Smart Schedule" subtitle={`This week: ${totalSessions} study sessions · ${doneSessions} completed. Your schedule adapts to your focus and stress.`} action={<div className="flex items-center gap-2">
-            <div className="flex bg-white rounded-full p-1 border border-black/[0.05] shadow-soft">
-              {['Day', 'Week', 'Month'].map((v) => <button key={v} onClick={() => setView(v)} className={cn('px-4 py-1.5 rounded-full text-sm font-semibold transition-colors', view === v ? 'bg-brand-500 text-white' : 'text-charcoal-light')}>
-                  {v}
-                </button>)}
-            </div>
-            <Button onClick={() => setOptimised(true)}>
-              <SparklesIcon size={16}/> AI Optimize
-            </Button>
-          </div>}/>
+    const [error, setError] = useState('');
+    const [reloadKey, setReloadKey] = useState(0);
 
-      {/* [ITEM 2] Stress banner — uses suggestion wording (the user decides) */}
-      <motion.button initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} onClick={() => navigate('/app/schedule/adjusted')} className={cn('w-full text-left rounded-3xl border p-5 flex items-center gap-4 transition-colors hover:brightness-[0.98]', stress.bg, stress.border)}>
-        <span className={cn('w-2.5 h-2.5 rounded-full shrink-0', stress.dot)}/>
+    const load = () => {
+        setFailed(false);
+        Promise.all([listTasks(), listCommitments()])
+            .then(([t, c]) => { setTasks(t); setCommitments(c); })
+            .catch(() => setFailed(true));
+        getStressStatus().then(setStress).catch(() => {});
+    };
+    useEffect(load, [reloadKey]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+    if (failed) return <ErrorState onRetry={load}/>;
+    if (!tasks) return <LoadingState label="Loading your week…"/>;
+
+    const weekStart = monday();
+    const todayIndex = (new Date().getDay() + 6) % 7;
+    const blocks = weekBlocks(tasks, commitments, weekStart);
+    const taskBlocks = blocks.filter((b) => b.kind === 'task');
+    const doneCount = taskBlocks.filter((b) => b.task.status === 'done').length;
+    const level = stress?.level ? STRESS_WORD[stress.level] : null;
+    const style = stressStyles[level ?? 'Low'];
+
+    const act = (request) => {
+        setError('');
+        request.then(() => { setSelected(null); setReloadKey((k) => k + 1); }).catch((e) => setError(apiErrorMessage(e)));
+    };
+    const isMissed = (t) => isOpen(t) && t.scheduled_start && utcMs(t.scheduled_start) + t.estimated_minutes * 60000 < Date.now();
+
+    return (<div className="space-y-6">
+      <PageHeader title="Smart Schedule" subtitle={`This week: ${taskBlocks.length} planned study sessions · ${doneCount} completed. Your schedule adapts to your focus and stress.`}/>
+
+      {/* Wellbeing banner - Component 4's signal and what we do with it (the student decides) */}
+      {stress &&
+        <motion.button initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} onClick={() => navigate('/app/schedule/adjusted')} className={cn('w-full text-left rounded-3xl border p-5 flex items-center gap-4 transition-colors hover:brightness-[0.98]', style.bg, style.border)}>
+        <span className={cn('w-2.5 h-2.5 rounded-full shrink-0', style.dot)}/>
         <div className="flex-1 min-w-0">
-          <p className={cn('text-sm font-bold', stress.text)}>Stress Level: {focusStudent.stress}</p>
-          <p className="text-base font-semibold text-charcoal mt-0.5 leading-snug">{focusStudent.stressMessage}</p>
+          <p className={cn('text-sm font-bold', style.text)}>{level ? `Wellbeing signal: ${level}` : 'No wellbeing signal'}</p>
+          <p className="text-base font-semibold text-charcoal mt-0.5 leading-snug">{stress.reason}</p>
         </div>
-        <span className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-charcoal shrink-0">
-          See suggestions <ArrowRightIcon size={15}/>
-        </span>
-      </motion.button>
+        {stress.action === 'propose_changes' &&
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-charcoal shrink-0">
+            See suggestions <ArrowRightIcon size={15}/>
+          </span>}
+      </motion.button>}
 
       {/* Week progress */}
       <Card padding="lg">
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm font-bold text-charcoal">Week progress</p>
-          <span className="text-sm font-extrabold text-brand-600">
-            {doneSessions} / {totalSessions}
-          </span>
+          <span className="text-sm font-extrabold text-brand-600">{doneCount} / {taskBlocks.length}</span>
         </div>
-        <ProgressBar value={doneSessions / totalSessions * 100} height={10}/>
-        {optimised &&
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs font-semibold text-emerald-600 mt-2.5">
-            ✓ Rebalanced around your peak focus windows.
-          </motion.p>}
+        <ProgressBar value={taskBlocks.length ? doneCount / taskBlocks.length * 100 : 0} height={10}/>
       </Card>
 
-      {/* Live plan from the scheduler API */}
-      <PlannedTasks />
+      {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
+
+      <PlannedTasks reloadKey={reloadKey}/>
 
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-3">
-        {legend.map((l) => <span key={l.cat} className="inline-flex items-center gap-2 text-xs font-semibold text-charcoal-muted">
-            <span className={cn('w-3 h-3 rounded-md', categoryStyles[l.cat].dot)}/>
-            {l.label}
+        {LEGEND.map(([cat, label]) => <span key={cat} className="inline-flex items-center gap-2 text-xs font-semibold text-charcoal-muted">
+            <span className={cn('w-3 h-3 rounded-md', categoryStyles[cat].dot)}/>
+            {label}
           </span>)}
-        {/* [ITEM 9] Explain what the dots mean in words */}
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-charcoal-muted">
-          <span className="flex gap-0.5" aria-hidden>
-            {[0, 1, 2, 3, 4].map((k) => <span key={k} className={cn('w-1 h-1 rounded-full', k < 4 ? 'bg-charcoal-muted' : 'bg-black/10')}/>)}
-          </span>
-          Dots = priority (e.g. P4/5)
-        </span>
       </div>
 
+      {/* Week grid */}
       <Card padding="sm">
         <div className="overflow-x-auto no-scrollbar">
           <div className="min-w-[720px]">
-            {/* header row */}
             <div className="grid" style={{ gridTemplateColumns: '56px repeat(7, 1fr)' }}>
               <div />
-              {days.map((d, i) => <div key={d} className="text-center pb-2">
-                  <p className={cn('text-sm font-bold', i === 2 ? 'text-brand-600' : 'text-charcoal')}>{d}</p>
-                  {i === 2 && <span className="text-[10px] font-semibold text-brand-500">Today</span>}
+              {DAYS.map((d, i) => <div key={d} className="text-center pb-2">
+                  <p className={cn('text-sm font-bold', i === todayIndex ? 'text-brand-600' : 'text-charcoal')}>{d}</p>
+                  {i === todayIndex && <span className="text-[10px] font-semibold text-brand-500">Today</span>}
                 </div>)}
             </div>
 
-            {/* grid */}
             <div className="relative grid" style={{ gridTemplateColumns: '56px repeat(7, 1fr)' }}>
-              {hours.map((h) => <React.Fragment key={h}>
+              {HOURS.map((h) => <React.Fragment key={h}>
                   <div className="text-[11px] font-medium text-charcoal-muted pr-2 text-right h-16 pt-1">{h}</div>
-                  {days.map((_, di) => <div key={di} className="border-t border-l border-black/[0.05] h-16 relative first:border-l-0"/>)}
+                  {DAYS.map((_, di) => <div key={di} className="border-t border-l border-black/[0.05] h-16 relative first:border-l-0"/>)}
                 </React.Fragment>)}
 
               {blocks.map((b, i) => {
-            const cat = categoryStyles[b.category];
-            const colW = `calc((100% - 56px) / 7)`;
-            return (<motion.div key={i} title={`${b.title} · ${b.duration} · Priority ${b.focus}/5`} initial={optimised ? { scale: 0.9, opacity: 0.6 } : false} animate={{ scale: 1, opacity: 1 }} className={cn('absolute rounded-xl border p-1.5 overflow-hidden', cat.bg, cat.ring)} style={{
-                    left: `calc(56px + ${b.day} * ${colW})`,
-                    top: `${b.start * 64}px`,
-                    width: `calc(${colW} - 6px)`,
-                    height: `${b.span * 64 - 6}px`,
-                    marginLeft: '3px'
-                }}>
-                    <p className={cn('text-[11px] font-bold leading-tight truncate', cat.text)}>{b.title}</p>
-                    <p className="text-[9px] text-charcoal-muted font-medium">{b.duration}</p>
-                    {/* [ITEM 9] Priority is not shown by colour only: tooltip (title) + visible text "P4/5" + screen-reader label */}
-                    <div className="flex items-center gap-0.5 mt-1" title={`Priority ${b.focus}/5`} role="img" aria-label={`Priority ${b.focus} out of 5`}>
-                      {Array.from({ length: 5 }).map((_, k) => <span key={k} aria-hidden className={cn('w-1 h-1 rounded-full', k < b.focus ? cat.dot : 'bg-black/10')}/>)}
-                      <span aria-hidden className="ml-1 text-[9px] font-bold text-charcoal-muted leading-none">P{b.focus}/5</span>
-                    </div>
-                  </motion.div>);
-        })}
+                const start = Math.max(b.startMin, FIRST_HOUR * 60), end = Math.min(b.endMin, LAST_HOUR * 60);
+                if (end <= start) return null;                          // outside 06:00-24:00
+                const cat = categoryStyles[KIND_STYLE[b.kind] ?? 'personal'];
+                const colW = `calc((100% - 56px) / 7)`;
+                const px = (min) => (min - FIRST_HOUR * 60) / (ROW_HOURS * 60) * ROW_PX;
+                return (<div key={i} onClick={() => b.task && setSelected(b.task)} title={`${b.title} · ${formatMinutes(b.endMin - b.startMin)}`}
+                    className={cn('absolute rounded-xl border p-1.5 overflow-hidden', cat.bg, cat.ring, b.task && 'cursor-pointer', b.task?.status === 'done' && 'opacity-50')}
+                    style={{ left: `calc(56px + ${b.day} * ${colW})`, top: `${px(start)}px`, width: `calc(${colW} - 6px)`,
+                             height: `${Math.max(px(end) - px(start) - 4, 18)}px`, marginLeft: '3px' }}>
+                    <p className={cn('text-[11px] font-bold leading-tight truncate', cat.text, b.task?.status === 'done' && 'line-through')}>{b.title}</p>
+                    <p className="text-[9px] text-charcoal-muted font-medium">{formatMinutes(Math.round(b.endMin - b.startMin))}</p>
+                  </div>);
+              })}
             </div>
           </div>
         </div>
       </Card>
 
-      {/* Adaptive study sessions — tap to complete, reschedule or skip */}
+      {/* Study sessions by day - tap to complete, reschedule or unplan */}
       <div>
-        <SectionTitle title="Study sessions" subtitle="Tap any block to mark it complete, reschedule or skip." action={<Button variant="outline" size="sm" onClick={() => navigate('/app/schedule/attention')}>
+        <SectionTitle title="Study sessions" subtitle="Tap a session to mark it complete, reschedule or take it off the plan." action={<Button variant="outline" size="sm" onClick={() => navigate('/app/schedule/attention')}>
               <BrainIcon size={15}/> Best study times
             </Button>}/>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {weekDays.map((day) => {
-            const dayBlocks = sessions.filter((b) => b.day === day);
-            if (dayBlocks.length === 0)
-                return null;
-            return (<Card key={day} padding="lg" className="h-full">
-                <h3 className="font-bold text-charcoal mb-3">{day}</h3>
+        {taskBlocks.length === 0 ?
+          <Card padding="lg"><p className="text-sm text-charcoal-muted">No study sessions planned this week yet. Use “Find a time” on a task to plan one.</p></Card> :
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {DAYS.map((day, di) => {
+              const dayBlocks = taskBlocks.filter((b) => b.day === di).sort((a, b) => a.startMin - b.startMin);
+              if (!dayBlocks.length) return null;
+              return (<Card key={day} padding="lg" className="h-full">
+                <h3 className="font-bold text-charcoal mb-3">{day}{di === todayIndex && ' · Today'}</h3>
                 <div className="space-y-2">
-                  {dayBlocks.map((b) => <button key={b.id} onClick={() => setSelected(b)} className={cn('w-full text-left rounded-2xl bg-cream p-3 hover:bg-black/[0.04] transition-colors', b.status === 'done' && 'opacity-55')}>
+                  {dayBlocks.map(({ task: t }) => {
+                      const s = new Date(utcMs(t.scheduled_start));
+                      const e = new Date(s.getTime() + t.estimated_minutes * 60000);
+                      const time = (d) => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                      return <button key={t.id} onClick={() => setSelected(t)} className={cn('w-full text-left rounded-2xl bg-cream p-3 hover:bg-black/[0.04] transition-colors', t.status === 'done' && 'opacity-55')}>
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-bold text-charcoal-muted tabular-nums">
-                          {b.start} – {b.end}
-                        </span>
-                        <LoadBadge load={b.load}/>
+                        <span className="text-xs font-bold text-charcoal-muted tabular-nums">{time(s)} – {time(e)}</span>
+                        <LoadBadge load={LOAD_LABEL[t.cognitive_load]}/>
                       </div>
-                      <p className={cn('text-sm font-bold text-charcoal mt-1', b.status === 'done' && 'line-through')}>
-                        {b.title}
-                      </p>
-                      {b.status === 'missed' &&
-                        <span className="text-[11px] font-bold text-brand-600">Missed · tap to reschedule</span>}
-                    </button>)}
+                      <p className={cn('text-sm font-bold text-charcoal mt-1', t.status === 'done' && 'line-through')}>{t.title}</p>
+                      {isMissed(t) && <span className="text-[11px] font-bold text-brand-600">Missed · tap to reschedule</span>}
+                    </button>;
+                  })}
                 </div>
               </Card>);
-        })}
-        </div>
+          })}
+        </div>}
       </div>
 
       {/* Session action sheet */}
@@ -163,50 +204,24 @@ export function Scheduler() {
         {selected &&
             <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <LoadBadge load={selected.load}/>
-              <span className="text-sm font-semibold text-charcoal-muted">
-                {selected.day} · {selected.start} – {selected.end}
-              </span>
+              <LoadBadge load={LOAD_LABEL[selected.cognitive_load]}/>
+              <span className="text-sm font-semibold text-charcoal-muted">{formatMinutes(selected.estimated_minutes)}</span>
             </div>
-
-            <div className="space-y-2">
-              <Button fullWidth size="lg" onClick={() => update(selected.id, 'done')}>
-                <CheckIcon size={17}/> Mark Complete
-              </Button>
-              <Button fullWidth size="lg" variant="outline" onClick={() => {
-                    setSelected(null);
-                    navigate('/app/schedule/missed');
-                }}>
-                <ClockIcon size={16}/> Reschedule
-              </Button>
-              <Button fullWidth size="lg" variant="ghost" onClick={() => update(selected.id, 'missed')}>
-                <SkipForwardIcon size={16}/> Skip Session
-              </Button>
-            </div>
-
-            <p className="text-xs text-charcoal-muted text-center">
-              Skipping is fine. We’ll find another slot before your deadline.
-            </p>
+            {isOpen(selected) ?
+              <div className="space-y-2">
+                <Button fullWidth size="lg" onClick={() => act(finishTask(selected.id))}>
+                  <CheckIcon size={17}/> Mark Complete
+                </Button>
+                <Button fullWidth size="lg" variant="outline" onClick={() => navigate(`/app/schedule/missed?id=${selected.id}`)}>
+                  <ClockIcon size={16}/> Reschedule
+                </Button>
+                <Button fullWidth size="lg" variant="ghost" onClick={() => act(updateTask(selected.id, { scheduled_start: null }))}>
+                  <SkipForwardIcon size={16}/> Take off the plan
+                </Button>
+              </div> :
+              <p className="text-sm text-charcoal-muted">This task is {selected.status}.</p>}
+            <p className="text-xs text-charcoal-muted text-center">Skipping is fine. Plan it again any time before the deadline.</p>
           </div>}
       </Modal>
-
-      {/* Floating AI assistant card */}
-      <div className="fixed bottom-24 lg:bottom-6 left-1/2 -translate-x-1/2 lg:left-auto lg:right-8 lg:translate-x-0 z-30 w-[calc(100%-2rem)] max-w-sm">
-        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-white rounded-3xl shadow-lift border border-black/[0.05] p-4 flex items-center gap-3">
-          <span className={cn('w-10 h-10 rounded-2xl flex items-center justify-center text-white shrink-0', optimised ? 'bg-sage' : 'bg-brand-500')}>
-            {optimised ? <CheckCircle2Icon size={20}/> : <SparklesIcon size={18}/>}
-          </span>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-charcoal">{optimised ? 'Your schedule is optimised.' : 'Ready to optimise your week?'}</p>
-            <p className="text-xs text-charcoal-muted truncate">
-              {optimised ? 'Balanced around focus & recovery.' : 'Rebalance around focus and wellbeing.'}
-            </p>
-          </div>
-          {!optimised &&
-            <Button size="sm" onClick={() => setOptimised(true)}>
-              Optimise
-            </Button>}
-        </motion.div>
-      </div>
     </div>);
 }

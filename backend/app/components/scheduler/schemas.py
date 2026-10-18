@@ -81,8 +81,9 @@ class TaskUpdate(BaseModel):
     is_flexible: bool | None = None
     cognitive_load: CognitiveLoad | None = None   # changing this = student overrides the AI
     status: TaskStatus | None = None
+    scheduled_start: datetime | None = None       # move the planned session (send null to unplan it)
 
-    @field_validator("deadline")
+    @field_validator("deadline", "scheduled_start")
     @classmethod
     def normalise_deadline(cls, v: datetime | None) -> datetime | None:
         # Past deadlines are allowed here (e.g. fixing a typo on an old task),

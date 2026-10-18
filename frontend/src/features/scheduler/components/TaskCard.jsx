@@ -53,7 +53,7 @@ export function TaskCard({ task, onStart }) {
 
       {!done &&
             <div className="flex items-center gap-2 mt-4 pl-14">
-          <button onClick={() => onStart?.(task)} className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-brand-500 hover:bg-brand-600 rounded-full px-4 py-2 transition-colors">
+          <button onClick={(e) => { e.stopPropagation(); onStart?.(task); }} className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-brand-500 hover:bg-brand-600 rounded-full px-4 py-2 transition-colors">
             <PlayIcon size={13} fill="currentColor"/>
             {overdue ? 'Get back on track' : 'Start'}
           </button>
