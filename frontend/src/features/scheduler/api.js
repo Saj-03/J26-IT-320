@@ -16,7 +16,9 @@ export const deleteTask = (id) => api.delete(`/scheduler/tasks/${id}`);
 export const finishTask = (id) => api.post(`/scheduler/tasks/${id}/complete`).then(progressChanged);  // done + XP
 
 // --- Plan, free time, commitments ---
-export const buildPlan = () => api.get("/scheduler/plan").then((r) => r.data);     // places pending tasks
+// "Plan my week" = CP-SAT scheduler (Module D): POST builds a new plan, GET reads the saved one
+export const planMyWeek = () => api.post("/scheduler/plan").then((r) => r.data);
+export const getPlan = () => api.get("/scheduler/plan").then((r) => r.data);
 export const getAvailability = (days = 7) => api.get("/scheduler/availability", { params: { days } }).then((r) => r.data);
 export const listCommitments = () => api.get("/scheduler/commitments").then((r) => r.data);
 export const getProgress = () => api.get("/scheduler/progress").then((r) => r.data);

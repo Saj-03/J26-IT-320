@@ -17,7 +17,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.components.scheduler.engine import m2_classifier
-from app.components.scheduler.models import FocusSession, SchedulerAuditLog, Task
+from app.components.scheduler.models import FocusSession, PlannedSession, SchedulerAuditLog, Task
 from app.components.scheduler.schemas import TaskCreate, TaskUpdate
 
 DEFAULT_LOAD = "medium"   # used when the student picks nothing and the M2 model is not available
@@ -29,6 +29,18 @@ DEFAULT_LOAD = "medium"   # used when the student picks nothing and the M2 model
 def audit(db: Session, user_id: str, event_type: str, **details) -> None:
     """Add one row to the audit log (saved together with the caller's commit)."""
     db.add(SchedulerAuditLog(user_id=user_id, event_type=event_type, details=details))
+
+
+def drop_planned_pieces(db: Session, task_ids: list[str], future_only: bool = True) -> None:
+    """
+    Remove "Plan my week" pieces of these tasks.
+    Used when a task is moved by hand, split or deleted, so the old AI plan never shows a wrong time.
+    future_only=False also removes past pieces (needed before deleting the task itself).
+    """
+    query = db.query(PlannedSession).filter(PlannedSession.task_id.in_(task_ids))
+    if future_only:
+        query = query.filter(PlannedSession.end > datetime.utcnow())
+    query.delete(synchronize_session=False)
 
 
 def get_own_task(db: Session, user, task_id: str) -> Task:
@@ -125,6 +137,10 @@ def update_task(db: Session, user, task_id: str, data: TaskUpdate) -> Task:
     elif "status" in changes and changes["status"] != "done":
         task.completed_at = None
 
+    # Student moved / unplanned it by hand -> the AI pieces of this task are no longer the plan
+    if "scheduled_start" in changes:
+        drop_planned_pieces(db, [task.id])
+
     for field, value in changes.items():
         setattr(task, field, value)
 
@@ -144,7 +160,10 @@ def delete_task(db: Session, user, task_id: str) -> None:
     db.query(FocusSession).filter(FocusSession.task_id.in_(all_ids)) \
       .update({FocusSession.task_id: None}, synchronize_session=False)
 
-    # 2. delete subtasks first, then the parent (foreign key order)
+    # 2. planned pieces point to the tasks -> remove them first (foreign key)
+    drop_planned_pieces(db, all_ids, future_only=False)
+
+    # 3. delete subtasks first, then the parent (foreign key order)
     db.query(Task).filter(Task.id.in_(subtask_ids)).delete(synchronize_session=False)
     db.delete(task)
 

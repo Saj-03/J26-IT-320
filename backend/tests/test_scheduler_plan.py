@@ -134,3 +134,20 @@ def test_endpoints_only_plan_my_own_tasks(env):
     assert titles == {"Mine"}
     shown = client.get("/api/scheduler/plan").json()
     assert [x["id"] for x in shown["sessions"]] == [x["id"] for x in built.json()["sessions"]]
+
+
+def test_moving_or_deleting_a_task_removes_its_plan_pieces(env):
+    client, db, current, _ = env
+    soon = (datetime.utcnow() + timedelta(days=3)).isoformat()
+    a = client.post("/api/scheduler/tasks", json={"title": "A", "deadline": soon, "estimated_minutes": 100}).json()
+    b = client.post("/api/scheduler/tasks", json={"title": "B", "deadline": soon, "estimated_minutes": 60}).json()
+    client.post("/api/scheduler/plan")
+    assert db.query(PlannedSession).filter_by(task_id=a["id"]).count() == 4          # 100 min, 25-min timer
+
+    later = (datetime.utcnow() + timedelta(days=2)).isoformat()
+    client.patch(f"/api/scheduler/tasks/{a['id']}", json={"scheduled_start": later})   # moved by hand
+    assert db.query(PlannedSession).filter_by(task_id=a["id"]).count() == 0
+    assert {x["title"] for x in client.get("/api/scheduler/plan").json()["sessions"]} == {"B"}
+
+    assert client.delete(f"/api/scheduler/tasks/{b['id']}").status_code == 204      # no foreign-key error
+    assert db.query(PlannedSession).count() == 0

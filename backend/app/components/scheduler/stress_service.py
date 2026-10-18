@@ -40,7 +40,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings as app_settings
 from app.components.scheduler.models import Commitment, ScheduleChange, Task
 from app.components.scheduler.settings_service import get_settings
-from app.components.scheduler.task_service import audit
+from app.components.scheduler.task_service import audit, drop_planned_pieces
 from app.shared.integration.models import SignalEvent
 
 SIGNAL_MAX_AGE = timedelta(hours=app_settings.RISK_SIGNAL_MAX_AGE_HOURS)   # same rule as the integration validator
@@ -296,6 +296,7 @@ def apply_one(db: Session, user, item: dict, now: datetime) -> dict:
     if why_not:                                          # safety check again at decision time
         return done | {"applied": False, "skipped_because": why_not}
 
+    drop_planned_pieces(db, [task.id])                   # the old "Plan my week" pieces no longer fit
     if item["action"] == "move":
         task.scheduled_start = datetime.fromisoformat(item["to"])
         return done | {"applied": True}
@@ -353,11 +354,13 @@ def restore(db: Session, user, change_id: str, now: datetime | None = None) -> S
         if item["action"] == "move":
             task = db.get(Task, item["task_id"])
             if task is not None:
+                drop_planned_pieces(db, [task.id])
                 old = before.get(task.id, {}).get("scheduled_start")
                 task.scheduled_start = datetime.fromisoformat(old) if old else None
         elif item["action"] == "split":
             for piece in db.query(Task).filter(Task.id.in_(item["created_ids"])).all():
                 if piece.status == "pending":
+                    drop_planned_pieces(db, [piece.id], future_only=False)
                     db.delete(piece)
                 else:
                     kept.append(piece.title)
