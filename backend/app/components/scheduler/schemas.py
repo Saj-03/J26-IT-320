@@ -81,8 +81,9 @@ class TaskUpdate(BaseModel):
     is_flexible: bool | None = None
     cognitive_load: CognitiveLoad | None = None   # changing this = student overrides the AI
     status: TaskStatus | None = None
+    scheduled_start: datetime | None = None       # move the planned session (send null to unplan it)
 
-    @field_validator("deadline")
+    @field_validator("deadline", "scheduled_start")
     @classmethod
     def normalise_deadline(cls, v: datetime | None) -> datetime | None:
         # Past deadlines are allowed here (e.g. fixing a typo on an old task),
@@ -247,7 +248,7 @@ class ConflictOut(BaseModel):
 # ===========================================================================
 # FOCUS SESSIONS  (FR-05, FR-15)
 # ===========================================================================
-TimerSource = Literal["student_fixed", "static_default", "history_rules", "survey", "default"]
+TimerSource = Literal["student_fixed", "static_default", "m1_model", "history_rules", "survey", "default"]
 
 
 class TimerRecommendationOut(BaseModel):
@@ -339,6 +340,8 @@ class FocusEndOut(BaseModel):
     xp_awarded: int          # 0 if the session was not completed
     total_xp: int
     level: int
+    streak: int = 0          # study days in a row
+    new_badges: list[str] = []   # badge codes earned by this session (show a celebration)
 
 
 class FocusStartOut(BaseModel):
@@ -473,6 +476,56 @@ class StressDecisionIn(BaseModel):
         if self.decision != "edited" and self.keep is not None:
             raise ValueError("keep is only used when decision is edited")
         return self
+
+
+# ===========================================================================
+# GAMIFICATION PROGRESS (Module G)
+# ===========================================================================
+class StreakOut(BaseModel):
+    current: int                     # study days in a row
+    today_done: bool                 # a completed session today already?
+    freeze_left_this_week: int       # 1 missed day per week is forgiven
+    stress_days_skipped: int         # HIGH-stress days that did not break the streak
+
+
+class BadgeOut(BaseModel):
+    code: str
+    emoji: str
+    title: str
+    description: str                 # how to earn it
+    earned: bool
+    earned_at: datetime | None
+    progress: int                    # towards target (capped at target)
+    target: int
+
+
+class ProgressOut(BaseModel):
+    total_xp: int
+    level: int
+    xp_to_next_level: int
+    streak: StreakOut
+    badges: list[BadgeOut]
+    new_badges: list[str]            # earned just now
+
+
+# ===========================================================================
+# ATTENTION PROFILE (M1)
+# ===========================================================================
+class HourChance(BaseModel):
+    hour: int                        # 0..23, Sri Lanka time
+    chance: float                    # M1: chance a 25-min session at this hour is completed
+
+
+class AttentionProfileOut(BaseModel):
+    source: Literal["m1_model", "not_enough_history", "model_unavailable"]
+    reason: str
+    sessions_used: int
+    min_sessions: int
+    hourly: list[HourChance] | None = None
+    peak_hours: list[int] | None = None        # best 3, best first
+    low_hours: list[int] | None = None         # worst 3, worst first
+    capacity_minutes: int | None = None        # longest session before success drops
+    recommended_focus: int | None = None       # suggested Pomodoro (15-50)
 
 
 # ===========================================================================

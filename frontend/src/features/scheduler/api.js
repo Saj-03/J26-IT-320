@@ -1,16 +1,19 @@
 // All HTTP calls for this feature -> /api/scheduler
 import api from "../../shared/api/client";
 
-
-export const addTask = (task) => api.post("/scheduler/tasks", task);
-export const completeTask = (id) => api.post(`/scheduler/tasks/${id}/complete`);
-export const logFocus = (s) => api.post("/scheduler/focus", s);
-export const requestAdaptation = () => api.post("/scheduler/adapt").then((r) => r.data);
-export const decideChange = (id, decision) => api.post(`/scheduler/changes/${id}/decision`, { decision });
-
 // --- Tasks ---
 export const listTasks = () => api.get("/scheduler/tasks").then((r) => r.data);
-export const getTask = (id) => api.get(`/scheduler/tasks/${id}`).then((r) => r.data);
+export const getTask = (id) => api.get(`/scheduler/tasks/${id}`).then((r) => r.data);     // + subtasks
+export const createTask = (task) => api.post("/scheduler/tasks", task).then((r) => r.data);
+export const updateTask = (id, changes) => api.patch(`/scheduler/tasks/${id}`, changes).then((r) => r.data);
+export const deleteTask = (id) => api.delete(`/scheduler/tasks/${id}`);
+export const finishTask = (id) => api.post(`/scheduler/tasks/${id}/complete`).then((r) => r.data);  // done + XP
+
+// --- Plan, free time, commitments ---
+export const buildPlan = () => api.get("/scheduler/plan").then((r) => r.data);     // places pending tasks
+export const getAvailability = (days = 7) => api.get("/scheduler/availability", { params: { days } }).then((r) => r.data);
+export const listCommitments = () => api.get("/scheduler/commitments").then((r) => r.data);
+export const getProgress = () => api.get("/scheduler/progress").then((r) => r.data);
 
 // --- Focus sessions (real timer flow) ---
 // 1. suggestion -> 2. start -> 3. pause / resume -> 4. end (+ optional 1-5 rating) -> XP
@@ -21,6 +24,9 @@ export const pauseFocus = (id) => api.post(`/scheduler/focus/${id}/pause`).then(
 export const resumeFocus = (id) => api.post(`/scheduler/focus/${id}/resume`).then((r) => r.data);
 export const endFocus = (id, rating) =>
   api.post(`/scheduler/focus/${id}/end`, rating ? { focus_rating: rating } : {}).then((r) => r.data);
+
+// --- Attention profile (M1 model): best / worst hours, capacity, chance per hour ---
+export const getAttentionProfile = () => api.get("/scheduler/attention/profile").then((r) => r.data);
 
 // --- Stress adaptation (uses Component 4's wellbeing signal) ---
 // status -> (propose) -> decide: accepted / edited (keep = positions) / rejected -> restore (undo)

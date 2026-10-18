@@ -10,6 +10,12 @@ import { apiErrorMessage } from '../../../shared/api/client';
 import { cn } from '../../../shared/lib/cn';
 import { endFocus, getActiveFocus, getTask, pauseFocus, resumeFocus, utcMs } from '../api';
 
+// Badge codes from the backend (progress_service.BADGES) -> what the student sees
+const BADGE_NAMES = {
+    first_focus: '🌱 First Focus', deep_diver: '🧠 Deep Diver', week_warrior: '🔥 Week Warrior',
+    peak_performer: '🎯 Peak Performer', deadline_keeper: '✅ Deadline Keeper', self_care: '🌿 Self-care',
+};
+
 function fmt(sec) {
     const h = Math.floor(sec / 3600);
     const m = Math.floor(sec % 3600 / 60);
@@ -155,9 +161,16 @@ export function Focus() {
               <TrophyIcon size={28} className="text-brand-600"/>
               <div>
                 <p className="text-lg font-extrabold text-charcoal">+{result.xp_awarded} XP</p>
-                <p className="text-xs text-charcoal-muted">Total {result.total_xp} XP · Level {result.level}</p>
+                <p className="text-xs text-charcoal-muted">
+                  Total {result.total_xp} XP · Level {result.level}{result.streak > 0 && ` · 🔥 ${result.streak}-day streak`}
+                </p>
               </div>
             </div>
+            {result.new_badges.length > 0 &&
+                <div className="rounded-2xl bg-sage-light p-4">
+                <p className="text-sm font-bold text-emerald-800">New badge{result.new_badges.length > 1 ? 's' : ''}!</p>
+                <p className="text-sm text-emerald-700 mt-1">{result.new_badges.map((c) => BADGE_NAMES[c] ?? c).join(' · ')}</p>
+              </div>}
             <Button size="lg" fullWidth onClick={() => navigate('/app')}>Done</Button>
           </div>}
       </Modal>

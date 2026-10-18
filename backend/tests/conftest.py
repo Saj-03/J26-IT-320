@@ -21,7 +21,12 @@ from app.components.scheduler.router import router as scheduler_router
 
 
 @pytest.fixture()
-def env():
+def env(monkeypatch):
+    # M2 (load classifier) off by default: tasks without a load get "medium", tests stay fast.
+    # test_scheduler_m2_app.py switches it back on.
+    from app.components.scheduler.engine import m2_classifier
+    monkeypatch.setattr(m2_classifier, "available", lambda: False)
+
     engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
     Base.metadata.create_all(engine)
     db = sessionmaker(bind=engine)()

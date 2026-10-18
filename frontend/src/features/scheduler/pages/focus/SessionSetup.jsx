@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PlayIcon, SlidersHorizontalIcon, MinusIcon, PlusIcon } from 'lucide-react';
 import { PageHeader } from '../../../../shared/components/layout/PageHeader';
@@ -15,6 +15,7 @@ import { getActiveFocus, getTimerRecommendation, listTasks, startFocus } from '.
 const SOURCE_TITLE = {
     student_fixed: 'Your fixed timer',
     static_default: 'Standard Pomodoro',
+    m1_model: 'AI suggestion from your focus history',
     history_rules: 'Based on your recent focus history',
     survey: 'Based on your usual focus length',
     default: 'Still learning',
@@ -42,9 +43,10 @@ function Stepper({ label, value, setValue, step, min, max, suffix }) {
 
 export function SessionSetup() {
     const navigate = useNavigate();
+    const { state } = useLocation();               // "Start" on a task card sends its id
     const [rec, setRec] = useState(null);          // suggestion from the backend
     const [tasks, setTasks] = useState([]);        // tasks the student can focus on
-    const [taskId, setTaskId] = useState('');      // '' = no task
+    const [taskId, setTaskId] = useState(state?.taskId ?? '');      // '' = no task
     const [focus, setFocus] = useState(25);
     const [manual, setManual] = useState(false);
     const [loadFailed, setLoadFailed] = useState(false);
