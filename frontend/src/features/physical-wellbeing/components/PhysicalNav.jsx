@@ -9,6 +9,7 @@ const items = [
     { to: '/app/physical/activity', label: 'Activity' },
     { to: '/app/physical/habits', label: 'Habits' },
     { to: '/app/physical/achievements', label: 'Achievements' },
+    { to: '/app/physical/challenges', label: 'Squad Challenges' },
     { to: '/app/physical/progress', label: 'Progress' },
     { to: '/app/physical/adaptation', label: 'AI Adaptation' },
     { to: '/app/physical/profile', label: 'My Profile' }

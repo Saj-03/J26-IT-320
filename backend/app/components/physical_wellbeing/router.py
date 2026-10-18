@@ -1,14 +1,186 @@
 import datetime
-from fastapi import APIRouter, Depends, HTTPException
+import hashlib
+import secrets
+from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.core.dependencies import get_current_user
 from app.components.physical_wellbeing import schemas, service
-from app.components.physical_wellbeing.models import WellbeingProfile, ActivityLog, Habit, WorkoutFeedback
+from app.components.physical_wellbeing.models import (
+    WellbeingProfile, ActivityLog, Habit, WorkoutFeedback,
+    PeerChallenge, PeerChallengeMember,
+)
 from app.components.physical_wellbeing.ml import recommender
 
 router = APIRouter()
+
+
+def _challenge_payload(db: Session, challenge: PeerChallenge, member_id: str | None = None) -> dict:
+    members = (db.query(PeerChallengeMember)
+               .filter_by(challenge_id=challenge.id)
+               .order_by(PeerChallengeMember.score.desc(), PeerChallengeMember.joined_at.asc())
+               .all())
+    mine = next((member for member in members if member.id == member_id), None) if member_id else None
+    return {
+        "id": challenge.id,
+        "title": challenge.title,
+        "metric": challenge.metric,
+        "target": challenge.target,
+        "duration_days": challenge.duration_days,
+        "created_at": challenge.created_at.isoformat(),
+        "ends_at": challenge.ends_at.isoformat(),
+        "invite_code": challenge.invite_code,
+        "my_score": mine.score if mine else None,
+        "leaderboard": [
+            {"nickname": member.nickname, "score": member.score, "is_me": bool(mine and member.id == mine.id)}
+            for member in members
+        ],
+    }
+
+
+def _check_challenge_amount(challenge: PeerChallenge, amount: int) -> None:
+    limits = {"minutes": 240, "steps": 10000, "workouts": 5}
+    if amount > limits[challenge.metric]:
+        raise HTTPException(422, f"A single check-in can be at most {limits[challenge.metric]} {challenge.metric}")
+
+
+def _challenge_is_open(challenge: PeerChallenge) -> bool:
+    return challenge.ends_at >= datetime.datetime.utcnow()
+
+
+@router.get("/challenges")
+def list_peer_challenges(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    memberships = db.query(PeerChallengeMember).filter_by(user_id=user.id).all()
+    result = []
+    for member in memberships:
+        challenge = db.get(PeerChallenge, member.challenge_id)
+        if challenge:
+            result.append(_challenge_payload(db, challenge, member.id))
+    return result
+
+
+@router.post("/challenges")
+def create_peer_challenge(data: schemas.PeerChallengeCreateIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    nickname = data.nickname.strip()
+    title = data.title.strip()
+    if len(nickname) < 2 or not title:
+        raise HTTPException(422, "Add a challenge name and a nickname with at least 2 characters")
+    now = datetime.datetime.utcnow()
+    challenge = PeerChallenge(
+        owner_id=user.id,
+        title=title,
+        metric=data.metric,
+        target=data.target,
+        duration_days=data.duration_days,
+        created_at=now,
+        ends_at=now + datetime.timedelta(days=data.duration_days),
+    )
+    db.add(challenge)
+    db.flush()
+    member = PeerChallengeMember(challenge_id=challenge.id, user_id=user.id, nickname=nickname, score=0)
+    db.add(member)
+    db.commit()
+    db.refresh(challenge)
+    db.refresh(member)
+    return _challenge_payload(db, challenge, member.id)
+
+
+@router.get("/challenges/invite/{invite_code}")
+def get_invited_challenge(
+    invite_code: str,
+    db: Session = Depends(get_db),
+    participant_token: str | None = Header(default=None, alias="X-Challenge-Token"),
+):
+    challenge = db.query(PeerChallenge).filter_by(invite_code=invite_code).first()
+    if not challenge:
+        raise HTTPException(404, "Challenge invite not found")
+    member_id = None
+    if participant_token:
+        token_hash = hashlib.sha256(participant_token.encode()).hexdigest()
+        member = db.query(PeerChallengeMember).filter_by(challenge_id=challenge.id, guest_token_hash=token_hash).first()
+        member_id = member.id if member else None
+    return _challenge_payload(db, challenge, member_id)
+
+
+@router.post("/challenges/invite/{invite_code}/join")
+def join_peer_challenge(
+    invite_code: str,
+    data: schemas.PeerChallengeJoinIn,
+    db: Session = Depends(get_db),
+    participant_token: str | None = Header(default=None, alias="X-Challenge-Token"),
+):
+    challenge = db.query(PeerChallenge).filter_by(invite_code=invite_code).first()
+    if not challenge:
+        raise HTTPException(404, "Challenge invite not found")
+    if not _challenge_is_open(challenge):
+        raise HTTPException(410, "This challenge has ended")
+    nickname = data.nickname.strip()
+    if len(nickname) < 2:
+        raise HTTPException(422, "Nickname must contain at least 2 characters")
+
+    if participant_token:
+        token_hash = hashlib.sha256(participant_token.encode()).hexdigest()
+        existing = db.query(PeerChallengeMember).filter_by(challenge_id=challenge.id, guest_token_hash=token_hash).first()
+        if existing:
+            existing.nickname = nickname
+            db.commit()
+            return {"challenge": _challenge_payload(db, challenge, existing.id), "participant_token": participant_token}
+
+    token = secrets.token_urlsafe(32)
+    member = PeerChallengeMember(
+        challenge_id=challenge.id,
+        user_id=None,
+        nickname=nickname,
+        score=0,
+        guest_token_hash=hashlib.sha256(token.encode()).hexdigest(),
+    )
+    db.add(member)
+    db.commit()
+    db.refresh(member)
+    return {"challenge": _challenge_payload(db, challenge, member.id), "participant_token": token}
+
+
+@router.post("/challenges/invite/{invite_code}/score")
+def update_guest_challenge_score(
+    invite_code: str,
+    data: schemas.PeerChallengeGuestProgressIn,
+    db: Session = Depends(get_db),
+):
+    challenge = db.query(PeerChallenge).filter_by(invite_code=invite_code).first()
+    if not challenge:
+        raise HTTPException(404, "Challenge invite not found")
+    if not _challenge_is_open(challenge):
+        raise HTTPException(410, "This challenge has ended")
+    _check_challenge_amount(challenge, data.amount)
+    token_hash = hashlib.sha256(data.participant_token.encode()).hexdigest()
+    member = db.query(PeerChallengeMember).filter_by(challenge_id=challenge.id, guest_token_hash=token_hash).first()
+    if not member:
+        raise HTTPException(403, "Join the challenge before adding your score")
+    member.score += data.amount
+    db.commit()
+    return _challenge_payload(db, challenge, member.id)
+
+
+@router.post("/challenges/{challenge_id}/score")
+def update_member_challenge_score(
+    challenge_id: str,
+    data: schemas.PeerChallengeProgressIn,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    challenge = db.get(PeerChallenge, challenge_id)
+    if not challenge:
+        raise HTTPException(404, "Challenge not found")
+    if not _challenge_is_open(challenge):
+        raise HTTPException(410, "This challenge has ended")
+    _check_challenge_amount(challenge, data.amount)
+    member = db.query(PeerChallengeMember).filter_by(challenge_id=challenge.id, user_id=user.id).first()
+    if not member:
+        raise HTTPException(403, "You are not a member of this challenge")
+    member.score += data.amount
+    db.commit()
+    return _challenge_payload(db, challenge, member.id)
 
 
 @router.post("/profile")

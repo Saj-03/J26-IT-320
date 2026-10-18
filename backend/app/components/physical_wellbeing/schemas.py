@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 from pydantic import BaseModel, Field
 
 
@@ -41,6 +41,26 @@ class WorkoutFeedbackIn(BaseModel):
 
 class HabitIn(BaseModel):
     name: str
+
+
+class PeerChallengeCreateIn(BaseModel):
+    title: str = Field(min_length=3, max_length=80)
+    metric: Literal["minutes", "steps", "workouts"]
+    target: int = Field(gt=0, le=1000000)
+    duration_days: int = Field(default=7, ge=1, le=30)
+    nickname: str = Field(min_length=2, max_length=24)
+
+
+class PeerChallengeJoinIn(BaseModel):
+    nickname: str = Field(min_length=2, max_length=24)
+
+
+class PeerChallengeProgressIn(BaseModel):
+    amount: int = Field(gt=0, le=10000)
+
+
+class PeerChallengeGuestProgressIn(PeerChallengeProgressIn):
+    participant_token: str = Field(min_length=20, max_length=100)
 
 
 class MealSlotItem(BaseModel):
