@@ -4,10 +4,11 @@ ACRDS request/response schemas.
 VIVA: "Pydantic validates every request before it reaches the logic, so a
 skill rating of 7 or a confidence of 0 is rejected with a clear 422 error."
 """
+import re
 from datetime import datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # Fixed skill order - used for both the student vector and the career vector.
 SKILL_KEYS = [
@@ -359,3 +360,145 @@ class AnswerIn(BaseModel):
     speech_rate_wpm: float | None = None   # sent from browser (Web Speech API)
     filler_count: int | None = None
     eye_contact_ratio: float | None = None  # sent from browser (MediaPipe Face Mesh)
+
+
+# ---------------------------------------------------------------------------
+# CV Builder
+# ---------------------------------------------------------------------------
+# A draft may be incomplete, so most fields are optional; limits keep one CV small (< ~60 KB).
+EMAIL_PATTERN = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+PHONE_PATTERN = r"^[0-9+()\-\s]{6,25}$"
+MONTH_PATTERN = r"^(\d{4}-(0[1-9]|1[0-2]))?$"  # "YYYY-MM" from <input type="month">, or empty
+CVTemplate = Literal["modern", "ats", "creative"]
+
+
+def _optional_pattern(value: str, pattern: str, message: str) -> str:
+    value = (value or "").strip()
+    if value and not re.match(pattern, value):
+        raise ValueError(message)
+    return value
+
+
+def _optional_url(value: str) -> str:
+    value = (value or "").strip()
+    if value and (" " in value or "." not in value):
+        raise ValueError("Enter a valid link, e.g. https://github.com/yourname")
+    return value
+
+
+class CVPersonal(BaseModel):
+    full_name: str = Field("", max_length=100)
+    headline: str = Field("", max_length=120)
+    email: str = Field("", max_length=120)
+    phone: str = Field("", max_length=30)
+    location: str = Field("", max_length=100)
+    linkedin: str = Field("", max_length=200)
+    website: str = Field("", max_length=200)  # GitHub / portfolio
+
+    _email = field_validator("email")(lambda cls, v: _optional_pattern(v, EMAIL_PATTERN, "Enter a valid email address"))
+    _phone = field_validator("phone")(lambda cls, v: _optional_pattern(v, PHONE_PATTERN, "Enter a valid phone number"))
+    _links = field_validator("linkedin", "website")(lambda cls, v: _optional_url(v))
+
+
+class CVDates(BaseModel):
+    start: str = Field("", pattern=MONTH_PATTERN)
+    end: str = Field("", pattern=MONTH_PATTERN)
+    current: bool = False  # "Present"
+
+
+class CVEducation(CVDates):
+    institution: str = Field("", max_length=150)
+    degree: str = Field("", max_length=150)
+    field: str = Field("", max_length=150)
+    gpa: str = Field("", max_length=20)
+    achievements: str = Field("", max_length=800)
+
+
+class CVExperience(CVDates):
+    company: str = Field("", max_length=150)
+    position: str = Field("", max_length=150)
+    responsibilities: str = Field("", max_length=2000)
+    achievements: str = Field("", max_length=1200)
+
+
+class CVProject(BaseModel):
+    title: str = Field("", max_length=150)
+    description: str = Field("", max_length=2000)
+    technologies: str = Field("", max_length=300)
+    link: str = Field("", max_length=200)
+
+    _link = field_validator("link")(lambda cls, v: _optional_url(v))
+
+
+class CVCertification(BaseModel):
+    name: str = Field("", max_length=150)
+    issuer: str = Field("", max_length=150)
+    date: str = Field("", pattern=MONTH_PATTERN)
+
+
+class CVActivity(BaseModel):
+    role: str = Field("", max_length=150)        # e.g. Team leader, Volunteer
+    organisation: str = Field("", max_length=150)  # e.g. IEEE Student Branch
+    description: str = Field("", max_length=800)
+
+
+class CVDocument(BaseModel):
+    template: CVTemplate = "modern"
+    career_id: Optional[str] = Field(None, max_length=60)  # ACRDS career the CV is tailored to
+    personal: CVPersonal = CVPersonal()
+    summary: str = Field("", max_length=1500)
+    education: list[CVEducation] = Field(default_factory=list, max_length=10)
+    technical_skills: list[str] = Field(default_factory=list, max_length=40)
+    soft_skills: list[str] = Field(default_factory=list, max_length=30)
+    experience: list[CVExperience] = Field(default_factory=list, max_length=15)
+    projects: list[CVProject] = Field(default_factory=list, max_length=15)
+    certifications: list[CVCertification] = Field(default_factory=list, max_length=20)
+    activities: list[CVActivity] = Field(default_factory=list, max_length=15)
+
+    @field_validator("technical_skills", "soft_skills")
+    @classmethod
+    def _clean_skills(cls, skills: list[str]) -> list[str]:
+        out = []
+        for skill in skills:
+            skill = " ".join(str(skill).split())[:60]
+            if skill and skill.lower() not in {s.lower() for s in out}:
+                out.append(skill)
+        return out
+
+
+class CVOut(BaseModel):
+    cv: Optional[CVDocument] = None
+    updated_at: Optional[datetime] = None
+
+
+CVTask = Literal["summary", "experience", "project", "tailor"]
+
+
+class CVAssistRequest(BaseModel):
+    """Only the fields the chosen task needs are sent to the AI provider. There are no name,
+    email, phone, address or link fields here at all, so contact details cannot be sent."""
+    task: CVTask
+    career_id: Optional[str] = Field(None, max_length=60)
+    headline: str = Field("", max_length=120)
+    summary: str = Field("", max_length=1500)
+    position: str = Field("", max_length=150)
+    responsibilities: str = Field("", max_length=2000)
+    achievements: str = Field("", max_length=1200)
+    title: str = Field("", max_length=150)
+    description: str = Field("", max_length=2000)
+    technologies: str = Field("", max_length=300)
+    skills: list[str] = Field(default_factory=list, max_length=70)
+    project_titles: list[str] = Field(default_factory=list, max_length=15)
+    experience_positions: list[str] = Field(default_factory=list, max_length=15)
+
+
+class CVAssistResponse(BaseModel):
+    task: CVTask
+    text: str = ""                                  # summary / tailored summary suggestion
+    headline: str = ""                              # tailor: suggested headline
+    bullets: list[str] = []                         # experience / project bullet points
+    highlight_skills: list[str] = []                # tailor: subset of the student's own skills
+    tips: list[str] = []
+    removed: int = 0                                # suggestions dropped by the "no invented numbers" check
+    provider: str = ""
+    model: str = ""

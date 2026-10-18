@@ -70,6 +70,8 @@ export const surveyDraft = {
 
 export const careerSession = {
   get: () => withoutOwner(read()),
+  /** Account the cached flow belongs to (used to scope the unsaved CV draft in this tab). */
+  ownerId: () => read()[OWNER] || null,
   /** Merge new values into the flow and save it for this student. */
   update: (patch) => {
     const next = { ...read(), ...patch };

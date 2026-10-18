@@ -32,7 +32,7 @@ export default function CareerPage({ className, step, children }) {
   const still = useReducedMotion();
   injectMotionCss();
   return (
-    <div lang={lang} className={cn(ui.page, "acrds-print relative overflow-hidden", lang !== "en" && "leading-relaxed")}
+    <div lang={lang} className={cn(ui.page, "acrds-print relative overflow-clip", lang !== "en" && "leading-relaxed")}
       style={lang !== "en" ? { fontFamily: SCRIPT_FONT } : undefined}>
       {/* decorative, behind the content */}
       <div aria-hidden className="pointer-events-none absolute -top-24 -right-20 w-72 h-72 rounded-full bg-[#D0F2F7]/70 blur-3xl" />

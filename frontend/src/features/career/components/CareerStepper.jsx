@@ -4,12 +4,13 @@ import { cn } from "../../../shared/lib/cn";
 import { careerSession } from "../utils/careerSession";
 import { t } from "../i18n";
 
-// The five ACRDS steps. `done` = the step has a saved result; `open` = the student can go there.
+// The six ACRDS steps (the CV step is optional and always open). `done` = the step has a saved result; `open` = the student can go there.
 const STEPS = [
   { key: "profile", label: "Profile", to: "/app/career/survey", done: (f) => !!f.profile, open: () => true },
   { key: "careers", label: "Careers", to: "/app/career/recommendations", done: (f) => !!f.recommendations, open: (f) => !!f.recommendations },
   { key: "gap", label: "Skill gap", to: "/app/career/gap-analysis", done: (f) => !!f.gapAnalysis, open: (f) => !!f.gapAnalysis },
   { key: "roadmap", label: "Roadmap", to: "/app/career/roadmap", done: (f) => !!f.roadmap, open: (f) => !!f.roadmap },
+  { key: "cv", label: "CV", to: "/app/career/cv", done: (f) => !!f.cvSaved, open: () => true },
   { key: "interview", label: "Interview", to: "/app/career/interview", done: (f) => !!f.interviewReport, open: () => true },
 ];
 
@@ -31,7 +32,7 @@ export default function CareerStepper({ current }) {
             </button>
           )}
         </p>
-        <ol className="grid grid-cols-5 gap-1">
+        <ol className="grid grid-cols-6 gap-1">
           {STEPS.map((step, i) => (
             <li key={step.key}>
               <button type="button" disabled={!step.open(flow)} onClick={() => navigate(step.to)}

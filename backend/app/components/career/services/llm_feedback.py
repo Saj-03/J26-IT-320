@@ -156,14 +156,16 @@ def language_instruction(lang: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Provider calls - each returns the raw text the model produced
+# Provider calls - each returns the raw text the model produced.
+# `system` / `schema` default to the interview coach; the CV assistant (cv_assistant.py) passes its own.
 # ---------------------------------------------------------------------------
-def _call_gemini(client: httpx.Client, config: dict, prompt: str) -> str:
+def _call_gemini(client: httpx.Client, config: dict, prompt: str,
+                 system: str = SYSTEM_PROMPT, schema: dict = RESPONSE_SCHEMA) -> str:
     response = client.post(
         f"https://generativelanguage.googleapis.com/v1beta/models/{config['model']}:generateContent",
         headers={"x-goog-api-key": config["api_key"], "content-type": "application/json"},
         json={
-            "systemInstruction": {"parts": [{"text": SYSTEM_PROMPT}]},
+            "systemInstruction": {"parts": [{"text": system}]},
             "contents": [{"role": "user", "parts": [{"text": prompt}]}],
             # JSON mode; the keys are named in the prompt and checked in parse_feedback().
             "generationConfig": {"responseMimeType": "application/json", "maxOutputTokens": 2000},
@@ -176,13 +178,14 @@ def _call_gemini(client: httpx.Client, config: dict, prompt: str) -> str:
     return "".join(part.get("text", "") for part in data["candidates"][0]["content"]["parts"])
 
 
-def _call_openai(client: httpx.Client, config: dict, prompt: str) -> str:
+def _call_openai(client: httpx.Client, config: dict, prompt: str,
+                 system: str = SYSTEM_PROMPT, schema: dict = RESPONSE_SCHEMA) -> str:
     response = client.post(
         "https://api.openai.com/v1/chat/completions",
         headers={"authorization": f"Bearer {config['api_key']}", "content-type": "application/json"},
         json={
             "model": config["model"],
-            "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}],
+            "messages": [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
             "response_format": {"type": "json_object"},
         },
     )
@@ -190,7 +193,8 @@ def _call_openai(client: httpx.Client, config: dict, prompt: str) -> str:
     return response.json()["choices"][0]["message"]["content"] or ""
 
 
-def _call_claude(client: httpx.Client, config: dict, prompt: str) -> str:
+def _call_claude(client: httpx.Client, config: dict, prompt: str,
+                 system: str = SYSTEM_PROMPT, schema: dict = RESPONSE_SCHEMA) -> str:
     response = client.post(
         "https://api.anthropic.com/v1/messages",
         headers={"x-api-key": config["api_key"], "anthropic-version": "2023-06-01",
@@ -198,10 +202,10 @@ def _call_claude(client: httpx.Client, config: dict, prompt: str) -> str:
         json={
             "model": config["model"],
             "max_tokens": 4000,  # includes the model's own thinking, so leave headroom
-            "system": SYSTEM_PROMPT,
+            "system": system,
             "messages": [{"role": "user", "content": prompt}],
             "output_config": {"format": {"type": "json_schema",
-                                         "schema": {**RESPONSE_SCHEMA, "additionalProperties": False}}},
+                                         "schema": {**schema, "additionalProperties": False}}},
         },
     )
     response.raise_for_status()

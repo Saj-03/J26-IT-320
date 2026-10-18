@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ClipboardListIcon, SparklesIcon, BarChart3Icon, MapIcon, MicIcon, ArrowRightIcon, ShieldCheckIcon,
-  TrophyIcon, GaugeIcon, TargetIcon, CheckCircle2Icon, LockIcon, RotateCcwIcon, CompassIcon,
+  TrophyIcon, GaugeIcon, TargetIcon, CheckCircle2Icon, LockIcon, RotateCcwIcon, CompassIcon, FileUserIcon,
 } from "lucide-react";
 import Card from "../components/CareerCard";
 import CareerPage from "../components/CareerPage";
@@ -208,7 +208,33 @@ export default function CareerDashboard() {
         })}
       </div>
 
-      {/* Step 5: AI Interview Simulator (available any time) */}
+      {/* Step 5: CV Builder (optional, available any time) */}
+      <Card padding="none" className="overflow-hidden border-2 border-[#9ADBCC]">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-6 bg-[#E3FFD6]/60">
+          <span className="w-11 h-11 rounded-2xl bg-[#FFFBF0] text-[#1F5F53] flex items-center justify-center shrink-0">
+            <FileUserIcon size={20} />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-charcoal-muted">{t("Step {n}", { n: 5 })} · {t("optional")}</p>
+            <h3 className="font-bold text-charcoal flex flex-wrap items-center gap-2">
+              {t("CV Builder")}
+              {flow.cvSaved && (
+                <span className="flex items-center gap-1 rounded-full bg-[#C7F2D1] text-[#1F5E3D] px-2.5 py-0.5 text-xs font-bold">
+                  <CheckCircle2Icon size={13} /> {t("Saved")}
+                </span>
+              )}
+            </h3>
+            <p className="text-sm text-charcoal-muted">
+              {t("Create a professional CV with 3 templates, survey details filled in for you, optional AI wording help and PDF download.")}
+            </p>
+          </div>
+          <Button onClick={() => navigate("/app/career/cv")} className="self-start sm:self-auto">
+            <FileUserIcon size={16} /> {flow.cvSaved ? t("Edit my CV") : t("Create My CV")}
+          </Button>
+        </div>
+      </Card>
+
+      {/* Step 6: AI Interview Simulator (available any time) */}
       <Card padding="none" className="overflow-hidden border-2 border-[#9EB2DB]">
         <div className="grid md:grid-cols-[1.4fr_1fr]">
           <div className="p-6 bg-[#D0F2F7]/50">
@@ -217,7 +243,7 @@ export default function CareerDashboard() {
                 <MicIcon size={20} />
               </span>
               <div>
-                <p className="text-xs font-bold text-charcoal-muted">{t("Step {n}", { n: 5 })}</p>
+                <p className="text-xs font-bold text-charcoal-muted">{t("Step {n}", { n: 6 })}</p>
                 <h3 className="font-bold text-charcoal">{t("AI Interview Simulator")}</h3>
               </div>
             </div>

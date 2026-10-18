@@ -40,3 +40,12 @@ class CareerFlowState(Base):
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), primary_key=True)
     data: Mapped[dict] = mapped_column(JSON, default=dict)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
+
+
+class CareerCV(Base):
+    """ACRDS CV Builder: one saved CV draft per student (the whole CV as JSON, validated by schemas.CVDocument)."""
+    __tablename__ = "career_cv_drafts"
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    template: Mapped[str] = mapped_column(String, default="modern")
+    data: Mapped[dict] = mapped_column(JSON, default=dict)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)

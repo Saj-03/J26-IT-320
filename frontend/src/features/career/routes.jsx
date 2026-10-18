@@ -9,17 +9,19 @@ import CareerRecommendations from "./pages/CareerRecommendations";
 import SkillGapAnalysis from "./pages/SkillGapAnalysis";
 import Roadmap from "./pages/Roadmap";
 import InterviewSimulator from "./pages/InterviewSimulator";
+import CVBuilder from "./pages/CVBuilder";
 
 // Mounted under /app by App.jsx.
 export default function careerRoutes() {
   return (
     <>
-      {/* ACRDS MVP flow: survey -> recommendations -> gap analysis -> roadmap */}
+      {/* ACRDS flow: survey -> recommendations -> gap analysis -> roadmap -> CV (optional) -> interview */}
       <Route path="career" element={<CareerDashboard />} />
       <Route path="career/survey" element={<CareerSurveyForm />} />
       <Route path="career/recommendations" element={<CareerRecommendations />} />
       <Route path="career/gap-analysis" element={<SkillGapAnalysis />} />
       <Route path="career/roadmap" element={<Roadmap />} />
+      <Route path="career/cv" element={<CVBuilder />} />
       <Route path="career/interview" element={<InterviewSimulator />} />
 
       {/* Earlier prototype pages (saved-profile flow), kept reachable */}

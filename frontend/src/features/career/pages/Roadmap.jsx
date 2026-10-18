@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { ArrowRightIcon, CalendarCheckIcon, InfoIcon, ListPlusIcon, MapIcon, MicIcon, PartyPopperIcon, XIcon } from "lucide-react";
+import { ArrowRightIcon, CalendarCheckIcon, FileUserIcon, InfoIcon, ListPlusIcon, MapIcon, MicIcon, PartyPopperIcon, XIcon } from "lucide-react";
 import { PageHeader } from "../../../shared/components/layout/PageHeader";
 import Card from "../components/CareerCard";
 import CareerPage from "../components/CareerPage";
@@ -81,6 +81,7 @@ export default function Roadmap() {
 
   // The selected career goes with the navigation, so the simulator loads its questions straight away.
   const goToInterview = () => navigate("/app/career/interview", { state: { careerId: roadmap.career_id } });
+  const goToCV = () => navigate("/app/career/cv", { state: { careerId: roadmap.career_id } }); // optional step
 
   // "Yes": hand the roadmap to the Task Manager bridge. Integration is not available yet, so the
   // student is told that honestly; the roadmap stays on screen and nothing is changed.
@@ -175,7 +176,7 @@ export default function Roadmap() {
         <div>
           <h2 className="text-lg font-extrabold text-charcoal">{t("Your Personalized Career Roadmap")}</h2>
           <p className="text-sm text-charcoal-muted">
-            {t("Keep this roadmap here, optionally add it to your Task Manager, and practise your interview when you are ready.")}
+            {t("Keep this roadmap here, optionally add it to your Task Manager or create your CV, and practise your interview when you are ready.")}
           </p>
         </div>
         {taskNotice && (
@@ -190,6 +191,9 @@ export default function Roadmap() {
           <Button variant="outline" onClick={() => setDialogOpen(true)} className="sm:flex-1">
             <ListPlusIcon size={16} /> {t("Add to Task Manager")}
           </Button>
+          <Button variant="soft" onClick={goToCV} className="sm:flex-1">
+            <FileUserIcon size={16} /> {t("Create My CV")}
+          </Button>
           <Button onClick={goToInterview} className="sm:flex-1">
             {t("Continue to AI Interview Simulator")} <ArrowRightIcon size={16} />
           </Button>
@@ -201,6 +205,9 @@ export default function Roadmap() {
         <div className="acrds-no-print sm:hidden fixed inset-x-3 bottom-20 z-40 flex gap-2 rounded-full bg-[#FFFBF0]/95 backdrop-blur border border-[#9ADBCC]/60 shadow-lift p-1.5">
           <Button variant="outline" size="sm" aria-label={t("Add to Task Manager")} onClick={() => setDialogOpen(true)} className="px-3">
             <ListPlusIcon size={18} />
+          </Button>
+          <Button variant="outline" size="sm" aria-label={t("Create My CV")} onClick={goToCV} className="px-3">
+            <FileUserIcon size={18} />
           </Button>
           <Button size="sm" onClick={goToInterview} className="flex-1">
             <MicIcon size={16} /> {t("Continue to AI Interview Simulator")}

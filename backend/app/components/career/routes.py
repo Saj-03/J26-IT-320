@@ -16,6 +16,10 @@ from app.components.career.schemas import (
     CareerSelectionRequest,
     GapAnalysisResponse,
     CoachFeedbackResponse,
+    CVAssistRequest,
+    CVAssistResponse,
+    CVDocument,
+    CVOut,
     InterviewAnswerRequest,
     InterviewHistoryIn,
     InterviewHistoryItem,
@@ -39,7 +43,7 @@ from app.components.career.services.interview_questions import get_question, sel
 from app.components.career.services.llm_feedback import generate_llm_feedback, llm_status
 from app.components.career.services.persona import assign_persona, load_persona_model
 from app.components.career.services.recommender import recommend_careers
-from app.components.career.services import saved_state
+from app.components.career.services import cv_assistant, cv_store, saved_state
 from app.components.career.services.roadmap import career_milestones, generate_roadmap
 
 router = APIRouter()
@@ -202,3 +206,42 @@ def _history_item(row) -> dict:
     return {"id": row.id, "career_id": row.career, "career_name": report.get("career_name", row.career),
             "overall_score": report.get("overall_score", 0), "readiness_band": report.get("readiness_band", ""),
             "questions_answered": report.get("questions_answered", 0), "created_at": row.created_at}
+
+
+
+# ---------------------------------------------------------------------------
+# CV Builder (login required; each student can only reach their own CV)
+# ---------------------------------------------------------------------------
+@router.get("/me/cv", response_model=CVOut)
+def get_my_cv(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    row = cv_store.get_cv(db, user.id)
+    return {"cv": row.data if row else None, "updated_at": row.updated_at if row else None}
+
+
+@router.put("/me/cv", response_model=CVOut)
+def save_my_cv(body: CVDocument, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    if body.career_id:
+        _career_or_404(body.career_id)
+    row = cv_store.save_cv(db, user.id, body.model_dump())
+    return {"cv": row.data, "updated_at": row.updated_at}
+
+
+@router.delete("/me/cv", status_code=204)
+def delete_my_cv(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    cv_store.delete_cv(db, user.id)
+
+
+@router.post("/cv/assist", response_model=CVAssistResponse)
+def cv_assist(body: CVAssistRequest, user=Depends(get_current_user)):
+    """Optional AI wording help. 503 when AI is not configured or the provider failed -
+    the CV Builder then simply keeps working without it."""
+    career = _career_or_404(body.career_id) if body.career_id else None
+    request = body.model_dump()
+    if not cv_assistant.task_payload(request):
+        raise HTTPException(422, "Write some text first, then ask the AI to improve it.")
+    if not llm_status()["enabled"]:
+        raise HTTPException(503, "AI assistance is not available right now. You can keep writing your CV yourself.")
+    result = cv_assistant.assist(request, career)
+    if result is None:
+        raise HTTPException(503, "The AI assistant did not respond. Please try again, or keep writing yourself.")
+    return result

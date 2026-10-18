@@ -58,6 +58,8 @@ def dynamic_keys() -> set:
     keys |= block_strings("components/interview/InterviewReport.jsx", "const AREA_LABEL = {", "};")
     keys |= field_values("components/interview/SpeakerCheck.jsx", "label")
     keys |= block_strings("utils/roadmapProgress.js", "export const ROADMAP_PART_LABELS = {", "};")
+    keys |= field_values("components/cv/CVDocument.jsx", "name") | field_values("components/cv/CVDocument.jsx", "best")
+    keys |= set(re.findall(r'\] = ' + STRING, (FEATURE / "utils" / "cvModel.js").read_text(encoding="utf-8")))  # validation messages
     # API codes shown through t(): gap status, priority, question category
     keys |= {"Strong", "Needs Improvement", "Critical Gap", "High priority", "Medium priority",
              "Introduction", "Technical", "Behavioural"}

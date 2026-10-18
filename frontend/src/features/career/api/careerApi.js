@@ -42,3 +42,10 @@ export const clearSavedState = () => api.delete("/career/me/state");
 export const saveInterviewReport = (careerId, report) =>
   api.post("/career/me/interviews", { career_id: careerId, report }).then(data);
 export const getInterviewHistory = (limit = 5) => api.get("/career/me/interviews", { params: { limit } }).then(data);
+
+// ---- CV Builder (login required; each student only reaches their own CV) ----
+export const getMyCV = () => api.get("/career/me/cv").then(data);                    // -> { cv, updated_at }
+export const saveMyCV = (cv) => api.put("/career/me/cv", cv).then(data);
+export const deleteMyCV = () => api.delete("/career/me/cv");
+/** Optional AI wording help. payload: { task: summary|experience|project|tailor, ...only the text for that task } */
+export const cvAssist = (payload) => api.post("/career/cv/assist", payload, { timeout: 75000 }).then(data);
