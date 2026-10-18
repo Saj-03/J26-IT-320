@@ -174,3 +174,50 @@ def test_journal_edit_rescores_and_mood_history_is_private(db, user):
     router.mood(schemas.MoodIn(mood=2), db=db, user=user)
     assert [m.mood for m in router.mood_history(db=db, user=user)] == [2]
     assert router.mood_history(db=db, user=other) == []
+
+
+def test_tip_events_baseline2_and_pilot_metrics(db, user, monkeypatch):
+    from datetime import datetime, timedelta
+    from app.components.burnout import metrics
+    from app.components.burnout.models import ChatMessage
+    from app.core.config import settings
+
+    assert service.log_tip_event(db, user, "rest", "shown") is True
+    assert service.log_tip_event(db, user, "rest", "shown") is False          # one 'shown' per category per day
+    assert service.log_tip_event(db, user, "rest", "tried") is True
+    now = datetime.utcnow()
+    for mins in (0, 5, 8, 600):                                                # one 3-turn session + one 1-turn session
+        db.add(ChatMessage(user_id=user.id, role="user", content="x", created_at=now - timedelta(days=1) + timedelta(minutes=mins)))
+    db.commit()
+    router_mod = __import__("app.components.burnout.router", fromlist=["x"])
+    from app.components.burnout import schemas
+    router_mod.journal(schemas.JournalIn(text="a day"), db=db, user=user)
+    m = metrics.participant_metrics(db, user, weeks=1)
+    assert m["tip_click_through"] == 1.0 and m["turn_depth"] == 2.0 and m["journal_days_per_week"] == 1.0
+    assert m["group"] == "grounded"
+
+    monkeypatch.setattr(settings, "BASELINE2_IDS", f"X-1, {user.research_id}")
+    assert service.chat_grounded(user) is False                                # researcher-assigned Baseline 2
+    assert metrics.participant_metrics(db, user, weeks=1)["group"] == "baseline2"
+    assert metrics.group_summary([metrics.participant_metrics(db, user, weeks=1)])["baseline2"]["n"] == 1
+    assert service.delete_my_data(db, user)["tips"] == 2
+
+
+def test_baseline2_chat_gets_no_academic_context(db, user, monkeypatch):
+    import asyncio
+    from app.components.burnout import router, schemas
+    from app.components.burnout.llm import chat_agent
+    from app.core.config import settings
+    service.set_prefs(db, user, share=None, chat=True)
+    _post_deviation(db, user, bad=True, seed=3)
+    seen = []
+
+    async def fake_reply(system_prompt, history, context=None):
+        seen.append((system_prompt, context)); return "ok"
+
+    monkeypatch.setattr(chat_agent, "reply", fake_reply)
+    asyncio.run(router.chat(schemas.ChatIn(message="my week is heavy"), db=db, user=user))
+    assert seen[-1][1] is not None and "task load" in seen[-1][0]                      # grounded group: context in prompt
+    monkeypatch.setattr(settings, "BASELINE2_IDS", user.research_id)
+    out = asyncio.run(router.chat(schemas.ChatIn(message="my week is heavy"), db=db, user=user))
+    assert seen[-1][1] is None and "task load" not in seen[-1][0] and out["knows_your_week"] is False

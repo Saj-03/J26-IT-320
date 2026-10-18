@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRightIcon, SparklesIcon, NotebookPenIcon, MessageCircleHeartIcon, LightbulbIcon, CalendarCheckIcon, ShieldCheckIcon } from 'lucide-react';
@@ -7,7 +7,7 @@ import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { LineChart } from '../../../shared/components/charts/Charts';
-import { getSummary, runDemo } from '../api';
+import { getSummary, runDemo, logTipEvent } from '../api';
 
 // Real signals only: every bar below comes from the student's own data. A missing signal says "No data yet".
 const SIGNALS = [
@@ -26,8 +26,16 @@ export function Wellbeing() {
     const [loading, setLoading] = useState(true);
     const [demoBusy, setDemoBusy] = useState(false);
     const [demoMsg, setDemoMsg] = useState('');
+    const [tipAnswer, setTipAnswer] = useState(null);       // null | 'tried' | 'dismissed'
+    const shownTip = useRef(null);
     const load = useCallback(() => getSummary().then(setData).catch(() => setData(null)).finally(() => setLoading(false)), []);
     useEffect(() => { load(); }, [load]);
+    // Log that a tip was shown (once per tip category; the server also keeps it to once a day)
+    useEffect(() => {
+        const cat = data?.tip?.category;
+        if (cat && shownTip.current !== cat) { shownTip.current = cat; setTipAnswer(null); logTipEvent(cat, 'shown'); }
+    }, [data]);
+    const answerTip = (action) => { setTipAnswer(action); logTipEvent(data.tip.category, action); };
 
     const demo = async (scenario) => {
         setDemoBusy(true);
@@ -71,6 +79,10 @@ export function Wellbeing() {
                   <p className="font-bold text-charcoal">A small idea for today</p>
                   <p className="mt-1 text-charcoal-light">{data.tip.text}</p>
                   <p className="mt-2 text-xs text-charcoal-muted">{data.tip.reason}</p>
+                  {tipAnswer === null ? <div className="mt-3 flex gap-2">
+                      <Button size="sm" onClick={() => answerTip('tried')}>I'll try this</Button>
+                      <Button variant="soft" size="sm" onClick={() => answerTip('dismissed')}>Not now</Button>
+                    </div> : <p className="mt-3 text-xs font-semibold text-emerald-700">{tipAnswer === 'tried' ? 'Great, thank you.' : 'No problem.'}</p>}
                 </div>
               </div>
             </Card>}

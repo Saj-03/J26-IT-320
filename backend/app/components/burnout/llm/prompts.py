@@ -11,17 +11,20 @@ BASE = (
 )
 
 # Single source for every place a crisis message is shown (chat reply + journal care card).
-# Numbers checked 16 Oct 2026 against findahelpline.com (Sri Lanka) and NIMH; re-check before any real deployment.
+# 1926 (NIMH) and 1990 (Suwa Seriya ambulance) are consistent across sources; 1333 is listed by two sources (under different
+# organisations); 119 is the police emergency line and was NOT confirmed from a source in this project. Sumithrayo's number
+# differs between sources, so it is left out until the researcher confirms it from the official site.
+# THE RESEARCHER MUST CONFIRM EVERY NUMBER FROM THE OFFICIAL SOURCE BEFORE REAL STUDENTS USE THIS.
 HELPLINES = [
-    {"name": "National Mental Health Helpline (NIMH)", "number": "1926", "note": "free, 24/7, call or SMS"},
-    {"name": "Crisis Support Line", "number": "1333", "note": "free, 24/7"},
-    {"name": "Sri Lanka Sumithrayo", "number": "+94 707 308 308", "note": "emotional support"},
-    {"name": "Emergency (police / ambulance)", "number": "119 / 1990", "note": "if you are in immediate danger"},
+    {"name": "National Mental Health Helpline (NIMH)", "number": "1926", "note": "call or SMS"},
+    {"name": "Crisis support line", "number": "1333", "note": "emotional support"},
+    {"name": "Emergency ambulance (Suwa Seriya)", "number": "1990", "note": "free, if you are in immediate danger"},
+    {"name": "Police emergency", "number": "119", "note": "if you are in immediate danger"},
 ]
 CRISIS_REPLY = (
     "I'm really glad you told me. This sounds serious, and you deserve support from a real person "
-    "right now. In Sri Lanka you can call the National Mental Health Helpline 1926 (free, 24/7) or the "
-    "Crisis Support Line 1333. If you are in immediate danger, call 119 or 1990, or go to the nearest "
+    "right now. In Sri Lanka you can call the National Mental Health Helpline 1926 or the "
+    "support line 1333. If you are in immediate danger, call 119 or 1990, or go to the nearest "
     "hospital. Is there someone you trust who can be with you?"
 )
 

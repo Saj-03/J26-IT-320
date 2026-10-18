@@ -61,3 +61,8 @@ class PreferencesOut(BaseModel):
 class MoodTapOut(BaseModel):
     mood: int
     created_at: str      # ISO-8601 UTC ("Z")
+
+
+class TipEventIn(BaseModel):
+    category: str = Field(max_length=40)
+    action: Literal["shown", "tried", "dismissed"]

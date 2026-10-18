@@ -54,6 +54,8 @@ export default function PrivacySettings() {
           <li><strong className="text-charcoal">Your journal and chat</strong> are private to you. No other part of ThriveU, and no teacher, can read them.</li>
           <li><strong className="text-charcoal">Your scheduler</strong> only receives a simple level (low, moderate or elevated) and a trend. Never your words.</li>
           <li><strong className="text-charcoal">Physical wellbeing</strong> only receives whether a lighter, recovery-focused plan may help.</li>
+          <li><strong className="text-charcoal">Voice entry</strong> uses your browser's speech recognition. Depending on the browser, audio may be processed by the browser provider. Typing keeps everything on ThriveU.</li>
+          <li><strong className="text-charcoal">Tips</strong>: we note whether you tried or dismissed a tip (the tip type only, never your words), to learn which ideas help.</li>
           <li><strong className="text-charcoal">This is not a diagnosis.</strong> It is a pattern compared with your own usual week.</li>
         </ul>
       </Card>

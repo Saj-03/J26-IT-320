@@ -52,3 +52,13 @@ class BurnoutPreference(Base):
     share_with_scheduler: Mapped[bool] = mapped_column(Boolean, default=True)   # off = signals stay private to the student
     chat_enabled: Mapped[bool] = mapped_column(Boolean, default=False)          # chat is opt-in
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class TipEvent(Base):
+    """Whether a shown tip was acted on (click-through metric in the proposal). Category only, never the student's words."""
+    __tablename__ = "burnout_tip_events"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    category: Mapped[str] = mapped_column(String)
+    action: Mapped[str] = mapped_column(String)          # shown / tried / dismissed
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

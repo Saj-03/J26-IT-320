@@ -88,7 +88,8 @@ async def chat(data: schemas.ChatIn, db: Session = Depends(get_db), user=Depends
         recent = (db.query(ChatMessage).filter_by(user_id=user.id)
                     .order_by(ChatMessage.created_at.desc()).limit(10).all())
         history = [{"role": m.role, "content": m.content} for m in reversed(recent)]
-        ctx = service.build_context(db, user) if data.context_grounded else None
+        grounded = data.context_grounded and service.chat_grounded(user)      # Baseline 2 users never get context
+        ctx = service.build_context(db, user) if grounded else None
         try:
             text = await chat_agent.reply(prompts.build_system_prompt(ctx), history, ctx)
         except Exception:            # never crash the endpoint on an LLM/network error
@@ -96,7 +97,7 @@ async def chat(data: schemas.ChatIn, db: Session = Depends(get_db), user=Depends
 
     db.add(ChatMessage(user_id=user.id, role="assistant", content=text)); db.commit()
     return {"reply": text, "crisis_flag": crisis, "helplines": prompts.HELPLINES if crisis else [],
-            "knows_your_week": bool(not crisis and data.context_grounded and service.build_context(db, user))}
+            "knows_your_week": bool(not crisis and service.chat_grounded(user) and data.context_grounded and service.build_context(db, user))}
 
 
 @router.post("/signal/compute", response_model=schemas.SignalOut)
@@ -117,6 +118,12 @@ def demo(scenario: Literal["bad", "normal"], db: Session = Depends(get_db), user
     if not settings.DEMO_MODE:
         raise HTTPException(404, "Demo mode is off")
     return service.to_out(service.seed_demo(db, user, scenario))
+
+
+@router.post("/tip-event")
+def tip_event(data: schemas.TipEventIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Log that a tip was shown / tried / dismissed (for the click-through metric)."""
+    return {"logged": service.log_tip_event(db, user, data.category, data.action)}
 
 
 @router.get("/preferences", response_model=schemas.PreferencesOut)

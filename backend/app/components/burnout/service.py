@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.components.burnout.models import JournalEntry, ChatMessage, MoodTap, WellbeingSignal, BurnoutPreference
+from app.components.burnout.models import JournalEntry, ChatMessage, MoodTap, WellbeingSignal, BurnoutPreference, TipEvent
 from app.components.burnout.ml.fusion import fuse
 from app.components.burnout.ml.deviation_detector import deviation_score, deviation_detail
 from app.components.burnout import tips
@@ -106,11 +106,30 @@ def set_prefs(db: Session, user, share: bool | None, chat: bool | None) -> Burno
     return p
 
 
+def chat_grounded(user) -> bool:
+    """Baseline 2 (proposal 3.3): participants listed in BASELINE2_IDS talk to the same agent WITHOUT academic context.
+    Assigned by the researcher (not by the student), so the comparison group is controlled."""
+    from app.core.config import settings
+    ids = {i.strip() for i in settings.BASELINE2_IDS.split(",") if i.strip()}
+    return user.research_id not in ids
+
+
+def log_tip_event(db: Session, user, category: str, action: str) -> bool:
+    """Record shown / tried / dismissed. A 'shown' is stored once per category per day so refreshing does not inflate it."""
+    if action == "shown":
+        start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        if (db.query(TipEvent).filter(TipEvent.user_id == user.id, TipEvent.category == category,
+                                      TipEvent.action == "shown", TipEvent.created_at >= start).first()):
+            return False
+    db.add(TipEvent(user_id=user.id, category=category, action=action)); db.commit()
+    return True
+
+
 def delete_my_data(db: Session, user) -> dict:
     """Erase everything Component 4 holds about this student, including what it sent to other components.
     The Scheduler's own behaviour data (DeviationSignal) belongs to Component 3 and is not touched here."""
     n = {}
-    for name, model in (("journal", JournalEntry), ("chat", ChatMessage), ("mood", MoodTap), ("signals", WellbeingSignal)):
+    for name, model in (("journal", JournalEntry), ("chat", ChatMessage), ("mood", MoodTap), ("signals", WellbeingSignal), ("tips", TipEvent)):
         n[name] = db.query(model).filter(model.user_id == user.id).delete()
     n["sent_signals"] = (db.query(SignalEvent)
                            .filter(SignalEvent.student_id == user.research_id, SignalEvent.signal_type.in_(["RISK", "RECOVERY"]))

@@ -15,3 +15,4 @@ export const setPreferences = (p) => api.put("/burnout/preferences", p).then((r)
 export const deleteMyData = () => api.delete("/burnout/my-data").then((r) => r.data);
 export const updateJournal = (id, text) => api.put(`/burnout/journal/${id}`, { mode: "text", text }).then((r) => r.data);
 export const moodHistory = () => api.get("/burnout/mood/history").then((r) => r.data);
+export const logTipEvent = (category, action) => api.post("/burnout/tip-event", { category, action }).then((r) => r.data).catch(() => null);

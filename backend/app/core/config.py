@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     LLM_PROVIDER: str = "anthropic"            # "anthropic" or "openai" (any OpenAI-compatible API, e.g. Groq, Gemini)
     LLM_BASE_URL: str = ""                     # only for provider "openai", e.g. https://api.groq.com/openai/v1
     RISK_SIGNAL_MAX_AGE_HOURS: int = 24       # freshness check (C3 <- C4)
+    BASELINE2_IDS: str = ""                   # comma-separated research_ids whose chat gets NO academic context (Baseline 2, pilot)
     DEMO_MODE: bool = True                    # enables /burnout/demo/* (seeds sample weeks); set False in production
     URGENT_DEADLINE_WINDOW_HOURS: int = 48    # tasks due inside this window are never deferred
 

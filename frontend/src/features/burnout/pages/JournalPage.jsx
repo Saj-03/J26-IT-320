@@ -328,6 +328,9 @@ export default function JournalPage() {
                 )}
                 <span className="ml-auto text-xs text-charcoal-muted">{words(text)} words</span>
               </div>
+              <div>
+                <p className="mt-2 text-[11px] text-charcoal-muted">Speak uses your browser's speech recognition. Depending on the browser, your audio may be processed by the browser provider. Typing keeps everything on ThriveU.</p>
+              </div>
             </>
           ) : (
             <p className="mt-4 whitespace-pre-wrap text-[15px] leading-7 text-charcoal">{selected.text}</p>
