@@ -555,3 +555,44 @@ class FocusIn(BaseModel):
 
 class DecisionIn(BaseModel):
     decision: str   # accepted / edited / rejected
+
+
+# ===========================================================================
+# PLAN MY WEEK (Module D - CP-SAT scheduler)
+# ===========================================================================
+class PlannedSessionOut(BaseModel):
+    id: str
+    task_id: str
+    title: str
+    load: str
+    start: datetime                  # UTC
+    end: datetime
+    minutes: int
+    break_minutes: int
+    piece: int                       # piece 2 ...
+    of: int                          # ... of 3
+    chance: float | None             # M1 chance of finishing it here (adaptive only)
+    deadline: datetime
+
+
+class UnplacedTaskOut(BaseModel):
+    task_id: str
+    title: str
+    minutes: int                     # work that did not fit
+    reason: str
+
+
+class PlanOut(BaseModel):
+    mode: str                        # adaptive / static / attention_only
+    sessions: list[PlannedSessionOut]
+
+
+class PlanBuiltOut(PlanOut):
+    plan_id: str
+    status: str                      # OPTIMAL / FEASIBLE (CP-SAT)
+    latency_ms: int
+    focus_minutes: int               # piece size used
+    break_minutes: int
+    timer_source: str                # m1_model / history_rules / survey / static_default ...
+    attention_source: str            # m1_model / survey / none
+    unplaced: list[UnplacedTaskOut]

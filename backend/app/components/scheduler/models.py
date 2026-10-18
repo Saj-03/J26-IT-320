@@ -8,6 +8,7 @@ How the tables fit together (every table belongs to one student via user_id):
     users ─┬─< tasks ──────────< tasks          (a big task can have subtasks)
            ├─< commitments                     (lectures, work hours = busy time)
            ├─< focus_sessions >── tasks        (training data for the attention model M1)
+           ├─< planned_sessions >── tasks      (pieces placed by the CP-SAT scheduler)
            ├── scheduler_settings              (one row per student: mode, timer, opt-outs)
            ├─< schedule_changes                (stress-responsive proposals + student decision)
            ├─< reward_events                   (XP / badges / streaks)
@@ -162,6 +163,32 @@ class FocusSession(Base):
     mode: Mapped[str] = mapped_column(String, default="adaptive")           # experiment mode then
     timer_recommended: Mapped[bool] = mapped_column(Boolean, default=False)  # length came from M1?
     timer_overridden: Mapped[bool] = mapped_column(Boolean, default=False)   # student changed it?
+
+
+# ===========================================================================
+# 3b. PLANNED SESSIONS  (FR-04, FR-14) - the pieces the CP-SAT scheduler placed
+# ===========================================================================
+class PlannedSession(Base):
+    """
+    One planned study piece, e.g. "ML past paper - part 2 of 3, Mon 20:00-20:40".
+    A new plan replaces the student's future pieces; past ones are kept for the research data.
+    """
+    __tablename__ = "planned_sessions"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=new_id)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    task_id: Mapped[str] = mapped_column(ForeignKey("tasks.id"), index=True)
+    plan_id: Mapped[str] = mapped_column(String, index=True)       # all pieces of one "Plan my week" run
+
+    start: Mapped[datetime] = mapped_column(DateTime, index=True)   # UTC
+    end: Mapped[datetime] = mapped_column(DateTime)
+    minutes: Mapped[int] = mapped_column(Integer)
+    break_minutes: Mapped[int] = mapped_column(Integer, default=5)
+    piece: Mapped[int] = mapped_column(Integer, default=1)          # 2 ...
+    piece_count: Mapped[int] = mapped_column(Integer, default=1)    # ... of 3
+    chance: Mapped[float | None] = mapped_column(nullable=True)     # M1 chance of finishing it (adaptive only)
+    mode: Mapped[str] = mapped_column(String, default="adaptive")   # experiment mode when planned
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
 # ===========================================================================

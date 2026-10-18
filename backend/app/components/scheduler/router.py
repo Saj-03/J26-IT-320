@@ -12,7 +12,7 @@ from app.db.session import get_db
 from app.core.dependencies import get_current_user
 from app.components.scheduler import (
     schemas, service, task_service, commitment_service, focus_service, settings_service, stress_service,
-    attention_service, progress_service,
+    attention_service, progress_service, planner_service,
 )
 from app.components.scheduler.models import Task, FocusSession, ScheduleChange
 from app.components.scheduler.engine import stress_rules
@@ -190,6 +190,21 @@ def progress(db: Session = Depends(get_db), user=Depends(get_current_user)):
 
 
 # ===========================================================================
+# PLAN MY WEEK  (FR-04, FR-14) - CP-SAT scheduler (Module D)
+# ===========================================================================
+@router.post("/plan", response_model=schemas.PlanBuiltOut)
+def build_plan(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Plan my open tasks for the next 7 days (replaces the future part of my old plan)."""
+    return planner_service.build_plan(db, user)
+
+
+@router.get("/plan", response_model=schemas.PlanOut)
+def get_plan(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """My planned study pieces from now on."""
+    return planner_service.plan_view(db, user)
+
+
+# ===========================================================================
 # ATTENTION PROFILE  (FR-05, FR-13, FR-15) - from the M1 model
 # ===========================================================================
 @router.get("/attention/profile", response_model=schemas.AttentionProfileOut)
@@ -262,12 +277,6 @@ def send_weekly_summary(weeks: int = Query(1, ge=1, le=weekly_summary.MAX_BACKFI
                         db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Send my last finished week(s) to Component 4. Safe to repeat - each week is sent once."""
     return weekly_summary.send_recent_weeks(db, user, weeks)
-
-
-@router.get("/plan")
-def plan(adaptive: bool = True, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    """adaptive=false gives the STATIC baseline used in the controlled pilot."""
-    return service.build_plan(db, user, adaptive)
 
 
 @router.post("/focus")
