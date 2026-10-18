@@ -14,6 +14,11 @@ import { cn } from "../shared/lib/cn";
 const XP_PER_LEVEL = 200;          // same as the backend (level = 1 + XP / 200)
 const CALENDAR_DAYS = 35;          // 5 weeks
 const DAY_CHANGE_HOUR = 3;         // work until 03:00 counts to the day before (same as the backend)
+const XP_RULES = [
+    { emoji: '⏱️', title: 'Finish a focus session', text: '1 XP per focused minute - ×1.2 for medium and ×1.5 for heavy work.' },
+    { emoji: '✅', title: 'Complete a task', text: '+10 light · +20 medium · +35 heavy. Every 200 XP is a new level.' },
+    { emoji: '🔥', title: 'Keep a streak', text: 'Study a little every day. One missed day a week and stressful days are forgiven.' },
+];
 
 export function Progress() {
     const { user } = useAuth();
@@ -36,7 +41,7 @@ export function Progress() {
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Level hero */}
-        <Card padding="lg" className="lg:col-span-2 relative overflow-hidden">
+        <Card padding="lg" className="lg:col-span-2 relative overflow-hidden flex flex-col">
           <div className="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-brand-50" aria-hidden/>
           <div className="relative flex flex-col sm:flex-row sm:items-center gap-6">
             <div className="w-24 h-24 rounded-3xl bg-brand-500 text-white flex flex-col items-center justify-center shadow-glow shrink-0">
@@ -66,6 +71,18 @@ export function Progress() {
                 <p className="text-xl font-extrabold text-charcoal">{s.v}</p>
                 <p className="text-xs font-semibold text-charcoal-muted mt-0.5">{s.l}</p>
               </div>)}
+          </div>
+
+          {/* How XP is earned (same numbers as the backend, engine/gamification.py) */}
+          <div className="mt-6 pt-5 border-t border-black/[0.05] flex-1 flex flex-col">
+            <h3 className="font-bold text-charcoal">How you earn XP</h3>
+            <div className="grid sm:grid-cols-3 gap-3 mt-3 flex-1">
+              {XP_RULES.map((r) => <div key={r.title} className="rounded-2xl border border-black/[0.06] p-4">
+                  <div className="text-2xl">{r.emoji}</div>
+                  <p className="text-sm font-bold text-charcoal mt-2">{r.title}</p>
+                  <p className="text-xs text-charcoal-muted mt-1 leading-relaxed">{r.text}</p>
+                </div>)}
+            </div>
           </div>
         </Card>
 
