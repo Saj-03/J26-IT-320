@@ -14,47 +14,17 @@ import { CameraOffIcon, ShieldCheckIcon } from 'lucide-react';
 
 /* ─── MediaPipe CDN loader (loaded once, on demand) ─────────────────────── */
 const MEDIAPIPE_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404';
-let poseScriptPromise = null;
 
 function loadScript(src) {
-    if (typeof window.Pose === 'function') return Promise.resolve();
-    if (poseScriptPromise) return poseScriptPromise;
-
-    poseScriptPromise = new Promise((resolve, reject) => {
-        let script = Array.from(document.scripts).find((item) => item.src === src);
-        let timeoutId;
-        const fail = (message) => {
-            window.clearTimeout(timeoutId);
-            script?.removeEventListener('load', onLoad);
-            script?.removeEventListener('error', onError);
-            script?.remove();
-            poseScriptPromise = null;
-            reject(new Error(message));
-        };
-        const onLoad = () => {
-            window.clearTimeout(timeoutId);
-            script?.removeEventListener('load', onLoad);
-            script?.removeEventListener('error', onError);
-            if (typeof window.Pose === 'function') resolve();
-            else fail('The pose model script loaded without its tracking API.');
-        };
-        const onError = () => fail('Could not download the pose model. Check your internet connection and try again.');
-
-        if (!script) {
-            script = document.createElement('script');
-            script.src = src;
-            script.crossOrigin = 'anonymous';
-        }
-        script.addEventListener('load', onLoad, { once: true });
-        script.addEventListener('error', onError, { once: true });
-        timeoutId = window.setTimeout(
-            () => fail('The pose model is taking too long to load. Check your internet connection and retry.'),
-            25000
-        );
-        if (!script.isConnected) document.head.appendChild(script);
+    return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) return resolve();
+        const s = document.createElement('script');
+        s.src = src;
+        s.crossOrigin = 'anonymous';
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
     });
-
-    return poseScriptPromise;
 }
 
 /* ─── Skeleton drawing helpers ────────────────────────────────────────────── */
@@ -205,7 +175,7 @@ export function PoseTracker({ exerciseName = '' }) {
                 setLoadingMessage('Waiting for camera permission…');
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: { width: 640, height: 480, facingMode: 'user' },
-                    audio: false,                  // no audio captured
+                    audio: false,
                 });
                 if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return; }
                 streamRef.current = stream;
@@ -288,6 +258,8 @@ export function PoseTracker({ exerciseName = '' }) {
                     setErrorMsg('The camera is busy in another app or browser tab. Close it there and retry.');
                 } else if (err.name === 'SecurityError') {
                     setErrorMsg('Camera access was blocked by the browser. Use localhost or HTTPS and check site permissions.');
+                } else if (err.name === 'AbortError' || /timeout starting video source/i.test(err.message || '')) {
+                    setErrorMsg('Your browser timed out while starting the camera. Close other apps or tabs using it, check Windows camera privacy access, then retry.');
                 } else {
                     setErrorMsg(err.message ? `Could not start webcam tracking: ${err.message}` : 'Could not start the camera. Please retry.');
                 }

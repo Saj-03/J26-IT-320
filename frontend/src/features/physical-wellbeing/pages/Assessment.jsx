@@ -150,18 +150,26 @@ export function PhysicalAssessment() {
   const navigate = useNavigate();
   const student = useStudent();
   const [step, setStep] = useState(0);
-  const [state, setState] = useState(initialAssessment);
+  const genderKey = `wellbeing-buddy-gender:${student.email || 'guest'}`;
+  const [state, setState] = useState(() => ({
+    ...initialAssessment,
+    gender: localStorage.getItem(genderKey) || initialAssessment.gender,
+  }));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const set = (key, value) => setState((s) => ({ ...s, [key]: value }));
+  const set = (key, value) => {
+    if (key === 'gender') localStorage.setItem(genderKey, value);
+    setState((s) => ({ ...s, [key]: value }));
+  };
 
   const finish = async () => {
     setSaving(true);
     setError('');
     try {
+      // Keep the companion choice even if profile creation needs to be retried.
+      localStorage.setItem(genderKey, state.gender);
       await saveProfile(toProfile(state));
-      localStorage.setItem(`wellbeing-buddy-gender:${student.email || 'guest'}`, state.gender);
       navigate('/physical-setup/generating');
     }
     catch (err) {
