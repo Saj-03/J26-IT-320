@@ -36,12 +36,12 @@ export function PhysicalProgress() {
 
   const weeklySteps = activitySummary?.weekly_totals?.steps || 0;
   const weeklyMins = activitySummary?.weekly_totals?.exercise_minutes || 0;
-  const history = activitySummary?.history_7_days || [];
+  const history = activitySummary?.daily_history || [];
   const totalHabits = habits.length;
   const doneHabits = habits.filter((h) => h.done).length;
 
   const chartData = history.map((h) => ({
-    label: h.label,
+    label: h.day || h.label,
     value: metricTab === 'Steps' ? (h.steps || 0) : (h.exercise_minutes || 0)
   }));
   const hasHistory = chartData.some((d) => d.value > 0);

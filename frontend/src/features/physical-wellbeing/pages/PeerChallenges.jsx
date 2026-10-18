@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { ArrowUpRightIcon, CheckIcon, CopyIcon, LinkIcon, PlusIcon, ShieldCheckIcon, UsersRoundIcon } from 'lucide-react';
+import { ArrowUpRightIcon, CheckIcon, CopyIcon, LinkIcon, PlusIcon, ShieldCheckIcon, Trash2Icon, UsersRoundIcon } from 'lucide-react';
 import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { Field } from '../../../shared/components/ui/Field';
 import { PhysicalNav } from '../components/PhysicalNav';
 import {
-  createPeerChallenge, getInvitedChallenge, getPeerChallenges,
+  createPeerChallenge, deletePeerChallenge, getInvitedChallenge, getPeerChallenges,
   joinInvitedChallenge, updateInvitedChallengeScore, updatePeerChallengeScore,
 } from '../api';
 import { apiErrorMessage } from '../../../shared/api/client';
@@ -65,10 +65,11 @@ function SquadRoster({ challenge }) {
   </div>;
 }
 
-function ChallengeCard({ challenge, onProgress }) {
+function ChallengeCard({ challenge, onProgress, onDelete }) {
   const metric = METRICS[challenge.metric] || METRICS.minutes;
   const [amount, setAmount] = useState('');
   const [busy, setBusy] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const pct = Math.min(100, Math.round((challenge.team_score / challenge.target) * 100));
@@ -111,9 +112,20 @@ function ChallengeCard({ challenge, onProgress }) {
             <p className="mt-0.5 text-xs text-charcoal-muted">Shared goal: {challenge.target.toLocaleString()} {metric.unit} · {challenge.participant_count}/6 explorers · {challenge.invitee_count} guest{challenge.invitee_count === 1 ? '' : 's'} joined</p>
           </div>
         </div>
-        <button onClick={copyLink} className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-2 text-xs font-bold text-charcoal hover:bg-cream">
-          {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}{copied ? 'Copied' : 'Copy invite'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={copyLink} className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-2 text-xs font-bold text-charcoal hover:bg-cream">
+            {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}{copied ? 'Copied' : 'Copy invite'}
+          </button>
+          <button type="button" onClick={async () => {
+            if (!window.confirm(`Delete “${challenge.title}”? This will end the quest and remove its participants and scores.`)) return;
+            setDeleting(true);
+            setError('');
+            try { await onDelete(challenge); }
+            catch (err) { setError(apiErrorMessage(err, 'Could not delete this challenge.')); setDeleting(false); }
+          }} disabled={deleting} aria-label={`Delete ${challenge.title}`} title="Delete challenge" className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 disabled:opacity-60">
+            <Trash2Icon size={14} />{deleting ? 'Deleting…' : 'Delete'}
+          </button>
+        </div>
       </div>
 
       <div className="mt-5 rounded-2xl bg-gradient-to-r from-emerald-50 to-lime-50 p-3.5">
@@ -174,6 +186,11 @@ export function PeerChallenges() {
     setChallenges((current) => current.map((item) => item.id === updated.id ? updated : item));
   };
 
+  const removeChallenge = async (challenge) => {
+    await deletePeerChallenge(challenge.id);
+    setChallenges((current) => current.filter((item) => item.id !== challenge.id));
+  };
+
   return (
     <div className="min-h-screen bg-cover bg-center bg-fixed px-3 py-5 sm:px-6 sm:py-8" style={{ backgroundImage: "linear-gradient(rgba(239,246,235,.76), rgba(239,246,235,.82)), url('/img/jungle-quest-bg.png')" }}>
       <div className="mx-auto max-w-7xl space-y-6">
@@ -201,7 +218,7 @@ export function PeerChallenges() {
 
         <section className="space-y-4">
           <div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">Your private squads</p><h2 className="mt-1 text-xl font-extrabold text-charcoal">Active challenges</h2></div><span className="flex items-center gap-1.5 rounded-full bg-cream px-3 py-1.5 text-xs font-bold text-charcoal-muted"><UsersRoundIcon size={14} /> {challenges.length}</span></div>
-          {loading ? <Card padding="lg" className="text-center text-sm text-charcoal-muted">Loading your challenges…</Card> : challenges.length ? challenges.map((challenge) => <ChallengeCard key={challenge.id} challenge={challenge} onProgress={saveProgress} />) : <Card padding="lg" className="text-center"><span className="text-3xl">🏁</span><h3 className="mt-2 font-extrabold text-charcoal">No challenges yet</h3><p className="mx-auto mt-1 max-w-sm text-sm text-charcoal-muted">Create a friendly challenge, copy its private link, and send it to someone you want to cheer on.</p></Card>}
+          {loading ? <Card padding="lg" className="text-center text-sm text-charcoal-muted">Loading your challenges…</Card> : challenges.length ? challenges.map((challenge) => <ChallengeCard key={challenge.id} challenge={challenge} onProgress={saveProgress} onDelete={removeChallenge} />) : <Card padding="lg" className="text-center"><span className="text-3xl">🏁</span><h3 className="mt-2 font-extrabold text-charcoal">No challenges yet</h3><p className="mx-auto mt-1 max-w-sm text-sm text-charcoal-muted">Create a friendly challenge, copy its private link, and send it to someone you want to cheer on.</p></Card>}
         </section>
       </div>
       </div>

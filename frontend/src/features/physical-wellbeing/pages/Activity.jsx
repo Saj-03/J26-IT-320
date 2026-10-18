@@ -12,6 +12,13 @@ import { getActivitySummary, logActivity, getProfile } from '../api';
 
 const metrics = ['Steps', 'Exercise Minutes'];
 
+function localDateString(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export function PhysicalActivity() {
   const [metric, setMetric] = useState('Steps');
   const [log, setLog] = useState({ steps: '', exercise_minutes: '' });
@@ -47,7 +54,7 @@ export function PhysicalActivity() {
     setSaved(false);
     try {
       await logActivity({
-        day: new Date().toISOString().slice(0, 10),
+        day: localDateString(),
         steps: +log.steps || 0,
         exercise_minutes: +log.exercise_minutes || 0
       });
@@ -66,18 +73,18 @@ export function PhysicalActivity() {
   const todayMins = activitySummary?.today?.exercise_minutes || 0;
   const targetMins = profile?.available_minutes || 20;
 
-  const history = activitySummary?.history_7_days || [
-    { label: 'Mon', steps: 0, exercise_minutes: 0 },
-    { label: 'Tue', steps: 0, exercise_minutes: 0 },
-    { label: 'Wed', steps: 0, exercise_minutes: 0 },
-    { label: 'Thu', steps: 0, exercise_minutes: 0 },
-    { label: 'Fri', steps: 0, exercise_minutes: 0 },
-    { label: 'Sat', steps: 0, exercise_minutes: 0 },
-    { label: 'Sun', steps: 0, exercise_minutes: 0 }
+  const history = activitySummary?.daily_history || [
+    { day: 'Mon', steps: 0, exercise_minutes: 0 },
+    { day: 'Tue', steps: 0, exercise_minutes: 0 },
+    { day: 'Wed', steps: 0, exercise_minutes: 0 },
+    { day: 'Thu', steps: 0, exercise_minutes: 0 },
+    { day: 'Fri', steps: 0, exercise_minutes: 0 },
+    { day: 'Sat', steps: 0, exercise_minutes: 0 },
+    { day: 'Sun', steps: 0, exercise_minutes: 0 }
   ];
 
   const chartData = history.map((h) => ({
-    label: h.label,
+    label: h.day || h.label,
     value: metric === 'Steps' ? (h.steps || 0) : (h.exercise_minutes || 0)
   }));
 
@@ -203,7 +210,7 @@ export function PhysicalActivity() {
       <Card padding="lg">
         <SectionTitle
           title="Log Today's Activity"
-          subtitle="Real measurements only — feeds directly into your XGBoost adaptive schedule."
+          subtitle="Log real measurements to update today's totals and your 7-day movement history. Workout check-ins help tune future session length."
         />
         <form onSubmit={submit} className="grid sm:grid-cols-[1fr_1fr_auto] gap-4 items-end">
           <Field
