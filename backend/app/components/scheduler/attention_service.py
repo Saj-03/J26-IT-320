@@ -34,10 +34,12 @@ def study_hours(db: Session, user) -> list[int]:
     return [h % 24 for h in range(s["day_start_hour"], s["day_end_hour"])]
 
 
-def attention_profile(db: Session, user, now: datetime | None = None) -> dict:
-    """M1 profile, or the reason it is not available yet."""
+def attention_profile(db: Session, user, now: datetime | None = None,
+                      sessions: list[FocusSession] | None = None, hours: list[int] | None = None) -> dict:
+    """M1 profile, or the reason it is not available yet.
+    sessions / hours can be passed in when the caller already loaded them (saves database trips)."""
     now = now or datetime.utcnow()
-    sessions = usable_sessions(db, user)
+    sessions = usable_sessions(db, user) if sessions is None else sessions
     base = {"sessions_used": len(sessions), "min_sessions": MIN_SESSIONS}
 
     if len(sessions) < MIN_SESSIONS:
@@ -46,7 +48,7 @@ def attention_profile(db: Session, user, now: datetime | None = None) -> dict:
     if not m1_predictor.available():
         return {**base, "source": "model_unavailable", "reason": "The focus model is not installed on this server."}
 
-    profile = m1_predictor.M1Student(sessions, now).profile(study_hours(db, user))
+    profile = m1_predictor.M1Student(sessions, now).profile(hours or study_hours(db, user))
     best = profile["peak_hours"][0]
     return {**base, **profile, "source": "m1_model",
             "reason": f"From your last {len(sessions)} sessions: you focus best around {best:02d}:00 "

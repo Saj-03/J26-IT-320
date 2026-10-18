@@ -18,7 +18,7 @@ import PlannedTasks from '../components/PlannedTasks';
 import { categoryStyles } from '../../../shared/lib/data';
 import { apiErrorMessage } from '../../../shared/api/client';
 import { finishTask, getAttentionProfile, getPlan, getStressStatus, listCommitments, listTasks, planMyWeek, updateTask, utcMs } from '../api';
-import { LOAD_LABEL, hoursLabel, isOpen, stressStyles } from '../lib';
+import { LOAD_LABEL, hoursList, isOpen, stressStyles } from '../lib';
 import { cn } from '../../../shared/lib/cn';
 
 const DAY_COUNT = 7;
@@ -304,7 +304,7 @@ function PlanResult({ result, onClose }) {
           </p>
           {heavy.length > 0 && result.peak_hours.length > 0 &&
             <p className="text-sm font-semibold text-brand-700 mt-2">
-              🔥 {heavyGood} of {heavy.length} heavy parts are in your best focus hours ({hoursLabel(result.peak_hours)}).
+              🔥 {heavyGood} of {heavy.length} heavy parts are in your best focus hours ({hoursList(result.peak_hours)}).
             </p>}
           {result.unplaced.length > 0 &&
             <div className="mt-3 rounded-2xl bg-white p-3 space-y-1">

@@ -2,6 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api" });
+const BACKEND_PORT = new URL(api.defaults.baseURL).port || "80";   // e.g. "8000" (shown in the error message)
 
 // "Remember me" keeps the token in localStorage (survives restarts); otherwise it lives
 // in sessionStorage and disappears when the browser closes.
@@ -37,7 +38,7 @@ api.interceptors.response.use(
 
 /* Turn any API error into one readable sentence (FastAPI 422s arrive as a list of field errors). */
 export function apiErrorMessage(err, fallback = "Something went wrong. Please try again.") {
-  if (!err?.response) return "Cannot reach the server. Is the backend running on port 8000?";
+  if (!err?.response) return `Cannot reach the server. Is the backend running on port ${BACKEND_PORT}?`;
   const detail = err.response.data?.detail;
   if (typeof detail === "string") return detail;
   if (Array.isArray(detail) && detail.length) {

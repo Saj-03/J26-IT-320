@@ -70,14 +70,12 @@ def free_time(db: Session, user, fixed: list[Task], now: datetime) -> list[tuple
 # ---------------------------------------------------------------------------
 # 2. How to plan (depends on the experiment mode)
 # ---------------------------------------------------------------------------
-def attention_fit(db: Session, user, settings: dict, profile: dict, piece_minutes: int, now: datetime):
+def attention_fit(settings: dict, profile: dict, sessions, hours: list[int], piece_minutes: int, now: datetime):
     """(fit function for the engine, where it came from).  fit(hour, minutes, load) -> chance 0..1"""
     if settings["mode"] == "static":
         return None, "none"
 
     if profile["source"] == "m1_model":
-        sessions = attention_service.usable_sessions(db, user)
-        hours = attention_service.study_hours(db, user)
         loads = ["heavy", "medium", "low"]
         questions = [(h, piece_minutes, load) for load in loads for h in hours]   # one batch for M1
         answers = m1_predictor.M1Student(sessions, now).chances(questions)
@@ -110,10 +108,15 @@ def build_plan(db: Session, user, now: datetime | None = None) -> dict:
     now = now or datetime.utcnow()
     settings = get_settings(db, user)
     tasks, fixed = open_tasks(db, user, now)
-    profile = ({"source": "static"} if settings["mode"] == "static"   # baseline: no attention at all
-               else attention_service.attention_profile(db, user, now))   # M1 once, used twice below
+    # Load the focus history and study hours ONCE (each database trip to Neon costs ~0.3 s)
+    hours = [h % 24 for h in range(settings["day_start_hour"], settings["day_end_hour"])]
+    if settings["mode"] == "static":                                  # baseline: no attention at all
+        sessions, profile = [], {"source": "static"}
+    else:
+        sessions = attention_service.usable_sessions(db, user)
+        profile = attention_service.attention_profile(db, user, now, sessions, hours)
     focus, rest, timer_source = piece_size(db, user, settings, profile)
-    fit, attention_source = attention_fit(db, user, settings, profile, focus, now)
+    fit, attention_source = attention_fit(settings, profile, sessions, hours, focus, now)
 
     items = [WorkItem(t.id, work_left(t), t.deadline, t.priority, t.cognitive_load) for t in tasks]
     result = cp_scheduler.schedule(items, free_time(db, user, fixed, now), now,
@@ -143,7 +146,7 @@ def build_plan(db: Session, user, now: datetime | None = None) -> dict:
                                       "attention": attention_source, "focus_minutes": focus}))
     db.commit()
 
-    return {**plan_view(db, user, now), "plan_id": plan_id, "status": result["status"],
+    return {**plan_view(db, user, now, settings["mode"]), "plan_id": plan_id, "status": result["status"],
             "latency_ms": latency_ms, "focus_minutes": focus, "break_minutes": rest,
             "timer_source": timer_source, "attention_source": attention_source,
             "peak_hours": profile["peak_hours"] if attention_source == "m1_model" else [],
@@ -156,7 +159,7 @@ def unplaced_view(tasks: list[Task], unplaced: list[dict]) -> list[dict]:
              "reason": "Not enough free time before the deadline"} for u in unplaced]
 
 
-def plan_view(db: Session, user, now: datetime | None = None) -> dict:
+def plan_view(db: Session, user, now: datetime | None = None, mode: str | None = None) -> dict:
     """The student's planned pieces from now on, with the task title and load."""
     now = now or datetime.utcnow()
     rows = (db.query(PlannedSession, Task)
@@ -164,7 +167,7 @@ def plan_view(db: Session, user, now: datetime | None = None) -> dict:
               .filter(PlannedSession.user_id == user.id, PlannedSession.end > now,
                       Task.status.in_(OPEN))
               .order_by(PlannedSession.start).all())
-    return {"mode": get_settings(db, user)["mode"],
+    return {"mode": mode or get_settings(db, user)["mode"],
             "sessions": [{"id": p.id, "task_id": t.id, "title": t.title, "load": t.cognitive_load,
                           "start": p.start, "end": p.end, "minutes": p.minutes,
                           "break_minutes": p.break_minutes, "piece": p.piece, "of": p.piece_count,
