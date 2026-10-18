@@ -89,10 +89,14 @@ const toProfile = (s) => {
   }
 
   // Primary goal mapping
-  let primaryGoal = ['fitness', 'weight_loss', 'strength', 'mobility'].includes(s.primaryGoal)
-    ? s.primaryGoal
-    : 'fitness';
-  const goalsArr = Array.isArray(s.goals) && s.goals.length > 0 ? s.goals : ['Improve overall fitness'];
+  const customPrimaryGoal = String(s.primaryGoalText || '').trim();
+  const primaryGoal = s.primaryGoal === 'custom'
+    ? (customPrimaryGoal || 'fitness')
+    : (['fitness', 'weight_loss', 'weight_gain', 'strength', 'mobility'].includes(s.primaryGoal) ? s.primaryGoal : 'fitness');
+  const goalsArr = Array.isArray(s.goals) && s.goals.length > 0 ? [...s.goals] : ['Improve overall fitness'];
+  if (s.primaryGoal === 'custom' && customPrimaryGoal && !goalsArr.includes(customPrimaryGoal)) {
+    goalsArr.push(customPrimaryGoal);
+  }
 
   // Available minutes: parse integer from map or numeric string
   const availMins = TIME_MINUTES_MAP[s.availableTime] || parseInt(String(s.availableTime || '20').replace(/[^0-9]/g, ''), 10) || 20;

@@ -37,6 +37,7 @@ export const initialAssessment = {
 
     // Step 3: Goals & Current Activity
     primaryGoal: 'fitness',
+    primaryGoalText: '',
     goals: ['Improve overall fitness', 'Increase physical activity'],
     activityLevel: 'Moderately active',
     exerciseFreq: 3,
@@ -267,10 +268,21 @@ export function StepGoals({ state, set }) {
                 <p className="text-xs text-charcoal-muted mb-3">Choose the main outcome you want your plan to focus on.</p>
                 <SelectField label="Primary goal" value={state.primaryGoal || 'fitness'} onChange={(e) => set('primaryGoal', e.target.value)}>
                     <option value="fitness">Fitness</option>
-                    <option value="weight_loss">Manage body weight</option>
+                    <option value="weight_loss">Lose weight</option>
+                    <option value="weight_gain">Gain weight</option>
                     <option value="strength">Build strength</option>
                     <option value="mobility">Flexibility &amp; mobility</option>
+                    <option value="custom">Other — type my own</option>
                 </SelectField>
+                {state.primaryGoal === 'custom' && (
+                    <Field
+                        label="Your primary goal"
+                        placeholder="e.g. Improve my stamina"
+                        value={state.primaryGoalText || ''}
+                        onChange={(e) => set('primaryGoalText', e.target.value)}
+                        className="mt-3"
+                    />
+                )}
             </div>
 
             <div>
