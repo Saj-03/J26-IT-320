@@ -16,10 +16,11 @@ from datetime import datetime
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.components.scheduler.engine import m2_classifier
 from app.components.scheduler.models import FocusSession, SchedulerAuditLog, Task
 from app.components.scheduler.schemas import TaskCreate, TaskUpdate
 
-DEFAULT_LOAD = "medium"   # used until the M2 load classifier is ready
+DEFAULT_LOAD = "medium"   # used when the student picks nothing and the M2 model is not available
 
 
 # ---------------------------------------------------------------------------
@@ -62,15 +63,20 @@ def create_task(db: Session, user, data: TaskCreate) -> Task:
 
     fields = data.model_dump()
     student_picked_load = fields["cognitive_load"] is not None
-    fields["cognitive_load"] = fields["cognitive_load"] or DEFAULT_LOAD
-    # TODO (Step 8): when the student did not pick a load, ask the M2 classifier
-    #                and store its confidence in load_confidence.
+    confidence, load_source = None, "student"
+    if not student_picked_load:
+        # The student did not pick a load -> ask M2 (falls back to "medium" without the model)
+        if m2_classifier.available():
+            fields["cognitive_load"], confidence = m2_classifier.classify(data.title, data.description)
+            load_source = "m2_model"
+        else:
+            fields["cognitive_load"], load_source = DEFAULT_LOAD, "default"
 
-    task = Task(user_id=user.id, load_set_by_student=student_picked_load, **fields)
+    task = Task(user_id=user.id, load_set_by_student=student_picked_load, load_confidence=confidence, **fields)
     db.add(task)
     db.flush()                                   # gives task.id before commit
-    audit(db, user.id, "task_created", task_id=task.id, load=task.cognitive_load,
-          estimated_minutes=task.estimated_minutes, is_subtask=bool(task.parent_id))
+    audit(db, user.id, "task_created", task_id=task.id, load=task.cognitive_load, load_source=load_source,
+          load_confidence=confidence, estimated_minutes=task.estimated_minutes, is_subtask=bool(task.parent_id))
     db.commit()
     db.refresh(task)
     return task
@@ -107,6 +113,10 @@ def update_task(db: Session, user, task_id: str, data: TaskUpdate) -> Task:
     # Student changed the load -> remember that they overrode the AI
     # (this becomes a corrected training label for the M2 classifier)
     if "cognitive_load" in changes:
+        if not task.load_set_by_student and changes["cognitive_load"] != task.cognitive_load:
+            # what M2 (or the default) said vs what the student says -> real accuracy data for M2
+            audit(db, user.id, "load_overridden", task_id=task.id, was=task.cognitive_load,
+                  now=changes["cognitive_load"], model_confidence=task.load_confidence)
         task.load_set_by_student = True
 
     # Keep completed_at consistent with status
