@@ -14,17 +14,47 @@ import { CameraOffIcon, ShieldCheckIcon } from 'lucide-react';
 
 /* ─── MediaPipe CDN loader (loaded once, on demand) ─────────────────────── */
 const MEDIAPIPE_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404';
+let poseScriptPromise = null;
 
 function loadScript(src) {
-    return new Promise((resolve, reject) => {
-        if (document.querySelector(`script[src="${src}"]`)) return resolve();
-        const s = document.createElement('script');
-        s.src = src;
-        s.crossOrigin = 'anonymous';
-        s.onload = resolve;
-        s.onerror = reject;
-        document.head.appendChild(s);
+    if (typeof window.Pose === 'function') return Promise.resolve();
+    if (poseScriptPromise) return poseScriptPromise;
+
+    poseScriptPromise = new Promise((resolve, reject) => {
+        let script = Array.from(document.scripts).find((item) => item.src === src);
+        let timeoutId;
+        const fail = (message) => {
+            window.clearTimeout(timeoutId);
+            script?.removeEventListener('load', onLoad);
+            script?.removeEventListener('error', onError);
+            script?.remove();
+            poseScriptPromise = null;
+            reject(new Error(message));
+        };
+        const onLoad = () => {
+            window.clearTimeout(timeoutId);
+            script?.removeEventListener('load', onLoad);
+            script?.removeEventListener('error', onError);
+            if (typeof window.Pose === 'function') resolve();
+            else fail('The pose model script loaded without its tracking API.');
+        };
+        const onError = () => fail('Could not download the pose model. Check your internet connection and try again.');
+
+        if (!script) {
+            script = document.createElement('script');
+            script.src = src;
+            script.crossOrigin = 'anonymous';
+        }
+        script.addEventListener('load', onLoad, { once: true });
+        script.addEventListener('error', onError, { once: true });
+        timeoutId = window.setTimeout(
+            () => fail('The pose model is taking too long to load. Check your internet connection and retry.'),
+            25000
+        );
+        if (!script.isConnected) document.head.appendChild(script);
     });
+
+    return poseScriptPromise;
 }
 
 /* ─── Skeleton drawing helpers ────────────────────────────────────────────── */
@@ -78,7 +108,9 @@ function calcAngle(a, b, c) {
 }
 
 /* ─── Exercise-specific rep heuristics ──────────────────────────────────── */
-// Returns { angle, upThreshold, downThreshold } given landmarks and exercise
+// Return an angle configuration only for exercises with a simple, supported
+// movement pattern. Other exercises still get the live skeleton, without a
+// misleading rep estimate.
 function getRepConfig(lms, exerciseName) {
     const name = (exerciseName || '').toLowerCase();
 
@@ -102,18 +134,17 @@ function getRepConfig(lms, exerciseName) {
         // hip angle: shoulder-hip-knee (right: 12-24-26)
         return { angle: calcAngle(lms[12], lms[24], lms[26]), up: 160, down: 80 };
     }
-    // Default: generic move using right elbow
-    return { angle: calcAngle(lms[16], lms[14], lms[12]), up: 155, down: 95 };
+    return null;
 }
 
 /* ─── Form quality detector ──────────────────────────────────────────────── */
-function getFormStatus(landmarks) {
-    if (!landmarks || landmarks.length === 0) return 'detecting';
+function getVisibilityStatus(landmarks) {
+    if (!landmarks || landmarks.length === 0) return 'outside';
     const keyJoints = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26];
     const avgVis = keyJoints.reduce((s, i) => s + (landmarks[i]?.visibility || 0), 0) / keyJoints.length;
-    if (avgVis > 0.75) return 'good';
-    if (avgVis > 0.45) return 'adjust';
-    return 'detecting';
+    if (avgVis > 0.75) return 'visible';
+    if (avgVis > 0.45) return 'partial';
+    return 'outside';
 }
 
 /* ─── Rep state machine ──────────────────────────────────────────────────── */
@@ -146,8 +177,10 @@ export function PoseTracker({ exerciseName = '' }) {
     exerciseNameRef.current = exerciseName;
 
     const [status, setStatus] = useState('loading'); // loading | ready | error
+    const [loadingMessage, setLoadingMessage] = useState('Loading pose model…');
     const [errorMsg, setErrorMsg] = useState('');
-    const [formStatus, setFormStatus] = useState('detecting');
+    const [visibilityStatus, setVisibilityStatus] = useState('outside');
+    const [attempt, setAttempt] = useState(0);
     const { reps, feed, reset } = useRepCounter();
 
     /* Reset rep count when exercise changes */
@@ -160,11 +193,16 @@ export function PoseTracker({ exerciseName = '' }) {
         async function init() {
             try {
                 /* 1. Load MediaPipe scripts from CDN */
+                setLoadingMessage('Loading pose model…');
                 await loadScript(`${MEDIAPIPE_CDN}/pose.js`);
 
                 if (cancelled) return;
 
                 /* 2. Request camera — ONLY for live feed, never recorded */
+                if (!navigator.mediaDevices?.getUserMedia) {
+                    throw new Error('Camera access needs a secure page (HTTPS or localhost) and a supported browser.');
+                }
+                setLoadingMessage('Waiting for camera permission…');
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: { width: 640, height: 480, facingMode: 'user' },
                     audio: false,                  // no audio captured
@@ -176,10 +214,12 @@ export function PoseTracker({ exerciseName = '' }) {
                 video.srcObject = stream;
                 // Prevent any accidental download / picture-in-picture
                 video.disablePictureInPicture = true;
+                setLoadingMessage('Starting camera…');
                 await video.play();
 
                 /* 3. Init MediaPipe Pose */
                 const Pose = window.Pose;
+                if (typeof Pose !== 'function') throw new Error('The pose tracking API did not start. Please retry.');
                 const pose = new Pose({
                     locateFile: (file) => `${MEDIAPIPE_CDN}/${file}`,
                 });
@@ -199,11 +239,11 @@ export function PoseTracker({ exerciseName = '' }) {
                     const lms = results.poseLandmarks || [];
 
                     drawSkeleton(ctx, lms, canvas.width, canvas.height);
-                    setFormStatus(getFormStatus(lms));
+                    setVisibilityStatus(getVisibilityStatus(lms));
 
                     if (lms.length > 0) {
-                        const { angle, up, down } = getRepConfig(lms, exerciseNameRef.current);
-                        feed(angle, up, down);
+                        const repConfig = getRepConfig(lms, exerciseNameRef.current);
+                        if (repConfig) feed(repConfig.angle, repConfig.up, repConfig.down);
                     }
                 });
                 poseRef.current = pose;
@@ -211,8 +251,18 @@ export function PoseTracker({ exerciseName = '' }) {
                 /* 4. Feed frames to MediaPipe via requestAnimationFrame */
                 const tick = async () => {
                     if (cancelled) return;
-                    if (video.readyState >= 2) {
-                        await pose.send({ image: video });
+                    try {
+                        if (video.readyState >= 2) await pose.send({ image: video });
+                    } catch (err) {
+                        if (cancelled) return;
+                        setErrorMsg(`Pose tracking stopped: ${err.message || 'the model could not process a camera frame.'}`);
+                        setStatus('error');
+                        stream.getTracks().forEach((track) => track.stop());
+                        streamRef.current = null;
+                        video.srcObject = null;
+                        pose.close?.();
+                        poseRef.current = null;
+                        return;
                     }
                     animRef.current = requestAnimationFrame(tick);
                 };
@@ -225,13 +275,21 @@ export function PoseTracker({ exerciseName = '' }) {
                     streamRef.current.getTracks().forEach((track) => track.stop());
                     streamRef.current = null;
                 }
+                if (poseRef.current) {
+                    poseRef.current.close?.();
+                    poseRef.current = null;
+                }
                 if (videoRef.current) videoRef.current.srcObject = null;
                 if (err.name === 'NotAllowedError') {
                     setErrorMsg('Camera permission denied. Please allow camera access and try again.');
                 } else if (err.name === 'NotFoundError') {
                     setErrorMsg('No camera found on this device.');
+                } else if (err.name === 'NotReadableError') {
+                    setErrorMsg('The camera is busy in another app or browser tab. Close it there and retry.');
+                } else if (err.name === 'SecurityError') {
+                    setErrorMsg('Camera access was blocked by the browser. Use localhost or HTTPS and check site permissions.');
                 } else {
-                    setErrorMsg('Could not start the camera. ' + err.message);
+                    setErrorMsg(err.message ? `Could not start webcam tracking: ${err.message}` : 'Could not start the camera. Please retry.');
                 }
                 setStatus('error');
             }
@@ -250,14 +308,15 @@ export function PoseTracker({ exerciseName = '' }) {
             }
             if (videoRef.current) videoRef.current.srcObject = null;
         };
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [attempt]); // eslint-disable-line react-hooks/exhaustive-deps
 
     /* ── Form chip colour ────────────────────────────────────────────────── */
-    const formChip = {
-        good: { label: '🟢 Good form', cls: 'bg-emerald-500/80 text-white' },
-        adjust: { label: '🟡 Adjust position', cls: 'bg-amber-400/80 text-white' },
-        detecting: { label: '⏳ Detecting…', cls: 'bg-slate-600/70 text-white' },
-    }[formStatus];
+    const visibilityChip = {
+        visible: { label: 'Body in view', cls: 'bg-emerald-500/80 text-white' },
+        partial: { label: 'Move fully into view', cls: 'bg-amber-400/80 text-white' },
+        outside: { label: 'Finding your body…', cls: 'bg-slate-600/70 text-white' },
+    }[visibilityStatus];
+    const repTrackingAvailable = /push|press|squat|lunge|curl|bicep|shoulder|raise|row|sit|crunch|ab/i.test(exerciseName);
 
     /* ── Render ──────────────────────────────────────────────────────────── */
     return (
@@ -279,7 +338,7 @@ export function PoseTracker({ exerciseName = '' }) {
                         className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-[#0d1117]"
                     >
                         <div className="w-10 h-10 rounded-full border-4 border-cyan-500/30 border-t-cyan-400 animate-spin" />
-                        <p className="text-xs font-semibold text-slate-400">Starting camera & loading AI model…</p>
+                        <p className="text-xs font-semibold text-slate-400">{loadingMessage}</p>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -289,6 +348,13 @@ export function PoseTracker({ exerciseName = '' }) {
                 <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-[#0d1117] p-6 text-center">
                     <CameraOffIcon size={32} className="text-slate-500" />
                     <p className="text-sm font-semibold text-slate-300">{errorMsg}</p>
+                    <button
+                        type="button"
+                        onClick={() => { setErrorMsg(''); setStatus('loading'); setAttempt((value) => value + 1); }}
+                        className="rounded-full bg-cyan-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-cyan-400"
+                    >
+                        Retry webcam
+                    </button>
                 </div>
             )}
 
@@ -317,15 +383,15 @@ export function PoseTracker({ exerciseName = '' }) {
                 {/* Overlays — only when ready */}
                 {status === 'ready' && (
                     <>
-                        {/* Rep counter — top left */}
-                        <div className="absolute top-3 left-3 rounded-2xl bg-black/60 backdrop-blur px-3 py-2 flex flex-col items-center min-w-[56px]">
+                        {/* Estimated reps for supported movements only */}
+                        {repTrackingAvailable && <div className="absolute top-3 left-3 rounded-2xl bg-black/60 backdrop-blur px-3 py-2 flex flex-col items-center min-w-[56px]">
                             <span className="text-3xl font-extrabold text-white tabular-nums leading-none">{reps}</span>
-                            <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest mt-0.5">Reps</span>
-                        </div>
+                            <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest mt-0.5">Est. reps</span>
+                        </div>}
 
-                        {/* Form chip — top right */}
-                        <div className={`absolute top-3 right-3 rounded-full px-3 py-1 text-[11px] font-bold backdrop-blur ${formChip.cls}`}>
-                            {formChip.label}
+                        {/* Visibility chip: the tracker does not judge exercise form. */}
+                        <div className={`absolute top-3 right-3 rounded-full px-3 py-1 text-[11px] font-bold backdrop-blur ${visibilityChip.cls}`}>
+                            {visibilityChip.label}
                         </div>
 
                         {/* Exercise name — bottom bar */}
@@ -333,6 +399,7 @@ export function PoseTracker({ exerciseName = '' }) {
                             <p className="text-xs font-bold text-white/80 uppercase tracking-widest truncate">
                                 {exerciseName || 'Exercise'}
                             </p>
+                            {!repTrackingAvailable && <p className="mt-0.5 text-[10px] text-white/70">Skeleton view only for this movement.</p>}
                         </div>
                     </>
                 )}

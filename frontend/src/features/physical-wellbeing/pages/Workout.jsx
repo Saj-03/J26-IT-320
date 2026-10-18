@@ -240,8 +240,8 @@ export function PhysicalWorkout() {
                 <section className="min-w-0 rounded-3xl border border-black/[0.06] bg-white p-4 sm:p-5">
                     <div className="flex items-center justify-between gap-3">
                         <div>
-                            <h2 className="text-sm font-bold text-charcoal">Webcam form check <span className="font-medium text-charcoal-muted">(optional)</span></h2>
-                            <p className="mt-1 text-xs text-charcoal-muted">Live pose tracking stays in your browser. Video is never uploaded or saved.</p>
+                            <h2 className="text-sm font-bold text-charcoal">Webcam movement view <span className="font-medium text-charcoal-muted">(optional)</span></h2>
+                            <p className="mt-1 text-xs text-charcoal-muted">See your live skeleton and estimated reps for supported moves. It does not judge your form; video stays in your browser and is never uploaded or saved.</p>
                         </div>
                         <button
                             type="button"
@@ -259,7 +259,7 @@ export function PhysicalWorkout() {
                             <div>
                                 <CameraIcon size={28} className="mx-auto text-brand-400" />
                                 <p className="mt-3 text-sm font-semibold text-charcoal">Camera is off</p>
-                                <p className="mt-1 text-xs text-charcoal-muted">Enable the optional form check to see your live skeleton and rep count.</p>
+                                <p className="mt-1 text-xs text-charcoal-muted">Enable the optional movement view to see your live skeleton and estimated reps for supported exercises.</p>
                             </div>
                         </div>
                     )}
