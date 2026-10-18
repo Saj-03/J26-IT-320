@@ -891,6 +891,10 @@ def get_scored_meals_for_profile(profile: dict, is_exam_period: bool = False) ->
                 adherence = min(0.99, adherence * 1.25)
 
         m_copy = dict(m)
+        recent_count = int((profile.get("plan_history") or {}).get("meal_counts", {}).get(m["name"], 0))
+        if recent_count:
+            # Past plans add variety; completion/adherence is learned from explicit check-ins.
+            adherence *= max(0.75, 1.0 - 0.06 * recent_count)
         m_copy["adherence_probability"] = round(adherence, 4)
         scored_meals.append(m_copy)
 
@@ -1185,6 +1189,10 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
             activity_match = max(activity_match, 2)
 
         ex_copy = dict(ex)
+        recent_count = int((profile.get("plan_history") or {}).get("exercise_counts", {}).get(ex["name"], 0))
+        if recent_count:
+            # Avoid repeating recently scheduled items without changing safety or XGBoost features.
+            prob *= max(0.75, 1.0 - 0.06 * recent_count)
         ex_copy["minutes"] = ex["duration_mins"]
         ex_copy["calories_burned"] = cal_burned
         ex_copy["adherence_probability"] = round(float(prob), 4)

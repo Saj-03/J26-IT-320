@@ -307,13 +307,47 @@ def _attach_behavior_history(db: Session, user_id: str, profile_dict: dict) -> d
     return profile_dict
 
 
+def _attach_plan_history(db: Session, user_id: str, profile_dict: dict) -> dict:
+    """Summarize only past scheduled items so new plans can rotate recommendations."""
+    today = datetime.date.today()
+    since = today - datetime.timedelta(days=13)
+    snapshots = (db.query(PhysicalPlanSnapshot)
+                 .filter(PhysicalPlanSnapshot.user_id == user_id,
+                         PhysicalPlanSnapshot.plan_date >= since,
+                         PhysicalPlanSnapshot.plan_date < today)
+                 .order_by(PhysicalPlanSnapshot.plan_date.desc(),
+                           PhysicalPlanSnapshot.created_at.desc()).all())
+    exercise_days, meal_days = {}, {}
+    for snapshot in snapshots:
+        for day in (snapshot.plan_data or {}).get("days", []):
+            try:
+                day_date = datetime.date.fromisoformat(str(day.get("date", ""))[:10])
+            except (TypeError, ValueError):
+                continue
+            if not since <= day_date < today:
+                continue
+            exercise_name = (day.get("exercise") or {}).get("name")
+            if exercise_name:
+                exercise_days.setdefault(exercise_name, set()).add(day_date.isoformat())
+            for slot_items in (day.get("meals") or {}).values():
+                for meal in slot_items if isinstance(slot_items, list) else []:
+                    meal_name = meal.get("name") if isinstance(meal, dict) else None
+                    if meal_name:
+                        meal_days.setdefault(meal_name, set()).add(day_date.isoformat())
+    profile_dict["plan_history"] = {
+        "exercise_counts": {name: len(days) for name, days in exercise_days.items()},
+        "meal_counts": {name: len(days) for name, days in meal_days.items()},
+    }
+    return profile_dict
+
+
 @router.get("/recommendations")
 def recommendations(is_exam_period: bool = False, use_baseline: bool = False, db: Session = Depends(get_db), user=Depends(get_current_user)):
     p = db.query(WellbeingProfile).filter_by(user_id=user.id).first()
     if not p:
         raise HTTPException(404, "Create your wellbeing profile first")
     
-    profile_dict = _attach_behavior_history(db, user.id, _profile_to_dict(p))
+    profile_dict = _attach_plan_history(db, user.id, _attach_behavior_history(db, user.id, _profile_to_dict(p)))
 
     if use_baseline:
         res = recommender.get_baseline_recommendations(profile_dict)
@@ -361,7 +395,7 @@ def get_week_plan(
     if not p:
         raise HTTPException(404, "Create your wellbeing profile first")
     
-    profile_dict = _attach_behavior_history(db, user.id, _profile_to_dict(p))
+    profile_dict = _attach_plan_history(db, user.id, _attach_behavior_history(db, user.id, _profile_to_dict(p)))
     plan = recommender.generate_week_plan(
         profile_dict,
         is_exam_period=is_exam_period,
