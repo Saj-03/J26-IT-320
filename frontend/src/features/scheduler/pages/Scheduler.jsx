@@ -15,6 +15,7 @@ import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { ErrorState, LoadingState } from '../../../shared/components/ui/States';
 import { LoadBadge, SectionTitle, formatMinutes } from '../components/PlanPrimitives';
 import PlannedTasks from '../components/PlannedTasks';
+import Commitments from '../components/Commitments';
 import { categoryStyles } from '../../../shared/lib/data';
 import { apiErrorMessage } from '../../../shared/api/client';
 import { finishTask, getAttentionProfile, getPlan, getStressStatus, listCommitments, listTasks, planMyWeek, updateTask, utcMs } from '../api';
@@ -106,6 +107,10 @@ export function Scheduler() {
     const days = Array.from({ length: DAY_COUNT }, (_, i) => new Date(firstDay.getTime() + i * 86400000));
     const blocks = weekBlocks(tasks, plan, commitments, firstDay);
     const taskBlocks = blocks.filter((b) => b.kind === 'task');
+    // Study sessions that now overlap a lecture / work block (e.g. a lecture added after planning)
+    const busyBlocks = blocks.filter((b) => b.kind !== 'task');
+    const clashes = taskBlocks.filter((t) => isOpen(t.task) && t.end > new Date()
+        && busyBlocks.some((c) => t.start < c.end && c.start < t.end));
     const doneCount = taskBlocks.filter((b) => b.task.status === 'done').length;
     const level = stress?.level ? STRESS_WORD[stress.level] : null;
     const style = stressStyles[level ?? 'Low'];
@@ -130,6 +135,19 @@ export function Scheduler() {
           action={<Button onClick={runPlanner} disabled={planning}>
               <SparklesIcon size={16}/> {planning ? 'Planning…' : 'Plan my week'}
             </Button>}/>
+
+      {/* A study session sits on top of a lecture / commitment -> offer to plan again */}
+      {clashes.length > 0 &&
+        <Card padding="lg" className="border border-amber-200/60 bg-amber-light/60">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <AlertTriangleIcon size={20} className="text-amber-500 shrink-0"/>
+            <p className="flex-1 text-sm text-charcoal">
+              <b>{clashes.length} study {clashes.length === 1 ? 'session clashes' : 'sessions clash'}</b> with your lectures or commitments
+              ({clashes.map((c) => c.title).filter((t, i, all) => all.indexOf(t) === i).join(', ')}). Plan again to move {clashes.length === 1 ? 'it' : 'them'} to free time.
+            </p>
+            <Button size="sm" onClick={runPlanner} disabled={planning}><SparklesIcon size={15}/> {planning ? 'Planning…' : 'Plan again'}</Button>
+          </div>
+        </Card>}
 
       {/* What the planner just did - and anything it could not fit */}
       {result && <PlanResult result={result} onClose={() => setResult(null)}/>}
@@ -215,6 +233,9 @@ export function Scheduler() {
           </div>
         </div>
       </Card>
+
+      {/* Lectures, work and other busy time (FR-02) */}
+      <Commitments items={commitments} onChanged={() => setReloadKey((k) => k + 1)}/>
 
       {/* Study sessions by day - tap to start, complete, reschedule or unplan */}
       <div>

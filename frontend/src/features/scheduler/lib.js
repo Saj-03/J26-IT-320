@@ -51,9 +51,9 @@ export function getGreeting(date = new Date()) {
 const LEVEL_NAMES = ['Starter', 'Learner', 'Explorer', 'Achiever', 'Scholar', 'Expert', 'Master'];
 export const levelName = (level) => LEVEL_NAMES[Math.min(level, LEVEL_NAMES.length) - 1] ?? 'Starter';
 
-// "4 PM, 8 PM, 9 PM" for separate hours like [21, 20, 16] (no misleading range)
+// "16:00, 20:00, 21:00" for separate hours like [21, 20, 16] (no misleading range)
 export function hoursList(hours) {
-    const fmt = (h) => new Date(2000, 0, 1, h % 24).toLocaleTimeString([], { hour: 'numeric' });
+    const fmt = (h) => `${String(h % 24).padStart(2, '0')}:00`;
     return [...(hours ?? [])].sort((a, b) => a - b).map(fmt).join(', ');
 }
 

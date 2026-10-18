@@ -21,6 +21,9 @@ export const planMyWeek = () => api.post("/scheduler/plan").then((r) => r.data);
 export const getPlan = () => api.get("/scheduler/plan").then((r) => r.data);
 export const getAvailability = (days = 7) => api.get("/scheduler/availability", { params: { days } }).then((r) => r.data);
 export const listCommitments = () => api.get("/scheduler/commitments").then((r) => r.data);
+export const createCommitment = (item) => api.post("/scheduler/commitments", item).then((r) => r.data);
+export const deleteCommitment = (id) => api.delete(`/scheduler/commitments/${id}`);
+export const getConflicts = () => api.get("/scheduler/conflicts").then((r) => r.data);   // clashes + impossible deadlines
 export const getProgress = () => api.get("/scheduler/progress").then((r) => r.data);
 
 // --- Focus sessions (real timer flow) ---
