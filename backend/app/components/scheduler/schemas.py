@@ -81,8 +81,9 @@ class TaskUpdate(BaseModel):
     is_flexible: bool | None = None
     cognitive_load: CognitiveLoad | None = None   # changing this = student overrides the AI
     status: TaskStatus | None = None
+    scheduled_start: datetime | None = None       # move the planned session (send null to unplan it)
 
-    @field_validator("deadline")
+    @field_validator("deadline", "scheduled_start")
     @classmethod
     def normalise_deadline(cls, v: datetime | None) -> datetime | None:
         # Past deadlines are allowed here (e.g. fixing a typo on an old task),
@@ -247,7 +248,7 @@ class ConflictOut(BaseModel):
 # ===========================================================================
 # FOCUS SESSIONS  (FR-05, FR-15)
 # ===========================================================================
-TimerSource = Literal["student_fixed", "static_default", "history_rules", "survey", "default"]
+TimerSource = Literal["student_fixed", "static_default", "m1_model", "history_rules", "survey", "default"]
 
 
 class TimerRecommendationOut(BaseModel):
@@ -339,6 +340,8 @@ class FocusEndOut(BaseModel):
     xp_awarded: int          # 0 if the session was not completed
     total_xp: int
     level: int
+    streak: int = 0          # study days in a row
+    new_badges: list[str] = []   # badge codes earned by this session (show a celebration)
 
 
 class FocusStartOut(BaseModel):
@@ -391,6 +394,152 @@ class SettingsUpdate(BaseModel):
         if any(h < 0 or h > 23 for h in v):
             raise ValueError("hours must be between 0 and 23")
         return sorted(set(v))                         # remove duplicates, keep in order
+
+
+# ===========================================================================
+# STRESS ADAPTATION (Module F)
+# ===========================================================================
+StressAction = Literal["none", "propose_changes", "already_proposed", "off"]
+
+
+class StressStatusOut(BaseModel):
+    """What the scheduler does with Component 4's latest wellbeing signal."""
+    level: Literal["LOW", "MODERATE", "HIGH"] | None   # None = no signal shared
+    risk_score: float | None
+    trend: Literal["FALLING", "STABLE", "RISING"] | None
+    signal_event_id: str | None
+    signal_received_at: datetime | None
+    fresh: bool                      # received in the last 24 h
+    adaptation_on: bool              # student's own switch (settings)
+    mode: str                        # experiment mode
+    action: StressAction             # what happens next
+    reason: str                      # plain-language explanation for the student
+
+
+class TaskSafetyRow(BaseModel):
+    task_id: str
+    title: str
+    deadline: datetime
+    priority: int
+    cognitive_load: str
+    reason: str                      # why it is locked / why it may be changed
+
+
+class TaskSafetyOut(BaseModel):
+    """Which tasks stress-based changes may touch (changeable) and which never (locked)."""
+    changeable: list[TaskSafetyRow]
+    locked: list[TaskSafetyRow]
+
+
+class ProposedChange(BaseModel):
+    """One suggested change. action: move (to a later time) / split (into pieces) / rest (add a break)."""
+    action: Literal["move", "split", "rest"]
+    task_id: str | None
+    title: str
+    reason: str
+    to: str | None = None            # move: new planned start (UTC, ISO)
+    pieces: list[int] | None = None  # split: minutes per piece
+    minutes: int | None = None       # rest: length of the break
+
+
+class AppliedChange(ProposedChange):
+    """A change after the student's decision: was it really applied?"""
+    applied: bool
+    skipped_because: str | None = None   # e.g. "you are working on it now" (safety re-check)
+    created_ids: list[str] | None = None  # pieces / break created (removed again by restore)
+
+
+class StressProposalOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    signal_event_id: str | None
+    reason: str                      # one-sentence summary for the student
+    change_set: list[ProposedChange]
+    decision: str                    # proposed / accepted / edited / rejected / restored
+    created_at: datetime
+    decided_at: datetime | None
+    applied: list[AppliedChange] | None = Field(default=None, validation_alias="edited_change_set")
+
+
+class StressDecisionIn(BaseModel):
+    """accepted = all changes, edited = only the positions in `keep`, rejected = none."""
+    model_config = ConfigDict(extra="forbid")
+
+    decision: Literal["accepted", "edited", "rejected"]
+    keep: list[int] | None = None    # only for "edited", e.g. [0, 2]
+
+    @model_validator(mode="after")
+    def keep_only_when_edited(self):
+        if self.decision == "edited" and not self.keep:
+            raise ValueError("send keep (which changes to apply) when decision is edited")
+        if self.decision != "edited" and self.keep is not None:
+            raise ValueError("keep is only used when decision is edited")
+        return self
+
+
+# ===========================================================================
+# GAMIFICATION PROGRESS (Module G)
+# ===========================================================================
+class StreakOut(BaseModel):
+    current: int                     # study days in a row
+    today_done: bool                 # a completed session today already?
+    freeze_left_this_week: int       # 1 missed day per week is forgiven
+    stress_days_skipped: int         # HIGH-stress days that did not break the streak
+
+
+class BadgeOut(BaseModel):
+    code: str
+    emoji: str
+    title: str
+    description: str                 # how to earn it
+    earned: bool
+    earned_at: datetime | None
+    progress: int                    # towards target (capped at target)
+    target: int
+
+
+class ProgressOut(BaseModel):
+    total_xp: int
+    level: int
+    xp_to_next_level: int
+    streak: StreakOut
+    badges: list[BadgeOut]
+    new_badges: list[str]            # earned just now
+
+
+# ===========================================================================
+# ATTENTION PROFILE (M1)
+# ===========================================================================
+class HourChance(BaseModel):
+    hour: int                        # 0..23, Sri Lanka time
+    chance: float                    # M1: chance a 25-min session at this hour is completed
+
+
+class AttentionProfileOut(BaseModel):
+    source: Literal["m1_model", "not_enough_history", "model_unavailable"]
+    reason: str
+    sessions_used: int
+    min_sessions: int
+    hourly: list[HourChance] | None = None
+    peak_hours: list[int] | None = None        # best 3, best first
+    low_hours: list[int] | None = None         # worst 3, worst first
+    capacity_minutes: int | None = None        # longest session before success drops
+    recommended_focus: int | None = None       # suggested Pomodoro (15-50)
+
+
+# ===========================================================================
+# C3 -> C4 WEEKLY SUMMARY (DeviationSignal)
+# ===========================================================================
+class WeeklySummarySentOut(BaseModel):
+    week_start: str                                              # Monday (Sri Lanka time), e.g. "2026-10-12"
+    status: Literal["SENT", "ALREADY_SENT", "TRACKING_OFF"]
+    event_id: str | None = None
+    task_completion_rate: float | None = None
+    missed_sessions: int | None = None
+    task_load: int | None = None
+    deadline_density: float | None = None
+    semester_phase: str | None = None
 
 
 # ===========================================================================

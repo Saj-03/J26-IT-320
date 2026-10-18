@@ -8,5 +8,19 @@ dist/
 backend/ml_models/*.pkl
 backend/ml_models/*.joblib
 .DS_Store
+<<<<<<< HEAD
 backend/datasets/burnout/private/
 backend/datasets/burnout/*.csv
+=======
+
+# Private docs (proposals, survey data with student answers, chat notes) - keep local only
+docs/*.pdf
+docs/*.xlsx
+docs/C3_CHAT_HISTORY.md
+
+# Simulated sessions are big (~7 MB) and can be rebuilt: python -m ml_training.scheduler.simulate_sessions
+backend/ml_training/scheduler/data/sessions.csv
+
+# Downloaded datasets (CogBench, ~11 MB) - train_m2.py downloads them again when missing
+backend/ml_training/scheduler/data/external/
+>>>>>>> origin/develop

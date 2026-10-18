@@ -86,7 +86,7 @@ def test_xp_never_given_twice_for_same_session(env):
     me = current["user"]
     session = run(db, me, 25)["session"]
     assert fs.award_focus_xp(db, me, session) == 0            # second try gives nothing
-    assert db.query(RewardEvent).count() == 1
+    assert db.query(RewardEvent).filter_by(kind="xp").count() == 1   # (the first-session badge is a separate row)
 
 
 def test_xp_adds_up_to_levels(env):
@@ -118,6 +118,6 @@ def test_end_api_returns_rewards(env):
     client, *_ = env
     sid = client.post(f"{URL}/start", json={}).json()["session"]["id"]
     body = client.post(f"{URL}/{sid}/end", json={}).json()
-    assert set(body) == {"session", "xp_awarded", "total_xp", "level"}
+    assert set(body) == {"session", "xp_awarded", "total_xp", "level", "streak", "new_badges"}
     assert body["session"]["completed"] is False              # ended straight away
     assert body["xp_awarded"] == 0

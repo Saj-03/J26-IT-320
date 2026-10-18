@@ -46,7 +46,16 @@ def test_survey_answer_used_before_history_exists(env):
     assert (rec["focus_minutes"], rec["source"]) == (40, "survey")
 
 
-def test_history_used_after_enough_sessions(env):
+def test_m1_used_after_enough_sessions(env):
+    client, db, current, _ = env
+    completed_sessions(db, current["user"], minutes=35)
+    rec = client.get(f"{URL}/recommendation").json()
+    assert rec["source"] == "m1_model" and 15 <= rec["focus_minutes"] <= 50
+
+
+def test_rules_used_when_model_missing(env, monkeypatch):
+    from app.components.scheduler.engine import m1_predictor
+    monkeypatch.setattr(m1_predictor, "available", lambda: False)
     client, db, current, _ = env
     completed_sessions(db, current["user"], minutes=35)
     rec = client.get(f"{URL}/recommendation").json()

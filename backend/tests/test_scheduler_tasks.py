@@ -143,3 +143,12 @@ def test_every_change_is_audited(env):
     client.delete(f"/api/scheduler/tasks/{t['id']}")
     events = [e.event_type for e in db.query(SchedulerAuditLog).order_by(SchedulerAuditLog.created_at)]
     assert events == ["task_created", "task_updated", "task_deleted"]
+
+
+def test_student_can_move_or_unplan_a_task(env):
+    client, *_ = env
+    deadline = (datetime.utcnow() + timedelta(days=5)).isoformat()
+    tid = client.post("/api/scheduler/tasks", json={"title": "Read", "deadline": deadline, "estimated_minutes": 30}).json()["id"]
+    moved = client.patch(f"/api/scheduler/tasks/{tid}", json={"scheduled_start": "2030-01-02T09:00:00+05:30"}).json()
+    assert moved["scheduled_start"].startswith("2030-01-02T03:30")        # stored in UTC
+    assert client.patch(f"/api/scheduler/tasks/{tid}", json={"scheduled_start": None}).json()["scheduled_start"] is None

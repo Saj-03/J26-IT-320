@@ -1,21 +1,15 @@
-// "Planned by IHSD" card on the Scheduler page.
-// [ITEM 8] Uses mock data from data.js (no backend yet): same tasks, peak hours and focus/break as other pages.
-// [ITEM 3] The Adaptive / Static baseline toggle was REMOVED from here. Students must not see it.
-// It is now a per-participant setting on the AdminResearch page.
+// "Planned by ThriveU" card on the Scheduler page - the student's open tasks from the API,
+// with their planned time, the M1 best hours and the suggested focus / break length.
+// (The Adaptive / Static toggle is NOT here - students must not see the experiment mode.)
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckIcon, PlusIcon, TimerIcon, HeartHandshakeIcon } from "lucide-react";
 import { Card } from "../../../shared/components/ui/Card";
 import { Button } from "../../../shared/components/ui/Button";
 import { EmptyState } from "../../../shared/components/ui/States";
 import { cn } from "../../../shared/lib/cn";
-import { schedulerTasks, peakHours, getSessionPlan } from "../data";
-
-// [ITEM 8] Turn the shared task list into the plan shape this card shows (only tasks not done yet)
-const startingPlan = schedulerTasks
-  .filter((t) => t.status !== "done")
-  .map((t) => ({ id: t.id, title: t.title, load: t.cognitive_load, start: t.scheduled_start, deadline: t.deadline }));
-const session = getSessionPlan();
+import { finishTask, getAttentionProfile, getTimerRecommendation, listTasks } from "../api";
+import { dayText, hoursLabel, isOpen, timeText } from "../lib";
 
 const loadStyle = {
   heavy: "bg-brand-50 text-brand-700",
@@ -23,11 +17,26 @@ const loadStyle = {
   low: "bg-sage-light text-emerald-700",
 };
 
-export default function PlannedTasks() {
+export default function PlannedTasks({ reloadKey = 0 }) {
   const navigate = useNavigate();
-  const [tasks, setTasks] = useState(startingPlan);
-  // Mark a task done = remove it from the plan (local only)
-  const complete = (id) => setTasks((ts) => ts.filter((t) => t.id !== id));
+  const [tasks, setTasks] = useState([]);
+  const [timer, setTimer] = useState(null);
+  const [peaks, setPeaks] = useState(null);
+
+  const load = () => {
+    // open tasks that are worked on directly (a big task with steps is planned through its steps)
+    listTasks().then((all) => {
+      const parents = new Set(all.map((t) => t.parent_id).filter(Boolean));
+      setTasks(all.filter((t) => isOpen(t) && !parents.has(t.id)));
+    }).catch(() => setTasks([]));
+  };
+  useEffect(() => {
+    load();
+    getTimerRecommendation().then(setTimer).catch(() => {});
+    getAttentionProfile().then((p) => setPeaks(p.source === "m1_model" ? p.peak_hours : null)).catch(() => {});
+  }, [reloadKey]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  const complete = (id) => finishTask(id).then(load);
 
   return (
     <Card padding="lg">
@@ -35,12 +44,12 @@ export default function PlannedTasks() {
         <div>
           <h3 className="font-bold text-charcoal">Planned by ThriveU</h3>
           <p className="text-sm text-charcoal-muted">
-            Peak hours: {peakHours.label} · {session.focus} min focus / {session.breakMins} min break
+            {peaks ? `Best focus: ${hoursLabel(peaks.slice(0, 2))}` : "Best focus time: still learning"}
+            {timer && ` · ${timer.focus_minutes} min focus / ${timer.break_minutes} min break`}
           </p>
         </div>
       </div>
 
-      {/* Opens the stress suggestions page (the user decides there) */}
       <div className="mb-5">
         <Button variant="soft" size="sm" onClick={() => navigate("/app/schedule/adjusted")}>
           <HeartHandshakeIcon size={15} /> Check if my plan should ease up
@@ -57,15 +66,20 @@ export default function PlannedTasks() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-bold text-charcoal truncate">{t.title}</p>
-                    <span className={cn("text-[11px] font-bold rounded-full px-2 py-0.5 capitalize", loadStyle[t.load] || loadStyle.medium)}>{t.load}</span>
+                    <span className={cn("text-[11px] font-bold rounded-full px-2 py-0.5 capitalize", loadStyle[t.cognitive_load] || loadStyle.medium)}>{t.cognitive_load}</span>
                   </div>
                   <p className="text-xs text-charcoal-muted mt-0.5">
-                    {t.start ? new Date(t.start).toLocaleString(undefined, { weekday: "short", hour: "2-digit", minute: "2-digit" }) : "No slot before the deadline"}
-                    {" · due "}{new Date(t.deadline).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                    {t.scheduled_start ? `${dayText(t.scheduled_start)} ${timeText(t.scheduled_start)}` : "Not planned yet"}
+                    {" · due "}{dayText(t.deadline)}
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <Button size="sm" variant="outline" className="bg-white" onClick={() => navigate("/app/focus")}>
+                  {!t.scheduled_start && (
+                    <Button size="sm" variant="outline" className="bg-white" onClick={() => navigate(`/app/schedule/missed?id=${t.id}`)}>
+                      Find a time
+                    </Button>
+                  )}
+                  <Button size="sm" variant="outline" className="bg-white" onClick={() => navigate("/app/focus/setup", { state: { taskId: t.id } })}>
                     <TimerIcon size={14} /> Focus
                   </Button>
                   <Button size="sm" onClick={() => complete(t.id)}>

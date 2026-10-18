@@ -1,0 +1,147 @@
+{
+  "data": {
+    "seed": 241,
+    "expert": 739,
+    "silver": 5744,
+    "bloom_to_load": {
+      "1": "low",
+      "2": "low",
+      "3": "medium",
+      "4": "heavy",
+      "5": "heavy",
+      "6": "heavy"
+    },
+    "silver_min_confidence": 0.9
+  },
+  "A_seed_cv": {
+    "keyword_rules": {
+      "accuracy": {
+        "mean": 0.6849,
+        "sd": 0.0702
+      },
+      "macro_f1": {
+        "mean": 0.6882,
+        "sd": 0.0698
+      }
+    },
+    "tfidf_logreg": {
+      "accuracy": {
+        "mean": 0.7859,
+        "sd": 0.0515
+      },
+      "macro_f1": {
+        "mean": 0.7844,
+        "sd": 0.0509
+      }
+    },
+    "M2_minilm_logreg": {
+      "accuracy": {
+        "mean": 0.7842,
+        "sd": 0.0486
+      },
+      "macro_f1": {
+        "mean": 0.7828,
+        "sd": 0.0501
+      }
+    },
+    "ensemble_tfidf_minilm": {
+      "accuracy": {
+        "mean": 0.815,
+        "sd": 0.0533
+      },
+      "macro_f1": {
+        "mean": 0.8127,
+        "sd": 0.0549
+      }
+    }
+  },
+  "B_expert_test": {
+    "keyword_rules": {
+      "accuracy": 0.2152,
+      "macro_f1": 0.1831
+    },
+    "tfidf_logreg": {
+      "accuracy": 0.6928,
+      "macro_f1": 0.6583
+    },
+    "M2_minilm_logreg": {
+      "accuracy": 0.6184,
+      "macro_f1": 0.5839
+    },
+    "ensemble_tfidf_minilm": {
+      "accuracy": 0.6874,
+      "macro_f1": 0.6554
+    }
+  },
+  "B_M2_confusion": {
+    "labels": [
+      "heavy",
+      "medium",
+      "low"
+    ],
+    "rows_true_cols_pred": [
+      [
+        234,
+        82,
+        60
+      ],
+      [
+        20,
+        65,
+        29
+      ],
+      [
+        38,
+        53,
+        158
+      ]
+    ]
+  },
+  "C_seed_cv_with_bloom": {
+    "keyword_rules": {
+      "accuracy": {
+        "mean": 0.6849,
+        "sd": 0.0702
+      },
+      "macro_f1": {
+        "mean": 0.6882,
+        "sd": 0.0698
+      }
+    },
+    "tfidf_logreg": {
+      "accuracy": {
+        "mean": 0.6964,
+        "sd": 0.0696
+      },
+      "macro_f1": {
+        "mean": 0.698,
+        "sd": 0.0701
+      }
+    },
+    "M2_minilm_logreg": {
+      "accuracy": {
+        "mean": 0.6177,
+        "sd": 0.0795
+      },
+      "macro_f1": {
+        "mean": 0.6167,
+        "sd": 0.0799
+      }
+    },
+    "ensemble_tfidf_minilm": {
+      "accuracy": {
+        "mean": 0.6964,
+        "sd": 0.0503
+      },
+      "macro_f1": {
+        "mean": 0.6975,
+        "sd": 0.05
+      }
+    }
+  },
+  "final_model": {
+    "kind": "ensemble_tfidf_minilm",
+    "trained_on": "seed tasks only (C: Bloom data hurt on student tasks)",
+    "rule": "best A accuracy; within 0.01 -> best B; still close -> simplest"
+  }
+}

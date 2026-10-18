@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronDownIcon, ClockIcon } from 'lucide-react';
-import { loadStyles } from '../data';
+import { loadStyles } from '../lib';
 import { cn } from '../../../shared/lib/cn';
 /** Heavy / Medium / Light / Break badge used across Schedule, Tasks and Focus. */
 export function LoadBadge({ load, className }) {

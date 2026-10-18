@@ -13,8 +13,10 @@ import { BarChart } from '../shared/components/charts/Charts';
 import { weeklyTasksData, focusTimeData } from '../shared/lib/data';
 import useStudent from '../shared/hooks/useStudent';
 import { cn } from '../shared/lib/cn';
-// [ITEM 8] Scheduler numbers + greeting come from the scheduler data.js
-import { getGreeting, todayTaskCount, peakHours } from '../features/scheduler/data';
+// Scheduler numbers (today's tasks, focus, streak, best hours) come from the scheduler API
+import useToday from '../features/scheduler/hooks/useToday';
+import { getGreeting } from '../features/scheduler/lib';
+import { formatMinutes } from '../features/scheduler/components/PlanPrimitives';
 const fade = {
     initial: { opacity: 0, y: 14 },
     animate: { opacity: 1, y: 0 }
@@ -22,6 +24,7 @@ const fade = {
 export function Dashboard() {
     const student = useStudent();
     const navigate = useNavigate();
+    const today = useToday();
     const xpPct = Math.round(student.xp / student.xpToNext * 100);
     return (<div className="space-y-6">
       {/* Hero card */}
@@ -33,7 +36,8 @@ export function Dashboard() {
               {/* [ITEM 8] Greeting uses the current time */}
               <p className="text-sm font-semibold text-brand-600">{getGreeting()}, {student.name} 👋</p>
               <h2 className="mt-1 text-xl sm:text-2xl font-extrabold text-charcoal leading-snug max-w-xl">
-                You have {todayTaskCount} important tasks today. Your schedule has been planned around your peak focus hours.
+                {today.tasks.length ? `You have ${today.tasks.length} study session${today.tasks.length === 1 ? '' : 's'} planned today.` : 'No study sessions planned for today yet.'}
+                {today.peakLabel && ` You focus best around ${today.peakLabel}.`}
               </h2>
               <div className="mt-5 flex flex-wrap gap-2">
                 <Button onClick={() => navigate('/app/focus')}>
@@ -58,14 +62,14 @@ export function Dashboard() {
       <div>
         <h3 className="text-lg font-bold text-charcoal mb-3">Today’s Overview</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <StatCard icon={ListTodoIcon} label="Tasks Today" value={String(todayTaskCount)}>
-            <span className="text-xs font-bold text-brand-600">75%</span>
+          <StatCard icon={ListTodoIcon} label="Tasks Today" value={String(today.tasks.length)}>
+            <span className="text-xs font-bold text-brand-600">{today.doneToday} done</span>
           </StatCard>
-          <StatCard icon={TimerIcon} iconBg="bg-sky-50" iconColor="text-sky-500" label="Focus Time" value="3h 25m" sub={<ProgressBar value={68} color="bg-sky-400" height={6}/>}>
-            <span className="text-xs font-semibold text-charcoal-muted">of 5h</span>
+          <StatCard icon={TimerIcon} iconBg="bg-sky-50" iconColor="text-sky-500" label="Focus Time" value={formatMinutes(today.focusMinutes)}>
+            <span className="text-xs font-semibold text-charcoal-muted">today</span>
           </StatCard>
-          <StatCard icon={GaugeIcon} iconBg="bg-sage-light" iconColor="text-emerald-600" label="Focus Score" value="82%" sub={<span className="text-xs font-semibold text-emerald-600">Excellent</span>}/>
-          <StatCard icon={FlameIcon} label="Current Streak" value="14 days">
+          <StatCard icon={GaugeIcon} iconBg="bg-sage-light" iconColor="text-emerald-600" label="Sessions Finished" value={today.completionRate == null ? '—' : `${Math.round(today.completionRate * 100)}%`} sub={<span className="text-xs font-semibold text-emerald-600">today</span>}/>
+          <StatCard icon={FlameIcon} label="Current Streak" value={`${today.streak} day${today.streak === 1 ? '' : 's'}`}>
             <span className="text-lg">🔥</span>
           </StatCard>
         </div>
@@ -82,17 +86,19 @@ export function Dashboard() {
                 <p className="text-sm text-charcoal-muted">Optimised around your focus and wellbeing</p>
               </div>
               <Button variant="soft" size="sm" onClick={() => navigate('/app/schedule')}>
-                <SparklesIcon size={14}/> Optimise
+                <SparklesIcon size={14}/> Open schedule
               </Button>
             </div>
-            <ScheduleTimeline />
+            <ScheduleTimeline tasks={today.tasks}/>
           </Card>
         </motion.div>
 
         {/* Right column */}
         <div className="space-y-6">
           <AIInsightCard>
-            Your focus is strongest between <b>{peakHours.label}</b>. We scheduled your most difficult task during this window.
+            {today.peakLabel ?
+                <>Your focus is strongest around <b>{today.peakLabel}</b>. Try your most difficult task in this window.</> :
+                <>After 5 focus sessions we learn when you focus best.</>}
           </AIInsightCard>
 
           {/* Wellbeing */}
