@@ -20,3 +20,5 @@ backend/ml_training/scheduler/data/tasks.csv
 
 # Downloaded datasets (CogBench, ~11 MB) - train_m2.py downloads them again when missing
 backend/ml_training/scheduler/data/external/
+backend/ml_training/scheduler/data/m4_train.csv
+backend/ml_training/scheduler/data/m4_test.csv

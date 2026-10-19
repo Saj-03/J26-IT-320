@@ -39,3 +39,25 @@ def test_researcher_sets_mode_and_group_and_it_is_audited(env, monkeypatch):
     assert log.details["old"]["mode"] == "adaptive" and log.details["new"]["mode"] == "static"
     assert client.patch(f"{URL}/{other.research_id}", json={"mode": "wrong"}).status_code == 422
     assert client.patch(f"{URL}/P-nobody", json={"mode": "static"}).status_code == 404
+
+
+def test_research_overview_uses_real_cohort_data(env, monkeypatch):
+    from datetime import datetime, timedelta
+    from app.components.scheduler.models import FocusSession, Task
+    client, db, current, other = env
+    assert client.get("/api/scheduler/research/overview").status_code == 403
+    make_researcher(monkeypatch)
+    other.research_consent = True
+    now = datetime.utcnow()
+    for done in (True, True, False):
+        start = now - timedelta(hours=3)
+        db.add(FocusSession(user_id=other.id, started_at=start, ended_at=start + timedelta(minutes=25),
+                            planned_minutes=25, actual_minutes=25 if done else 5, completed=done))
+    db.add(Task(user_id=other.id, title="t", estimated_minutes=30, status="done", deadline=now, completed_at=now))
+    db.commit()
+    body = client.get("/api/scheduler/research/overview").json()
+    assert body["kpis"]["participants"] == 1 and body["kpis"]["active_7d"] == 1
+    assert body["kpis"]["focus_completion_pct"] == 67 and body["kpis"]["task_completion_pct"] == 100
+    assert body["session_outcomes"]["Finished"] == 2 and body["session_outcomes"]["Stopped early"] == 1
+    assert body["participants"][0]["research_id"] == other.research_id
+    assert other.email not in str(body)

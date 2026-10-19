@@ -13,7 +13,7 @@ from app.core.dependencies import get_current_user
 from app.components.scheduler import (
     schemas, service, task_service, commitment_service, focus_service, settings_service, stress_service,
     attention_service, progress_service, planner_service, research_service, feedback_service,
-    alert_service, research_export,
+    alert_service, research_export, notification_service, insights_service,
 )
 from app.components.scheduler.models import Task, FocusSession, ScheduleChange
 from app.components.scheduler.engine import m1_predictor, m3_predictor, stress_rules
@@ -235,6 +235,30 @@ def progress(db: Session = Depends(get_db), user=Depends(get_current_user)):
 
 
 # ===========================================================================
+# INSIGHTS - real numbers for the Overview and AI Insights pages
+# ===========================================================================
+@router.get("/insights")
+def get_insights(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Last 7 days, this week vs last, best hours (M1), best effort level, estimate vs actual, stress trend."""
+    return insights_service.insights(db, user)
+
+
+# ===========================================================================
+# NOTIFICATIONS  (FR-11) - built from real data, unread = newer than the last visit
+# ===========================================================================
+@router.get("/notifications", response_model=schemas.NotificationsOut)
+def get_notifications(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Upcoming sessions, deadlines, missed sessions, focus alert, lighter-plan suggestion, new rewards."""
+    return notification_service.notifications(db, user)
+
+
+@router.post("/notifications/seen")
+def notifications_seen(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """The student opened the notifications page -> everything so far counts as read."""
+    return notification_service.mark_seen(db, user)
+
+
+# ===========================================================================
 # PLAN MY WEEK  (FR-04, FR-14) - CP-SAT scheduler (Module D)
 # ===========================================================================
 @router.post("/plan", response_model=schemas.PlanBuiltOut)
@@ -380,6 +404,12 @@ def complete(task_id: str, db: Session = Depends(get_db), user=Depends(get_curre
 def research_me(user=Depends(get_current_user)):
     """Am I a researcher? (the frontend shows the pilot controls only then)"""
     return {"is_researcher": research_service.is_researcher(user)}
+
+
+@router.get("/research/overview")
+def research_overview(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Research Dashboard: KPIs, cohort charts and participant table (research IDs only). Researchers only."""
+    return research_service.overview(db, user)
 
 
 @router.get("/research/participants", response_model=schemas.ParticipantsOut)

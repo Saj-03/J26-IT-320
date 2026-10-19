@@ -1,0 +1,180 @@
+{
+  "data": {
+    "train": 3963,
+    "test": 930,
+    "test_parts": {
+      "massive": 689,
+      "seed": 121,
+      "templates": 120
+    }
+  },
+  "cv_macro_f1": {
+    "tfidf_logreg": 0.951,
+    "minilm_logreg": 0.934,
+    "ensemble": 0.952
+  },
+  "chosen": "tfidf_logreg",
+  "test": {
+    "tfidf_logreg": {
+      "macro_f1": 0.884,
+      "accuracy": 0.915,
+      "accuracy_massive": 0.932,
+      "accuracy_seed": 0.909,
+      "accuracy_templates": 0.825
+    },
+    "minilm_logreg": {
+      "macro_f1": 0.839,
+      "accuracy": 0.876,
+      "accuracy_massive": 0.897,
+      "accuracy_seed": 0.868,
+      "accuracy_templates": 0.767
+    },
+    "ensemble": {
+      "macro_f1": 0.884,
+      "accuracy": 0.919,
+      "accuracy_massive": 0.933,
+      "accuracy_seed": 0.926,
+      "accuracy_templates": 0.833
+    },
+    "keyword_rules": {
+      "macro_f1": 0.62,
+      "accuracy": 0.654,
+      "accuracy_massive": 0.731,
+      "accuracy_seed": 0.421,
+      "accuracy_templates": 0.442
+    }
+  },
+  "chosen_per_class": {
+    "task_academic": {
+      "precision": 0.9734513274336283,
+      "recall": 0.9090909090909091,
+      "f1-score": 0.9401709401709402,
+      "support": 121.0
+    },
+    "task_personal": {
+      "precision": 0.7702702702702703,
+      "recall": 0.9344262295081968,
+      "f1-score": 0.8444444444444444,
+      "support": 61.0
+    },
+    "commitment": {
+      "precision": 0.9196787148594378,
+      "recall": 0.9271255060728745,
+      "f1-score": 0.9233870967741935,
+      "support": 247.0
+    },
+    "routine": {
+      "precision": 0.9047619047619048,
+      "recall": 0.926829268292683,
+      "f1-score": 0.9156626506024096,
+      "support": 41.0
+    },
+    "energy": {
+      "precision": 0.9310344827586207,
+      "recall": 0.9,
+      "f1-score": 0.9152542372881356,
+      "support": 30.0
+    },
+    "plan_request": {
+      "precision": 1.0,
+      "recall": 0.5666666666666667,
+      "f1-score": 0.723404255319149,
+      "support": 30.0
+    },
+    "other": {
+      "precision": 0.9187192118226601,
+      "recall": 0.9325,
+      "f1-score": 0.9255583126550868,
+      "support": 400.0
+    },
+    "accuracy": 0.9150537634408602,
+    "macro avg": {
+      "precision": 0.9168451302723603,
+      "recall": 0.8709483685187615,
+      "f1-score": 0.8839831338934798,
+      "support": 930.0
+    },
+    "weighted avg": {
+      "precision": 0.9187620397669864,
+      "recall": 0.9150537634408602,
+      "f1-score": 0.9142727486988953,
+      "support": 930.0
+    }
+  },
+  "chosen_confusion": {
+    "labels": [
+      "task_academic",
+      "task_personal",
+      "commitment",
+      "routine",
+      "energy",
+      "plan_request",
+      "other"
+    ],
+    "matrix": [
+      [
+        110,
+        3,
+        1,
+        0,
+        0,
+        0,
+        7
+      ],
+      [
+        0,
+        57,
+        2,
+        0,
+        0,
+        0,
+        2
+      ],
+      [
+        1,
+        3,
+        229,
+        1,
+        2,
+        0,
+        11
+      ],
+      [
+        0,
+        0,
+        2,
+        38,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        27,
+        0,
+        3
+      ],
+      [
+        0,
+        0,
+        4,
+        0,
+        0,
+        17,
+        9
+      ],
+      [
+        2,
+        11,
+        11,
+        3,
+        0,
+        0,
+        373
+      ]
+    ]
+  }
+}

@@ -720,3 +720,19 @@ class FocusAlertOut(BaseModel):
 class FocusAlertDismissIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     kind: Literal["quality", "habit"]
+
+
+class NotificationOut(BaseModel):
+    id: str                          # stable key, e.g. "due-<task id>"
+    category: Literal["Schedule", "Focus", "Wellbeing", "Achievements"]
+    icon: str                        # calendar / timer / heart / trophy
+    title: str
+    body: str
+    at: datetime
+    link: str                        # page to open
+    unread: bool
+
+
+class NotificationsOut(BaseModel):
+    items: list[NotificationOut]
+    unread: int

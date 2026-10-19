@@ -1,0 +1,72 @@
+{
+  "counts": {
+    "sentences": 2807,
+    "with_time": 711,
+    "time_found": 578,
+    "time_checked": 516,
+    "time_correct": 509,
+    "without_time": 2096,
+    "false_time": 35,
+    "with_simple_day": 729,
+    "day_found": 729
+  },
+  "by_kind_of_time": {
+    "clock": {
+      "gold": 560,
+      "found": 558,
+      "found_pct": 99.6
+    },
+    "duration_or_relative": {
+      "gold": 69,
+      "found": 67,
+      "found_pct": 97.1
+    },
+    "vague": {
+      "gold": 82,
+      "found": 18,
+      "found_pct": 22.0
+    }
+  },
+  "time_info_found_pct": 99.4,
+  "time_recall_pct": 81.3,
+  "time_exact_pct": 98.6,
+  "false_time_pct": 1.7,
+  "simple_day_recall_pct": 100.0,
+  "examples_of_wrong_times": [
+    {
+      "utt": "alert me at five hours",
+      "want": "17:00",
+      "got": null
+    },
+    {
+      "utt": "let me know when it is ten",
+      "want": "10:00",
+      "got": null
+    },
+    {
+      "utt": "set an alarm for six thirty am",
+      "want": "06:30",
+      "got": "18:30"
+    },
+    {
+      "utt": "jonathan wants to meet up sundays at eleven can you remind me saturday night every week",
+      "want": "11:00",
+      "got": "23:00"
+    },
+    {
+      "utt": "remind me at two p. m. tuesday for the three p. m. meeting with the boss",
+      "want": "15:00",
+      "got": "14:00"
+    },
+    {
+      "utt": "remind me of my meeting with ms. boland on wednesday eight hundred am on tuesday seven p. m.",
+      "want": "08:00",
+      "got": "19:00"
+    },
+    {
+      "utt": "add jane's birthday party for tomorrow two p. m. at one hundred and twenty three main on my calendar",
+      "want": "14:00",
+      "got": "13:00"
+    }
+  ]
+}
