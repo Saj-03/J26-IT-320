@@ -192,15 +192,28 @@ export function PhysicalPlan() {
             <button type="button" onClick={() => navigate(userProfile ? '/app/physical/profile' : '/physical-setup')} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-white px-3.5 py-2 text-xs font-extrabold text-emerald-950 shadow-sm transition hover:bg-lime-50 focus:outline-none focus:ring-2 focus:ring-white/70">
               <SlidersHorizontalIcon size={16} /> {userProfile ? 'Customize my plan' : 'Start assessment'}
             </button>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-[10px] font-extrabold uppercase tracking-wider text-emerald-50/70">Plan uses</span>
+              <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+                🥗 Diet: <strong className="capitalize">{userPrefs.diet_pref || 'Any'}</strong>
+              </span>
+              <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+                🍛 Cuisine: <strong className="capitalize">{String(userPrefs.meal_style || 'Both').replace('_', ' ')}</strong>
+              </span>
+              <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+                ⏱️ Workout Window: <strong>{planData?.effective_available_minutes || userPrefs.available_minutes || 20} mins</strong>
+              </span>
+              {userPrefs.physical_limitations && userPrefs.physical_limitations !== 'none' && (
+                <span className="rounded-full border border-amber-200/30 bg-amber-300/15 px-3 py-1.5 text-xs font-semibold text-amber-50">
+                  🦵 Safety: <strong>{userPrefs.physical_limitations} protected</strong>
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex gap-3">
             <div className="min-w-24 rounded-2xl border border-white/10 bg-white/10 px-3 py-2.5 backdrop-blur-sm">
               <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-50/70">Plan length</p>
               <p className="mt-1 text-lg font-black">{daysCount} <span className="text-xs font-semibold">days</span></p>
-            </div>
-            <div className="min-w-24 rounded-2xl border border-white/10 bg-white/10 px-3 py-2.5 backdrop-blur-sm">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-50/70">Workout window</p>
-              <p className="mt-1 text-lg font-black">{planData?.effective_available_minutes || userPrefs.available_minutes || 20} <span className="text-xs font-semibold">min</span></p>
             </div>
           </div>
         </div>
@@ -277,24 +290,6 @@ export function PhysicalPlan() {
           </div>
         </div>
 
-        {/* User Profile Active Preferences Bar */}
-        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-black/[0.05] pt-3">
-          <span className="mr-1 text-[10px] font-bold uppercase tracking-wider text-charcoal-muted">Plan uses</span>
-          <span className="px-2.5 py-1 rounded-full bg-white border border-black/[0.06] font-semibold text-charcoal text-xs">
-            🥗 Diet: <strong className="capitalize">{userPrefs.diet_pref || 'Balanced'}</strong>
-          </span>
-          <span className="px-2.5 py-1 rounded-full bg-white border border-black/[0.06] font-semibold text-charcoal text-xs">
-            🍛 Cuisine: <strong className="capitalize">{String(userPrefs.meal_style || 'Both').replace('_', ' ')}</strong>
-          </span>
-          <span className="px-2.5 py-1 rounded-full bg-white border border-black/[0.06] font-semibold text-charcoal text-xs">
-            ⏱️ Workout Window: <strong>{planData?.effective_available_minutes || userPrefs.available_minutes || 20} mins</strong>
-          </span>
-          {userPrefs.physical_limitations && userPrefs.physical_limitations !== 'none' && (
-            <span className="px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 font-semibold text-amber-800 text-xs">
-              🦵 Safety: <strong>{userPrefs.physical_limitations} Protected</strong>
-            </span>
-          )}
-        </div>
       </Card>
 
       {/* Clinical Risk Triage & Doctor Consultation Banner */}
