@@ -25,7 +25,9 @@ function candidateTimes(days, minutes, deadlineMs) {
     for (const day of days) {
         for (const slot of day.slots) {
             const end = utcMs(slot.end);
-            let t = Math.ceil(utcMs(slot.start) / 3600000) * 3600000;      // next full hour
+            const first = new Date(utcMs(slot.start));                      // next full hour on the student's clock
+            if (first.getMinutes() || first.getSeconds() || first.getMilliseconds()) first.setHours(first.getHours() + 1, 0, 0, 0);
+            let t = first.getTime();                                        // (UTC full hours are :30 in Sri Lanka)
             while (t + minutes * 60000 <= Math.min(end, deadlineMs)) {
                 out.push(t);
                 t += 3600000;
