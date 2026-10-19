@@ -15,6 +15,144 @@ from app.components.physical_wellbeing.ml import recommender
 
 router = APIRouter()
 
+# ── Image URL lookup maps (keyed by curated meal/exercise id) ─────────────────
+# Uses stable Unsplash photos matched to each food and workout type.
+_MEAL_IMAGES: dict[str, str] = {
+    # Sri Lankan Breakfasts
+    "sl_bf_1": "https://images.unsplash.com/photo-1627308595229-7830a5c18cb1?w=600&q=80",   # milk rice
+    "sl_bf_2": "https://images.unsplash.com/photo-1630851840628-a81d5c3a0b45?w=600&q=80",   # string hoppers
+    "sl_bf_3": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&q=80",   # coconut roti
+    "sl_bf_4": "https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80",       # chickpeas
+    "sl_bf_5": "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?w=600&q=80",   # mung beans
+    "sl_bf_6": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80",   # egg hopper
+    "sl_bf_7": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80",   # roast bread + egg
+    "sl_bf_8": "https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80",       # cowpea
+    # Sri Lankan Lunches
+    "sl_lu_1": "https://images.unsplash.com/photo-1631515242808-497c3fbd3972?w=600&q=80",   # rice & curry
+    "sl_lu_2": "https://images.unsplash.com/photo-1631515242808-497c3fbd3972?w=600&q=80",   # rice & soya
+    "sl_lu_3": "https://images.unsplash.com/photo-1588347818033-c2f3cca63a70?w=600&q=80",   # fish curry
+    "sl_lu_4": "https://images.unsplash.com/photo-1631515242808-497c3fbd3972?w=600&q=80",   # red rice
+    "sl_lu_5": "https://images.unsplash.com/photo-1631515242808-497c3fbd3972?w=600&q=80",   # polos curry
+    "sl_lu_6": "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&q=80",   # egg curry
+    # Sri Lankan Dinners
+    "sl_dn_1": "https://images.unsplash.com/photo-1630851840628-a81d5c3a0b45?w=600&q=80",   # string hoppers dinner
+    "sl_dn_2": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80",   # roast paan
+    "sl_dn_3": "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=600&q=80",   # vegetable soup
+    "sl_dn_4": "https://images.unsplash.com/photo-1588347818033-c2f3cca63a70?w=600&q=80",   # idiyappam fish
+    "sl_dn_5": "https://images.unsplash.com/photo-1551183053-bf91798d454c?w=600&q=80",       # stir-fried noodles
+    "sl_dn_6": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=600&q=80",   # grilled chicken
+    # Sri Lankan Snacks
+    "sl_sn_1": "https://images.unsplash.com/photo-1562159278-1253a58da141?w=600&q=80",       # king coconut
+    "sl_sn_2": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",       # energy balls
+    "sl_sn_3": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&q=80",   # roasted nuts
+    "sl_sn_4": "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=600&q=80",   # banana
+    "sl_sn_5": "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=80",   # yogurt papaya
+    "sl_sn_6": "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=600&q=80",   # guava
+    # International Breakfasts
+    "int_bf_1": "https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=600&q=80",  # oatmeal
+    "int_bf_2": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80",  # avocado toast
+    "int_bf_3": "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=80",  # greek yogurt
+    # International Lunches
+    "int_lu_1": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&q=80",  # salmon quinoa
+    "int_lu_2": "https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80",      # chickpea stew
+    "int_lu_3": "https://images.unsplash.com/photo-1584184924103-e310d9dc82fc?w=600&q=80",  # lettuce wraps
+    "int_lu_4": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80",  # lentil salad
+    # International Dinners
+    "int_dn_1": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=600&q=80",  # grilled chicken
+    "int_dn_2": "https://images.unsplash.com/photo-1551183053-bf91798d454c?w=600&q=80",      # pasta lentil
+    "int_dn_3": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&q=80",  # baked cod
+    "int_dn_4": "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&q=80",  # tofu stir-fry
+    # International Snacks
+    "int_sn_1": "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=600&q=80",  # apple peanut butter
+    "int_sn_2": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&q=80",  # nuts
+    "int_sn_3": "https://images.unsplash.com/photo-1541014741259-de529411b96a?w=600&q=80",  # hummus veggies
+}
+
+_EXERCISE_IMAGES: dict[str, str] = {
+    "ex_15_walk":   "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=600&q=80",
+    "ex_15_dance":  "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&q=80",
+    "ex_15_jog":    "https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=600&q=80",
+    "ex_15_1":      "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=600&q=80",
+    "ex_15_2":      "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&q=80",
+    "ex_15_3":      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80",
+    "ex_20_walk":   "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=600&q=80",
+    "ex_20_zumba":  "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&q=80",
+    "ex_20_jog":    "https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=600&q=80",
+    "ex_20_bands":  "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80",
+    "ex_20_1":      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80",
+    "ex_20_2":      "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=600&q=80",
+    "ex_20_3":      "https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?w=600&q=80",
+    "ex_20_4":      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80",
+    "ex_30_1":      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80",
+    "ex_30_2":      "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=600&q=80",
+    "ex_30_3":      "https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?w=600&q=80",
+    "ex_30_4":      "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=600&q=80",
+    "ex_30_zumba":  "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&q=80",
+    "ex_30_run":    "https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=600&q=80",
+    "ex_30_mat":    "https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?w=600&q=80",
+    "ex_45_1":      "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80",
+    "ex_45_knee_safe": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80",
+    "ex_45_2":      "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=600&q=80",
+    "ex_45_3":      "https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?w=600&q=80",
+    "ex_60_1":      "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80",
+    "ex_60_2":      "https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=600&q=80",
+}
+
+# Fallbacks by cuisine / slot / intensity when id not found
+_MEAL_FALLBACKS: dict[str, str] = {
+    "sri_lankan": "https://images.unsplash.com/photo-1631515242808-497c3fbd3972?w=600&q=80",
+    "western":    "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80",
+    "default":    "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80",
+}
+_EXERCISE_FALLBACK = "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80"
+
+
+def _inject_meal_image(meal: dict) -> dict:
+    if meal.get("image"):
+        return meal
+    meal_id = meal.get("id", "")
+    cuisine = meal.get("cuisine", "default")
+    img = _MEAL_IMAGES.get(meal_id) or _MEAL_FALLBACKS.get(cuisine) or _MEAL_FALLBACKS["default"]
+    return {**meal, "image": img}
+
+
+def _inject_exercise_image(ex: dict) -> dict:
+    if ex.get("image"):
+        return ex
+    ex_id = ex.get("id", "")
+    img = _EXERCISE_IMAGES.get(ex_id) or _EXERCISE_FALLBACK
+    return {**ex, "image": img}
+
+
+def _inject_plan_images(plan: dict) -> dict:
+    """Recursively inject images into a week-plan structure."""
+    if not isinstance(plan, dict):
+        return plan
+    days = plan.get("days")
+    if not days:
+        return plan
+    new_days = []
+    for day in days:
+        if not isinstance(day, dict):
+            new_days.append(day)
+            continue
+        new_day = dict(day)
+        # Exercise
+        if new_day.get("exercise"):
+            new_day["exercise"] = _inject_exercise_image(dict(new_day["exercise"]))
+        # Meals by slot
+        if new_day.get("meals"):
+            new_meals = {}
+            for slot_key, slot_list in new_day["meals"].items():
+                if isinstance(slot_list, list):
+                    new_meals[slot_key] = [_inject_meal_image(dict(m)) if isinstance(m, dict) else m for m in slot_list]
+                else:
+                    new_meals[slot_key] = slot_list
+            new_day["meals"] = new_meals
+        new_days.append(new_day)
+    return {**plan, "days": new_days}
+
+
 
 def _challenge_payload(db: Session, challenge: PeerChallenge, member_id: str | None = None) -> dict:
     members = (db.query(PeerChallengeMember)
@@ -379,14 +517,23 @@ def recommendations(is_exam_period: bool = False, use_baseline: bool = False, db
         w_dict = dict(w)
         w_dict["name"] = w_dict.get("name") or w_dict.get("title") or "Workout Routine"
         w_dict["minutes"] = int(w_dict.get("minutes") or w_dict.get("duration_mins") or w_dict.get("time_per_workout") or 20)
-        formatted_exercises.append(w_dict)
+        formatted_exercises.append(_inject_exercise_image(w_dict))
 
     formatted_meals = []
     for m in res.get("recommended_meals", []):
         m_dict = dict(m)
         m_dict["name"] = m_dict.get("name") or m_dict.get("meal_name") or "Healthy Meal"
         m_dict["region"] = m_dict.get("cuisine") or m_dict.get("diet_category") or "Balanced"
-        formatted_meals.append(m_dict)
+        formatted_meals.append(_inject_meal_image(m_dict))
+
+    # Inject images into today_slots as well
+    today_slots_raw = res.get("today_slots")
+    if today_slots_raw and isinstance(today_slots_raw, dict):
+        today_slots_raw = {
+            slot: [_inject_meal_image(dict(m)) if isinstance(m, dict) else m for m in items]
+            if isinstance(items, list) else items
+            for slot, items in today_slots_raw.items()
+        }
 
     return {
         "recovery_mode": p.recovery_mode or False,
@@ -397,7 +544,7 @@ def recommendations(is_exam_period: bool = False, use_baseline: bool = False, db
         "user_preferences": profile_dict,
         "exercises": formatted_exercises,
         "meals": formatted_meals,
-        "today_slots": res.get("today_slots"),
+        "today_slots": today_slots_raw,
         "safety_analysis": res.get("safety_analysis"),
         "behavior_adaptation": profile_dict.get("behavior_adaptation")
     }
@@ -422,6 +569,7 @@ def get_week_plan(
         use_baseline=use_baseline,
         num_days=days_count
     )
+    plan = _inject_plan_images(plan)
     plan_date = datetime.date.today()
     snapshot = db.query(PhysicalPlanSnapshot).filter_by(
         user_id=user.id,
