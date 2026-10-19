@@ -30,10 +30,11 @@ _MEAL_IMAGES: dict[str, str] = {
     "sl_bf_8": "https://sp-ao.shortpixel.ai/client/to_auto%2Cq_lossless%2Cret_img%2Cw_800%2Ch_534/https%3A/foodcnr.com/wp-content/uploads/2015/07/Cowpea-curry-Sri-Lanka.jpg",  # cowpea curry
     # Sri Lankan Lunches
     "sl_lu_1": "https://halmek.co.jp/media/article/image/b929d69fa8978fe08137885d56cbc31f.jpg",  # Sri Lankan rice and curry
-    # Soya curry with rice; source: https://www.gzrecipes.com/en/viaggiandomangiando/soya-maaluwa-the-sri-lankan-soy-curry/
-    "sl_lu_2": "https://www.gzrecipes.com/content/uploads/sites/2/2025/11/IMG_8717-scaled-8-6925a081d50a51-19688828.jpeg",
+    # Sri Lankan red rice and curry platter; source: https://www.arise-app.com/dish/Sri-Lankan-Style-Rice-and-Curry
+    "sl_lu_2": "https://www.arise-app.com/images/dishes/en/sri-lankan-style-rice-and-curry-qgerkx.webp",
     "sl_lu_3": "https://www.maggi.lk/sites/default/files/styles/home_stage_944_531/public/srh_recipes/eb1f3828805f8be9c7bb30dc086626ce.jpg?h=4f5b30f1&itok=hWZlAfZS",  # fish ambul thiyal
-    "sl_lu_4": "https://ordernow.lk/images/sri_lankan_rice_curry_veg_egg.webp",  # red rice, dhal and sides
+    # Sri Lankan red rice platter with dhal, greens and vegetable sides; source: https://halmek.co.jp/favorite/c/hobby/919
+    "sl_lu_4": "https://halmek.co.jp/media/uploads/895e2a9e49912132983b2fe585ce6cd91552971286.3906.jpg",
     "sl_lu_5": "https://www.hlimg.com/images/stories/738X538/young-jackfruit-curry-polos_1549685713-8927e.jpg?dpr=2.6&w=400",  # polos curry
     "sl_lu_6": "https://ordernow.lk/images/sri_lankan_rice_curry_veg_egg.webp",  # egg curry and rice
     # Sri Lankan Dinners
