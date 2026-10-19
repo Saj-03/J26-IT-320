@@ -25,6 +25,10 @@ class ProfileIn(BaseModel):
     physical_limitations: str = ""
 
 
+class PlanDurationIn(BaseModel):
+    days_count: int = Field(ge=1, le=31)
+
+
 class ActivityIn(BaseModel):
     day: date
     steps: int

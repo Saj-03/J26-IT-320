@@ -4,14 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckIcon, PlayIcon, ClockIcon, XIcon, PlusIcon, MinusIcon,
   CalendarIcon, HistoryIcon, SparklesIcon, AlertCircleIcon, ShieldCheckIcon,
-  UtensilsIcon, DumbbellIcon, FlameIcon, LayersIcon, SlidersHorizontalIcon
+  UtensilsIcon, DumbbellIcon, FlameIcon, LayersIcon, SlidersHorizontalIcon, Trash2Icon
 } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { PhysicalNav } from '../components/PhysicalNav';
 import { AdaptedChip } from '../components/Shared';
-import { getWeekPlan, getWeekPlanHistory, getWeekPlanSnapshot, getProfile } from '../api';
+import { getWeekPlan, getWeekPlanHistory, getWeekPlanSnapshot, deleteWeekPlanSnapshot, updatePlanDuration, getProfile } from '../api';
 import { cn } from '../../../shared/lib/cn';
 
 const slotMeta = {
@@ -30,6 +30,8 @@ export function PhysicalPlan() {
   const [daysDraft, setDaysDraft] = useState('7');
   const [durationPreferenceLoaded, setDurationPreferenceLoaded] = useState(false);
   const [returnDaysCount, setReturnDaysCount] = useState(7);
+  const [durationSaving, setDurationSaving] = useState(false);
+  const [durationSaveError, setDurationSaveError] = useState('');
   const [selectedDayIdx, setSelectedDayIdx] = useState(0);
   const [isExamPeriod, setIsExamPeriod] = useState(false);
   const [useBaseline, setUseBaseline] = useState(false);
@@ -44,6 +46,7 @@ export function PhysicalPlan() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState('');
   const [loadingSnapshotId, setLoadingSnapshotId] = useState('');
+  const [deletingSnapshotId, setDeletingSnapshotId] = useState('');
   const [viewingSavedPlan, setViewingSavedPlan] = useState(false);
 
   // Today timeline statuses
@@ -127,8 +130,44 @@ export function PhysicalPlan() {
 
   const returnToCurrentPlan = () => {
     setHistoryMode(false);
-    setDaysCount(returnDaysCount);
+    if (viewingSavedPlan) setDaysCount(returnDaysCount);
     setViewingSavedPlan(false);
+  };
+
+  const applyPlanLength = async () => {
+    const value = Number(daysDraft);
+    if (!Number.isInteger(value) || value < 1 || value > 31) {
+      setDurationSaveError('Choose a plan length from 1 to 31 days.');
+      return;
+    }
+    setDurationSaving(true);
+    setDurationSaveError('');
+    try {
+      await updatePlanDuration(value);
+      setUserProfile((profile) => profile ? {
+        ...profile,
+        assessment_data: { ...(profile.assessment_data || {}), planDurationDays: value, planDurationAmount: String(value), planDurationUnit: 'days' },
+      } : profile);
+      setDaysCount(value);
+    } catch {
+      setDurationSaveError('Could not save your preferred plan length. Please try again.');
+    } finally {
+      setDurationSaving(false);
+    }
+  };
+
+  const deleteSnapshot = async (record) => {
+    if (!window.confirm(`Delete the saved plan from ${record.plan_date}? This cannot be undone.`)) return;
+    setDeletingSnapshotId(record.id);
+    setHistoryError('');
+    try {
+      await deleteWeekPlanSnapshot(record.id);
+      setHistoryRecords((records) => records.filter((item) => item.id !== record.id));
+    } catch {
+      setHistoryError('Could not delete that saved plan. Please try again.');
+    } finally {
+      setDeletingSnapshotId('');
+    }
   };
 
   const setStatus = (id, s) => setStatuses((prev) => ({ ...prev, [id]: s }));
@@ -168,18 +207,19 @@ export function PhysicalPlan() {
       <div className="flex flex-col gap-3 rounded-3xl border border-black/[0.06] bg-white p-3 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-2 self-start rounded-2xl bg-cream p-2">
           <label htmlFor="plan-length-days" className="pl-1 text-xs font-bold text-charcoal">Plan length</label>
-          <input id="plan-length-days" type="number" min="1" max="31" step="1" inputMode="numeric" value={daysDraft} disabled={viewingSavedPlan} onChange={(event) => setDaysDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); const value = Number(daysDraft); if (Number.isInteger(value) && value >= 1 && value <= 31) setDaysCount(value); } }} className="w-20 rounded-xl border border-black/[0.08] bg-white px-3 py-2 text-sm font-bold text-charcoal outline-none focus:border-brand-400" />
+          <input id="plan-length-days" type="number" min="1" max="31" step="1" inputMode="numeric" value={daysDraft} disabled={viewingSavedPlan} onChange={(event) => setDaysDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); applyPlanLength(); } }} className="w-20 rounded-xl border border-black/[0.08] bg-white px-3 py-2 text-sm font-bold text-charcoal outline-none focus:border-brand-400" />
           <span className="text-xs font-semibold text-charcoal-muted">days</span>
-          <button type="button" onClick={() => { const value = Number(daysDraft); if (Number.isInteger(value) && value >= 1 && value <= 31) setDaysCount(value); }} disabled={viewingSavedPlan || !Number.isInteger(Number(daysDraft)) || Number(daysDraft) < 1 || Number(daysDraft) > 31} className="rounded-xl bg-emerald-800 px-3 py-2 text-xs font-bold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-40">Update plan</button>
+          <button type="button" onClick={applyPlanLength} disabled={viewingSavedPlan || durationSaving || !Number.isInteger(Number(daysDraft)) || Number(daysDraft) < 1 || Number(daysDraft) > 31} className="rounded-xl bg-emerald-800 px-3 py-2 text-xs font-bold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-40">{durationSaving ? 'Saving…' : 'Update plan'}</button>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1 rounded-2xl bg-cream p-1">
-            <button onClick={() => setActiveTab('week')} className={cn('flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition', activeTab === 'week' ? 'bg-emerald-800 text-white shadow-sm' : 'text-charcoal-muted hover:text-charcoal')}><CalendarIcon size={14} /> Plan</button>
-            <button onClick={() => setActiveTab('today')} disabled={viewingSavedPlan} className={cn('flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition', activeTab === 'today' ? 'bg-emerald-800 text-white shadow-sm' : 'text-charcoal-muted hover:text-charcoal')}><ClockIcon size={14} /> Today</button>
+            <button onClick={() => { setActiveTab('week'); if (historyMode || viewingSavedPlan) returnToCurrentPlan(); }} className={cn('flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition', activeTab === 'week' && !historyMode ? 'bg-emerald-800 text-white shadow-sm' : 'text-charcoal-muted hover:text-charcoal')}><CalendarIcon size={14} /> Plan</button>
+            <button onClick={() => { if (historyMode || viewingSavedPlan) returnToCurrentPlan(); setActiveTab('today'); }} className={cn('flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition', activeTab === 'today' && !historyMode ? 'bg-emerald-800 text-white shadow-sm' : 'text-charcoal-muted hover:text-charcoal')}><ClockIcon size={14} /> Today</button>
           </div>
           <button type="button" onClick={openHistory} disabled={historyLoading} className="inline-flex items-center gap-1.5 rounded-xl border border-black/[0.08] bg-white px-3.5 py-2.5 text-xs font-bold text-charcoal transition hover:border-brand-300 hover:text-brand-700 disabled:opacity-60"><HistoryIcon size={14} /> {historyLoading ? 'Loading…' : 'Past plans'}</button>
         </div>
       </div>
+      {durationSaveError && <p role="alert" className="-mt-4 text-xs font-semibold text-rose-700">{durationSaveError}</p>}
 
       <PhysicalNav />
 
@@ -356,14 +396,19 @@ export function PhysicalPlan() {
           {historyRecords.length ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {historyRecords.map((record) => (
-                <button key={record.id} type="button" onClick={() => openSnapshot(record)} disabled={Boolean(loadingSnapshotId)} className="rounded-2xl border border-black/[0.07] bg-cream p-4 text-left transition hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50 disabled:opacity-60">
+                <div key={record.id} className="rounded-2xl border border-black/[0.07] bg-cream p-4 transition hover:border-brand-300 hover:bg-brand-50/50">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-extrabold text-charcoal">{new Date(`${record.plan_date}T00:00:00`).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
                     <CalendarIcon size={16} className="text-brand-600" />
                   </div>
                   <p className="mt-2 text-xs font-semibold text-charcoal-muted">{record.days_count}-day plan · {record.use_baseline ? 'Baseline model' : 'Adaptive model'}{record.is_exam_period ? ' · Exam mode' : ''}</p>
-                  <p className="mt-2 text-xs font-bold text-brand-700">{loadingSnapshotId === record.id ? 'Opening…' : 'View this plan →'}</p>
-                </button>
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <button type="button" onClick={() => openSnapshot(record)} disabled={Boolean(loadingSnapshotId || deletingSnapshotId)} className="text-xs font-bold text-brand-700 hover:text-brand-900 disabled:opacity-50">{loadingSnapshotId === record.id ? 'Opening…' : 'View plan →'}</button>
+                    <button type="button" onClick={() => deleteSnapshot(record)} disabled={Boolean(deletingSnapshotId || loadingSnapshotId)} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50" aria-label={`Delete plan from ${record.plan_date}`}>
+                      <Trash2Icon size={13} /> {deletingSnapshotId === record.id ? 'Deleting…' : 'Delete'}
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           ) : (

@@ -11,6 +11,8 @@ export const getWeekPlan = (isExamPeriod = false, useBaseline = false, daysCount
     api.get("/physical/week-plan", { params: { is_exam_period: isExamPeriod, use_baseline: useBaseline, days_count: daysCount } }).then((r) => r.data);
 export const getWeekPlanHistory = () => api.get("/physical/week-plan/history").then((r) => r.data);
 export const getWeekPlanSnapshot = (id) => api.get(`/physical/week-plan/history/${id}`).then((r) => r.data);
+export const deleteWeekPlanSnapshot = (id) => api.delete(`/physical/week-plan/history/${id}`).then((r) => r.data);
+export const updatePlanDuration = (daysCount) => api.put('/physical/profile/plan-duration', { days_count: daysCount }).then((r) => r.data);
 export const getActivitySummary = () => api.get("/physical/activity").then((r) => r.data);
 export const logActivity = (a) => api.post("/physical/activity", a);
 export const saveWorkoutFeedback = (feedback) => api.post("/physical/activity/workout-feedback", feedback).then((r) => r.data);

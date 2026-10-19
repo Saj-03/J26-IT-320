@@ -251,6 +251,22 @@ def get_profile(db: Session = Depends(get_db), user=Depends(get_current_user)):
     }
 
 
+@router.put("/profile/plan-duration")
+def update_plan_duration(data: schemas.PlanDurationIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    profile = db.query(WellbeingProfile).filter_by(user_id=user.id).first()
+    if not profile:
+        raise HTTPException(404, "Complete your wellbeing assessment first")
+    assessment_data = dict(profile.assessment_data or {})
+    assessment_data.update({
+        "planDurationDays": data.days_count,
+        "planDurationAmount": str(data.days_count),
+        "planDurationUnit": "days",
+    })
+    profile.assessment_data = assessment_data
+    db.commit()
+    return {"days_count": data.days_count}
+
+
 def _profile_to_dict(p: WellbeingProfile) -> dict:
     return {
         "workload_intensity_score": p.workload_intensity_score or 50.0,
@@ -461,6 +477,16 @@ def get_week_plan_snapshot(snapshot_id: str, db: Session = Depends(get_db), user
         "days_count": snapshot.days_count,
         "plan": snapshot.plan_data,
     }
+
+
+@router.delete("/week-plan/history/{snapshot_id}")
+def delete_week_plan_snapshot(snapshot_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    snapshot = db.query(PhysicalPlanSnapshot).filter_by(id=snapshot_id, user_id=user.id).first()
+    if not snapshot:
+        raise HTTPException(404, "Saved plan not found")
+    db.delete(snapshot)
+    db.commit()
+    return {"ok": True}
 
 
 @router.post("/activity/workout-feedback")
