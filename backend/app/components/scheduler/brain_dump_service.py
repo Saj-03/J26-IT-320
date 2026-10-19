@@ -38,8 +38,23 @@ DEFAULT_DEADLINE_DAYS = {"task_academic": 7, "task_personal": 2}   # no deadline
 LOW_ENERGY_SHARE = 0.5                 # "I'm tired today" -> plan only half of the usual study time today
 
 CONNECTORS = r"(?:and_then|after that|then|also|plus|ඊට පස්සේ|eeta passe|ita passe)"
+# speech-to-text often gives no full stops: "and bread I'm really tired today plan my day" -> 3 pieces
+NEW_THOUGHT = r"(?:i'm|i am|plan my|plan the (?:day|week)|please plan)"
+TIME_RANGE = r"\b(?:from|between)\s+\d{1,2}(?:[:.]\d\d)?\s*(?:am|pm)?\s*(?:to|and|till|until|-)\s*\d{1,2}(?:[:.]\d\d)?(?:\s*(?:am|pm))?"
+AFTER_RANGE = (r"(?:am|pm|a\.m|p\.m|today|tomorrow|tonight|on|every|at|in|this|next|morning|afternoon|evening|night|"
+               r"o'clock|mon\w*|tue\w*|wed\w*|thu\w*|fri\w*|sat\w*|sun\w*)")
+CLOCK = r"\d{1,2}(?:[:.]\d\d)?\s*(?:am|pm|a\.m\.|p\.m\.)?"
+# the speaker corrects themselves - the most common cues in Disfl-QA (see ml_training/scheduler/m4_speech_noise.py)
+REPAIR = r"(?:no make that|make that|or rather|no sorry|no wait|no i mean|i mean|i meant|or no|sorry|oops|wait|actually|rather|no)"
+NOISE_WORDS = {"yeah", "yes", "yep", "no", "ok", "okay", "sorry", "um", "uh", "umm", "hmm", "and", "also", "so",
+               "well", "like", "i", "have", "has", "a", "an", "the", "need", "to", "is", "it", "that", "then",
+               "wait", "actually", "mean", "just", "oh", "right", "hi", "hello", "hey", "there"}
+LONG_EVENT_MINUTES = 8 * 60            # longer than a work shift -> probably a misheard time, ask to check
+ERRAND =r"(?:buy|pick up|pay|call|clean|wash|cook|get|order|book|send|return|collect)"   # "other" + errand verb -> personal task
+LEADING_DURATION = re.compile(
+    r"^((?:about|around|roughly|maybe|like)?\s*\d+(?:\.\d+)?\s*(?:hours?|hrs?|minutes?|mins?))\s+(\S.*)$", re.IGNORECASE)
 FILLERS = re.compile(
-    r"^(?:and then|after that|then|also|plus|so|ok|okay|hey|um|well|please|i need to|i have to|i've got to|"
+    r"^(?:and then|and|after that|then|also|plus|so|ok|okay|hey|um|well|please|i need to|i have to|i've got to|"
     r"i have got to|i've got|i have got|i have an?|i have|i need|need to|have to|i must|i want to|"
     r"i'm going to|i am going to|gotta|remind me to|remember to|don't forget to|add|put|there's an?|there is an?)\s+",
     re.IGNORECASE)
@@ -53,19 +68,37 @@ TASK_TYPE = [("exam_prep", r"exam|quiz|test|past paper|revise|revision"),
              ("project", r"project|app|system|prototype|website"),
              ("lecture_review", r"lecture recording|review .*lecture|slides")]
 LOW_ENERGY = r"tired|exhausted|sleepy|drained|burnt out|burned out|lazy|worn out|no energy|low energy|unwell|not feeling well"
+HIGH_ENERGY = r"energetic|energised|energized|fresh|motivated|productive|full of energy|feeling (?:good|great)|pumped"
+
+
+def clean_speech(text: str) -> str:
+    """Fix what Chrome speech-to-text does to times (seen in real use):
+        "work from.26"  -> "work from 2 to 6"     ("from two to six" heard as one number)
+        "report by 8.30" stays (a dot between digits is a time, not a sentence end)"""
+    text = re.sub(r"([A-Za-z])\.(\d)", r"\1 \2", text)
+    # self-correction: the LAST time counts ("to 6:00.9:00 PM", "at 6 sorry 7", "at 5 I mean 6")
+    text = re.sub(r"\b\d{1,2}:\d\d\s*(?:am|pm)?\s*\.?\s*(?=\d{1,2}:\d\d)", "", text, flags=re.IGNORECASE)
+    text = re.sub(rf"\b{CLOCK}\s*[.,]?\s*{REPAIR}\s*[.,]?\s*(?={CLOCK})", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\b(from|between)\s+([1-9])([1-9])\b",
+                  lambda m: f"{m[1]} {m[2]} to {m[3]}" if int(m[3]) > int(m[2]) else m[0], text, flags=re.IGNORECASE)
+    # "work from 2 to 6 finish the report" (no full stop) -> "work from 2 to 6. finish the report"
+    return re.sub(rf"({TIME_RANGE})\s+(?!{AFTER_RANGE}\b)(?=[A-Za-z])", r"\1. ", text, flags=re.IGNORECASE)
 
 
 def split_pieces(text: str) -> list[str]:
     """Sentences, then commas, then 'and then / after that' (the connector stays with the next piece)."""
     pieces = []
-    for sentence in re.split(r"[.!?;\n]+", text):
+    for sentence in re.split(r"(?<!\d)\.|\.(?!\d)|[!?;\n]+", clean_speech(text)):
         for part in re.split(r",\s*", sentence):
             # split before a connector; "and then" is kept as one connector (not "and" | "then ...")
             joined = re.sub(r"\band\s+then\b", "and_then", part, flags=re.IGNORECASE)
-            for piece in re.split(rf"\s+(?={CONNECTORS}\b)", joined, flags=re.IGNORECASE):
-                piece = piece.replace("and_then", "and then")
-                if piece.strip():
-                    pieces.append(piece.strip())
+            for piece in re.split(rf"\s+(?={CONNECTORS}\b|{NEW_THOUGHT}\b)", joined, flags=re.IGNORECASE):
+                piece = piece.replace("and_then", "and then").strip()
+                # "About 3 hours by eggs" -> "About 3 hours" (detail of the item before) | "by eggs"
+                lead = LEADING_DURATION.match(piece)
+                for part2 in ([lead[1], lead[2]] if lead else [piece]):
+                    if part2.strip():
+                        pieces.append(part2.strip())
     return pieces
 
 
@@ -74,6 +107,7 @@ def short_title(piece: str, found: list) -> str:
     title = piece
     for _, matched in found:
         title = re.sub(re.escape(matched), " ", title, flags=re.IGNORECASE)
+    title = re.sub(r"\b\d{1,2}[.:]\d\d\b", " ", title)                  # a clock time the slot rules read
     title = re.sub(r"\s+", " ", title).strip(" ,.-")
     title = re.sub(r"\s+(?:to|on|in|onto)\s+(?:my|the)\s+[\w -]*list$", "", title, flags=re.IGNORECASE)  # "... to my shopping list"
     for _ in range(3):
@@ -91,21 +125,33 @@ def preview(db: Session, user, text: str, now: datetime | None = None) -> dict:
     local_now = now + SL_OFFSET
     today = local_now.date()
     pieces = split_pieces(text[:MAX_TEXT])
+    # speech hears "buy eggs" as "by eggs": a piece that starts with "by" but has no deadline in it
+    pieces = [re.sub(r"^by\b", "buy", p, flags=re.IGNORECASE) if re.match(r"by\s", p, re.IGNORECASE)
+              and extract(p, today).deadline is None else p for p in pieces]
     # classify without the leading "then / and then / after that" (kept separately as after_previous)
-    labels = m4_predictor.classify([re.sub(rf"^(?:and then|{CONNECTORS})\s+", "", p, flags=re.IGNORECASE)
+    labels = m4_predictor.classify([re.sub(rf"^(?:and then|and|{CONNECTORS})\s+", "", p, flags=re.IGNORECASE)
                                     for p in pieces])
 
     # pieces that only add details ("about 3 hours") belong to the item before them
-    merged = []
+    merged, ignored = [], []
     for piece, (label, conf, source) in zip(pieces, labels):
         slots = extract(piece, today)
-        only_details = label == "other" and slots.found and len(short_title(piece, slots.found).split()) <= 1
+        # "Yeah", "Sorry", "And also I have a": spoken filler / unfinished words -> no card, listed as skipped
+        words = re.findall(r"[a-z']+", piece.lower())
+        if not slots.found and label not in ("plan_request", "energy") and all(w in NOISE_WORDS for w in words):
+            ignored.append(piece)
+            continue
+        # "work from 2 to 6" has a clock time: an event of its own, not a detail of the item before
+        only_details = (label == "other" and slots.found and not slots.start
+                        and len(short_title(piece, slots.found).split()) <= 1)
         if only_details and merged:
             merged[-1]["text"] += ", " + piece
             continue
-        if label == "other" and conf < CHECK_BELOW and slots.start:
-            label = "commitment"            # unsure, but it has a clock time: most likely an event (still "check")
-        merged.append({"text": piece, "label": label, "confidence": conf, "source": source})
+        guessed = label == "other" and (slots.start is not None or bool(re.match(ERRAND, piece, re.IGNORECASE)))
+        if guessed:                         # still marked "please check"
+            # "work from 2 to 6": a clock time -> most likely an event;  "buy eggs" -> a personal job
+            label = "commitment" if slots.start is not None else "task_personal"
+        merged.append({"text": piece, "label": label, "confidence": conf, "source": source, "guessed": guessed})
 
     history = m3_predictor.history(db, user.id) if m3_predictor.available() else []
     items, energy = [], None
@@ -115,16 +161,23 @@ def preview(db: Session, user, text: str, now: datetime | None = None) -> dict:
                 "title": short_title(m["text"], slots.found), "kind": None, "date": slots.date,
                 "start": slots.start, "end": slots.end, "duration_minutes": slots.duration_minutes,
                 "deadline": slots.deadline, "in_minutes": slots.in_minutes, "after_previous": slots.after_previous,
-                "load": None, "predicted_minutes": None, "include": m["label"] != "other"}
+                "load": None, "predicted_minutes": None, "include": m["label"] != "other", "warning": None}
         missing = False
         if m["label"] == "commitment":
             item["kind"] = first_match(m["text"], COMMITMENT_KIND) or "personal"
+            before = next((it for it in reversed(items) if it["type"] == "commitment"), None)
+            if item["date"] is None and item["after_previous"] and before:
+                item["date"] = before["date"]               # "lecture tomorrow 8-10, then work 2-6" -> work tomorrow too
             item["date"] = item["date"] or today
             if item["start"] and not item["end"]:
                 end = datetime.combine(today, datetime.strptime(item["start"], "%H:%M").time()) + \
                     timedelta(minutes=item["duration_minutes"] or DEFAULT_EVENT_MINUTES)
                 item["end"] = end.strftime("%H:%M")
             missing = item["start"] is None
+            if item["start"] and item["end"]:
+                start, end = (datetime.strptime(item[k], "%H:%M") for k in ("start", "end"))
+                if (end - start).seconds // 60 > LONG_EVENT_MINUTES:      # 08:00-18:00 breakfast: a misheard time?
+                    item["warning"] = f"That is {(end - start).seconds // 3600} hours. Please check the times."
         elif m["label"] in ("task_academic", "task_personal"):
             item["kind"] = (first_match(m["text"], TASK_TYPE) or "assignment") if m["label"] == "task_academic" else "other"
             if m2_classifier.available():
@@ -137,13 +190,16 @@ def preview(db: Session, user, text: str, now: datetime | None = None) -> dict:
                 item["predicted_minutes"] = m3_predictor.predict(estimate, item["load"], item["kind"], history)["minutes"]
             missing = m["label"] == "task_academic" and item["deadline"] is None
         elif m["label"] == "energy":
-            energy = "low" if re.search(LOW_ENERGY, m["text"], re.IGNORECASE) else "high"
-            item["kind"] = energy
-        item["needs_check"] = m["confidence"] < CHECK_BELOW or missing
+            level = ("low" if re.search(LOW_ENERGY, m["text"], re.IGNORECASE)
+                     else "high" if re.search(HIGH_ENERGY, m["text"], re.IGNORECASE) else None)
+            energy = energy or level        # unclear words ("I'm really try") -> no guess, the student decides
+            item["kind"] = level
+            missing = level is None
+        item["needs_check"] = m["confidence"] < CHECK_BELOW or missing or m["guessed"] or bool(item["warning"])
         items.append(item)
 
     return {"items": items, "plan_requested": any(m["label"] == "plan_request" for m in merged),
-            "energy": energy, "today": today, "model": labels[0][2] if labels else None}
+            "energy": energy, "today": today, "model": labels[0][2] if labels else None, "ignored": ignored}
 
 
 # ===========================================================================
@@ -213,4 +269,6 @@ def confirm(db: Session, user, data, now: datetime | None = None) -> dict:
     if data.plan:
         plan = planner_service.build_plan(db, user, now, today_cap=today_cap)
         out.update(planned=True, sessions=len(plan["sessions"]), unplaced=len(plan["unplaced"]))
+    else:
+        planner_service.auto_replan(db, user, "brain_dump", now)   # already uses Plan my week -> keep it up to date
     return out

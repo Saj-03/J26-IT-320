@@ -114,6 +114,8 @@ function ItemCard({ card, number, onChange }) {
 
       {showM3 &&
         <p className="text-xs text-charcoal-light">From your past tasks, this may really take about <b>{card.predicted_minutes} min</b>. The planner uses that.</p>}
+      {card.warning && card.include && card.start === card.original.start && card.end === card.original.end &&
+        <p className="text-xs font-semibold text-amber-700">{card.warning}</p>}
       {isEvent(card.type) && !card.start && card.include &&
         <p className="text-xs font-semibold text-amber-700">Add a start time, or untick this card.</p>}
     </Card>);
@@ -251,7 +253,11 @@ export default function BrainDump() {
               {preview.model === 'keyword_rules' && ' (AI model not loaded, simple word rules were used.)'}
             </p>
 
-            {cards.length === 0 && <Card padding="lg"><p className="text-sm text-charcoal-muted">We could not find any tasks or events. Try saying what, when and how long.</p></Card>}
+            {preview.ignored?.length > 0 &&
+                <p className="text-xs text-charcoal-muted">
+                Skipped words: {preview.ignored.map((w) => `“${w}”`).join(' · ')}. If something important is here, type it again above.
+              </p>}
+            {cards.length === 0 &&<Card padding="lg"><p className="text-sm text-charcoal-muted">We could not find any tasks or events. Try saying what, when and how long.</p></Card>}
             {cards.map((c, i) => <ItemCard key={c.index} card={c} number={i + 1} onChange={(changes) => editCard(i, changes)}/>)}
 
             <Card padding="lg" className="space-y-3">
@@ -259,6 +265,10 @@ export default function BrainDump() {
                 <input type="checkbox" checked={lowEnergy} onChange={(e) => setLowEnergy(e.target.checked)} className="w-5 h-5 accent-brand-500"/>
                 <ZapIcon size={16} className="text-amber-500"/> I have low energy today (plan less study for today)
               </label>
+              {preview.items.filter((it) => it.type === 'energy' && !it.kind).map((it) =>
+                <p key={it.index} className="text-xs font-semibold text-amber-700 pl-8">
+                  You said “{it.text}”. We were not sure how you feel, so tick this if you are tired.
+                </p>)}
               <label className="flex items-center gap-3 text-sm text-charcoal">
                 <input type="checkbox" checked={plan} onChange={(e) => setPlan(e.target.checked)} className="w-5 h-5 accent-brand-500"/>
                 <CalendarIcon size={16} className="text-brand-600"/> Plan my week after saving

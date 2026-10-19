@@ -112,3 +112,56 @@ def test_confirm_low_energy_plans_a_lighter_today(env):
     today = study_day(datetime.utcnow())
     planned_today = sum(s.minutes for s in db.query(PlannedSession).all() if study_day(s.start) == today)
     assert planned_today <= cap
+
+
+def test_preview_real_speech_without_full_stops(env):
+    """Real Chrome speech-to-text (2026-10-19): few full stops, "tired" heard as "try"."""
+    _, db, current, _ = env
+    said = ("I have a soft engineering lecture tomorrow from 8:00 to 10:00, then work from 2:00 to 6:00. "
+            "Finish the machine learning report by the Friday about 3 hours by.And breads I'm really try today plan my day.")
+    items = bd.preview(db, current["user"], said, NOW)["items"]
+    lecture, work = items[0], items[1]
+    assert lecture["title"] == "Soft engineering lecture"                  # work is NOT glued onto the lecture
+    assert (work["type"], work["title"], work["start"], work["end"]) == ("commitment", "Work", "14:00", "18:00")
+    assert work["needs_check"] is True                                      # a guess from the clock time
+    assert [i["title"] for i in items].count("Breads") == 1                 # its own card, not lost in one long piece
+    energy = next(i for i in items if i["type"] == "energy")
+    assert energy["kind"] is None and energy["needs_check"] is True        # "really try" -> no guess
+
+
+def test_preview_real_speech_merged_numbers(env):
+    """Real Chrome speech (2026-10-19): "from 2 to 6" heard as "from.26", "buy" heard as "by", no full stops."""
+    _, db, current, _ = env
+    said = ("I have a software engineering lecture tomorrow from 8:00 to 10:00, then work from.26 finish the machine "
+            "learning report by Friday. About 3 hours by eggs and bread. I'm really tired today. Plan my day.")
+    out = bd.preview(db, current["user"], said, NOW)
+    titles = {i["title"]: i for i in out["items"]}
+    work = titles["Work"]
+    assert (work["start"], work["end"], work["date"]) == ("14:00", "18:00", TOMORROW)    # same day as the lecture
+    report = titles["Finish the machine learning report"]
+    assert report["duration_minutes"] == 180 and report["deadline"].weekday() == 4
+    assert titles["Buy eggs and bread"]["type"] == "task_personal"
+    assert out["energy"] == "low" and out["plan_requested"] is True
+
+
+def test_clean_speech_keeps_real_times():
+    assert bd.clean_speech("work from.26 then") == "work from 2 to 6. then"
+    assert bd.split_pieces("Submit by 8.30 tonight. Gym") == ["Submit by 8.30 tonight", "Gym"]
+    assert bd.split_pieces("lab from 2 to 4 tomorrow") == ["lab from 2 to 4 tomorrow"]
+
+
+def test_preview_messy_speech_fillers_and_self_correction(env):
+    """Real speech (2026-10-19): fillers, a corrected time ("6:00.9:00 PM") and a 10-hour breakfast."""
+    _, db, current, _ = env
+    said = ("Yeah, tomorrow I have lecture.6:00 AM to 6:00.9:00 PM. Sorry.And also I have a.I need to get the "
+            "breakfast 8:00 AM to 6:00 PM.")
+    out = bd.preview(db, current["user"], said, NOW)
+    assert out["ignored"] == ["Yeah", "Sorry", "And", "also I have a"]          # no cards for filler
+    lecture, breakfast = out["items"]
+    assert (lecture["title"], lecture["start"], lecture["end"]) == ("Lecture", "06:00", "21:00")   # last time wins
+    assert breakfast["warning"] and breakfast["needs_check"]                    # 10 hours -> check the times
+
+
+def test_clean_speech_self_repair():
+    assert bd.clean_speech("meeting at 5 sorry 6") == "meeting at 6"
+    assert bd.clean_speech("lab from 8:00 to 9:00.10:00") == "lab from 8:00 to 10:00"

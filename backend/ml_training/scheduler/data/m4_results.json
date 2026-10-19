@@ -1,6 +1,6 @@
 {
   "data": {
-    "train": 3963,
+    "train": 5077,
     "test": 930,
     "test_parts": {
       "massive": 689,
@@ -9,32 +9,32 @@
     }
   },
   "cv_macro_f1": {
-    "tfidf_logreg": 0.951,
-    "minilm_logreg": 0.934,
-    "ensemble": 0.952
+    "tfidf_logreg": 0.964,
+    "minilm_logreg": 0.93,
+    "ensemble": 0.957
   },
   "chosen": "tfidf_logreg",
   "test": {
     "tfidf_logreg": {
-      "macro_f1": 0.884,
-      "accuracy": 0.915,
-      "accuracy_massive": 0.932,
-      "accuracy_seed": 0.909,
-      "accuracy_templates": 0.825
-    },
-    "minilm_logreg": {
-      "macro_f1": 0.839,
-      "accuracy": 0.876,
-      "accuracy_massive": 0.897,
-      "accuracy_seed": 0.868,
-      "accuracy_templates": 0.767
-    },
-    "ensemble": {
-      "macro_f1": 0.884,
-      "accuracy": 0.919,
+      "macro_f1": 0.901,
+      "accuracy": 0.924,
       "accuracy_massive": 0.933,
       "accuracy_seed": 0.926,
-      "accuracy_templates": 0.833
+      "accuracy_templates": 0.867
+    },
+    "minilm_logreg": {
+      "macro_f1": 0.82,
+      "accuracy": 0.866,
+      "accuracy_massive": 0.891,
+      "accuracy_seed": 0.876,
+      "accuracy_templates": 0.708
+    },
+    "ensemble": {
+      "macro_f1": 0.892,
+      "accuracy": 0.924,
+      "accuracy_massive": 0.936,
+      "accuracy_seed": 0.926,
+      "accuracy_templates": 0.85
     },
     "keyword_rules": {
       "macro_f1": 0.62,
@@ -46,21 +46,21 @@
   },
   "chosen_per_class": {
     "task_academic": {
-      "precision": 0.9734513274336283,
-      "recall": 0.9090909090909091,
-      "f1-score": 0.9401709401709402,
+      "precision": 0.9655172413793104,
+      "recall": 0.9256198347107438,
+      "f1-score": 0.9451476793248945,
       "support": 121.0
     },
     "task_personal": {
-      "precision": 0.7702702702702703,
+      "precision": 0.7808219178082192,
       "recall": 0.9344262295081968,
-      "f1-score": 0.8444444444444444,
+      "f1-score": 0.8507462686567164,
       "support": 61.0
     },
     "commitment": {
-      "precision": 0.9196787148594378,
-      "recall": 0.9271255060728745,
-      "f1-score": 0.9233870967741935,
+      "precision": 0.927710843373494,
+      "recall": 0.9352226720647774,
+      "f1-score": 0.9314516129032258,
       "support": 247.0
     },
     "routine": {
@@ -70,34 +70,34 @@
       "support": 41.0
     },
     "energy": {
-      "precision": 0.9310344827586207,
-      "recall": 0.9,
-      "f1-score": 0.9152542372881356,
+      "precision": 0.9333333333333333,
+      "recall": 0.9333333333333333,
+      "f1-score": 0.9333333333333333,
       "support": 30.0
     },
     "plan_request": {
       "precision": 1.0,
-      "recall": 0.5666666666666667,
-      "f1-score": 0.723404255319149,
+      "recall": 0.6666666666666666,
+      "f1-score": 0.8,
       "support": 30.0
     },
     "other": {
-      "precision": 0.9187192118226601,
+      "precision": 0.9325,
       "recall": 0.9325,
-      "f1-score": 0.9255583126550868,
+      "f1-score": 0.9325,
       "support": 400.0
     },
-    "accuracy": 0.9150537634408602,
+    "accuracy": 0.9236559139784947,
     "macro avg": {
-      "precision": 0.9168451302723603,
-      "recall": 0.8709483685187615,
-      "f1-score": 0.8839831338934798,
+      "precision": 0.9206636058080374,
+      "recall": 0.8935140006537716,
+      "f1-score": 0.9012630778315114,
       "support": 930.0
     },
     "weighted avg": {
-      "precision": 0.9187620397669864,
-      "recall": 0.9150537634408602,
-      "f1-score": 0.9142727486988953,
+      "precision": 0.9265564941953645,
+      "recall": 0.9236559139784947,
+      "f1-score": 0.9235151705894274,
       "support": 930.0
     }
   },
@@ -113,13 +113,13 @@
     ],
     "matrix": [
       [
-        110,
+        112,
         3,
         1,
         0,
         0,
         0,
-        7
+        5
       ],
       [
         0,
@@ -131,9 +131,9 @@
         2
       ],
       [
-        1,
-        3,
-        229,
+        0,
+        2,
+        231,
         1,
         2,
         0,
@@ -153,23 +153,23 @@
         0,
         0,
         0,
-        27,
+        28,
         0,
-        3
+        2
       ],
       [
+        1,
+        0,
+        3,
         0,
         0,
-        4,
-        0,
-        0,
-        17,
-        9
+        20,
+        6
       ],
       [
-        2,
+        3,
         11,
-        11,
+        10,
         3,
         0,
         0,

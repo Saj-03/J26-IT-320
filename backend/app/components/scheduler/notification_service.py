@@ -65,12 +65,11 @@ def notifications(db: Session, user, now: datetime | None = None) -> dict:
         items.append(note(f"focus-{alert['kind']}-{now:%Y%W}", "Focus", "timer", alert["title"], alert["message"],
                           now.replace(hour=0, minute=0, second=0, microsecond=0), "/app/focus/setup"))
 
-    # --- Wellbeing: Component 4 signal -> lighter plan suggested ---
-    status = stress_service.stress_status(db, user, now)
-    if status.get("action") == "propose_changes":
-        items.append(note(f"stress-{status.get('signal_event_id')}", "Wellbeing", "heart",
-                          "A lighter plan is suggested", status.get("reason") or "Your wellbeing signal is high.",
-                          status.get("signal_received_at") or now, "/app/schedule/adjusted"))
+    # --- Wellbeing: Component 4 signal -> a lighter plan is made by itself, waiting for the student ---
+    stress_service.auto_propose(db, user, now)
+    for p in stress_service.list_proposals(db, user):
+        items.append(note(f"stress-{p.id}", "Wellbeing", "heart", "A lighter plan is ready for you to check",
+                          p.reason, p.created_at, "/app/schedule/adjusted"))
 
     # --- Achievements: badges + milestones of the last week ---
     rewards = (db.query(RewardEvent).filter(RewardEvent.user_id == user.id, RewardEvent.kind.in_(("badge", "milestone")),

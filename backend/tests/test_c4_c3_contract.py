@@ -41,7 +41,9 @@ def test_valid_signal_from_c4_reaches_the_scheduler(both):
     client, _, db, me = both
     record(db, "RISK", c4_signal(me.research_id), "ACCEPTED")          # exactly what C4 does
     status = client.get(STATUS).json()
-    assert status["level"] == "HIGH" and status["action"] == "propose_changes"
+    assert status["level"] == "HIGH" and status["action"] == "already_proposed"   # proposal made by itself
+    waiting = client.get(STATUS.replace("status", "proposals")).json()
+    assert len(waiting) == 1 and waiting[0]["decision"] == "proposed"             # waiting for the student
 
 
 def test_missing_signal_means_normal_schedule(both):

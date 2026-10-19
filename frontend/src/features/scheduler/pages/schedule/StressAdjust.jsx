@@ -33,7 +33,8 @@ const when = (iso) => new Date(utcMs(iso)).toLocaleString([], { weekday: 'short'
 
 // One line under the title: what exactly changes
 function detail(c) {
-    if (c.action === 'move') return <>Move to <b>{when(c.to)}</b></>;
+    if (c.action === 'move')     // NFR-08: old slot -> new slot
+        return c.old_start ? <>Move from {when(c.old_start)} to <b>{when(c.to)}</b></> : <>Not planned yet. Start from <b>{when(c.to)}</b></>;
     if (c.action === 'split') return <>Split into {c.pieces.length} pieces: {c.pieces.join(' + ')} min</>;
     return <>Add a {c.minutes}-min break in the next hour</>;
 }

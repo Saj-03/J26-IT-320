@@ -31,12 +31,15 @@ from pathlib import Path
 
 import pandas as pd
 
+from ml_training.scheduler.m4_speech_noise import speechify
+
 HERE = Path(__file__).resolve().parent
 MASSIVE = HERE / "data" / "external" / "massive" / "1.1" / "data" / "en-US.jsonl"
 SEED_TASKS = HERE / "data" / "m2_seed_tasks.csv"
 TRAIN_OUT, TEST_OUT = HERE / "data" / "m4_train.csv", HERE / "data" / "m4_test.csv"
 LABELS = ["task_academic", "task_personal", "commitment", "routine", "energy", "plan_request", "other"]
 SEED = 42
+SPEECH_SHARE = 0.5                             # half of the training sentences get a spoken-style copy
 OTHER_TRAIN, OTHER_TEST = 1500, 400            # "other" is huge in MASSIVE - keep a balanced sample
 REMIND_TO = re.compile(r"\b(?:remind me to|remember to|don't forget to|do not forget to)\b")
 
@@ -140,9 +143,16 @@ def build() -> tuple[pd.DataFrame, pd.DataFrame]:
             test += [{"text": t, "label": label, "source": "template_heldout"}
                      for t in from_templates(parts["test"], max(30, sizes[label] // 5), rng)]
 
-    train_df = pd.DataFrame(train).drop_duplicates("text")
+    typed = pd.DataFrame(train).drop_duplicates("text")
     test_df = pd.DataFrame(test).drop_duplicates("text")
-    test_df = test_df[~test_df["text"].isin(set(train_df["text"]))]      # nothing seen in training
+    test_df = test_df[~test_df["text"].isin(set(typed["text"]))]          # nothing seen in training
+
+    # speech-noise copies (TRAIN only, test untouched): "um", no full stops, self-corrections - m4_speech_noise.py
+    texts = list(typed["text"])
+    noisy = [{"text": speechify(r.text, rng, texts), "label": r.label, "source": f"speech_noise:{r.source}"}
+             for r in typed.itertuples() if rng.random() < SPEECH_SHARE]
+    train_df = pd.concat([typed, pd.DataFrame(noisy)], ignore_index=True).drop_duplicates("text")
+    train_df = train_df[~train_df["text"].isin(set(test_df["text"]))]
     return train_df.reset_index(drop=True), test_df.reset_index(drop=True)
 
 

@@ -26,6 +26,10 @@ DEFAULT_LOAD = "medium"   # used when the student picks nothing and the M2 model
 # ---------------------------------------------------------------------------
 # Small helpers
 # ---------------------------------------------------------------------------
+PLAN_FIELDS = {"scheduled_start", "estimated_minutes", "predicted_minutes", "deadline", "status", "is_flexible",
+               "cognitive_load"}
+
+
 def audit(db: Session, user_id: str, event_type: str, **details) -> None:
     """Add one row to the audit log (saved together with the caller's commit)."""
     db.add(SchedulerAuditLog(user_id=user_id, event_type=event_type, details=details))
@@ -141,8 +145,13 @@ def update_task(db: Session, user, task_id: str, data: TaskUpdate) -> Task:
     elif "status" in changes and changes["status"] != "done":
         task.completed_at = None
 
-    # Student moved / unplanned it by hand -> the AI pieces of this task are no longer the plan
-    if "scheduled_start" in changes:
+    # Put at a time by hand -> it stays there (fixed); the planner plans the rest around it.
+    # Un-scheduled (null) -> flexible again, the planner may place it.
+    if "scheduled_start" in changes and "is_flexible" not in changes:
+        changes["is_flexible"] = changes["scheduled_start"] is None
+
+    # Moved by hand, new time / deadline / status -> the planned pieces of this task no longer fit
+    if changes.keys() & PLAN_FIELDS:
         drop_planned_pieces(db, [task.id])
 
     # Student set the duration themselves (e.g. "keep my estimate") -> that wins over M3.

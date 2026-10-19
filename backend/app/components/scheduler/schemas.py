@@ -12,7 +12,7 @@ import datetime as dt
 from datetime import datetime, time, timezone
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
 
 # Allowed values - must match the constants in models.py
 CognitiveLoad = Literal["low", "medium", "heavy"]
@@ -439,6 +439,7 @@ class ProposedChange(BaseModel):
     task_id: str | None
     title: str
     reason: str
+    old_start: str | None = Field(default=None, validation_alias=AliasChoices("from", "old_start"))  # move: old slot
     to: str | None = None            # move: new planned start (UTC, ISO)
     pieces: list[int] | None = None  # split: minutes per piece
     minutes: int | None = None       # rest: length of the break
@@ -765,6 +766,7 @@ class BrainDumpItemOut(BaseModel):
     after_previous: bool
     load: str | None                 # M2
     predicted_minutes: int | None    # M3
+    warning: str | None = None       # e.g. a 10-hour breakfast: probably a misheard time
 
 
 class BrainDumpOut(BaseModel):
@@ -773,6 +775,7 @@ class BrainDumpOut(BaseModel):
     energy: str | None               # low / high, if the student said so
     today: dt.date
     model: str | None                # m4_model / keyword_rules
+    ignored: list[str] = []          # filler the student said ("yeah", "sorry") - shown, not made into cards
 
 
 class BrainDumpSaveItem(BaseModel):

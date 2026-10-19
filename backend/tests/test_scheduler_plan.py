@@ -213,3 +213,21 @@ def test_started_pieces_are_not_missed_and_tight_deadlines_are_flagged(env):
     late = rush.deadline - timedelta(minutes=30)                    # too late to do 50 min now
     preview = planner.recovery_preview(db, me, max(late, piece.end + timedelta(minutes=1)))
     assert not preview["deadlines_ok"] and preview["at_risk"][0]["task_id"] == rush.id
+
+
+def test_a_task_moved_by_hand_stays_where_the_student_put_it(env):
+    """Moved by hand -> fixed: auto re-plan and Plan my week plan AROUND it and never move it back."""
+    client, db, current, _ = env
+    soon = (datetime.utcnow() + timedelta(days=4)).isoformat()
+    a = client.post("/api/scheduler/tasks", json={"title": "A", "deadline": soon, "estimated_minutes": 60}).json()
+    client.post("/api/scheduler/tasks", json={"title": "B", "deadline": soon, "estimated_minutes": 60})
+    client.post("/api/scheduler/plan")
+    spot = (datetime.utcnow() + timedelta(days=2)).replace(hour=4, minute=30, second=0, microsecond=0)
+    moved = client.patch(f"/api/scheduler/tasks/{a['id']}", json={"scheduled_start": spot.isoformat()}).json()
+    assert moved["is_flexible"] is False
+    client.post("/api/scheduler/plan")
+    task = db.get(Task, a["id"])
+    assert task.scheduled_start == spot                                   # not moved back
+    for s in client.get("/api/scheduler/plan").json()["sessions"]:        # B is planned around it
+        start = datetime.fromisoformat(s["start"].replace("Z", ""))
+        assert start >= spot + timedelta(minutes=60) or start + timedelta(minutes=s["minutes"]) <= spot

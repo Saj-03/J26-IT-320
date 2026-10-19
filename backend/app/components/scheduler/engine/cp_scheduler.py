@@ -54,6 +54,7 @@ class WorkItem:
     deadline: datetime             # UTC
     priority: int = 3              # 1..5
     load: str = "medium"           # heavy / medium / low
+    earliest: datetime | None = None   # not before this (a stress proposal moved the task later)
 
 
 def piece_plan(minutes: int, piece_minutes: int) -> tuple[int, int]:
@@ -89,7 +90,7 @@ def schedule(items: list[WorkItem], free: list[tuple[datetime, datetime]], now: 
     starts = {}
     for it in items:
         _, size = plan[it.task_id]
-        for t in _possible_starts(free, origin, size, it.deadline):
+        for t in _possible_starts(free, max(origin, _round_up(it.earliest or origin)), size, it.deadline):
             cell = _cell(origin, t)
             starts[it.task_id, cell] = model.NewBoolVar(f"{it.task_id} @ {cell}")
 

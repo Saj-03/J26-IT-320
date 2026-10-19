@@ -327,7 +327,7 @@ export function Scheduler() {
                 </Button>
               </div> :
               <p className="text-sm text-charcoal-muted">This task is {selected.task.status}.</p>}
-            <p className="text-xs text-charcoal-muted text-center">Moving a task by hand replaces its AI-planned parts. Plan again any time.</p>
+            <p className="text-xs text-charcoal-muted text-center">A task you move by hand stays at that time. The rest of your plan updates by itself when tasks or commitments change.</p>
           </div>}
       </Modal>
     </div>);

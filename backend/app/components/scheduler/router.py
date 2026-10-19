@@ -29,7 +29,9 @@ m1_predictor.warm_up_in_background()      # load the M1 model now, not on the fi
 @router.post("/tasks", response_model=schemas.TaskOut, status_code=status.HTTP_201_CREATED)
 def create_task(data: schemas.TaskCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Add a task (or a subtask, by sending parent_id)."""
-    return task_service.create_task(db, user, data)
+    task = task_service.create_task(db, user, data)
+    planner_service.auto_replan(db, user, "task_created")
+    return task
 
 
 @router.get("/tasks", response_model=list[schemas.TaskOut])
@@ -76,13 +78,16 @@ def create_suggested_steps(task_id: str, db: Session = Depends(get_db), user=Dep
 def update_task(task_id: str, data: schemas.TaskUpdate,
                 db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Change some fields of a task (send only what changed)."""
-    return task_service.update_task(db, user, task_id, data)
+    task = task_service.update_task(db, user, task_id, data)
+    planner_service.auto_replan(db, user, "task_updated")
+    return task
 
 
 @router.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_task(task_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Delete a task and its subtasks (focus history is kept)."""
     task_service.delete_task(db, user, task_id)
+    planner_service.auto_replan(db, user, "task_deleted")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -92,7 +97,9 @@ def delete_task(task_id: str, db: Session = Depends(get_db), user=Depends(get_cu
 @router.post("/commitments", response_model=schemas.CommitmentOut, status_code=status.HTTP_201_CREATED)
 def create_commitment(data: schemas.CommitmentCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Add a weekly (e.g. Monday lecture) or one-off busy time."""
-    return commitment_service.create_commitment(db, user, data)
+    item = commitment_service.create_commitment(db, user, data)
+    planner_service.auto_replan(db, user, "commitment_created")
+    return item
 
 
 @router.get("/commitments", response_model=list[schemas.CommitmentOut])
@@ -110,12 +117,15 @@ def get_commitment(commitment_id: str, db: Session = Depends(get_db), user=Depen
 def update_commitment(commitment_id: str, data: schemas.CommitmentUpdate,
                       db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Change some fields (send only what changed)."""
-    return commitment_service.update_commitment(db, user, commitment_id, data)
+    item = commitment_service.update_commitment(db, user, commitment_id, data)
+    planner_service.auto_replan(db, user, "commitment_updated")
+    return item
 
 
 @router.delete("/commitments/{commitment_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_commitment(commitment_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
     commitment_service.delete_commitment(db, user, commitment_id)
+    planner_service.auto_replan(db, user, "commitment_deleted")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -325,7 +335,8 @@ def update_settings(data: schemas.SettingsUpdate, db: Session = Depends(get_db),
 # ===========================================================================
 @router.get("/stress/status", response_model=schemas.StressStatusOut)
 def stress_status(db: Session = Depends(get_db), user=Depends(get_current_user)):
-    """Latest wellbeing signal and what the scheduler will do with it (nothing is changed here)."""
+    """Latest wellbeing signal and what the scheduler will do with it (an elevated one makes a proposal by itself)."""
+    stress_service.auto_propose(db, user)
     return stress_service.stress_status(db, user)
 
 
@@ -344,6 +355,7 @@ def stress_propose(db: Session = Depends(get_db), user=Depends(get_current_user)
 @router.get("/stress/proposals", response_model=list[schemas.StressProposalOut])
 def stress_proposals(db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Suggestions still waiting for my decision."""
+    stress_service.auto_propose(db, user)
     return stress_service.list_proposals(db, user)
 
 
@@ -351,7 +363,10 @@ def stress_proposals(db: Session = Depends(get_db), user=Depends(get_current_use
 def stress_decide(change_id: str, data: schemas.StressDecisionIn,
                   db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Accept all, keep only some (edited), or reject. Each change is safety-checked again."""
-    return stress_service.decide(db, user, change_id, data.decision, data.keep)
+    change = stress_service.decide(db, user, change_id, data.decision, data.keep)
+    if change.decision != "rejected":
+        planner_service.auto_replan(db, user, "stress_accepted")
+    return change
 
 
 @router.post("/stress/proposals/{change_id}/rating", response_model=schemas.UsefulnessOut)
@@ -364,7 +379,9 @@ def rate_stress_proposal(change_id: str, data: schemas.UsefulnessIn,
 @router.post("/stress/proposals/{change_id}/restore", response_model=schemas.StressProposalOut)
 def stress_restore(change_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Undo an accepted proposal - back to the plan I had before."""
-    return stress_service.restore(db, user, change_id)
+    change = stress_service.restore(db, user, change_id)
+    planner_service.auto_replan(db, user, "stress_restored")
+    return change
 
 
 # ===========================================================================
@@ -410,7 +427,9 @@ def complete(task_id: str, db: Session = Depends(get_db), user=Depends(get_curre
     t = db.get(Task, task_id)
     if not t or t.user_id != user.id:
         raise HTTPException(404)
-    return service.complete_task(db, user, t)
+    done = service.complete_task(db, user, t)
+    planner_service.auto_replan(db, user, "task_done")
+    return done
 
 
 # ===========================================================================

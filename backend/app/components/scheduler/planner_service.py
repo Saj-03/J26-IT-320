@@ -20,7 +20,7 @@ from app.components.scheduler.commitment_service import SL_OFFSET, get_availabil
 from app.components.scheduler.engine import cp_scheduler, m1_predictor, m3_predictor
 from app.components.scheduler.engine.cp_scheduler import WorkItem
 from app.components.scheduler.focus_service import break_for, recommend_timer
-from app.components.scheduler.models import PlannedSession, SchedulerAuditLog, Task
+from app.components.scheduler.models import PlannedSession, ScheduleChange, SchedulerAuditLog, Task
 from app.components.scheduler.settings_service import get_settings
 
 PLAN_DAYS = 7
@@ -125,8 +125,9 @@ def solve(db: Session, user, now: datetime, today_cap: int | None = None) -> dic
         past = m3_predictor.history(db, user.id)
         durations = {t.id: m3_predictor.predict(t.estimated_minutes, t.cognitive_load, t.task_type, past)["minutes"]
                      for t in tasks if t.predicted_minutes is None}
-    items = [WorkItem(t.id, work_left(t, durations.get(t.id)), t.deadline, t.priority, t.cognitive_load)
-             for t in tasks]
+    later = moved_later(db, user)
+    items = [WorkItem(t.id, work_left(t, durations.get(t.id)), t.deadline, t.priority, t.cognitive_load,
+                      earliest=later.get(t.id)) for t in tasks]
     result = cp_scheduler.schedule(items, free_time(db, user, fixed, now), now,
                                    piece_minutes=focus, break_minutes=rest,
                                    day_cap_minutes=settings["max_study_minutes_per_day"],
@@ -137,7 +138,36 @@ def solve(db: Session, user, now: datetime, today_cap: int | None = None) -> dic
             "peak_hours": profile["peak_hours"] if attention_source == "m1_model" else []}
 
 
-def build_plan(db: Session, user, now: datetime | None = None, today_cap: int | None = None) -> dict:
+def moved_later(db: Session, user) -> dict[str, datetime]:
+    """Tasks an ACCEPTED stress proposal moved later -> {task id: not before}. Undone (restored) ones don't count,
+    so "Plan my week" can never quietly put a moved task back to where it was."""
+    from app.components.scheduler.stress_service import STRESS_TRIGGER
+    changes = db.query(ScheduleChange).filter(ScheduleChange.user_id == user.id,
+                                              ScheduleChange.trigger == STRESS_TRIGGER,
+                                              ScheduleChange.decision.in_(("accepted", "edited"))).all()
+    return {item["task_id"]: datetime.fromisoformat(item["to"])
+            for change in changes for item in change.edited_change_set or []
+            if item["action"] == "move" and item.get("applied")}
+
+
+def auto_replan(db: Session, user, trigger: str, now: datetime | None = None) -> None:
+    """The schedule changes BY ITSELF when something it depends on changes (a task, a commitment, an accepted
+    stress proposal). Only for students who use "Plan my week" (a plan in the last PLAN_DAYS days)."""
+    now = now or datetime.utcnow()
+    planned_recently = (db.query(SchedulerAuditLog.id)
+                          .filter(SchedulerAuditLog.user_id == user.id, SchedulerAuditLog.event_type == "plan_generated",
+                                  SchedulerAuditLog.created_at >= now - timedelta(days=PLAN_DAYS))
+                          .first())
+    if planned_recently is None:
+        return
+    try:
+        build_plan(db, user, now, trigger=trigger)
+    except Exception:                                   # never break the edit itself; the old plan stays
+        db.rollback()
+
+
+def build_plan(db: Session, user, now: datetime | None = None, today_cap: int | None = None,
+               trigger: str = "student") -> dict:
     began = time.perf_counter()
     now = now or datetime.utcnow()
     plan = solve(db, user, now, today_cap)
@@ -165,7 +195,7 @@ def build_plan(db: Session, user, now: datetime | None = None, today_cap: int | 
                              details={"plan_id": plan_id, "status": result["status"], "tasks": len(tasks),
                                       "sessions": len(result["sessions"]), "unplaced": len(result["unplaced"]),
                                       "attention": plan["attention_source"], "focus_minutes": plan["focus_minutes"],
-                                      "today_cap": today_cap}))
+                                      "today_cap": today_cap, "trigger": trigger}))
     db.commit()
 
     return {**plan_view(db, user, now, settings["mode"]), "plan_id": plan_id, "status": result["status"],

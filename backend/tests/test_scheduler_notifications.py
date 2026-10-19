@@ -32,7 +32,7 @@ def test_real_notifications_and_seen(env):
     assert "A study session starts soon" in titles
     assert "DBMS quiz is due soon" in titles
     assert "New badge: First Focus" in titles
-    assert "A lighter plan is suggested" in titles
+    assert "A lighter plan is ready for you to check" in titles
     assert not any("Not mine" in t for t in titles)                      # only my own data
     assert body["unread"] == len(body["items"]) == 4
 

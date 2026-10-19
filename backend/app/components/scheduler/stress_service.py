@@ -38,7 +38,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.config import settings as app_settings
-from app.components.scheduler.models import Commitment, ScheduleChange, Task
+from app.components.scheduler.models import Commitment, ScheduleChange, SchedulerAuditLog, Task
 from app.components.scheduler.settings_service import get_settings
 from app.components.scheduler.task_service import audit, drop_planned_pieces
 from app.shared.integration.models import SignalEvent
@@ -230,7 +230,7 @@ def summary_reason(level: str, changes: list[dict]) -> str:
     return f"Your wellbeing signal is {level.lower()}. We suggest to " + ", ".join(parts) + ". Nothing changes until you accept."
 
 
-def propose(db: Session, user, now: datetime | None = None) -> ScheduleChange:
+def propose(db: Session, user, now: datetime | None = None, automatic: bool = False) -> ScheduleChange:
     """Make a stress proposal (saved as 'proposed'). 409 if no proposal is needed or nothing is safe to change."""
     now = now or datetime.utcnow()
     status = stress_status(db, user, now)
@@ -255,9 +255,36 @@ def propose(db: Session, user, now: datetime | None = None) -> ScheduleChange:
     db.add(change)
     db.flush()
     audit(db, user.id, "stress_proposal_created", change_id=change.id, level=status["level"],
-          signal_event_id=status["signal_event_id"], actions=[c["action"] for c in changes])
+          signal_event_id=status["signal_event_id"], actions=[c["action"] for c in changes], automatic=automatic,
+          # evaluation "risk-update handling": time from the valid C4 update to the proposed change
+          seconds_after_signal=round((now - status["signal_received_at"]).total_seconds()))
     db.commit()
     return change
+
+
+def auto_propose(db: Session, user, now: datetime | None = None) -> ScheduleChange | None:
+    """
+    Proposal 4.3: when a valid ELEVATED risk update arrives, the system makes the proposed change set by itself
+    (the student does not have to ask). Nothing is applied - the student still accepts / edits / rejects.
+    C4 writes its signal straight into the shared table, so C3 checks when the student's app checks in
+    (notifications every 2 minutes, the stress page). Once per signal: the 24 h cooldown stops repeats, and
+    "nothing can be changed safely" is logged once for that signal.
+    """
+    now = now or datetime.utcnow()
+    status = stress_status(db, user, now)
+    if status["action"] != "propose_changes":
+        return None
+    tried = (db.query(SchedulerAuditLog.details)
+               .filter(SchedulerAuditLog.user_id == user.id, SchedulerAuditLog.event_type == "stress_nothing_safe")
+               .all())
+    if any((d or {}).get("signal_event_id") == status["signal_event_id"] for (d,) in tried):
+        return None
+    try:
+        return propose(db, user, now, automatic=True)
+    except HTTPException as e:                           # nothing safe to change: the plan stays, logged once
+        audit(db, user.id, "stress_nothing_safe", signal_event_id=status["signal_event_id"], reason=e.detail)
+        db.commit()
+        return None
 
 
 def list_proposals(db: Session, user) -> list[ScheduleChange]:
