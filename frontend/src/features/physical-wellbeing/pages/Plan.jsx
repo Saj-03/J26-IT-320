@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckIcon, PlayIcon, ClockIcon, XIcon, PlusIcon, MinusIcon,
   CalendarIcon, HistoryIcon, SparklesIcon, AlertCircleIcon, ShieldCheckIcon,
-  UtensilsIcon, DumbbellIcon, FlameIcon, LayersIcon, SlidersHorizontalIcon, Trash2Icon
+  UtensilsIcon, DumbbellIcon, FlameIcon, LayersIcon, SlidersHorizontalIcon, Trash2Icon, ShuffleIcon
 } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
@@ -182,7 +182,7 @@ export function PhysicalPlan() {
       <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-800 px-4 py-5 text-white shadow-lg sm:px-6 sm:py-6">
         <div className="absolute -right-12 -top-20 -z-10 h-64 w-64 rounded-full bg-lime-300/10 blur-2xl" />
         <div className="absolute bottom-0 right-24 -z-10 h-32 w-32 rounded-full bg-teal-300/10 blur-2xl" />
-        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+        <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
           <div className="max-w-2xl">
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold text-emerald-50">
               <SparklesIcon size={14} className="text-lime-300" /> Your adaptive wellbeing plan
@@ -192,46 +192,72 @@ export function PhysicalPlan() {
             <button type="button" onClick={() => navigate(userProfile ? '/app/physical/profile' : '/physical-setup')} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-white px-3.5 py-2 text-xs font-extrabold text-emerald-950 shadow-sm transition hover:bg-lime-50 focus:outline-none focus:ring-2 focus:ring-white/70">
               <SlidersHorizontalIcon size={16} /> {userProfile ? 'Customize my plan' : 'Start assessment'}
             </button>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="mr-1 text-[10px] font-extrabold uppercase tracking-wider text-emerald-50/70">Plan uses</span>
-              <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
-                🥗 Diet: <strong className="capitalize">{userPrefs.diet_pref || 'Any'}</strong>
+            {userPrefs.physical_limitations && userPrefs.physical_limitations !== 'none' && (
+              <span className="mt-4 inline-flex rounded-full border border-amber-200/30 bg-amber-300/15 px-3 py-1.5 text-xs font-semibold text-amber-50">
+                🦵 Safety: <strong className="ml-1">{userPrefs.physical_limitations} protected</strong>
               </span>
-              <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
-                🍛 Cuisine: <strong className="capitalize">{String(userPrefs.meal_style || 'Both').replace('_', ' ')}</strong>
-              </span>
-              <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
-                ⏱️ Workout Window: <strong>{planData?.effective_available_minutes || userPrefs.available_minutes || 20} mins</strong>
-              </span>
-              {userPrefs.physical_limitations && userPrefs.physical_limitations !== 'none' && (
-                <span className="rounded-full border border-amber-200/30 bg-amber-300/15 px-3 py-1.5 text-xs font-semibold text-amber-50">
-                  🦵 Safety: <strong>{userPrefs.physical_limitations} protected</strong>
+            )}
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-left backdrop-blur-sm">
+                <SparklesIcon size={15} className="shrink-0 text-lime-300" />
+                <span>
+                  <strong className="block text-xs font-extrabold text-white">{planData?.context_aware ? 'Adaptive plan' : 'Baseline plan'}</strong>
+                  <span className="block text-[10px] font-medium text-emerald-50/70">{planData?.context_aware ? 'Adjusted to your profile and recent check-ins' : 'Profile-based suggestions'}</span>
                 </span>
-              )}
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsExamPeriod(!isExamPeriod)}
+                disabled={viewingSavedPlan}
+                className={cn('inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-extrabold transition-all disabled:cursor-not-allowed disabled:opacity-50', isExamPeriod ? 'border-amber-300 bg-amber-300 text-amber-950 shadow-sm' : 'border-white/15 bg-white/10 text-white hover:bg-white/20')}
+              >
+                <span>📚</span> Exam week {isExamPeriod ? 'on' : 'off'}
+              </button>
             </div>
           </div>
-          <div className="flex gap-3">
-            <div className="min-w-24 rounded-2xl border border-white/10 bg-white/10 px-3 py-2.5 backdrop-blur-sm">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-50/70">Plan length</p>
-              <p className="mt-1 text-lg font-black">{daysCount} <span className="text-xs font-semibold">days</span></p>
+          <div className="w-full shrink-0 space-y-3 xl:w-[410px]">
+            <div className="flex justify-start gap-1.5 rounded-2xl border border-white/15 bg-black/10 p-1.5 backdrop-blur-sm lg:justify-end">
+              <button onClick={() => { setActiveTab('week'); if (historyMode || viewingSavedPlan) returnToCurrentPlan(); }} className={cn('flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-extrabold transition-all', activeTab === 'week' && !historyMode ? 'border-white bg-white text-emerald-900 shadow-sm' : 'border-transparent text-white/80 hover:bg-white/10 hover:text-white')}><CalendarIcon size={15} /> Plan</button>
+              <button onClick={() => { if (historyMode || viewingSavedPlan) returnToCurrentPlan(); setActiveTab('today'); }} className={cn('flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-extrabold transition-all', activeTab === 'today' && !historyMode ? 'border-white bg-white text-emerald-900 shadow-sm' : 'border-transparent text-white/80 hover:bg-white/10 hover:text-white')}><ClockIcon size={15} /> Today</button>
+              <button type="button" onClick={openHistory} disabled={historyLoading} className={cn('inline-flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-extrabold transition-all disabled:opacity-60', historyMode ? 'border-white bg-white text-emerald-900 shadow-sm' : 'border-transparent text-white/80 hover:bg-white/10 hover:text-white')}><HistoryIcon size={14} /> {historyLoading ? 'Loading…' : 'Past'}</button>
+            </div>
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-3.5 backdrop-blur-sm">
+              <p className="mb-2.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-emerald-50/70">Plan uses</p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <div className="rounded-xl border border-white/10 bg-black/10 px-3 py-2">
+                  <p className="text-[10px] font-semibold text-emerald-50/65">🥗 Diet</p>
+                  <p className="mt-0.5 text-sm font-extrabold capitalize text-white">{userPrefs.diet_pref || 'Any'}</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-black/10 px-3 py-2">
+                  <p className="text-[10px] font-semibold text-emerald-50/65">🍛 Cuisine</p>
+                  <p className="mt-0.5 text-sm font-extrabold capitalize text-white">{String(userPrefs.meal_style || 'Both').replace('_', ' ')}</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-black/10 px-3 py-2">
+                  <p className="text-[10px] font-semibold text-emerald-50/65">⏱️ Workout window</p>
+                  <p className="mt-0.5 whitespace-nowrap text-sm font-extrabold text-white">{planData?.effective_available_minutes || userPrefs.available_minutes || 20} mins</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="flex flex-col gap-3 rounded-3xl border border-black/[0.06] bg-white p-3 shadow-sm lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-2 self-start rounded-2xl bg-cream p-2">
+      <div className="flex flex-col gap-3 rounded-3xl border border-black/[0.06] bg-white p-3 shadow-sm lg:flex-row lg:flex-wrap lg:items-center lg:justify-between xl:flex-nowrap">
+        <div className="flex flex-nowrap items-center gap-2 self-start rounded-2xl bg-cream p-2">
           <label htmlFor="plan-length-days" className="pl-1 text-xs font-bold text-charcoal">Plan length</label>
           <input id="plan-length-days" type="number" min="1" max="31" step="1" inputMode="numeric" value={daysDraft} disabled={viewingSavedPlan} onChange={(event) => setDaysDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); applyPlanLength(); } }} className="w-20 rounded-xl border border-black/[0.08] bg-white px-3 py-2 text-sm font-bold text-charcoal outline-none focus:border-brand-400" />
           <span className="text-xs font-semibold text-charcoal-muted">days</span>
           <button type="button" onClick={applyPlanLength} disabled={viewingSavedPlan || durationSaving || !Number.isInteger(Number(daysDraft)) || Number(daysDraft) < 1 || Number(daysDraft) > 31} className="rounded-xl bg-brand-500 px-3 py-2 text-xs font-bold text-white shadow-glow transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40">{durationSaving ? 'Saving…' : 'Update plan'}</button>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5 rounded-2xl border border-brand-100 bg-brand-50/70 p-1.5">
-            <button onClick={() => { setActiveTab('week'); if (historyMode || viewingSavedPlan) returnToCurrentPlan(); }} className={cn('flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-extrabold transition-all duration-200', activeTab === 'week' && !historyMode ? 'border-brand-500 bg-brand-500 text-white shadow-glow' : 'border-transparent bg-white/70 text-brand-800 hover:border-brand-200 hover:bg-white')}><CalendarIcon size={15} /> Plan</button>
-            <button onClick={() => { if (historyMode || viewingSavedPlan) returnToCurrentPlan(); setActiveTab('today'); }} className={cn('flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-extrabold transition-all duration-200', activeTab === 'today' && !historyMode ? 'border-brand-500 bg-brand-500 text-white shadow-glow' : 'border-transparent bg-white/70 text-brand-800 hover:border-brand-200 hover:bg-white')}><ClockIcon size={15} /> Today</button>
-          </div>
-          <button type="button" onClick={openHistory} disabled={historyLoading} className={cn('inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-extrabold transition-all disabled:opacity-60', historyMode ? 'border-brand-500 bg-brand-500 text-white shadow-glow' : 'border-brand-200 bg-white text-brand-700 hover:border-brand-300 hover:bg-brand-50')}><HistoryIcon size={14} /> {historyLoading ? 'Loading…' : 'Past'}</button>
+        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto rounded-2xl border border-emerald-100 bg-emerald-50/70 p-2">
+          <button
+            onClick={() => setUseBaseline(!useBaseline)}
+            disabled={viewingSavedPlan}
+            className={cn('flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50', useBaseline ? 'border-slate-700 bg-slate-800 text-white' : 'border-emerald-200 bg-white text-emerald-900 hover:bg-emerald-100')}
+            title="Toggle between the static baseline and adaptive plan"
+          >
+            <LayersIcon size={13} /> {useBaseline ? 'Use adaptive plan' : 'Compare baseline'}
+          </button>
         </div>
       </div>
       {durationSaveError && <p role="alert" className="-mt-4 text-xs font-semibold text-rose-700">{durationSaveError}</p>}
@@ -244,53 +270,6 @@ export function PhysicalPlan() {
           <Button size="sm" variant="outline" onClick={returnToCurrentPlan}>Back to current plan</Button>
         </Card>
       )}
-
-      {/* Adaptive context and plan controls */}
-      <Card padding="md" className="border border-emerald-100 bg-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="rounded-xl bg-emerald-50 p-2 text-emerald-700">
-              <SparklesIcon size={16} />
-            </span>
-            <div>
-              <p className="font-extrabold text-charcoal">{planData?.context_aware ? 'Adaptive plan' : 'Baseline plan'}</p>
-              <p className="text-[11px] text-charcoal-muted">{planData?.context_aware ? 'Adjusted to your profile and recent check-ins' : 'Profile-based suggestions without adaptation'}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Exam Period Toggle */}
-            <button
-              onClick={() => setIsExamPeriod(!isExamPeriod)}
-              disabled={viewingSavedPlan}
-              className={cn(
-                'flex items-center gap-1.5 rounded-xl border px-3 py-2 font-bold transition-all',
-                isExamPeriod
-                  ? 'bg-amber-500 text-white border-amber-600 shadow-sm'
-                  : 'bg-white text-charcoal-light border-black/10 hover:border-black/20'
-              )}
-            >
-              <span>📚</span> Exam week {isExamPeriod ? 'on' : 'off'}
-            </button>
-
-            {/* Model Toggle for Research Demonstration */}
-            <button
-              onClick={() => setUseBaseline(!useBaseline)}
-              disabled={viewingSavedPlan}
-              className={cn(
-                'flex items-center gap-1.5 rounded-xl border px-3 py-2 font-bold transition-all',
-                useBaseline
-                  ? 'bg-charcoal text-white border-charcoal'
-                  : 'bg-white text-brand-700 border-brand-300 hover:bg-brand-50'
-              )}
-              title="Toggle between Model 1 (Static Baseline) and Model 2 (Adaptive AI)"
-            >
-              <LayersIcon size={13} /> {useBaseline ? 'Use adaptive plan' : 'Compare baseline'}
-            </button>
-          </div>
-        </div>
-
-      </Card>
 
       {/* Clinical Risk Triage & Doctor Consultation Banner */}
       {planData?.safety_analysis && planData.safety_analysis.has_limitations && (
@@ -491,12 +470,16 @@ export function PhysicalPlan() {
 
                 {/* Section 1: Daily Targeted Exercise Routine */}
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-base font-extrabold text-charcoal flex items-center gap-2">
-                      <DumbbellIcon size={18} className="text-brand-500" /> Daily Exercise Routine
-                    </h3>
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-lime-50 px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <span className="rounded-xl bg-emerald-600 p-2.5 text-white shadow-sm"><DumbbellIcon size={19} /></span>
+                      <div>
+                        <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-emerald-700">Movement</p>
+                        <h3 className="text-base font-black text-emerald-950 sm:text-lg">Daily Exercise Routine</h3>
+                      </div>
+                    </div>
                     {currentDay.exercise?.adherence_probability && (
-                      <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-bold text-emerald-800 shadow-sm">
                         <ShieldCheckIcon size={14} />
                         {Math.round(currentDay.exercise.adherence_probability * 100)}% Predicted Adherence
                       </span>
@@ -552,12 +535,16 @@ export function PhysicalPlan() {
 
                 {/* Section 2: Four Date-Wise Meal Slots */}
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-extrabold text-charcoal flex items-center gap-2">
-                      <UtensilsIcon size={18} className="text-brand-500" /> Daily Meal Slots (Student Nutrition)
-                    </h3>
-                    <span className="text-xs font-semibold text-charcoal-muted">
-                      Culturally matched to {String(userPrefs.meal_style || 'Both').replace('_', ' ')} & {userPrefs.diet_pref}
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-lime-200 bg-gradient-to-r from-lime-50 via-white to-emerald-50 px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <span className="rounded-xl bg-lime-600 p-2.5 text-white shadow-sm"><UtensilsIcon size={19} /></span>
+                      <div>
+                        <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-lime-800">Food & nourishment</p>
+                        <h3 className="text-base font-black text-emerald-950 sm:text-lg">Daily Meal Slots</h3>
+                      </div>
+                    </div>
+                    <span className="rounded-full border border-emerald-100 bg-white/90 px-3 py-1.5 text-xs font-semibold text-emerald-900">
+                      {String(userPrefs.meal_style || 'Both').replace('_', ' ')} cuisine · {userPrefs.diet_pref || 'Any'} diet
                     </span>
                   </div>
 
@@ -610,27 +597,23 @@ export function PhysicalPlan() {
                             )}
 
                             {alternative && (
-                              <div className="mt-3 pt-2.5 border-t border-black/[0.04]">
-                                <span className="text-[10px] font-bold uppercase text-charcoal-muted tracking-wider block mb-1">
-                                  Alternative Option:
-                                </span>
-                                <p className="text-xs font-bold text-charcoal-light">
-                                  {alternative.name} <span className="text-[10px] text-charcoal-muted font-normal">({alternative.calories} kcal)</span>
-                                </p>
+                              <div className="mt-3 flex items-center gap-3 rounded-2xl border border-brand-200 bg-gradient-to-r from-brand-50 to-white p-2.5 shadow-sm">
+                                <RecommendationImage src={alternative.image} alt={alternative.name || 'Alternative meal'} fallbackSrc={alternative.cuisine === 'sri_lankan' ? mealImageFallbacks.sri_lankan : mealImageFallbacks.international} className="h-16 w-16 shrink-0 rounded-xl object-cover" />
+                                <div className="min-w-0 flex-1">
+                                  <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-brand-100 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-brand-800">
+                                    <ShuffleIcon size={10} /> Another option
+                                  </span>
+                                  <p className="text-xs font-extrabold leading-snug text-charcoal sm:text-sm">{alternative.name}</p>
+                                </div>
+                                <span className="shrink-0 rounded-xl bg-white px-2.5 py-1.5 text-xs font-black text-brand-800 shadow-sm">{alternative.calories} kcal</span>
                               </div>
                             )}
                           </div>
 
-                          <div className="mt-4 pt-3 border-t border-black/[0.05] flex items-center justify-between text-xs">
+                          <div className="mt-4 pt-3 border-t border-black/[0.05] flex items-center text-xs">
                             <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
                               {primary?.diet_category === 'vegan' ? 'Vegan 🌱' : (primary?.diet_category === 'veg' ? 'Vegetarian 🥬' : 'Balanced 🥩')}
                             </span>
-                            <button
-                              onClick={() => navigate('/app/physical/nutrition')}
-                              className="font-bold text-brand-600 hover:text-brand-700"
-                            >
-                              View Recipe & Macros →
-                            </button>
                           </div>
                         </Card>
                       );
