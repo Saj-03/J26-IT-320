@@ -109,7 +109,7 @@ function ChallengeCard({ challenge, onProgress, onDelete }) {
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-brand-700">{ended ? 'Challenge complete' : `${challenge.duration_days}-day challenge`}</p>
             <h3 className="mt-0.5 text-lg font-extrabold text-charcoal">{challenge.title}</h3>
-            <p className="mt-0.5 text-xs text-charcoal-muted">Shared goal: {challenge.target.toLocaleString()} {metric.unit} · {challenge.participant_count}/6 explorers · {challenge.invitee_count} guest{challenge.invitee_count === 1 ? '' : 's'} joined</p>
+            <p className="mt-0.5 text-xs text-charcoal-muted">Shared goal: {challenge.goal_text || metric.label} · Target: {challenge.target_text || `${challenge.target.toLocaleString()} ${metric.unit}`} · {challenge.participant_count}/6 explorers · {challenge.invitee_count} guest{challenge.invitee_count === 1 ? '' : 's'} joined</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -171,7 +171,8 @@ export function PeerChallenges() {
     setCreating(true);
     setError('');
     try {
-      await createPeerChallenge({ ...form, target: Number(form.target), duration_days: Number(form.duration_days) });
+      const numericTarget = Number.parseInt(form.target.match(/\d+/)?.[0] || '', 10);
+      await createPeerChallenge({ ...form, goal_text: form.goal.trim(), target_text: form.target.trim(), target: numericTarget, duration_days: Number(form.duration_days) });
       setForm({ title: '', goal: '', metric: '', target: '', duration_days: '', nickname: form.nickname });
       await refresh();
     } catch (err) {
@@ -213,11 +214,11 @@ export function PeerChallenges() {
                 const metric = normalizedGoal.includes('step') ? 'steps' : normalizedGoal.includes('min') ? 'minutes' : 'workouts';
                 setForm({ ...form, goal, metric });
               }} />
-            <Field label={`Target${form.metric ? ` (${METRICS[form.metric].unit})` : ''}`} type="number" inputMode="numeric" min="1" step="1" required value={form.target} onChange={(event) => setForm({ ...form, target: event.target.value })} className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
+            <Field label="Target" type="text" maxLength="120" required value={form.target} onChange={(event) => setForm({ ...form, target: event.target.value })} />
             <Field label="Length (days)" type="number" inputMode="numeric" min="1" max="30" step="1" required value={form.duration_days} onChange={(event) => setForm({ ...form, duration_days: event.target.value })} hint="Choose any length from 1 to 30 days." className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
             <Field label="Your challenge nickname" required minLength="2" maxLength="24" placeholder="e.g. Nilu" value={form.nickname} onChange={(event) => setForm({ ...form, nickname: event.target.value })} />
             {error && <p role="alert" className="text-xs font-semibold text-rose-700">{error}</p>}
-            <Button type="submit" fullWidth disabled={creating || !form.title.trim() || !form.goal.trim() || !form.nickname.trim() || !Number.isInteger(Number(form.target)) || Number(form.target) < 1 || !Number.isInteger(Number(form.duration_days)) || Number(form.duration_days) < 1 || Number(form.duration_days) > 30}>{creating ? 'Creating…' : 'Create & get invite link'} <LinkIcon size={15} /></Button>
+            <Button type="submit" fullWidth disabled={creating || !form.title.trim() || !form.goal.trim() || !form.nickname.trim() || !Number.isInteger(Number.parseInt(form.target.match(/\d+/)?.[0] || '', 10)) || Number.parseInt(form.target.match(/\d+/)?.[0] || '', 10) < 1 || !Number.isInteger(Number(form.duration_days)) || Number(form.duration_days) < 1 || Number(form.duration_days) > 30}>{creating ? 'Creating…' : 'Create & get invite link'} <LinkIcon size={15} /></Button>
           </form>
           <p className="mt-3 text-[10px] leading-relaxed text-charcoal-muted">Friends join from your private link with a nickname. Up to five guests can join you; no IHSD account is needed.</p>
         </Card>
@@ -294,7 +295,7 @@ export function PeerChallengeInvite() {
         <Card padding="lg" className="overflow-hidden border border-brand-100 shadow-card">
           <div className="rounded-3xl bg-gradient-to-br from-brand-700 via-brand-600 to-emerald-600 p-5 text-white">
             <div className="flex items-center justify-between"><span className="rounded-full bg-white/15 px-3 py-1 text-[10px] font-bold uppercase tracking-wider">{challenge.duration_days}-day quest</span><span className="text-3xl">{metric.icon}</span></div>
-            <h2 className="mt-3 text-2xl font-black">{challenge.title}</h2><p className="mt-1 text-sm text-white/80">Help your squad reach {challenge.target.toLocaleString()} {metric.unit} together.</p>
+            <h2 className="mt-3 text-2xl font-black">{challenge.title}</h2><p className="mt-1 text-sm text-white/80">{challenge.goal_text || 'Squad goal'} · Target: {challenge.target_text || `${challenge.target.toLocaleString()} ${metric.unit}`}</p>
           </div>
           <div className="mt-5"><PrivacyNote guest /></div>
           {joined ? <>

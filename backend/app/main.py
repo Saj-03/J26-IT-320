@@ -45,6 +45,8 @@ with engine.begin() as connection:
         connection.execute(text("ALTER TABLE workout_feedback ADD COLUMN difficulty VARCHAR"))
     if "goal_text" not in challenge_columns:
         connection.execute(text("ALTER TABLE physical_peer_challenges ADD COLUMN goal_text VARCHAR(80)"))
+    if "target_text" not in challenge_columns:
+        connection.execute(text("ALTER TABLE physical_peer_challenges ADD COLUMN target_text VARCHAR(120)"))
 
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth (shared)"])
 app.include_router(integration_router, prefix="/api/integration", tags=["Integration signals (shared)"])

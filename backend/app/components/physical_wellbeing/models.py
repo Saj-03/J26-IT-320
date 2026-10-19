@@ -83,6 +83,7 @@ class PeerChallenge(Base):
     owner_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
     title: Mapped[str] = mapped_column(String(80))
     goal_text: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    target_text: Mapped[str | None] = mapped_column(String(120), nullable=True)
     metric: Mapped[str] = mapped_column(String(16))  # minutes, steps, workouts
     target: Mapped[int] = mapped_column(Integer)
     duration_days: Mapped[int] = mapped_column(Integer)
