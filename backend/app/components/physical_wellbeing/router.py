@@ -16,60 +16,63 @@ from app.components.physical_wellbeing.ml import recommender
 router = APIRouter()
 
 # ── Image URL lookup maps (keyed by curated meal/exercise id) ─────────────────
-# Uses stable Unsplash photos matched to each food and workout type.
+# Dish-specific image URLs keyed to the recommender's curated meal IDs.
 _MEAL_IMAGES: dict[str, str] = {
     # Sri Lankan Breakfasts
-    "sl_bf_1": "https://images.unsplash.com/photo-1627308595229-7830a5c18cb1?w=600&q=80",   # milk rice
-    "sl_bf_2": "https://images.unsplash.com/photo-1630851840628-a81d5c3a0b45?w=600&q=80",   # string hoppers
-    "sl_bf_3": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&q=80",   # coconut roti
-    "sl_bf_4": "https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80",       # chickpeas
-    "sl_bf_5": "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?w=600&q=80",   # mung beans
-    "sl_bf_6": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80",   # egg hopper
+    "sl_bf_1": "https://media.timeout.com/images/105182825/750/562/image.jpg",  # kiribath
+    "sl_bf_2": "https://www.gzrecipes.com/content/uploads/sites/3/2025/11/IMG_8402-scaled-7-69258b600775d6-79927654.jpg",  # string hoppers
+    "sl_bf_3": "https://srilankatravelpages.com/my_content/uploads/2023/10/Pol-Rotti-1.jpg",  # coconut roti
+    "sl_bf_4": "https://shamilasobers.com/wp-content/uploads/2021/09/finished-chickpeas-with-coconut-5-scaled.jpg",  # chickpeas with coconut
+    "sl_bf_5": "https://i.ebayimg.com/images/g/RccAAOSwXCVkIPYB/s-l1600.jpg",  # mung beans with coconut
+    "sl_bf_6": "https://images.squarespace-cdn.com/content/v1/59899fa9f9a61eda9f9f0394/1569641649157-6FD5L1I11RZT6SSKLVZL/Sri%2BLankan%2Bhoppers",  # egg hopper
     # Roast paan, dhal and egg; source: https://secondscolombo.com/
     "sl_bf_7": "https://secondscolombo.com/assets/img/breakfast_dhal.jpg",
-    "sl_bf_8": "https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80",       # cowpea
+    "sl_bf_8": "https://sp-ao.shortpixel.ai/client/to_auto%2Cq_lossless%2Cret_img%2Cw_800%2Ch_534/https%3A/foodcnr.com/wp-content/uploads/2015/07/Cowpea-curry-Sri-Lanka.jpg",  # cowpea curry
     # Sri Lankan Lunches
-    "sl_lu_1": "https://images.unsplash.com/photo-1631515242808-497c3fbd3972?w=600&q=80",   # rice & curry
+    "sl_lu_1": "https://halmek.co.jp/media/article/image/b929d69fa8978fe08137885d56cbc31f.jpg",  # Sri Lankan rice and curry
     # Soya curry with rice; source: https://www.gzrecipes.com/en/viaggiandomangiando/soya-maaluwa-the-sri-lankan-soy-curry/
     "sl_lu_2": "https://www.gzrecipes.com/content/uploads/sites/2/2025/11/IMG_8717-scaled-8-6925a081d50a51-19688828.jpeg",
-    "sl_lu_3": "https://images.unsplash.com/photo-1588347818033-c2f3cca63a70?w=600&q=80",   # fish curry
-    "sl_lu_4": "https://images.unsplash.com/photo-1631515242808-497c3fbd3972?w=600&q=80",   # red rice
-    "sl_lu_5": "https://images.unsplash.com/photo-1631515242808-497c3fbd3972?w=600&q=80",   # polos curry
-    "sl_lu_6": "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&q=80",   # egg curry
+    "sl_lu_3": "https://www.maggi.lk/sites/default/files/styles/home_stage_944_531/public/srh_recipes/eb1f3828805f8be9c7bb30dc086626ce.jpg?h=4f5b30f1&itok=hWZlAfZS",  # fish ambul thiyal
+    "sl_lu_4": "https://ordernow.lk/images/sri_lankan_rice_curry_veg_egg.webp",  # red rice, dhal and sides
+    "sl_lu_5": "https://www.hlimg.com/images/stories/738X538/young-jackfruit-curry-polos_1549685713-8927e.jpg?dpr=2.6&w=400",  # polos curry
+    "sl_lu_6": "https://ordernow.lk/images/sri_lankan_rice_curry_veg_egg.webp",  # egg curry and rice
     # Sri Lankan Dinners
     # String hoppers served with kiri hodi; source: https://hellopure.com.au/blogs/recipes/kiri-hodi-coconut-milk-curry-h6-a-staple-of-sri-lankan-family-life-this-mild-coconut-curry-is-simple-delicious-h6
     "sl_dn_1": "https://hellopure.com.au/cdn/shop/articles/KH_2048x.jpg?v=1688537642",
-    "sl_dn_2": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80",   # roast paan
-    "sl_dn_3": "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=600&q=80",   # vegetable soup
-    "sl_dn_4": "https://images.unsplash.com/photo-1588347818033-c2f3cca63a70?w=600&q=80",   # idiyappam fish
-    "sl_dn_5": "https://images.unsplash.com/photo-1551183053-bf91798d454c?w=600&q=80",       # stir-fried noodles
-    "sl_dn_6": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=600&q=80",   # grilled chicken
+    "sl_dn_2": "https://navarisi.com/assets/img/menu/3.png",  # roast paan, dhal and sambol
+    "sl_dn_3": "https://images.happycow.net/venues/1024/43/71/hcmp437159_3186661.jpeg",  # vegetable soup and toast
+    "sl_dn_4": "https://i.pinimg.com/736x/59/f3/e2/59f3e25aacabf7b1ab115525fc3befda.jpg",  # idiyappam and fish curry
+    "sl_dn_5": "https://delmart.lk/images/item2/nova_tech_zone_7066976420231007124212pm.jpg",  # rice noodles and vegetables
+    "sl_dn_6": "https://10.com.au/ip/s3/2019/06/14/6c1ced95381918aac691d6b39626c056-344710.jpg?image-profile=image_full&io=landscape",  # bread, dhal and chicken
     # Sri Lankan Snacks
     # Opened king coconut drink; source: https://eightyflavors.com/sips-of-ceylon-8-essential-drinks-to-have-in-sri-lanka/
     "sl_sn_1": "https://eightyflavors.com/wp-content/uploads/2020/06/DSC_0042-1024x683.jpg",
-    "sl_sn_2": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",       # energy balls
-    "sl_sn_3": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&q=80",   # roasted nuts
+    "sl_sn_2": "https://m.media-amazon.com/images/I/718E3hQd8yL._SL1280_.jpg",  # Samaposha aggala
+    "sl_sn_3": "https://www.greendna.in/cdn/shop/files/roastedh_speanuts_1024x1024%402x.jpg?v=1711354875",  # roasted peanuts
     "sl_sn_4": "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=600&q=80",   # banana
-    "sl_sn_5": "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=80",   # yogurt papaya
-    "sl_sn_6": "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=600&q=80",   # guava
+    # Pexels photo of a yogurt bowl with papaya; source page: https://www.pexels.com/photo/top-view-of-a-bowl-of-yogurt-12042271/
+    "sl_sn_5": "https://images.pexels.com/photos/12042271/pexels-photo-12042271.jpeg?cs=srgb&dl=pexels-alice-louise-karow-164968996-12042271.jpg&fm=jpg",
+    "sl_sn_6": "https://services.kpnfresh.com/media/v1/products/images/d98da0c7-060b-4cfa-86bd-a199541a47e7/guava-salad.webp?c_type=C1",  # guava
     # International Breakfasts
-    "int_bf_1": "https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=600&q=80",  # oatmeal
-    "int_bf_2": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80",  # avocado toast
-    "int_bf_3": "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=80",  # greek yogurt
+    "int_bf_1": "https://www.arise-app.com/images/dishes/pt/banana-com-aveia-chia-psyllium-e-canela-2xux69.webp",  # oats, banana and chia
+    "int_bf_2": "https://recipesinsight.com/wp-content/uploads/2025/04/5a8db425-798e-481c-8063-316e7baa0e89-768x768.webp",  # avocado toast
+    # Exact berries-and-walnuts match; source: https://www.solin.stream/recipes/255855/creamy-greek-yogurt-bowl-with-fresh-berries-and-honey
+    "int_bf_3": "https://res.cloudinary.com/solin-fitness/image/upload/c_scale%2Cw_800%2Cq_auto%2Cf_auto/single-meal-images/srroczkksbghselyscyd",
     # International Lunches
-    "int_lu_1": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&q=80",  # salmon quinoa
-    "int_lu_2": "https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80",      # chickpea stew
-    "int_lu_3": "https://images.unsplash.com/photo-1584184924103-e310d9dc82fc?w=600&q=80",  # lettuce wraps
-    "int_lu_4": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80",  # lentil salad
+    "int_lu_1": "https://www.menuistia.com/img/rcpe/lemon_herb_grilled_salmon_with_quinoa_and_steamed_broccoli.webp",  # salmon, quinoa and broccoli
+    "int_lu_2": "https://data.thefeedfeed.com/static/2020/09/23/16008697815f6b55952f9ed.png",  # chickpea and spinach stew
+    "int_lu_3": "https://res.cloudinary.com/solin-fitness/image/upload/c_scale%2Cw_800%2Cq_auto%2Cf_auto/single-meal-images/g3puocx0iccrq3osmpou",  # turkey, avocado and quinoa
+    "int_lu_4": "https://recipesbytabitha.com/assets/images/1768709099861-oaqbm5rm.webp",  # lentil feta salad
     # International Dinners
-    "int_dn_1": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=600&q=80",  # grilled chicken
-    "int_dn_2": "https://images.unsplash.com/photo-1551183053-bf91798d454c?w=600&q=80",      # pasta lentil
-    "int_dn_3": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&q=80",  # baked cod
-    "int_dn_4": "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&q=80",  # tofu stir-fry
+    # Exact dish match; source: https://www.solin.stream/recipes/115761/seared-chicken-breast-with-roasted-asparagus-and-sweet-potato
+    "int_dn_1": "https://res.cloudinary.com/solin-fitness/image/upload/c_scale%2Cw_800%2Cq_auto%2Cf_auto/single-meal-images/urmsxuy07jq0jao7hj7s",
+    "int_dn_2": "https://static.wixstatic.com/media/372d0d_c6802a0ccb214755b640873ac33d1c31~mv2.jpg/v1/fill/w_750%2Ch_750%2Cal_c%2Cq_90/372d0d_c6802a0ccb214755b640873ac33d1c31~mv2.jpg",  # lentil bolognese pasta
+    "int_dn_3": "https://savorytouch.com/_next/image?q=75&url=https%3A%2F%2Fmealpractice.b-cdn.net%2F134124509593735168%2Fmediterranean-baked-cod-with-lemon-and-herbs-served-with-garlic-green-beans-and-quinoa-bnmNM3Q3CS.webp&w=3840",  # cod, quinoa and green beans
+    "int_dn_4": "https://www.jeanhailes.org.au/uploads/images/Recipes/_1200x630_crop_center-center_82_none/Tofu-stir-fry.jpg?mtime=1726201621",  # tofu stir-fry
     # International Snacks
-    "int_sn_1": "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=600&q=80",  # apple peanut butter
-    "int_sn_2": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&q=80",  # nuts
-    "int_sn_3": "https://images.unsplash.com/photo-1541014741259-de529411b96a?w=600&q=80",  # hummus veggies
+    "int_sn_1": "https://messlitreats.com/cdn-cgi/image/fit%3Dcontain%2Cwidth%3D768%2Cquality%3D80%2Cformat%3Dauto/assets/images/1765577674527-pbuptup1.webp",  # apple and peanut butter
+    "int_sn_2": "https://remat-shop.com/html/upload/save_image/0620161711_64915277a9e65.jpg",  # walnuts and almonds
+    "int_sn_3": "https://cdn.shopify.com/s/files/1/0605/0257/3315/files/IMG_5045.jpg?v=1737398707",  # hummus with vegetables
 }
 
 _EXERCISE_IMAGES: dict[str, str] = {
@@ -90,8 +93,8 @@ _EXERCISE_IMAGES: dict[str, str] = {
     "ex_30_1":      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80",
     "ex_30_2":      "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=600&q=80",
     "ex_30_3":      "https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?w=600&q=80",
-    # Campus stair walk; free Unsplash photo by Jeremy Huang: https://unsplash.com/photos/people-walking-up-steps-of-a-university-campus-building-_LNcnvSwCPo
-    "ex_30_4":      "https://images.unsplash.com/photo-1774600787310-6f9559d9bdac?auto=format&fit=crop&fm=jpg&q=80&w=1200",
+    # Students walking up campus stairs; source: https://busfin.uga.edu/finance-division/bursar/
+    "ex_30_4":      "https://busfin.uga.edu/wp-content/uploads/2025/07/20240814_FIRST_CLS_MARCM_024.jpg",
     "ex_30_zumba":  "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&q=80",
     "ex_30_run":    "https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=600&q=80",
     "ex_30_mat":    "https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?w=600&q=80",
