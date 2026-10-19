@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckIcon, PlayIcon, ClockIcon, XIcon, PlusIcon, MinusIcon,
   CalendarIcon, HistoryIcon, SparklesIcon, AlertCircleIcon, ShieldCheckIcon,
-  UtensilsIcon, DumbbellIcon, FlameIcon, LayersIcon
+  UtensilsIcon, DumbbellIcon, FlameIcon, LayersIcon, SlidersHorizontalIcon
 } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
@@ -125,8 +125,11 @@ export function PhysicalPlan() {
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold text-emerald-50">
               <SparklesIcon size={14} className="text-lime-300" /> Your adaptive wellbeing plan
             </div>
-            <h1 className="text-3xl font-black tracking-tight sm:text-4xl">A plan that fits your week.</h1>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-emerald-50/80">Movement and meal ideas shaped around your time, preferences, and current routine.</p>
+            <h1 className="text-3xl font-black tracking-tight sm:text-4xl">A plan that fits you.</h1>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-emerald-50/80">Your assessment shapes your goals, schedule, food preferences, and safe movement. Update your preferences anytime to reshape the plan.</p>
+            <button type="button" onClick={() => navigate(userProfile ? '/app/physical/profile' : '/physical-setup')} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-extrabold text-emerald-950 shadow-sm transition hover:bg-lime-50 focus:outline-none focus:ring-2 focus:ring-white/70">
+              <SlidersHorizontalIcon size={16} /> {userProfile ? 'Customize my plan' : 'Start assessment'}
+            </button>
           </div>
           <div className="flex gap-3">
             <div className="min-w-28 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm">
