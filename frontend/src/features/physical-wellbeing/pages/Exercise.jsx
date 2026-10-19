@@ -55,6 +55,7 @@ export function PhysicalExercise() {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Featured Exercise */}
         <Card padding="none" className="lg:col-span-2 overflow-hidden flex flex-col justify-between">
+          {featured.image && <img src={featured.image} alt={featured.name || 'Recommended workout'} loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; }} className="h-56 w-full object-cover sm:h-64" />}
           <div className="p-6">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-50 px-3 py-1 rounded-full border border-brand-200">
@@ -151,6 +152,7 @@ export function PhysicalExercise() {
                 className="text-left rounded-3xl bg-white border border-black/[0.04] shadow-soft p-5 hover:shadow-card transition-all flex flex-col justify-between"
               >
                 <div>
+                  {a.image && <img src={a.image} alt={a.name || 'Alternative workout'} loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; }} className="mb-4 h-36 w-full rounded-2xl object-cover" />}
                   <div className="flex items-start justify-between">
                     <span className="text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-50 px-2.5 py-0.5 rounded-full">
                       {a.intensity}

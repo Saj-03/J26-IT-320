@@ -88,6 +88,7 @@ export function PhysicalNutrition() {
           className="lg:col-span-2"
         >
           <Card padding="none" className="overflow-hidden h-full flex flex-col justify-between">
+            {featuredMeal.image && <img src={featuredMeal.image} alt={featuredMeal.name || 'Recommended meal'} loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; }} className="h-56 w-full object-cover sm:h-64" />}
             <div className="p-6">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-50 px-3 py-1 rounded-full border border-brand-200">
@@ -197,6 +198,7 @@ export function PhysicalNutrition() {
             >
               <Card padding="sm" hover className="h-full flex flex-col justify-between">
                 <div>
+                  {a.image && <img src={a.image} alt={a.name || 'Recommended meal'} loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; }} className="mb-3 h-36 w-full rounded-2xl object-cover" />}
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-charcoal-muted">
                       {a.cuisine === 'sri_lankan' ? '🇱🇰 Sri Lankan' : '🌍 International'}

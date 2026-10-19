@@ -25,24 +25,28 @@ _MEAL_IMAGES: dict[str, str] = {
     "sl_bf_4": "https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80",       # chickpeas
     "sl_bf_5": "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?w=600&q=80",   # mung beans
     "sl_bf_6": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80",   # egg hopper
-    "sl_bf_7": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80",   # roast bread + egg
+    # Roast paan, dhal and egg; source: https://secondscolombo.com/
+    "sl_bf_7": "https://secondscolombo.com/assets/img/breakfast_dhal.jpg",
     "sl_bf_8": "https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80",       # cowpea
     # Sri Lankan Lunches
     "sl_lu_1": "https://images.unsplash.com/photo-1631515242808-497c3fbd3972?w=600&q=80",   # rice & curry
-    "sl_lu_2": "https://images.unsplash.com/photo-1631515242808-497c3fbd3972?w=600&q=80",   # rice & soya
+    # Soya curry with rice; source: https://www.gzrecipes.com/en/viaggiandomangiando/soya-maaluwa-the-sri-lankan-soy-curry/
+    "sl_lu_2": "https://www.gzrecipes.com/content/uploads/sites/2/2025/11/IMG_8717-scaled-8-6925a081d50a51-19688828.jpeg",
     "sl_lu_3": "https://images.unsplash.com/photo-1588347818033-c2f3cca63a70?w=600&q=80",   # fish curry
     "sl_lu_4": "https://images.unsplash.com/photo-1631515242808-497c3fbd3972?w=600&q=80",   # red rice
     "sl_lu_5": "https://images.unsplash.com/photo-1631515242808-497c3fbd3972?w=600&q=80",   # polos curry
     "sl_lu_6": "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&q=80",   # egg curry
     # Sri Lankan Dinners
-    "sl_dn_1": "https://images.unsplash.com/photo-1630851840628-a81d5c3a0b45?w=600&q=80",   # string hoppers dinner
+    # String hoppers served with kiri hodi; source: https://hellopure.com.au/blogs/recipes/kiri-hodi-coconut-milk-curry-h6-a-staple-of-sri-lankan-family-life-this-mild-coconut-curry-is-simple-delicious-h6
+    "sl_dn_1": "https://hellopure.com.au/cdn/shop/articles/KH_2048x.jpg?v=1688537642",
     "sl_dn_2": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80",   # roast paan
     "sl_dn_3": "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=600&q=80",   # vegetable soup
     "sl_dn_4": "https://images.unsplash.com/photo-1588347818033-c2f3cca63a70?w=600&q=80",   # idiyappam fish
     "sl_dn_5": "https://images.unsplash.com/photo-1551183053-bf91798d454c?w=600&q=80",       # stir-fried noodles
     "sl_dn_6": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=600&q=80",   # grilled chicken
     # Sri Lankan Snacks
-    "sl_sn_1": "https://images.unsplash.com/photo-1562159278-1253a58da141?w=600&q=80",       # king coconut
+    # Opened king coconut drink; source: https://eightyflavors.com/sips-of-ceylon-8-essential-drinks-to-have-in-sri-lanka/
+    "sl_sn_1": "https://eightyflavors.com/wp-content/uploads/2020/06/DSC_0042-1024x683.jpg",
     "sl_sn_2": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",       # energy balls
     "sl_sn_3": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&q=80",   # roasted nuts
     "sl_sn_4": "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=600&q=80",   # banana
@@ -86,7 +90,8 @@ _EXERCISE_IMAGES: dict[str, str] = {
     "ex_30_1":      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80",
     "ex_30_2":      "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=600&q=80",
     "ex_30_3":      "https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?w=600&q=80",
-    "ex_30_4":      "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=600&q=80",
+    # Campus stair walk; free Unsplash photo by Jeremy Huang: https://unsplash.com/photos/people-walking-up-steps-of-a-university-campus-building-_LNcnvSwCPo
+    "ex_30_4":      "https://images.unsplash.com/photo-1774600787310-6f9559d9bdac?auto=format&fit=crop&fm=jpg&q=80&w=1200",
     "ex_30_zumba":  "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&q=80",
     "ex_30_run":    "https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=600&q=80",
     "ex_30_mat":    "https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?w=600&q=80",
@@ -108,19 +113,15 @@ _EXERCISE_FALLBACK = "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d
 
 
 def _inject_meal_image(meal: dict) -> dict:
-    if meal.get("image"):
-        return meal
     meal_id = meal.get("id", "")
     cuisine = meal.get("cuisine", "default")
-    img = _MEAL_IMAGES.get(meal_id) or _MEAL_FALLBACKS.get(cuisine) or _MEAL_FALLBACKS["default"]
+    img = _MEAL_IMAGES.get(meal_id) or meal.get("image") or _MEAL_FALLBACKS.get(cuisine) or _MEAL_FALLBACKS["default"]
     return {**meal, "image": img}
 
 
 def _inject_exercise_image(ex: dict) -> dict:
-    if ex.get("image"):
-        return ex
     ex_id = ex.get("id", "")
-    img = _EXERCISE_IMAGES.get(ex_id) or _EXERCISE_FALLBACK
+    img = _EXERCISE_IMAGES.get(ex_id) or ex.get("image") or _EXERCISE_FALLBACK
     return {**ex, "image": img}
 
 
@@ -623,7 +624,7 @@ def get_week_plan_snapshot(snapshot_id: str, db: Session = Depends(get_db), user
         "id": snapshot.id,
         "plan_date": snapshot.plan_date.isoformat(),
         "days_count": snapshot.days_count,
-        "plan": snapshot.plan_data,
+        "plan": _inject_plan_images(snapshot.plan_data),
     }
 
 

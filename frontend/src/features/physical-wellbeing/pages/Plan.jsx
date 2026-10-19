@@ -509,6 +509,9 @@ export function PhysicalPlan() {
 
                   <Card padding="lg" className="bg-gradient-to-br from-white to-cream border border-black/[0.06]">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      {currentDay.exercise?.image && (
+                        <img src={currentDay.exercise.image} alt={currentDay.exercise.name || 'Recommended workout'} loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; }} className="h-40 w-full shrink-0 rounded-2xl object-cover md:h-44 md:w-56" />
+                      )}
                       <div className="space-y-1.5 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-brand-500 text-white">
@@ -574,6 +577,7 @@ export function PhysicalPlan() {
                       return (
                         <Card key={slotKey} padding="md" className="flex flex-col justify-between">
                           <div>
+                            {primary?.image && <img src={primary.image} alt={primary.name || `${meta.title} recommendation`} loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; }} className="mb-3 h-36 w-full rounded-2xl object-cover" />}
                             <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-black/[0.05]">
                               <span className={cn('text-xs font-bold px-2.5 py-1 rounded-full border', meta.tint)}>
                                 {meta.emoji} {meta.title}
