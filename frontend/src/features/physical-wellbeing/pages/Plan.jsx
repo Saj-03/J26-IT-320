@@ -174,6 +174,7 @@ export function PhysicalPlan() {
 
   const currentDay = planData?.days?.[selectedDayIdx] || planData?.days?.[0];
   const userPrefs = planData?.user_preferences || userProfile || {};
+  const todayProgress = Object.values(statuses).filter((status) => status === 'done').length + (water >= 8 ? 1 : 0);
 
   return (
     <div className="space-y-6">
@@ -209,14 +210,14 @@ export function PhysicalPlan() {
           <label htmlFor="plan-length-days" className="pl-1 text-xs font-bold text-charcoal">Plan length</label>
           <input id="plan-length-days" type="number" min="1" max="31" step="1" inputMode="numeric" value={daysDraft} disabled={viewingSavedPlan} onChange={(event) => setDaysDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); applyPlanLength(); } }} className="w-20 rounded-xl border border-black/[0.08] bg-white px-3 py-2 text-sm font-bold text-charcoal outline-none focus:border-brand-400" />
           <span className="text-xs font-semibold text-charcoal-muted">days</span>
-          <button type="button" onClick={applyPlanLength} disabled={viewingSavedPlan || durationSaving || !Number.isInteger(Number(daysDraft)) || Number(daysDraft) < 1 || Number(daysDraft) > 31} className="rounded-xl bg-emerald-800 px-3 py-2 text-xs font-bold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-40">{durationSaving ? 'Saving…' : 'Update plan'}</button>
+          <button type="button" onClick={applyPlanLength} disabled={viewingSavedPlan || durationSaving || !Number.isInteger(Number(daysDraft)) || Number(daysDraft) < 1 || Number(daysDraft) > 31} className="rounded-xl bg-brand-500 px-3 py-2 text-xs font-bold text-white shadow-glow transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40">{durationSaving ? 'Saving…' : 'Update plan'}</button>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1 rounded-2xl bg-cream p-1">
-            <button onClick={() => { setActiveTab('week'); if (historyMode || viewingSavedPlan) returnToCurrentPlan(); }} className={cn('flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition', activeTab === 'week' && !historyMode ? 'bg-emerald-800 text-white shadow-sm' : 'text-charcoal-muted hover:text-charcoal')}><CalendarIcon size={14} /> Plan</button>
-            <button onClick={() => { if (historyMode || viewingSavedPlan) returnToCurrentPlan(); setActiveTab('today'); }} className={cn('flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition', activeTab === 'today' && !historyMode ? 'bg-emerald-800 text-white shadow-sm' : 'text-charcoal-muted hover:text-charcoal')}><ClockIcon size={14} /> Today</button>
+          <div className="flex items-center gap-1.5 rounded-2xl border border-brand-100 bg-brand-50/70 p-1.5">
+            <button onClick={() => { setActiveTab('week'); if (historyMode || viewingSavedPlan) returnToCurrentPlan(); }} className={cn('flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-extrabold transition-all duration-200', activeTab === 'week' && !historyMode ? 'border-brand-500 bg-brand-500 text-white shadow-glow' : 'border-transparent bg-white/70 text-brand-800 hover:border-brand-200 hover:bg-white')}><CalendarIcon size={15} /> Plan</button>
+            <button onClick={() => { if (historyMode || viewingSavedPlan) returnToCurrentPlan(); setActiveTab('today'); }} className={cn('flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-extrabold transition-all duration-200', activeTab === 'today' && !historyMode ? 'border-brand-500 bg-brand-500 text-white shadow-glow' : 'border-transparent bg-white/70 text-brand-800 hover:border-brand-200 hover:bg-white')}><ClockIcon size={15} /> Today</button>
           </div>
-          <button type="button" onClick={openHistory} disabled={historyLoading} className="inline-flex items-center gap-1.5 rounded-xl border border-black/[0.08] bg-white px-3.5 py-2.5 text-xs font-bold text-charcoal transition hover:border-brand-300 hover:text-brand-700 disabled:opacity-60"><HistoryIcon size={14} /> {historyLoading ? 'Loading…' : 'Past plans'}</button>
+          <button type="button" onClick={openHistory} disabled={historyLoading} className={cn('inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-extrabold transition-all disabled:opacity-60', historyMode ? 'border-brand-500 bg-brand-500 text-white shadow-glow' : 'border-brand-200 bg-white text-brand-700 hover:border-brand-300 hover:bg-brand-50')}><HistoryIcon size={14} /> {historyLoading ? 'Loading…' : 'Past'}</button>
         </div>
       </div>
       {durationSaveError && <p role="alert" className="-mt-4 text-xs font-semibold text-rose-700">{durationSaveError}</p>}
@@ -645,25 +646,30 @@ export function PhysicalPlan() {
         )
       ) : (
         /* ── TODAY'S SCHEDULE TIMELINE VIEW ── */
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* Day progress */}
-          <Card padding="lg">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-bold text-charcoal">Today's Action Progress</p>
-              <span className="text-sm font-extrabold text-brand-600">
-                {Object.values(statuses).filter((s) => s === 'done').length} / 4 Completed
+          <Card padding="lg" className="overflow-hidden border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-lime-50 shadow-sm">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-emerald-700">Your daily rhythm</span>
+                <p className="mt-1 text-lg font-black tracking-tight text-emerald-950">Small steps make a strong day</p>
+              </div>
+              <span className="rounded-full border border-emerald-200 bg-white/80 px-3 py-1.5 text-xs font-extrabold text-emerald-800">
+                {todayProgress} of 4 complete
               </span>
             </div>
-            <ProgressBar value={(Object.values(statuses).filter((s) => s === 'done').length / 4) * 100} />
-            <p className="text-xs text-charcoal-muted mt-2.5">
-              Marking completions adapts your future recommendations through the XGBoost adherence model.
-            </p>
+            <ProgressBar value={(todayProgress / 4) * 100} color="bg-emerald-600" track="bg-emerald-900/10" />
+            <p className="mt-3 text-xs leading-relaxed text-emerald-900/65">Check off your meals and reach your water goal as you go. Your check-ins help shape future recommendations.</p>
           </Card>
 
           {/* Timeline Blocks */}
-          <div className="space-y-4">
+          <div className="mb-1 flex items-center justify-between px-1">
+            <div><h2 className="text-lg font-black text-charcoal">Today's plan</h2><p className="text-xs text-charcoal-muted">A gentle guide for your day</p></div>
+            <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800">{currentDay?.day_name || 'Today'}</span>
+          </div>
+          <div className="relative space-y-3.5 before:absolute before:bottom-7 before:left-[1.45rem] before:top-7 before:w-px before:bg-emerald-100">
             {/* Morning Breakfast */}
-            <Card padding="md" className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <Card padding="md" className={cn('relative flex flex-col border bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center sm:justify-between gap-4', statuses['bf'] === 'done' ? 'border-emerald-200 bg-emerald-50/50' : 'border-black/[0.05]')}>
               <div className="flex items-center gap-3">
                 <span className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-xl shrink-0">
                   🌅
@@ -692,13 +698,13 @@ export function PhysicalPlan() {
             </Card>
 
             {/* Daily Workout */}
-            <Card padding="md" className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-2 border-brand-300">
+            <Card padding="md" className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-emerald-300 bg-gradient-to-r from-emerald-50 to-white shadow-md shadow-emerald-900/5 transition-all hover:-translate-y-0.5 hover:shadow-lg">
               <div className="flex items-center gap-3">
-                <span className="w-12 h-12 rounded-2xl bg-brand-500 text-white flex items-center justify-center text-xl shrink-0">
+                <span className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-700 to-green-500 text-white flex items-center justify-center text-xl shrink-0 shadow-sm shadow-emerald-800/20">
                   🏃
                 </span>
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full border border-brand-200">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 bg-white px-2 py-0.5 rounded-full border border-emerald-200">
                     Daily Exercise ({currentDay?.exercise?.minutes || 20}m)
                   </span>
                   <h4 className="font-extrabold text-charcoal text-base mt-1">
@@ -715,7 +721,7 @@ export function PhysicalPlan() {
             </Card>
 
             {/* Midday Lunch */}
-            <Card padding="md" className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <Card padding="md" className={cn('relative flex flex-col border bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center sm:justify-between gap-4', statuses['lu'] === 'done' ? 'border-emerald-200 bg-emerald-50/50' : 'border-black/[0.05]')}>
               <div className="flex items-center gap-3">
                 <span className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl shrink-0">
                   ☀️
@@ -742,7 +748,7 @@ export function PhysicalPlan() {
             </Card>
 
             {/* Afternoon Hydration & Snack */}
-            <Card padding="md">
+            <Card padding="md" className="relative border border-sky-100 bg-gradient-to-r from-sky-50/70 to-white shadow-sm">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <span className="w-10 h-10 rounded-2xl bg-sky-100 text-sky-800 flex items-center justify-center text-lg shrink-0">
@@ -776,7 +782,7 @@ export function PhysicalPlan() {
             </Card>
 
             {/* Evening Dinner */}
-            <Card padding="md" className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <Card padding="md" className={cn('relative flex flex-col border bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center sm:justify-between gap-4', statuses['dn'] === 'done' ? 'border-emerald-200 bg-emerald-50/50' : 'border-black/[0.05]')}>
               <div className="flex items-center gap-3">
                 <span className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-800 flex items-center justify-center text-xl shrink-0">
                   🌆
