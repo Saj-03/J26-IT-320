@@ -18,6 +18,16 @@ const METRICS = {
   workouts: { label: 'Workouts', unit: 'workouts', icon: '🏋️', max: 5 },
 };
 
+function challengeMetric(challenge) {
+  const base = METRICS[challenge.metric] || METRICS.minutes;
+  const goal = String(challenge.goal_text || '').trim();
+  const preset = Object.values(METRICS).find((item) => item.label.toLowerCase() === goal.toLowerCase());
+  if (preset || !goal) return base;
+  const targetUnit = String(challenge.target_text || '').match(/^\s*\d+\s*([a-zA-Z][a-zA-Z\s]*)\s*$/)?.[1]?.trim();
+  const unit = targetUnit || goal;
+  return { ...base, label: goal, unit: unit.toLowerCase(), max: 10000 };
+}
+
 function inviteLink(code) {
   return `${window.location.origin}/challenge/${encodeURIComponent(code)}`;
 }
@@ -31,18 +41,18 @@ function PrivacyNote({ guest = false }) {
   );
 }
 
-function JungleTrail({ percent }) {
+function JungleTrail({ percent, score, target, unit }) {
   return (
     <div className="relative isolate flex min-h-52 items-end overflow-hidden rounded-3xl border border-emerald-900/20 bg-cover bg-center p-4 shadow-inner sm:min-h-64 sm:p-6" style={{ backgroundImage: "linear-gradient(180deg, rgba(7,32,24,.06) 15%, rgba(7,32,24,.78) 100%), url('/img/jungle-quest-bg.png')" }}>
       <div className="absolute inset-0 -z-10 bg-emerald-950/10" />
       <span className="absolute right-8 top-8 animate-[jungle-float_4s_ease-in-out_infinite] text-4xl drop-shadow" aria-hidden="true">🦋</span>
       <div className="relative w-full rounded-2xl border border-white/25 bg-emerald-950/45 p-4 text-white shadow-lg backdrop-blur-sm sm:p-5">
-        <div className="mb-3 flex items-center justify-between gap-3"><span className="text-xs font-extrabold uppercase tracking-wider">🌿 Shared trail progress</span><span className="text-sm font-black">{percent}%</span></div>
+        <div className="mb-3 flex items-end justify-between gap-3"><div><span className="text-[10px] font-bold uppercase tracking-wider text-white/75">Squad progress</span><p className="mt-1 text-lg font-black">{score.toLocaleString()} <span className="text-xs font-semibold text-white/80">/ {target.toLocaleString()} {unit}</span></p></div><span className="text-xl font-black">{percent}%</span></div>
         <div className="relative h-3 rounded-full bg-white/40 shadow-inner">
           <div className="h-full rounded-full bg-gradient-to-r from-lime-300 to-amber-300 transition-all duration-700" style={{ width: `${percent}%` }} />
           <span className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 animate-[jungle-float_2.5s_ease-in-out_infinite] text-2xl drop-shadow transition-[left] duration-700" style={{ left: `${Math.max(4, Math.min(96, percent))}%` }} aria-label="Squad progress marker">🧭</span>
         </div>
-        <p className="mt-3 text-xs font-semibold text-white/90">Each check-in moves your squad toward its goal.</p>
+        <p className="mt-3 text-xs font-semibold text-white/90">Each check-in moves the whole squad forward.</p>
       </div>
     </div>
   );
@@ -55,18 +65,17 @@ function SquadRoster({ challenge }) {
         <div key={`${person.nickname}-${index}`} className={`group min-w-[150px] snap-start rounded-2xl border p-3 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md ${person.is_me ? 'border-emerald-200 bg-emerald-50' : 'border-black/[0.05] bg-white'}`}>
           <div className="flex items-center gap-2.5">
             <span className="relative flex h-10 w-10 shrink-0 animate-[jungle-float_3.5s_ease-in-out_infinite] items-center justify-center rounded-2xl bg-gradient-to-br from-lime-100 to-emerald-200 text-sm font-black text-emerald-900 shadow-inner" style={{ animationDelay: `${index * 180}ms` }}>{person.nickname.slice(0, 1).toUpperCase()}<span className={`absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-white ${person.has_contributed ? 'bg-lime-500' : 'bg-slate-300'}`} /></span>
-            <div className="min-w-0"><p className="truncate text-xs font-extrabold text-charcoal">{person.nickname}{person.is_me ? ' · you' : ''}</p><p className="mt-0.5 text-[10px] font-semibold text-charcoal-muted">{person.has_contributed ? '🌱 On the trail' : '⏳ Ready to join'}</p></div>
+          <div className="min-w-0"><p className="truncate text-xs font-extrabold text-charcoal">{person.nickname}{person.is_me ? ' · you' : ''}</p><p className="mt-0.5 text-[10px] font-semibold text-charcoal-muted">{person.has_contributed ? '🌱 Contributed' : 'Joined · check-in pending'}</p></div>
           </div>
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-emerald-100"><div className={`h-full rounded-full transition-all duration-700 ${person.has_contributed ? 'w-full bg-gradient-to-r from-lime-400 to-emerald-500' : 'w-1/4 bg-slate-300'}`} /></div>
         </div>
       ))}
     </div>
-    <p className="text-[10px] font-medium text-charcoal-muted">Swipe to explore your squad → · individual scores are private</p>
+    <p className="text-[10px] font-medium text-charcoal-muted">Swipe to see everyone. Only the shared total is visible.</p>
   </div>;
 }
 
 function ChallengeCard({ challenge, onProgress, onDelete }) {
-  const metric = METRICS[challenge.metric] || METRICS.minutes;
+  const metric = challengeMetric(challenge);
   const [amount, setAmount] = useState('');
   const [busy, setBusy] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -128,28 +137,19 @@ function ChallengeCard({ challenge, onProgress, onDelete }) {
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl bg-gradient-to-r from-emerald-50 to-lime-50 p-3.5">
-        <div className="flex items-center justify-between gap-2 text-xs">
-          <span className="font-bold text-emerald-900">Squad trail progress</span>
-          <span className="font-extrabold text-emerald-900">{challenge.team_score.toLocaleString()} / {challenge.target.toLocaleString()} {metric.unit}</span>
-        </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-lime-400 transition-all" style={{ width: `${pct}%` }} /></div>
-        <p className="mt-2 text-[11px] font-medium text-emerald-900/70">Your check-ins add to one shared team score.</p>
-      </div>
-
       <div className="mt-5">
-        <div className="mb-3 flex items-center justify-between gap-2"><h4 className="text-sm font-extrabold text-charcoal">🌿 Jungle trail</h4><span className="text-[10px] font-bold text-charcoal-muted">{pct}% complete</span></div>
-        <JungleTrail percent={pct} />
-        <div className="mb-2 mt-5 flex items-center justify-between gap-2"><h4 className="text-sm font-extrabold text-charcoal">Your squad</h4><span className="text-[10px] font-semibold text-charcoal-muted">Individual scores stay private</span></div>
+        <div className="mb-2 flex items-center justify-between gap-2"><h4 className="text-sm font-extrabold text-charcoal">🌿 Squad trail</h4><span className="text-[10px] font-bold text-charcoal-muted">{challenge.goal_text || metric.label}</span></div>
+        <JungleTrail percent={pct} score={challenge.team_score} target={challenge.target} unit={metric.unit} />
+        <div className="mb-2 mt-5 flex items-center justify-between gap-2"><h4 className="text-sm font-extrabold text-charcoal">Your squad</h4><span className="text-[10px] font-semibold text-charcoal-muted">Scores stay private</span></div>
         <SquadRoster challenge={challenge} />
       </div>
 
       {!ended && <form onSubmit={submit} className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:items-end">
-        <Field label={`Add to your ${metric.label.toLowerCase()}`} type="number" min="1" max={metric.max} step="1" placeholder={`Up to ${metric.max.toLocaleString()} ${metric.unit}`} value={amount} onChange={(event) => setAmount(event.target.value)} />
-        <Button type="submit" disabled={busy || !amount} className="sm:shrink-0">{busy ? 'Saving…' : 'Move the squad'} <ArrowUpRightIcon size={15} /></Button>
+        <Field label={`Your contribution (${metric.unit})`} type="number" min="1" max={metric.max} step="1" placeholder={`Enter ${metric.unit}`} value={amount} onChange={(event) => setAmount(event.target.value)} />
+        <Button type="submit" disabled={busy || !amount} className="sm:shrink-0">{busy ? 'Saving…' : 'Add contribution'} <ArrowUpRightIcon size={15} /></Button>
       </form>}
       {error && <p role="alert" className="mt-2 text-xs font-semibold text-rose-700">{error}</p>}
-      <p className="mt-3 text-[10px] leading-relaxed text-charcoal-muted">Check-ins only add to this challenge’s shared score. No personal activity records are created or shared.</p>
+      <p className="mt-3 text-[10px] leading-relaxed text-charcoal-muted">Your check-in updates only the shared challenge score; it does not change your personal activity history.</p>
     </Card>
   );
 }
@@ -168,11 +168,20 @@ export function PeerChallenges() {
 
   const create = async (event) => {
     event.preventDefault();
-    setCreating(true);
     setError('');
+    const numericTarget = Number.parseInt(form.target.match(/\d+/)?.[0] || '', 10);
+    const durationDays = Number(form.duration_days);
+    if (form.title.trim().length < 3) return setError('Enter a challenge name with at least 3 characters.');
+    if (form.title.trim().length > 80) return setError('Keep the challenge name under 80 characters.');
+    if (!form.goal.trim()) return setError('Enter a challenge goal.');
+    if (form.goal.trim().length > 80) return setError('Keep the challenge goal under 80 characters.');
+    if (!Number.isInteger(numericTarget) || numericTarget < 1) return setError('Add a number to the target, such as “50 pushups”.');
+    if (!Number.isInteger(durationDays) || durationDays < 1 || durationDays > 30) return setError('Enter a challenge length from 1 to 30 days.');
+    if (form.nickname.trim().length < 2) return setError('Enter a nickname with at least 2 characters.');
+    if (form.nickname.trim().length > 24) return setError('Keep your nickname under 24 characters.');
+    setCreating(true);
     try {
-      const numericTarget = Number.parseInt(form.target.match(/\d+/)?.[0] || '', 10);
-      await createPeerChallenge({ ...form, goal_text: form.goal.trim(), target_text: form.target.trim(), target: numericTarget, duration_days: Number(form.duration_days) });
+      await createPeerChallenge({ ...form, goal_text: form.goal.trim(), target_text: form.target.trim(), target: numericTarget, duration_days: durationDays });
       setForm({ title: '', goal: '', metric: '', target: '', duration_days: '', nickname: form.nickname });
       await refresh();
     } catch (err) {
@@ -206,19 +215,19 @@ export function PeerChallenges() {
             <div><h2 className="font-extrabold text-charcoal">Start a Jungle Quest</h2><p className="text-xs text-charcoal-muted">Pick one shared goal for up to six people.</p></div>
           </div>
           <form onSubmit={create} className="space-y-3.5">
-            <Field label="Challenge name" required minLength="3" maxLength="80" placeholder="e.g. Campus walk week" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} />
-            <Field label="Challenge goal" required value={form.goal}
+            <Field label="Challenge name" maxLength="80" placeholder="e.g. Campus walk week" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} />
+            <Field label="Challenge goal" maxLength="80" value={form.goal}
               onChange={(event) => {
                 const goal = event.target.value;
                 const normalizedGoal = goal.toLowerCase();
                 const metric = normalizedGoal.includes('step') ? 'steps' : normalizedGoal.includes('min') ? 'minutes' : 'workouts';
                 setForm({ ...form, goal, metric });
               }} />
-            <Field label="Target" type="text" maxLength="120" required value={form.target} onChange={(event) => setForm({ ...form, target: event.target.value })} />
-            <Field label="Length (days)" type="number" inputMode="numeric" min="1" max="30" step="1" required value={form.duration_days} onChange={(event) => setForm({ ...form, duration_days: event.target.value })} hint="Choose any length from 1 to 30 days." className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
-            <Field label="Your challenge nickname" required minLength="2" maxLength="24" placeholder="e.g. Nilu" value={form.nickname} onChange={(event) => setForm({ ...form, nickname: event.target.value })} />
+            <Field label="Target" type="text" maxLength="120" value={form.target} onChange={(event) => setForm({ ...form, target: event.target.value })} />
+            <Field label="Length (days)" type="number" inputMode="numeric" step="1" value={form.duration_days} onChange={(event) => setForm({ ...form, duration_days: event.target.value })} hint="Choose any length from 1 to 30 days." className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
+            <Field label="Your challenge nickname" maxLength="24" placeholder="e.g. Nilu" value={form.nickname} onChange={(event) => setForm({ ...form, nickname: event.target.value })} />
             {error && <p role="alert" className="text-xs font-semibold text-rose-700">{error}</p>}
-            <Button type="submit" fullWidth disabled={creating || !form.title.trim() || !form.goal.trim() || !form.nickname.trim() || !Number.isInteger(Number.parseInt(form.target.match(/\d+/)?.[0] || '', 10)) || Number.parseInt(form.target.match(/\d+/)?.[0] || '', 10) < 1 || !Number.isInteger(Number(form.duration_days)) || Number(form.duration_days) < 1 || Number(form.duration_days) > 30}>{creating ? 'Creating…' : 'Create & get invite link'} <LinkIcon size={15} /></Button>
+            <Button type="submit" fullWidth disabled={creating}>{creating ? 'Creating…' : 'Create & get invite link'} <LinkIcon size={15} /></Button>
           </form>
           <p className="mt-3 text-[10px] leading-relaxed text-charcoal-muted">Friends join from your private link with a nickname. Up to five guests can join you; no IHSD account is needed.</p>
         </Card>
@@ -285,7 +294,7 @@ export function PeerChallengeInvite() {
   if (!challenge) return null;
 
   const joined = challenge.my_score !== null;
-  const metric = METRICS[challenge.metric] || METRICS.minutes;
+  const metric = challengeMetric(challenge);
   const ended = new Date(challenge.ends_at).getTime() < Date.now();
   const pct = Math.min(100, Math.round((challenge.team_score / challenge.target) * 100));
   return (
@@ -299,12 +308,9 @@ export function PeerChallengeInvite() {
           </div>
           <div className="mt-5"><PrivacyNote guest /></div>
           {joined ? <>
-            <div className="mt-5 rounded-2xl bg-emerald-50 p-4">
-              <div className="flex items-center justify-between gap-2"><div><p className="text-xs font-bold uppercase tracking-wider text-emerald-800">Shared trail progress</p><p className="mt-1 text-xl font-black text-charcoal">{challenge.team_score.toLocaleString()} / {challenge.target.toLocaleString()} <span className="text-sm font-semibold text-charcoal-muted">{metric.unit}</span></p></div><span className="rounded-full bg-white px-3 py-1.5 text-xs font-extrabold text-emerald-800">👥 {challenge.participant_count}/6 explorers</span></div>
-              <div className="mt-3"><JungleTrail percent={pct} /></div>
-            </div>
-            <div className="mt-5"><div className="mb-3 flex items-center justify-between gap-2"><h3 className="font-extrabold text-charcoal">Your squad</h3><span className="text-[10px] font-semibold text-charcoal-muted">No ranks · scores stay private</span></div><SquadRoster challenge={challenge} /></div>
-            {!ended && <form onSubmit={submitScore} className="mt-5 space-y-3"><Field label={`Add to your ${metric.label.toLowerCase()}`} type="number" min="1" max={metric.max} required value={amount} onChange={(event) => setAmount(event.target.value)} placeholder={`1–${metric.max} ${metric.unit}`} /><Button type="submit" fullWidth disabled={busy || !amount}>{busy ? 'Saving…' : 'Add to the trail'} <ArrowUpRightIcon size={16} /></Button></form>}
+            <div className="mt-5"><JungleTrail percent={pct} score={challenge.team_score} target={challenge.target} unit={metric.unit} /></div>
+            <div className="mt-5"><div className="mb-3 flex items-center justify-between gap-2"><h3 className="font-extrabold text-charcoal">Your squad</h3><span className="text-[10px] font-semibold text-charcoal-muted">Scores stay private</span></div><SquadRoster challenge={challenge} /></div>
+            {!ended && <form onSubmit={submitScore} className="mt-5 space-y-3"><Field label={`Your contribution (${metric.unit})`} type="number" min="1" max={metric.max} required value={amount} onChange={(event) => setAmount(event.target.value)} placeholder={`Enter ${metric.unit}`} /><Button type="submit" fullWidth disabled={busy || !amount}>{busy ? 'Saving…' : 'Add contribution'} <ArrowUpRightIcon size={16} /></Button></form>}
           </> : ended ? <div className="mt-5 rounded-2xl bg-cream p-4 text-center text-sm font-semibold text-charcoal-muted">This quest has ended.</div> : <form onSubmit={join} className="mt-5 space-y-3"><Field label="Choose a challenge nickname" required minLength="2" maxLength="24" placeholder="This nickname is shown to the squad" value={nickname} onChange={(event) => setNickname(event.target.value)} /><Button type="submit" fullWidth disabled={busy || nickname.trim().length < 2}>{busy ? 'Joining…' : 'Join the squad'} <ArrowUpRightIcon size={16} /></Button></form>}
           {error && <p role="alert" className="mt-3 text-xs font-semibold text-rose-700">{error}</p>}
           <p className="mt-4 text-center text-[10px] leading-relaxed text-charcoal-muted">No account, profile, or app download required. Only your nickname and challenge contribution are saved; the squad sees its shared total, not individual scores.</p>
