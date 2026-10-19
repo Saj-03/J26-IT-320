@@ -60,7 +60,10 @@ export const initialAssessment = {
     mealSource: 'Cook at home',
     allergies: '',
     avoid: '',
-    favourites: 'Rice & curry, fruits'
+    favourites: 'Rice & curry, fruits',
+    planDurationDays: '',
+    planDurationAmount: '',
+    planDurationUnit: 'days'
 };
 
 function toggle(list, id) {
@@ -477,7 +480,7 @@ export function StepExerciseSafety({ state, set }) {
                             <span>🔒</span> Privacy Respected: Precautionary Low-Impact Protocol
                         </p>
                         <p>
-                            Because your health status is undisclosed, our adaptive engine will automatically restrict your 7-day plan to gentle, low-impact, joint-neutral activities (campus power walking, restorative mobility, yoga). If you ever experience pain or dizziness, please stop immediately and consult a doctor.
+                            Because your health status is undisclosed, our adaptive engine will automatically restrict your plan to gentle, low-impact, joint-neutral activities (campus power walking, restorative mobility, yoga). If you ever experience pain or dizziness, please stop immediately and consult a doctor.
                         </p>
                     </div>
                 )}
@@ -590,7 +593,7 @@ export function StepExerciseSafety({ state, set }) {
                                             <span>🛡️</span> Adaptive Safety Protection Active
                                         </p>
                                         <p className="leading-relaxed text-emerald-800">
-                                            Your selected limitations will be respected. Conflicting movements (such as deep squats, lunges, or spinal shear) will be automatically filtered and replaced across your 7-day plan.
+                                            Your selected limitations will be respected. Conflicting movements (such as deep squats, lunges, or spinal shear) will be automatically filtered and replaced throughout your plan.
                                         </p>
                                     </div>
                                 );
@@ -696,6 +699,44 @@ export function StepNutrition({ state, set }) {
                     placeholder="e.g. red rice & dhal, chickpea salad, fresh papaya"
                 />
             </div>
+        </div>
+    );
+}
+
+export function StepPlanDuration({ state, set }) {
+    const unitDays = { days: 1, weeks: 7, months: 30 };
+    const maxAmount = { days: 31, weeks: 4, months: 1 }[state.planDurationUnit] || 31;
+    const amount = Number(state.planDurationAmount);
+    const selectedDays = amount > 0 && amount <= maxAmount ? amount * unitDays[state.planDurationUnit] : '';
+    const updateDuration = (nextAmount, nextUnit = state.planDurationUnit) => {
+        const nextValue = Number(nextAmount);
+        const max = { days: 31, weeks: 4, months: 1 }[nextUnit] || 31;
+        set('planDurationAmount', nextAmount);
+        set('planDurationUnit', nextUnit);
+        set('planDurationDays', nextValue > 0 && nextValue <= max ? String(nextValue * unitDays[nextUnit]) : '');
+    };
+    return (
+        <div className="space-y-5">
+            <div>
+                <p className="text-sm font-semibold text-charcoal-light">How long should your plan cover?</p>
+                <p className="mt-1 text-xs text-charcoal-muted">Enter a length that works for you. You can update it later.</p>
+            </div>
+            <div className="grid max-w-md grid-cols-[1fr_1fr] gap-3">
+                <label className="space-y-1.5">
+                    <span className="text-sm font-semibold text-charcoal-light">Length</span>
+                    <input type="number" min="1" max={maxAmount} step="1" inputMode="numeric" value={state.planDurationAmount}
+                        onChange={(event) => updateDuration(event.target.value)} placeholder="Enter a number"
+                        className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-charcoal outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20" />
+                </label>
+                <label className="space-y-1.5">
+                    <span className="text-sm font-semibold text-charcoal-light">Unit</span>
+                    <select value={state.planDurationUnit} onChange={(event) => updateDuration(state.planDurationAmount, event.target.value)}
+                        className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-charcoal outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20">
+                        <option value="days">Days</option><option value="weeks">Weeks</option><option value="months">Months</option>
+                    </select>
+                </label>
+            </div>
+            {selectedDays ? <p className="text-sm font-bold text-emerald-800">Your plan will cover {selectedDays} days.</p> : <p className="text-xs font-semibold text-amber-800">Enter a length from 1 to {maxAmount} {state.planDurationUnit}.</p>}
         </div>
     );
 }

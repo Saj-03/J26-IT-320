@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckIcon, SparklesIcon, ArrowRightIcon } from 'lucide-react';
 import { Logo } from '../../../shared/components/ui/Logo';
@@ -16,6 +17,9 @@ const stages = [
 ];
 export function PhysicalGenerating() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const requestedDays = Number(location.state?.planDurationDays);
+    const planDurationDays = Number.isInteger(requestedDays) && requestedDays >= 1 && requestedDays <= 31 ? requestedDays : 7;
     const [active, setActive] = useState(0);
     const done = active >= stages.length;
     useEffect(() => {
@@ -68,7 +72,7 @@ export function PhysicalGenerating() {
                 <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} transition={{ type: 'spring', damping: 12 }} className="w-24 h-24 rounded-full bg-brand-500 text-white flex items-center justify-center shadow-glow">
                   <SparklesIcon size={44}/>
                 </motion.div>
-                <h1 className="text-3xl font-extrabold text-charcoal tracking-tight mt-6">Your Plan Is Ready</h1>
+                <h1 className="text-3xl font-extrabold text-charcoal tracking-tight mt-6">Your {planDurationDays}-Day Plan Is Ready</h1>
                 <p className="text-charcoal-light mt-2 max-w-xs">
                   Built around your goals, your available time, and your knee-friendly activity needs.
                 </p>
@@ -86,7 +90,7 @@ export function PhysicalGenerating() {
                 </div>
 
                 <Button size="lg" fullWidth className="mt-8" onClick={() => navigate('/app/physical/plan')}>
-                  View My 7-Day Plan <ArrowRightIcon size={18}/>
+                  View My {planDurationDays}-Day Plan <ArrowRightIcon size={18}/>
                 </Button>
               </motion.div>}
           </AnimatePresence>

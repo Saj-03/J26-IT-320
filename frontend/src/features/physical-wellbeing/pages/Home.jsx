@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRightIcon, TrophyIcon, ChevronRightIcon, RotateCwIcon, ActivityIcon, CalendarIcon, SparklesIcon, ShieldCheckIcon } from 'lucide-react';
-import { PageHeader } from '../../../shared/components/layout/PageHeader';
+import { ArrowRightIcon, TrophyIcon, ChevronRightIcon, RotateCwIcon, SparklesIcon, ShieldCheckIcon } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { ProgressRing } from '../../../shared/components/ui/ProgressRing';
@@ -251,18 +250,6 @@ export function PhysicalHome() {
         </Card>
       </motion.div>
     )}
-
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <PageHeader title="" subtitle="Your adaptive exercise, nutrition and habit plan — built around your university lifestyle." />
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" onClick={() => navigate('/app/physical/plan')}>
-          <CalendarIcon size={15} /> View 7-Day Plan
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => navigate('/physical-setup')}>
-          <ActivityIcon size={15} /> Redo assessment
-        </Button>
-      </div>
-    </div>
 
     <PhysicalNav />
 

@@ -26,7 +26,10 @@ export function PhysicalPlan() {
 
   // Mode and view state
   const [activeTab, setActiveTab] = useState('week'); // 'week' | 'today'
-  const [daysCount, setDaysCount] = useState(7); // 7 | 14 | 30
+  const [daysCount, setDaysCount] = useState(7); // customizable 1–31 day plan length
+  const [daysDraft, setDaysDraft] = useState('7');
+  const [durationPreferenceLoaded, setDurationPreferenceLoaded] = useState(false);
+  const [returnDaysCount, setReturnDaysCount] = useState(7);
   const [selectedDayIdx, setSelectedDayIdx] = useState(0);
   const [isExamPeriod, setIsExamPeriod] = useState(false);
   const [useBaseline, setUseBaseline] = useState(false);
@@ -46,6 +49,20 @@ export function PhysicalPlan() {
   // Today timeline statuses
   const [statuses, setStatuses] = useState({});
   const [water, setWater] = useState(5);
+
+  useEffect(() => {
+    let active = true;
+    getProfile().then((profile) => {
+      if (!active) return;
+      setUserProfile(profile);
+      const preferredDuration = Number(profile?.assessment_data?.planDurationDays);
+      if (Number.isInteger(preferredDuration) && preferredDuration >= 1 && preferredDuration <= 31) setDaysCount(preferredDuration);
+      setDurationPreferenceLoaded(true);
+    }).catch(() => {
+      if (active) setDurationPreferenceLoaded(true);
+    });
+    return () => { active = false; };
+  }, []);
 
   const fetchPlan = async () => {
     setLoading(true);
@@ -67,8 +84,10 @@ export function PhysicalPlan() {
   };
 
   useEffect(() => {
-    if (!viewingSavedPlan) fetchPlan();
-  }, [isExamPeriod, useBaseline, daysCount, viewingSavedPlan]);
+    if (!viewingSavedPlan && durationPreferenceLoaded) fetchPlan();
+  }, [isExamPeriod, useBaseline, daysCount, viewingSavedPlan, durationPreferenceLoaded]);
+
+  useEffect(() => setDaysDraft(String(daysCount)), [daysCount]);
 
   const openHistory = async () => {
     setHistoryLoading(true);
@@ -89,6 +108,7 @@ export function PhysicalPlan() {
     setHistoryError('');
     try {
       const saved = await getWeekPlanSnapshot(record.id);
+      setReturnDaysCount(daysCount);
       setPlanData(saved.plan);
       setUserProfile(saved.plan?.user_preferences || null);
       setDaysCount(saved.days_count);
@@ -107,6 +127,7 @@ export function PhysicalPlan() {
 
   const returnToCurrentPlan = () => {
     setHistoryMode(false);
+    setDaysCount(returnDaysCount);
     setViewingSavedPlan(false);
   };
 
@@ -117,40 +138,39 @@ export function PhysicalPlan() {
 
   return (
     <div className="space-y-6">
-      <section className="relative isolate overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-800 px-5 py-7 text-white shadow-xl sm:px-8 sm:py-9">
+      <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-800 px-4 py-5 text-white shadow-lg sm:px-6 sm:py-6">
         <div className="absolute -right-12 -top-20 -z-10 h-64 w-64 rounded-full bg-lime-300/10 blur-2xl" />
         <div className="absolute bottom-0 right-24 -z-10 h-32 w-32 rounded-full bg-teal-300/10 blur-2xl" />
-        <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
           <div className="max-w-2xl">
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold text-emerald-50">
               <SparklesIcon size={14} className="text-lime-300" /> Your adaptive wellbeing plan
             </div>
-            <h1 className="text-3xl font-black tracking-tight sm:text-4xl">A plan that fits you.</h1>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-emerald-50/80">Your assessment shapes your goals, schedule, food preferences, and safe movement. Update your preferences anytime to reshape the plan.</p>
-            <button type="button" onClick={() => navigate(userProfile ? '/app/physical/profile' : '/physical-setup')} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-extrabold text-emerald-950 shadow-sm transition hover:bg-lime-50 focus:outline-none focus:ring-2 focus:ring-white/70">
+            <h1 className="text-2xl font-black tracking-tight sm:text-3xl">A plan that fits you.</h1>
+            <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-emerald-50/80">Your assessment shapes your goals, schedule, food preferences, and safe movement. Update your preferences anytime to reshape the plan.</p>
+            <button type="button" onClick={() => navigate(userProfile ? '/app/physical/profile' : '/physical-setup')} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-white px-3.5 py-2 text-xs font-extrabold text-emerald-950 shadow-sm transition hover:bg-lime-50 focus:outline-none focus:ring-2 focus:ring-white/70">
               <SlidersHorizontalIcon size={16} /> {userProfile ? 'Customize my plan' : 'Start assessment'}
             </button>
           </div>
           <div className="flex gap-3">
-            <div className="min-w-28 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm">
+            <div className="min-w-24 rounded-2xl border border-white/10 bg-white/10 px-3 py-2.5 backdrop-blur-sm">
               <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-50/70">Plan length</p>
-              <p className="mt-1 text-xl font-black">{daysCount} <span className="text-xs font-semibold">days</span></p>
+              <p className="mt-1 text-lg font-black">{daysCount} <span className="text-xs font-semibold">days</span></p>
             </div>
-            <div className="min-w-28 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm">
+            <div className="min-w-24 rounded-2xl border border-white/10 bg-white/10 px-3 py-2.5 backdrop-blur-sm">
               <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-50/70">Workout window</p>
-              <p className="mt-1 text-xl font-black">{planData?.effective_available_minutes || userPrefs.available_minutes || 20} <span className="text-xs font-semibold">min</span></p>
+              <p className="mt-1 text-lg font-black">{planData?.effective_available_minutes || userPrefs.available_minutes || 20} <span className="text-xs font-semibold">min</span></p>
             </div>
           </div>
         </div>
       </section>
 
       <div className="flex flex-col gap-3 rounded-3xl border border-black/[0.06] bg-white p-3 shadow-sm lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-1 self-start rounded-2xl bg-cream p-1">
-          {[{ label: '1 week', count: 7 }, { label: '2 weeks', count: 14 }, { label: '1 month', count: 30 }].map((tf) => (
-            <button key={tf.count} onClick={() => setDaysCount(tf.count)} disabled={viewingSavedPlan} className={cn('rounded-xl px-3.5 py-2 text-xs font-bold transition', daysCount === tf.count ? 'bg-white text-charcoal shadow-sm' : 'text-charcoal-muted hover:text-charcoal')}>
-              {tf.label}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2 self-start rounded-2xl bg-cream p-2">
+          <label htmlFor="plan-length-days" className="pl-1 text-xs font-bold text-charcoal">Plan length</label>
+          <input id="plan-length-days" type="number" min="1" max="31" step="1" inputMode="numeric" value={daysDraft} disabled={viewingSavedPlan} onChange={(event) => setDaysDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); const value = Number(daysDraft); if (Number.isInteger(value) && value >= 1 && value <= 31) setDaysCount(value); } }} className="w-20 rounded-xl border border-black/[0.08] bg-white px-3 py-2 text-sm font-bold text-charcoal outline-none focus:border-brand-400" />
+          <span className="text-xs font-semibold text-charcoal-muted">days</span>
+          <button type="button" onClick={() => { const value = Number(daysDraft); if (Number.isInteger(value) && value >= 1 && value <= 31) setDaysCount(value); }} disabled={viewingSavedPlan || !Number.isInteger(Number(daysDraft)) || Number(daysDraft) < 1 || Number(daysDraft) > 31} className="rounded-xl bg-emerald-800 px-3 py-2 text-xs font-bold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-40">Update plan</button>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1 rounded-2xl bg-cream p-1">

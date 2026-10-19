@@ -11,7 +11,8 @@ import {
   StepStressBarriers,
   StepGoals,
   StepExerciseSafety,
-  StepNutrition
+  StepNutrition,
+  StepPlanDuration
 } from '../components/AssessmentSteps';
 import { getProfile, saveProfile } from '../api';
 import { apiErrorMessage } from '../../../shared/api/client';
@@ -146,7 +147,8 @@ const steps = [
   { title: 'Academic Stress & Barriers', subtitle: 'Helping our adaptive model balance workout intensity with your academic pressure.' },
   { title: 'Physical Goals & Activity Level', subtitle: 'Targeting your fitness ambitions and baseline stamina.' },
   { title: 'Exercise Preferences & Safety', subtitle: 'Tailoring activity types, available time, and protecting physical limitations.' },
-  { title: 'Nutrition & Meal Preferences', subtitle: 'Personalizing culturally authentic Sri Lankan & international healthy meals.' }
+  { title: 'Nutrition & Meal Preferences', subtitle: 'Personalizing culturally authentic Sri Lankan & international healthy meals.' },
+  { title: 'Choose Your Plan Length', subtitle: 'Pick how many days your first personalized plan should cover.' }
 ];
 
 export function PhysicalAssessment() {
@@ -235,15 +237,23 @@ export function PhysicalAssessment() {
   };
 
   const finish = async () => {
+    const durationFactors = { days: 1, weeks: 7, months: 30 };
+    const durationAmount = Number(state.planDurationAmount);
+    const planDurationDays = durationAmount * (durationFactors[state.planDurationUnit] || 0);
+    if (!Number.isInteger(durationAmount) || durationAmount < 1 || !Number.isInteger(planDurationDays) || planDurationDays > 31) {
+      setError('Enter a plan length from 1 to 31 days before creating your plan.');
+      return;
+    }
+    const assessmentToSave = { ...state, planDurationDays: String(planDurationDays) };
     setSaving(true);
     setError('');
     try {
       // Keep the companion choice even if profile creation needs to be retried.
       localStorage.setItem(genderKey, state.gender);
-      localStorage.setItem(assessmentKey, JSON.stringify(state));
-      await saveProfile(toProfile(state));
+      localStorage.setItem(assessmentKey, JSON.stringify(assessmentToSave));
+      await saveProfile(toProfile(assessmentToSave));
       localStorage.setItem(savedAssessmentKey, 'true');
-      navigate('/physical-setup/generating');
+      navigate('/physical-setup/generating', { state: { planDurationDays } });
     }
     catch (err) {
       console.error('Save profile error:', err);
@@ -300,6 +310,7 @@ export function PhysicalAssessment() {
             {step === 2 && <StepGoals state={state} set={set} />}
             {step === 3 && <StepExerciseSafety state={state} set={set} />}
             {step === 4 && <StepNutrition state={state} set={set} />}
+            {step === 5 && <StepPlanDuration state={state} set={set} />}
           </motion.div>
         </AnimatePresence>
       </div>
