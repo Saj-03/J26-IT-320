@@ -13,7 +13,7 @@ from app.core.dependencies import get_current_user
 from app.components.scheduler import (
     schemas, service, task_service, commitment_service, focus_service, settings_service, stress_service,
     attention_service, progress_service, planner_service, research_service, feedback_service,
-    alert_service, research_export, notification_service, insights_service,
+    alert_service, research_export, notification_service, insights_service, brain_dump_service,
 )
 from app.components.scheduler.models import Task, FocusSession, ScheduleChange
 from app.components.scheduler.engine import m1_predictor, m3_predictor, stress_rules
@@ -232,6 +232,15 @@ def rate_focus(session_id: str, data: schemas.FocusRatingIn,
 def progress(db: Session = Depends(get_db), user=Depends(get_current_user)):
     """My XP, level, streak and badges (any newly reached badge is given now)."""
     return progress_service.check_progress(db, user)
+
+
+# ===========================================================================
+# VOICE PLANNER "Speak your day" (M4) - preview only, nothing is saved
+# ===========================================================================
+@router.post("/brain-dump", response_model=schemas.BrainDumpOut)
+def brain_dump(data: schemas.BrainDumpIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """A spoken / typed paragraph -> editable items (tasks, commitments, energy, plan request). Saves nothing."""
+    return brain_dump_service.preview(db, user, data.text)
 
 
 # ===========================================================================

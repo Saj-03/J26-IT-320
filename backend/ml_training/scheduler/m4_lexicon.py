@@ -65,4 +65,5 @@ RANGE_FROM = ("ඉඳන්", "ඉදන්", "සිට", "idan", "indan", "sit
 RANGE_TO = ("වෙනකම්", "වෙනකන්", "දක්වා", "wenakam", "wenakan", "dakwa")
 DEADLINE_WORDS = ("වෙනකොට", "කලින්", "ඉවර කරන්න", "submit", "due", "deadline", "by", "before",
                   "wenakota", "kalin", "iwara karanna")
+WAKE_WORDS = ("wake", "get up", "getting up", "නැගිටින්න", "නැගිටිනවා", "nagitinna", "nagitinawa")   # -> morning
 AFTER_WORDS = ("ඊට පස්සේ", "ඊට පසු", "eeta passe", "ita passe", "ita pasu", "after that", "and then", "then")

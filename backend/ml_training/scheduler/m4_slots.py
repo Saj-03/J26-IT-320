@@ -220,6 +220,8 @@ def extract(text: str, today: date) -> Slots:
     out.in_minutes = relative or None
 
     part = part_of_day(t)
+    if part is None and any(w in t for w in L.WAKE_WORDS):
+        part = "morning"                                     # "wake me up at 6" is never 6 pm
 
     # 2a. time range
     m = RANGE.search(t)

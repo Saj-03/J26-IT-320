@@ -8,6 +8,7 @@ Component 3 - request / response shapes (Pydantic).
 Validation here means bad data never reaches the database
 (e.g. a deadline in the past, priority 9, a 0-minute task).
 """
+import datetime as dt
 from datetime import datetime, time, timezone
 from typing import Literal
 
@@ -736,3 +737,39 @@ class NotificationOut(BaseModel):
 class NotificationsOut(BaseModel):
     items: list[NotificationOut]
     unread: int
+
+
+# ===========================================================================
+# VOICE PLANNER "Speak your day" (M4)
+# ===========================================================================
+class BrainDumpIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    text: str = Field(min_length=2, max_length=2000)
+
+
+class BrainDumpItemOut(BaseModel):
+    index: int
+    text: str                        # the piece of what was said
+    type: str                        # task_academic / task_personal / commitment / routine / energy / plan_request / other
+    confidence: float                # M4 probability
+    needs_check: bool                # low confidence or a missing detail -> highlight it
+    include: bool                    # "other" pieces start unticked
+    title: str
+    kind: str | None                 # commitment kind / task type / energy level
+    date: dt.date | None
+    start: str | None                # "HH:MM" Sri Lanka time
+    end: str | None
+    duration_minutes: int | None
+    deadline: dt.date | None
+    in_minutes: int | None
+    after_previous: bool
+    load: str | None                 # M2
+    predicted_minutes: int | None    # M3
+
+
+class BrainDumpOut(BaseModel):
+    items: list[BrainDumpItemOut]
+    plan_requested: bool
+    energy: str | None               # low / high, if the student said so
+    today: dt.date
+    model: str | None                # m4_model / keyword_rules
