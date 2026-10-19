@@ -41,7 +41,7 @@ def test_accept_applies_everything(proposal):
     db, me, change, heavy, light = proposal
     ss.decide(db, me, change.id, "accepted", now=NOW)
     db.refresh(light)
-    assert light.scheduled_start == NOW + timedelta(days=3)                       # moved
+    assert light.scheduled_start == ss.move_target(NOW, 3, 8)                       # moved
     assert [(p.title, p.estimated_minutes, p.source) for p in pieces(db, heavy)] == [
         ("DB design (part 1/3)", 25, "scheduler"), ("DB design (part 2/3)", 25, "scheduler"),
         ("DB design (part 3/3)", 20, "scheduler")]
@@ -55,7 +55,7 @@ def test_edit_applies_only_kept_changes(proposal):
     db, me, change, heavy, light = proposal
     ss.decide(db, me, change.id, "edited", keep=[1], now=NOW)                    # only the move
     db.refresh(light)
-    assert light.scheduled_start == NOW + timedelta(days=3)
+    assert light.scheduled_start == ss.move_target(NOW, 3, 8)
     assert pieces(db, heavy) == [] and db.query(Commitment).count() == 0
 
 

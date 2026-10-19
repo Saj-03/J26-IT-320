@@ -43,7 +43,7 @@ def test_moderate_moves_the_two_lightest_tasks(env):
     task(db, me, "Medium", priority=2)
     change = ss.propose(db, me, now=NOW)
     assert actions(change) == [("move", "Low B"), ("move", "Low A")]
-    assert change.change_set[0]["to"] == (NOW + timedelta(days=2)).isoformat()
+    assert change.change_set[0]["to"] == ss.move_target(NOW, 2, 8).isoformat()   # Mon 08:00 Sri Lanka time
 
 
 def test_high_splits_heavy_moves_and_adds_rest(env):
@@ -73,7 +73,7 @@ def test_task_not_moved_if_deadline_too_close_after_the_move(env):
     _, db, current, _ = env
     me = current["user"]
     signal(db, me, "MODERATE")
-    task(db, me, "Due in 3 days", days=3, priority=1)        # moved +2 days -> only 1 day left - 60 min
+    task(db, me, "Due in 2.5 days", days=2.5, priority=1)    # moved to day+2 08:00 -> under 1 day + 60 min left
     with pytest.raises(HTTPException) as e:
         ss.propose(db, me, now=NOW)
     assert e.value.status_code == 409 and "can be changed safely" in e.value.detail

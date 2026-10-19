@@ -32,12 +32,15 @@ DECISIONS (step F4): the student accepts all, keeps only some (edited), or rejec
   Each kept change is safety-checked AGAIN (things may have changed since the proposal).
   Applied changes can be undone ("restore") - moved tasks go back, created pieces/breaks are removed.
 """
+import hashlib
 from datetime import datetime, timedelta
 
 from fastapi import HTTPException
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.config import settings as app_settings
+from app.components.scheduler.commitment_service import SL_OFFSET
 from app.components.scheduler.models import Commitment, FocusSession, ScheduleChange, SchedulerAuditLog, Task
 from app.components.scheduler.settings_service import get_settings
 from app.components.scheduler.task_service import audit, drop_planned_pieces
@@ -187,7 +190,13 @@ def can_move(task: Task, new_start: datetime) -> bool:
     return task.deadline - new_start >= MOVE_BUFFER + timedelta(minutes=task.estimated_minutes)
 
 
-def build_changes(tasks: list[Task], level: str, now: datetime) -> list[dict]:
+def move_target(now: datetime, days: int, day_start_hour: int) -> datetime:
+    """'3 days later' = the START of that study day (e.g. Thu 08:00 Sri Lanka time), not 'now + 72 h' (23:30)."""
+    local_day = (now + SL_OFFSET + timedelta(days=days)).date()
+    return datetime.combine(local_day, datetime.min.time()).replace(hour=day_start_hour) - SL_OFFSET
+
+
+def build_changes(tasks: list[Task], level: str, now: datetime, day_start_hour: int = 8) -> list[dict]:
     """The list of suggested changes (nothing is saved or applied here)."""
     plan = PLAN_BY_LEVEL[level]
     changes = []
@@ -203,7 +212,7 @@ def build_changes(tasks: list[Task], level: str, now: datetime) -> list[dict]:
                                 "reason": f"Heavy task - {len(pieces)} short pieces are easier on a stressful day."})
 
     # 2. Move the lightest tasks a few days later: lowest priority first, then the latest deadline
-    new_start = (now + timedelta(days=plan["move_days"])).replace(minute=0, second=0, microsecond=0)
+    new_start = move_target(now, plan["move_days"], day_start_hour)
     candidates = sorted((t for t in tasks if t.id not in split_ids),
                         key=lambda t: (t.priority, -t.deadline.timestamp()))
     moved = 0
@@ -247,7 +256,7 @@ def propose(db: Session, user, now: datetime | None = None, automatic: bool = Fa
 
     ids = [row["task_id"] for row in task_safety(db, user, now)["changeable"]]
     tasks = db.query(Task).filter(Task.id.in_(ids)).all() if ids else []
-    changes = build_changes(tasks, status["level"], now)
+    changes = build_changes(tasks, status["level"], now, get_settings(db, user)["day_start_hour"])
     if not changes:                                    # MODERATE with nothing safe to move
         raise HTTPException(409, "None of your tasks can be changed safely right now - your plan stays as it is.")
 
@@ -270,6 +279,11 @@ def propose(db: Session, user, now: datetime | None = None, automatic: bool = Fa
     return change
 
 
+def lock_key(user_id: str) -> int:
+    """A stable 63-bit number for this student's proposal lock."""
+    return int(hashlib.sha256(f"stress-proposal:{user_id}".encode()).hexdigest()[:15], 16)
+
+
 def auto_propose(db: Session, user, now: datetime | None = None) -> ScheduleChange | None:
     """
     Proposal 4.3: when a valid ELEVATED risk update arrives, the system makes the proposed change set by itself
@@ -279,13 +293,22 @@ def auto_propose(db: Session, user, now: datetime | None = None) -> ScheduleChan
     "nothing can be changed safely" is logged once for that signal.
     """
     now = now or datetime.utcnow()
+    if stress_status(db, user, now)["action"] != "propose_changes":
+        return None
+    # Two requests at the same moment (the schedule page asks for status AND proposals together) both saw
+    # "no proposal yet" and both made one. A per-student database lock lets only one of them make it; the
+    # other waits, checks again and finds the proposal. (Postgres only; SQLite tests run one at a time.)
+    if db.get_bind().dialect.name == "postgresql":
+        db.execute(text("SELECT pg_advisory_xact_lock(:key)"), {"key": lock_key(user.id)})
     status = stress_status(db, user, now)
     if status["action"] != "propose_changes":
+        db.commit()                                      # releases the lock
         return None
-    tried = (db.query(SchedulerAuditLog.details)
+    tried =(db.query(SchedulerAuditLog.details)
                .filter(SchedulerAuditLog.user_id == user.id, SchedulerAuditLog.event_type == "stress_nothing_safe")
                .all())
     if any((d or {}).get("signal_event_id") == status["signal_event_id"] for (d,) in tried):
+        db.commit()
         return None
     try:
         return propose(db, user, now, automatic=True)
