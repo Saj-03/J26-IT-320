@@ -21,7 +21,10 @@ export const finishTask = (id) => api.post(`/scheduler/tasks/${id}/complete`).th
 
 // --- Plan, free time, commitments ---
 // "Plan my week" = CP-SAT scheduler (Module D): POST builds a new plan, GET reads the saved one
-export const planMyWeek = () => api.post("/scheduler/plan").then((r) => r.data);
+// Voice planner "Speak your day": paragraph -> editable cards (nothing saved) -> confirm saves + plans
+export const previewBrainDump = (text) => api.post("/scheduler/brain-dump", { text }).then((r) => r.data);
+export const confirmBrainDump = (body) => api.post("/scheduler/brain-dump/confirm", body).then((r) => r.data);
+export const planMyWeek =() => api.post("/scheduler/plan").then((r) => r.data);
 export const getPlan = () => api.get("/scheduler/plan").then((r) => r.data);
 export const getRecovery = () => api.get("/scheduler/plan/recovery").then((r) => r.data);   // FR-09 missed -> preview
 export const getAvailability = (days = 7) => api.get("/scheduler/availability", { params: { days } }).then((r) => r.data);

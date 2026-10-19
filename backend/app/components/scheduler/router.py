@@ -243,6 +243,13 @@ def brain_dump(data: schemas.BrainDumpIn, db: Session = Depends(get_db), user=De
     return brain_dump_service.preview(db, user, data.text)
 
 
+@router.post("/brain-dump/confirm", response_model=schemas.BrainDumpSavedOut, status_code=201)
+def brain_dump_confirm(data: schemas.BrainDumpConfirmIn, db: Session = Depends(get_db),
+                       user=Depends(get_current_user)):
+    """Save the cards the student checked (tasks + commitments); plan my week if asked (low energy -> lighter today)."""
+    return brain_dump_service.confirm(db, user, data)
+
+
 # ===========================================================================
 # INSIGHTS - real numbers for the Overview and AI Insights pages
 # ===========================================================================

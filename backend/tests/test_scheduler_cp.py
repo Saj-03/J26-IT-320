@@ -108,3 +108,15 @@ def test_a_busy_week_is_planned_fast():
     out = run(items, free_days(days=7), fit=evening_peak)
     assert time.perf_counter() - t0 < 2.0                # NFR-01
     assert out["sessions"]
+
+
+def test_one_day_can_have_a_smaller_cap():
+    """Voice planner "I'm tired today": today's cap is halved, other days keep theirs."""
+    items = [task("a", 300, due_days=3), task("b", 300, due_days=3)]
+    out = cp.schedule(items, free_days(), NOW, piece_minutes=50, break_minutes=10, day_cap_minutes=300,
+                      study_day=lambda t: t.date(), local_hour=lambda t: t.hour, day_caps={NOW.date(): 100})
+    per_day = {}
+    for s in out["sessions"]:
+        per_day[s["start"].date()] = per_day.get(s["start"].date(), 0) + s["minutes"]
+    assert per_day[NOW.date()] <= 100
+    assert max(per_day.values()) > 100                    # the other days still use the full cap

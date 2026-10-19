@@ -66,12 +66,14 @@ def schedule(items: list[WorkItem], free: list[tuple[datetime, datetime]], now: 
              piece_minutes: int, break_minutes: int, day_cap_minutes: int,
              study_day: Callable[[datetime], object], local_hour: Callable[[datetime], int],
              fit: Callable[[int, int, str], float] | None = None,
+             day_caps: dict | None = None,
              time_limit: float = TIME_LIMIT_SECONDS) -> dict:
     """
     items      : open tasks (work left > 0)
     free       : free time as (start, end) in UTC, already without commitments and past time
     fit        : ADAPTIVE mode -> fit(local_hour, minutes, load) = M1 chance 0..1;  None -> STATIC mode
     study_day / local_hour : turn a UTC time into the Sri Lanka study day / clock hour
+    day_caps   : {study day: minutes} for days with a different cap (e.g. "I'm tired today" -> half)
 
     Returns {"sessions": [...], "unplaced": [...], "status": "..."}
     """
@@ -107,8 +109,9 @@ def schedule(items: list[WorkItem], free: list[tuple[datetime, datetime]], now: 
     for users in by_cell.values():                                     # never two pieces at once
         if len(users) > 1:
             model.AddAtMostOne(users)
-    for entries in by_day.values():
-        model.Add(sum(size * var for _, size, var in entries) <= day_cap_minutes)     # daily study cap
+    for day, entries in by_day.items():
+        cap = (day_caps or {}).get(day, day_cap_minutes)
+        model.Add(sum(size * var for _, size, var in entries) <= cap)                  # daily study cap
         for it in items:                                               # spacing: max 2 pieces a day
             mine = [var for task_id, _, var in entries if task_id == it.task_id]
             if len(mine) > MAX_PIECES_PER_TASK_PER_DAY:

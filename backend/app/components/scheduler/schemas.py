@@ -773,3 +773,44 @@ class BrainDumpOut(BaseModel):
     energy: str | None               # low / high, if the student said so
     today: dt.date
     model: str | None                # m4_model / keyword_rules
+
+
+class BrainDumpSaveItem(BaseModel):
+    """One card the student checked (and maybe edited) on the review screen."""
+    model_config = ConfigDict(extra="forbid")
+
+    type: Literal["task_academic", "task_personal", "commitment", "routine"]
+    title: str = Field(min_length=1, max_length=200)
+    kind: str | None = Field(default=None, max_length=40)       # commitment kind / task type
+    date: dt.date | None = None                                 # commitment day (default today)
+    start: time | None = None                                   # Sri Lanka clock
+    end: time | None = None
+    duration_minutes: int | None = Field(default=None, ge=5, le=24 * 60)
+    deadline: dt.date | None = None                             # tasks
+    load: CognitiveLoad | None = None                           # kept only if the student changed it
+    # learning loop: what M4 said and what the student changed (no spoken text is stored)
+    model_type: str | None = Field(default=None, max_length=40)
+    confidence: float | None = Field(default=None, ge=0, le=1)
+    changed: list[str] = Field(default_factory=list, max_length=20)
+
+
+class BrainDumpConfirmIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    items: list[BrainDumpSaveItem] = Field(default_factory=list, max_length=30)
+    energy: Literal["low", "high"] | None = None
+    plan: bool = False                                          # run Plan my week after saving
+    dropped: int = Field(default=0, ge=0, le=100)               # cards the student unticked
+
+
+class SavedRef(BaseModel):
+    id: str
+    title: str
+
+
+class BrainDumpSavedOut(BaseModel):
+    tasks: list[SavedRef]
+    commitments: list[SavedRef]
+    planned: bool
+    sessions: int | None             # planned pieces (if a plan was made)
+    unplaced: int | None
+    today_cap_minutes: int | None    # lowered study cap for today (low energy)

@@ -104,8 +104,9 @@ def piece_size(db: Session, user, settings: dict, profile: dict) -> tuple[int, i
 # ---------------------------------------------------------------------------
 # 3. Build + save
 # ---------------------------------------------------------------------------
-def solve(db: Session, user, now: datetime) -> dict:
-    """Make a plan with CP-SAT but do NOT save it (used by build_plan and the missed-session preview)."""
+def solve(db: Session, user, now: datetime, today_cap: int | None = None) -> dict:
+    """Make a plan with CP-SAT but do NOT save it (used by build_plan and the missed-session preview).
+    today_cap: a lower study cap for today only (voice planner: "I'm tired today")."""
     settings = get_settings(db, user)
     tasks, fixed = open_tasks(db, user, now)
     # Load the focus history and study hours ONCE (each database trip to Neon costs ~0.3 s)
@@ -129,16 +130,17 @@ def solve(db: Session, user, now: datetime) -> dict:
     result = cp_scheduler.schedule(items, free_time(db, user, fixed, now), now,
                                    piece_minutes=focus, break_minutes=rest,
                                    day_cap_minutes=settings["max_study_minutes_per_day"],
-                                   study_day=study_day, local_hour=local_hour, fit=fit)
+                                   study_day=study_day, local_hour=local_hour, fit=fit,
+                                   day_caps={study_day(now): today_cap} if today_cap is not None else None)
     return {"settings": settings, "tasks": tasks, "result": result, "durations": durations, "focus_minutes": focus,
             "break_minutes": rest, "timer_source": timer_source, "attention_source": attention_source,
             "peak_hours": profile["peak_hours"] if attention_source == "m1_model" else []}
 
 
-def build_plan(db: Session, user, now: datetime | None = None) -> dict:
+def build_plan(db: Session, user, now: datetime | None = None, today_cap: int | None = None) -> dict:
     began = time.perf_counter()
     now = now or datetime.utcnow()
-    plan = solve(db, user, now)
+    plan = solve(db, user, now, today_cap)
     settings, tasks, result = plan["settings"], plan["tasks"], plan["result"]
 
     # Replace the future part of the old plan (the past stays for the research data)
@@ -162,7 +164,8 @@ def build_plan(db: Session, user, now: datetime | None = None) -> dict:
                              latency_ms=latency_ms, created_at=now,
                              details={"plan_id": plan_id, "status": result["status"], "tasks": len(tasks),
                                       "sessions": len(result["sessions"]), "unplaced": len(result["unplaced"]),
-                                      "attention": plan["attention_source"], "focus_minutes": plan["focus_minutes"]}))
+                                      "attention": plan["attention_source"], "focus_minutes": plan["focus_minutes"],
+                                      "today_cap": today_cap}))
     db.commit()
 
     return {**plan_view(db, user, now, settings["mode"]), "plan_id": plan_id, "status": result["status"],
