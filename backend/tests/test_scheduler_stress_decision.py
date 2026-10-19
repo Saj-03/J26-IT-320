@@ -5,7 +5,7 @@ import pytest
 from fastapi import HTTPException
 
 from app.components.scheduler import stress_service as ss
-from app.components.scheduler.models import Commitment, SchedulerAuditLog, Task
+from app.components.scheduler.models import Commitment, FocusSession, SchedulerAuditLog, Task
 from app.shared.integration.models import SignalEvent
 
 NOW = datetime(2026, 10, 17, 10, 0)
@@ -70,7 +70,8 @@ def test_reject_changes_nothing(proposal):
 
 def test_safety_checked_again_at_decision_time(proposal):
     db, me, change, heavy, light = proposal
-    light.status = "in_progress"                       # student started it after the proposal
+    light.status = "in_progress"                       # student started a focus session on it after the proposal
+    db.add(FocusSession(user_id=me.id, task_id=light.id, started_at=NOW, planned_minutes=25))
     db.commit()
     ss.decide(db, me, change.id, "accepted", now=NOW)
     moved = change.edited_change_set[1]

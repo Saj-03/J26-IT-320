@@ -19,7 +19,7 @@ import Commitments from '../components/Commitments';
 import FocusAlert from '../components/FocusAlert';
 import { categoryStyles } from '../../../shared/lib/data';
 import { apiErrorMessage } from '../../../shared/api/client';
-import { finishTask, getAttentionProfile, getPlan, getRecovery, getStressStatus, listCommitments, listTasks, planMyWeek, updateTask, utcMs } from '../api';
+import { finishTask, getAttentionProfile, getPlan, getRecovery, getStressStatus, listCommitments, listStressProposals, listTasks, planMyWeek, updateTask, utcMs } from '../api';
 import { LOAD_LABEL, hoursList, isOpen, stressStyles } from '../lib';
 import { cn } from '../../../shared/lib/cn';
 
@@ -83,6 +83,7 @@ export function Scheduler() {
     const [plan, setPlan] = useState([]);
     const [commitments, setCommitments] = useState([]);
     const [stress, setStress] = useState(null);
+    const [waiting, setWaiting] = useState(null);      // a stress proposal waiting for my decision
     const [peaks, setPeaks] = useState([]);                 // M1 best hours, e.g. [21, 20, 16]
     const [recovery, setRecovery] = useState(null);         // FR-09: missed sessions + recovery preview
     const [failed, setFailed] = useState(false);
@@ -98,6 +99,7 @@ export function Scheduler() {
             .then(([t, c, p]) => { setTasks(t); setCommitments(c); setPlan(p.sessions); })
             .catch(() => setFailed(true));
         getStressStatus().then(setStress).catch(() => {});
+        listStressProposals().then((p) => setWaiting(p[0] ?? null)).catch(() => {});
         getAttentionProfile().then((p) => setPeaks(p.source === 'm1_model' ? p.peak_hours : [])).catch(() => {});
         getRecovery().then(setRecovery).catch(() => setRecovery(null));
     };
@@ -187,11 +189,14 @@ export function Scheduler() {
         <span className={cn('w-2.5 h-2.5 rounded-full shrink-0', style.dot)}/>
         <div className="flex-1 min-w-0">
           <p className={cn('text-sm font-bold', style.text)}>{level ? `Wellbeing signal: ${level}` : 'No wellbeing signal'}</p>
-          <p className="text-base font-semibold text-charcoal mt-0.5 leading-snug">{stress.reason}</p>
+          <p className="text-base font-semibold text-charcoal mt-0.5 leading-snug">
+            {waiting ? 'A lighter plan is waiting for you to check.' : stress.reason}
+          </p>
+          {waiting && <p className="text-sm text-charcoal-light mt-0.5">{waiting.reason}</p>}
         </div>
-        {stress.action === 'propose_changes' &&
+        {(waiting || stress.action === 'propose_changes') &&
             <span className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-charcoal shrink-0">
-            See suggestions <ArrowRightIcon size={15}/>
+            {waiting ? 'Review it' : 'See suggestions'} <ArrowRightIcon size={15}/>
           </span>}
       </motion.button>}
 

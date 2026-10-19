@@ -38,7 +38,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.config import settings as app_settings
-from app.components.scheduler.models import Commitment, ScheduleChange, SchedulerAuditLog, Task
+from app.components.scheduler.models import Commitment, FocusSession, ScheduleChange, SchedulerAuditLog, Task
 from app.components.scheduler.settings_service import get_settings
 from app.components.scheduler.task_service import audit, drop_planned_pieces
 from app.shared.integration.models import SignalEvent
@@ -124,13 +124,13 @@ def time_left(deadline: datetime, now: datetime) -> str:
     return f"due in {round(hours)} hours" if hours < 48 else f"due in {round(hours / 24)} days"
 
 
-def lock_reason(task: Task, now: datetime, has_steps: bool = False) -> str | None:
+def lock_reason(task: Task, now: datetime, has_steps: bool = False, focusing: bool = False) -> str | None:
     """Why this task must NOT be changed for stress, or None if it is safe to change.
     The first matching rule is the reason shown to the student."""
     if task.status in ("done", "cancelled", "missed"):
         return f"already {task.status}"
-    if task.status == "in_progress":
-        return "you are working on it now"
+    if focusing:                     # a focus session on it is running right now ("in_progress" alone only
+        return "you are working on it now"   # means it was started once - that task can still be eased)
     if not task.is_flexible:
         return "you marked it as fixed"
     if task.deadline <= now:
@@ -144,15 +144,23 @@ def lock_reason(task: Task, now: datetime, has_steps: bool = False) -> str | Non
     return None
 
 
+def focusing_now(db: Session, user) -> set[str]:
+    """Tasks with a focus session that has not ended yet."""
+    return {tid for (tid,) in db.query(FocusSession.task_id).filter(FocusSession.user_id == user.id,
+                                                                    FocusSession.ended_at.is_(None),
+                                                                    FocusSession.task_id.isnot(None))}
+
+
 def task_safety(db: Session, user, now: datetime | None = None) -> dict:
     """Split the student's tasks into changeable and locked, each with a reason (earliest deadline first)."""
     now = now or datetime.utcnow()
     tasks = db.query(Task).filter(Task.user_id == user.id).order_by(Task.deadline).all()
     parents = {t.parent_id for t in tasks if t.parent_id}
+    focusing = focusing_now(db, user)
 
     changeable, locked = [], []
     for t in tasks:
-        reason = lock_reason(t, now, has_steps=t.id in parents)
+        reason = lock_reason(t, now, has_steps=t.id in parents, focusing=t.id in focusing)
         row = {"task_id": t.id, "title": t.title, "deadline": t.deadline, "priority": t.priority,
                "cognitive_load": t.cognitive_load, "reason": reason or f"flexible, {time_left(t.deadline, now)}"}
         (locked if reason else changeable).append(row)
@@ -319,7 +327,8 @@ def apply_one(db: Session, user, item: dict, now: datetime) -> dict:
 
     task = db.get(Task, item["task_id"])
     has_steps = task is not None and db.query(Task.id).filter(Task.parent_id == task.id).first() is not None
-    why_not = "task was deleted" if task is None else lock_reason(task, now, has_steps)
+    why_not = "task was deleted" if task is None else lock_reason(task, now, has_steps,
+                                                                   focusing=task.id in focusing_now(db, user))
     if why_not:                                          # safety check again at decision time
         return done | {"applied": False, "skipped_because": why_not}
 

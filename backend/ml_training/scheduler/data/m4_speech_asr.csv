@@ -1,0 +1,487 @@
+slurp_id,text,annot,intent,label,file,asr
+9054,event reminder mona tuesday,event reminder [event_name : mona] [date : tuesday],calendar_set,commitment,audio-1497872916-headset.flac,Event to mind how mona chise.
+6744,put meeting with pawel for tomorrow ten am,put [event_name : meeting] with [person : pawel] for [date : tomorrow] [time : ten am],calendar_set,commitment,audio-1501767950-headset.flac,Put meeting with power for tomorrow 10am.
+7499,make new schedule for tomorrow meeting,make new schedule for [date : tomorrow] [event_name : meeting],calendar_set,commitment,audio-1489671450-headset.flac,Make new schedule for tomorrow meeting.
+6878,schedule a meeting with the accounting department on two thirty pm on friday,schedule a [event_name : meeting] with the [business_name : accounting department] on [time : two thirty pm] on [date : Friday],calendar_set,commitment,audio-1490967578-headset.flac,Schedule a meeting with the Accounting Department on 2.30 pm on Friday.
+8978,just let me know the important meetings with my boss over the week,just let me know the [event_name : important] [event_name : meetings with my boss] [time : over the week],calendar_set,commitment,audio-1497884041-headset.flac,Let me know the important meetings with my boss of the week.
+8413,please alert me,please alert me,calendar_set,commitment,audio-1501691252-headset.flac,Please alert me.
+7292,i am unavailable from four to six in the evening tomorrow mark my calendar,i am unavailable from [time : four] to [time : six] in the [timeofday : evening] [date : tomorrow] mark my calendar,calendar_set,commitment,audio-1490356980-headset.flac,I am unavailable from 4 to 6 in the evening tomorrow. Mark my calendar.
+7971,set a reminder for two days prior of the event,set a reminder for [date : two days] prior of the event,calendar_set,commitment,audio-1501691822-headset.flac,Set a reminder for 2 days prior of the event.
+8968,tell me something to remind this week,tell me something to remind [date : this week],calendar_set,commitment,audio-1492783804-headset.flac,Tell me something to remind this week.
+7258,remind me to send email to boss after one hour,remind me to send email to [relation : boss] after one hour,calendar_set,task_personal,audio-1500039533.flac,We'd like me to send emails to Boss after one hour.
+8967,remind me two days before my wife birthday,remind me two days before my [relation : wife] [event_name : birthday],calendar_set,commitment,audio-1490356700-headset.flac,I met two days before my wife's birthday.
+2134,wake me up,wake me up,alarm_set,routine,audio-1502302399-headset.flac,Wake me up.
+11146,add business contacts to contact list,add business contacts to [list_name : contact list],lists_createoradd,task_personal,audio-1501688946-headset.flac,and business contacts to contact list.
+7916,remind me to take out the garbage at six pm,remind me to take out the garbage at [time : six pm],calendar_set,task_personal,audio-1501753022-headset.flac,We need to take out the garbage at 6pm.
+11141,please find all name start with alphabetic of a and create a list,please find all name start with alphabetic of a and create a list,lists_createoradd,task_personal,audio-1498646399-headset.flac,"Please find all the names, starts with alphabetical and creator list."
+7768,please add practice on feb four at king's park at two pm,please add practice on [date : feb four] at [place_name : king's park] at [time : two pm],calendar_set,commitment,audio-1502195259-headset.flac,Please add practice on Fab4 at Kings Park at 2am.
+8248,add tomorrows dinner date to the calendar,add [date : tomorrows] [meal_type : dinner] date to the calendar,calendar_set,commitment,audio-1499691956-headset.flac,Add tomorrow's dinner date to the calendar
+10640,add detergent to the list of things i need to buy,add detergent to the list of [list_name : things i need to buy],lists_createoradd,task_personal,audio-1501766638-headset.flac,I'm detergent to the list of things I need to buy.
+5635,ensure i have to get up at six in morning,ensure i have to get up at [time : six] in [timeofday : morning],alarm_set,routine,audio-1434530442-headset.flac,and sure I have to get up at 6 in the morning.
+2167,get me up in half an hour,get me up in [time : half an hour],alarm_set,routine,audio-1497622747-headset.flac,That made up in half an hour.
+4654,set an alarm for six thirty am,set an alarm for [time : six thirty am],alarm_set,routine,audio-1502895749-headset.flac,Set an alarm for 6.30 AM
+8642,add conference call at four pm to my reminders for today,add [event_name : conference call] at [time : four pm] to my reminders for [date : today],calendar_set,commitment,audio-1499691003-headset.flac,Add conference call at 4pm to my reminders for today.
+8867,olly set alarm for reminder,olly set alarm for reminder,alarm_set,routine,audio-1490956819.flac,"set it out, set it along for the reminder."
+8140,set a reminder for the thirteenth that i have a lunch with dale,set a reminder for the [date : thirteenth] that i have a [meal_type : lunch] with dale,calendar_set,commitment,audio-1490109994-headset.flac,Set a reminder for the 13th. I have a lunch date with Dale
+10709,add this to the list,add this to the list,lists_createoradd,task_personal,audio-1434543023.flac,I'll just do this.
+3986,set an alarm at six am,set an alarm at [time : six am],alarm_set,routine,audio-1490284123-headset.flac,Set on the LUM at 6am.
+7287,remind me about my anniversary in one day advance,remind me about my [event_name : anniversary] [date : in one day advance],calendar_set,commitment,audio-1502114169-headset.flac,Remind me about my anniversary in one day in France.
+8880,set a reminder about tomorrow's meeting at nine am,set a reminder about [date : tomorrow's] [event_name : meeting] at [time : nine am],calendar_set,commitment,audio-1490369766-headset.flac,"And remember, reminder about tomorrow meeting at 5.9 a.m."
+8882,make an alarm for the meeting with bob at seven today,make an alarm for the [event_name : meeting] with [person : bob] at [time : seven] [date : today],alarm_set,routine,audio-1498572851.flac,Make an alarm for the meeting go up and say it to them.
+6962,can i know what i have to do the next saturday at six pm,can i know what i have to do the next [date : saturday] at [time : six pm],calendar_set,commitment,audio-1434530432-headset.flac,I can't know what I have to do the next Saturday on 16th.
+8251,i need next week's lunch put on the calendar,i need [date : next week's] [meal_type : lunch] put on the calendar,calendar_set,commitment,audio-1502216574.flac,May this make lunch without the hammer.
+8570,will you mark that i am busy for an event tomorrow at two pm,will you mark that i am busy for an event [date : tomorrow] at [time : two pm],calendar_set,commitment,audio-1497862840-headset.flac,"To mark that, I'm busy for an event tomorrow at 2 p.m."
+4848,wake me up in thirty minutes,wake me up in [time : thirty minutes],alarm_set,routine,audio-1497555900-headset.flac,Wake me up in certain minutes.
+8294,add to calendar and repeat,add to calendar and repeat,calendar_set,commitment,audio-1490799169-headset.flac,Add to calendar and repeat.
+8520,add event to calendar app,add event to calendar app,calendar_set,commitment,audio-1490957105-headset.flac,as you went to calendar up.
+1982,set alarm at six thirty am,set alarm at [time : six thirty am],alarm_set,routine,audio--1504192382-headset.flac,Set alarm at 6.30 a.m.
+884,set alarm for eight am,set alarm for [time : eight am],alarm_set,routine,audio-1498758469-headset.flac,"1,4,8,a,m."
+8900,set repeating reminder for every sunday,set repeating reminder for [general_frequency : every sunday],calendar_set,commitment,audio-1501752784-headset.flac,I repeat a reminder of every Sunday.
+8857,remind upcoming meeting with eminem,remind upcoming [event_name : meeting] with [person : eminem],calendar_set,commitment,audio-1490354759-headset.flac,Mind upcoming meeting with Eminem.
+5623,alarm ten am,alarm [time : ten am],alarm_set,routine,audio-1502197633-headset.flac,Alarm 10 am
+8585,remind me that i have a birthday party on the thirtieth,remind me that i have a [event_name : birthday party] on the [date : thirtieth],calendar_set,commitment,audio-1501754323-headset.flac,I mean that I have a birthday party on the 30th.
+7528,thirteenth june is a day of election result please set it,[date : thirteenth june] is a day of [event_name : election result] please set it,calendar_set,commitment,audio-1498568292-headset.flac,"13 June is a day of election. Result, please settle."
+4589,set a notification for sports game,set a notification for [event_name : sports game],calendar_set,commitment,audio-1501756057-headset.flac,Set a notification for sports game.
+8977,just set me reminders about pending bill payments,just set me reminders about [event_name : pending bill payments],calendar_set,commitment,audio-1501768549-headset.flac,"Just that, me, remind us about pending bill payments."
+8345,let me know when the meeting is gonna happen,let me know when the [event_name : meeting] is gonna happen,calendar_set,commitment,audio-1502309018-headset.flac,Let me know when the meeting is gonna happen.
+8037,remind me to something in sometime,remind me to something in sometime,calendar_set,task_personal,audio-1490802280-headset.flac,Remind me to something in some time.
+10503,add the post office to my list of errands for saturday,add the post office to my list of [list_name : errands] for [date : Saturday],lists_createoradd,task_personal,audio-1502299514-headset.flac,Add the new post office to my list of errands for a Saturday.
+7046,add tal meeting on twenty first at seven,add [event_name : tal meeting] on [date : twenty first] at [time : seven],calendar_set,commitment,audio-1501685706-headset.flac,I've tiled meeting on 21st at 7.
+7655,add a reminder for april twenty as my bro's birthday,add a reminder for [date : april twenty] as my [relation : bro's] [event_name : birthday],calendar_set,commitment,audio-1501156398-headset.flac,and a reminder for April 20 as my birthday.
+2564,please set the alarm for next friday at six thirty am,please set the alarm for next [date : friday] at [time : six thirty am],alarm_set,routine,audio-1497869287-headset.flac,Please head along for next Friday at 6.30am.
+7596,please schedule a meeting with derrick in haysi at noon,please schedule a [event_name : meeting] with [person : derrick] in [place_name : haysi] at [timeofday : noon],calendar_set,commitment,audio-1490201815-headset.flac,"Plan a schedule, a meeting with Derek in Haisu at noon."
+7847,alert me when registration opens,alert me when [event_name : registration] opens,calendar_set,commitment,audio-1502893950-headset.flac,alert me when registration opens
+9112,do add this on my calendar,do add this on my calendar,calendar_set,commitment,audio-1501764853-headset.flac,I'm going to add this on my calendar.
+8005,on monday the twentieth i need to have a conversation with greg about our weekend trip,on [date : monday the twentieth] i need to have a [event_name : conversation] with [person : greg] about [event_name : our weekend trip],calendar_set,commitment,audio-1497870038-headset.flac,On Monday the 20s I need to have a conversation with Greg about my weekend trip.
+7542,please remind me about this tomorrow,please remind me about this [date : tomorrow],calendar_set,commitment,audio-1434537990-headset.flac,Please remind me about this tomorrow.
+7152,set lunch every day at twelve thirty,set [meal_type : lunch] [general_frequency : every day] at [time : twelve thirty],calendar_set,commitment,audio-1501768141-headset.flac,That lunge every day at 12.30
+9062,can you put in lee's birthday on the twenty second of june,can you put in [event_name : lee's birthday] on the [date : twenty second of june],calendar_set,commitment,audio-1497622505-headset.flac,Kyo puti Lee's birthday on the 22nd of June.
+6902,set a reminder up next month to get my oil changed,set a reminder up [date : next month] to get my [event_name : oil changed],calendar_set,commitment,audio-1497558578-headset.flac,"So, a reminder up next month to get my oil change."
+6856,give me a reminder notification on tomorrow's meeting at ten am,give me a reminder notification on [date : tomorrow's] [event_name : meeting] at [time : ten am],calendar_set,commitment,audio-1501773487-headset.flac,Give me a reminder notification on tomorrow's meeting at 10am.
+7061,give me a reminder twenty four hours before my friday meeting with edg,give me a reminder [time : twenty four hours before] my [date : Friday] [event_name : meeting] with [person : edg],calendar_set,commitment,audio-1494513299-headset.flac,Give me a reminder 24 hours before my fighting meeting with EDG.
+7122,could you repeat this event,could you repeat this event,calendar_set,commitment,audio-1490103759-headset.flac,Could you repeat this event?
+3761,get me up at eight am,get me up at [time : eight am],alarm_set,routine,audio-1497864692-headset.flac,Give me up at 8am.
+7697,set a reminder for this,set a reminder for this,calendar_set,commitment,audio-1490281638-headset.flac,Set to reminder for this.
+2334,add an alarm for tomorrow morning at six am,add an alarm for [date : tomorrow] [timeofday : morning] at [time : six am],alarm_set,routine,audio-1498572820-headset.flac,I'll do a laugh at tomorrow morning at 600 a.m.
+6819,olly there's a good band playing tonight at nine at jazz bar i want to go,olly there's a good [event_name : band playing] [timeofday : tonight] [time : at nine] at [place_name : jazz bar] i want to go,calendar_set,commitment,audio-1489503956-headset.flac,Only there is a good brand-plane at night at night at Jazbar. I want to go.
+7751,remind me every monday to take out the trash,remind me [general_frequency : every monday] to take out the trash,calendar_set,commitment,audio-1490195239-headset.flac,Remind me every Monday to take out this class.
+10563,can you create a list for me,can you create a list for me,lists_createoradd,task_personal,audio-1498574207-headset.flac,Can you create a list for me?
+11177,add a wrist watch to the shopping list,add a wrist watch to the [list_name : shopping list],lists_createoradd,task_personal,audio-1499090805-headset.flac,At risk was the shopping list.
+13457,tell me when i should leave for a scheduled event so that i am on time,tell me when i should leave for a scheduled event so that i am on time,calendar_set,commitment,audio-1498572332-headset.flac,Tell me what I should need for scheduled events that I must times.
+8261,send me an alert and hour before my next appointment,send me an alert and [time : hour before] my next [event_name : appointment],calendar_set,commitment,audio-1498572577-headset.flac,I mean alert an R before my next appointment.
+11140,set list,set list,lists_createoradd,task_personal,audio-1501758369-headset.flac,Let's get this.
+8414,remind me to go to dinner with dave on friday at five pm,remind me to go to [meal_type : dinner] with [person : dave] on [date : friday] at [time : five pm],calendar_set,task_personal,audio-1490201026-headset.flac,Mind me to go to dinner with Dave on Friday at 5pm.
+8474,add jane's birthday party for tomorrow two pm at one hundred and twenty three main on my calendar,add [person : jane's] [event_name : birthday party] for [date : tomorrow] [time : two pm] at [place_name : one hundred and twenty three main] on my calendar,calendar_set,commitment,audio-1495733835-headset.flac,Add James Bluff Day party for tomorrow at 2pm at 123 Main Street on my calendar.
+3212,remind me to do something then,remind me to do something then,calendar_set,task_personal,audio-1500035117-headset.flac,Remind me to do something then.
+5082,new alarm for six am,new alarm for [time : six am],alarm_set,routine,audio-1502302456-headset.flac,New alarm for 6am
+10636,create a list that is available,create a list that is available,lists_createoradd,task_personal,audio-1500036814-headset.flac,Create a link that is available.
+7293,schedule a one hour appointment for saturday,schedule a [time : one hour] appointment for [date : saturday],calendar_set,commitment,audio-1489497417-headset.flac,Schedule a 1 hour appointment for Saturday.
+7628,remind me when i am at the library to get a new library card,remind me when i am at the [place_name : library] to [event_name : get a new library card],calendar_set,commitment,audio-1494548474-headset.flac,Mime when I'm at a library to get a new library for
+1719,set alarm of only monday morning six am,set alarm of only [date : monday] [timeofday : morning] [time : six am],alarm_set,routine,audio-1497866427-headset.flac,Set a lamp off only Monday morning 6am
+8939,hayathis daughter baby shower,[person : hayathis] [event_name : daughter baby shower],calendar_set,commitment,audio-1492785294-headset.flac,"Hey, this daughter baby shower"
+10938,please add sugar to my grocery list,please add sugar to my [list_name : grocery] list,lists_createoradd,task_personal,audio-1501152374-headset.flac,Please add sugar to my crescendist.
+4081,i want to set an alarm when i'm driving home tomorrow to remember to stop at the store and get food,i want to set an alarm when i'm driving home [date : tomorrow] to remember to [event_name : stop at the store and get food],alarm_set,routine,audio-1498483490-headset.flac,I want to set an alarm when I'm driving home tomorrow to remember to stop at the store and get food.
+6897,remind me to pick up linda at five in the evening on seventh,remind me to [event_name : pick up] [person : linda] at [time : five] in the [timeofday : evening] on [date : seventh],calendar_set,task_personal,audio-1501775528-headset.flac,remind me to pick up Linda at 5 in the evening on 7
+0,wake me up at five am this week,wake me up at [time : five am] [date : this week],alarm_set,routine,audio-1497872816-headset.flac,Wake me up at 5 a.m. this week.
+939,set my alarm for seven am,set my alarm for [time : seven am],alarm_set,routine,audio-1490200796-headset.flac,That's my lump of 7am.
+5292,fix alarm,fix alarm,alarm_set,routine,audio-1501688321-headset.flac,6 alone.
+8300,save event for five pm to six pm on march eighteenth,save event for [time : five pm to six pm] on [date : march eighteenth],calendar_set,commitment,audio--1506521004.flac,"Save them for 5 years, 6 years on March 18."
+9153,please add dinner with mary to my calendar on saturday,please add [event_name : dinner with mary] to my calendar on [date : saturday],calendar_set,commitment,audio-1498565794.flac,Please add dinner with Mary to my calendar on Saturday.
+8280,i need to set reminder on fifteenth march,i need to set reminder on [date : fifteenth march],calendar_set,commitment,audio-1501152502-headset.flac,I have to set-reminded on 3rd 15th mark.
+4601,tell me when it is five pm,tell me when it is [time : five pm],alarm_set,routine,audio-1490356135-headset.flac,Tell me when it is 5pm.
+8618,remind me to water my plants every tuesday thursday and saturday,remind me to [event_name : water my plants] [general_frequency : every tuesday thursday and saturday],calendar_set,task_personal,audio-1490183473-headset.flac,"remind me to water my plants every Tuesday, Thursday and Saturday."
+8442,please modify my calendar with this event,please modify my calendar with this event,calendar_set,commitment,audio-1490288553-headset.flac,with this event.
+7981,send an alert before meeting,send an alert before [event_name : meeting],calendar_set,commitment,audio-1498482825-headset.flac,Send an alert before meeting.
+7055,schedule a meeting with matt at eleven am on thursday,schedule a [event_name : meeting] with [person : matt] at [time : eleven am] on [date : Thursday],calendar_set,commitment,audio-1501752485-headset.flac,We're meeting with Matt at 11am on Thursday.
+13043,i want sweet potato pie from a local bakery,i want sweet potato pie from a local bakery,lists_createoradd,task_personal,audio-1498568915-headset.flac,I want sweet potato pie from a local bakery.
+8366,make march eighteen a repeating appointment for pearl's birthday,make [date : march eighteen] a repeating [event_name : appointment for pearl's birthday],calendar_set,commitment,audio-1498564460-headset.flac,Make March 18 a repeating appointment for Paul's birthday.
+533,set an alarm for nine am,set an alarm for [time : nine am],alarm_set,routine,audio--1504194259-headset.flac,Set a lot for 9 a.m.
+7851,i have a meeting at noon today,i have a [event_name : meeting] at [timeofday : noon] [date : today],calendar_set,commitment,audio-1490198348-headset.flac,I have a meeting as noon today.
+7598,please set a meeting to discuss terrorism with fred on the next available meeting day,please set a [event_name : meeting] to [event_name : discuss terrorism] with [person : fred] on the [date : next available] meeting day,calendar_set,commitment,audio-1434530058-headset.flac,PDA please set a meeting to discuss terrorism with Fred. On the next available meeting
+6994,remind me at,remind me at,calendar_set,commitment,audio-1490103682-headset.flac,Reminds me at...
+9187,research the clients that will attend the meeting,research the clients that will attend [event_name : the meeting],calendar_set,commitment,audio-1490202039-headset.flac,Which clients will attend the meeting?
+4319,i need to get up at ten tomorrow,i need to get up at [time : ten] [date : tomorrow],alarm_set,routine,audio-1490961167-headset.flac,I need to get up at 10 tomorrow.
+11238,please create a new list for me,please create a new list for me,lists_createoradd,task_personal,audio-1490194760-headset.flac,She's creating a new list for me.
+8390,remind me of my meeting on,remind me of my [event_name : meeting] on,calendar_set,commitment,audio-1490968061-headset.flac,I'm on my meeting on the 23rd.
+940,turn my morning alarm on,turn my [timeofday : morning] alarm on,alarm_set,routine,audio-1501692468-headset.flac,Turn my morning color mode
+7955,put this event in a repeating pattern on my calendar,put this event in a repeating pattern on my calendar,calendar_set,commitment,audio-1502891226-headset.flac,Put this event in a repeating pattern on my calendar.
+7291,block one hour from ten tomorrow morning,block [time : one hour] from [time : ten] [date : tomorrow] [timeofday : morning],calendar_set,commitment,audio-1502195540-headset.flac,Block 1 hour from 10 tomorrow morning.
+6959,remind me about my meeting an hour before it begins,remind me about my [event_name : meeting] [time : an hour] before it begins,calendar_set,commitment,audio-1490283755-headset.flac,Remind me about my meeting an hour before it begins.
+8394,set a reminder every day at noon to take medication,set a reminder [general_frequency : every day] at [timeofday : noon] to take medication,calendar_set,commitment,audio-1498565165-headset.flac,That will remind every day at noon to take medication.
+10898,please add list of things to buy for party,please add list of things to buy for [event_name : party],lists_createoradd,task_personal,audio-1501767643-headset.flac,Please add a list of things to buy for party.
+10621,add paav bhaji in menu card,add paav bhaji in menu card,lists_createoradd,task_personal,audio-1502891882-headset.flac,Add puffing in the menu card.
+8635,can you remind me to order the turkey three weeks before thanksgiving,can you remind me to [event_name : order the turkey] three weeks before thanksgiving,calendar_set,task_personal,audio-1490202302-headset.flac,Can you remind me to order the turkey three weeks before Thanksgiving?
+5365,set alarm six am,set alarm [time : six am],alarm_set,routine,audio-1497262974-headset.flac,Set alarm 6am.
+8453,please put event into my calendar and mark it as a repeating event,please put event into my calendar and mark it as a repeating event,calendar_set,commitment,audio-1502100671-headset.flac,Please put event into my calendar and mark it as a repeating event.
+14549,make a list about selena gomez concert schedule,make a list about [person : selena gomez] concert schedule,lists_createoradd,task_personal,audio-1494421374-headset.flac,Make a list about Selena Gomez concert's kiddo.
+6083,create an alarm for today at ten am,create an alarm for [date : today] at [time : ten am],alarm_set,routine,audio--1504190990-headset.flac,We're adding an alarm for today at 10 a.m.
+7004,add a reminder to my calendar every year on this date,add a reminder to my calendar [general_frequency : every year] on this date,calendar_set,commitment,audio-1490799855-headset.flac,and a reminder to my calendar every year month week on this date.
+7073,search my calendar for my next event and notify me before it occurs,search my calendar for my next event and notify me [time : before] it occurs,calendar_set,commitment,audio-1490203165-headset.flac,"Cortana, search my calendar for my next event and notify me before it occurs."
+6901,remind me tomorrow at ten am about the meeting,remind me [date : tomorrow] at [time : ten am] about the [event_name : meeting],calendar_set,commitment,audio-1490355007-headset.flac,My meter tomorrow at 10am about the meeting.
+6732,add meeting reminder for sunday with my parents in law,add [event_name : meeting] reminder for [date : sunday] with my [relation : parents in law],calendar_set,commitment,audio-1501759114-headset.flac,I'm meeting on Binda for Sunday with my parents and all.
+7450,i need a meeting to be schedule with this person,i need a [event_name : meeting] to be schedule with this person,calendar_set,commitment,audio-1490371121-headset.flac,I need a meeting to be scheduled with this person.
+6936,remind me to take my medicine at nine am,remind me to take my [event_name : medicine] at [time : nine am],calendar_set,task_personal,audio-1497887735-headset.flac,Remind me to take my medicine at 9am.
+8906,set event date in calendar with others,set event date in calendar with others,calendar_set,commitment,audio-1490955830-headset.flac,Such a different date in Canada with others.
+6937,set reminder for noon to get lunch with boss,set reminder for [timeofday : noon] to get [event_name : lunch with boss],calendar_set,commitment,audio-1488985220.flac,set rebounder for long to get lunch with boss.
+8960,i want you to make alert in the evening about upcoming meeting,i want you to make alert in the [timeofday : evening] about upcoming [event_name : meeting],calendar_set,commitment,audio-1498573048-headset.flac,I want you to make a lot in the evening about upcoming evening.
+7919,new meeting add bill and malinda as attendees,New [event_name : meeting] add [person : bill and malinda] as attendees,calendar_set,commitment,audio-1490195332-headset.flac,New meeting and Bill and Melinda as attendees.
+6974,i have a function at washington tomorrow remind it,i have a [event_name : function] at [place_name : washington] [date : tomorrow] remind it,calendar_set,commitment,audio-1501758169-headset.flac,"I will find you not watching it tomorrow, remind me it."
+8289,set a reminder about todays faculty meeting at four,set a reminder about [date : todays] [event_name : faculty meeting] at [time : four],calendar_set,commitment,audio-1501694608-headset.flac,Set a reminder about today's faculty meeting at 4.
+8731,set a repeating reminder alarm for the facebook event i have to attend on seventh april,set a repeating reminder alarm for the [media_type : facebook] event i have to attend on [date : seventh april],alarm_set,routine,audio-1490263665-headset.flac,Set a repeating reminder alarm for the Facebook events I have attended on 7th April.
+8436,please set lunch meeting at twelve pm for every wednesday in march,please set [event_name : lunch meeting] at [time : twelve pm] for [general_frequency : every wednesday] in [date : march],calendar_set,commitment,audio-1502302255-headset.flac,Please set lunch meeting at 12 p.m. for every Wednesday in March.
+6865,set up a notification about tomorrow's meeting at ten,set up a notification about [date : tomorrow's] [event_name : meeting] at [time : ten],calendar_set,commitment,audio-1489671763-headset.flac,Set up a notification about tomorrow's meeting at 10.
+7151,for every odd numbered sunday set a reminder for,for every [general_frequency : odd numbered sunday] set a reminder for,calendar_set,commitment,audio-1497872929-headset.flac,For every odd numbered Sunday set airminer for
+6964,can you remind my next meeting with my boss one hour before it will happen,can you remind my next [event_name : meeting] with my [relation : boss] [time : one hour] before it will happen,calendar_set,commitment,audio-1501766652-headset.flac,Can you remind me my next meeting with my boss one hour before it'll happen?
+9124,show me the events in my work calendar for next week,show me the events in my [event_name : work] calendar for [date : next week],calendar_set,commitment,audio-1501765123-headset.flac,Show me the events in my work calendar for next week.
+7531,please add my pay days,please add my [event_name : pay days],calendar_set,commitment,audio-1490110359-headset.flac,Please add my paydays.
+7980,tell me when i have an event,tell me when i have an event,calendar_set,commitment,audio-1490108266.flac,Can we wear an event?
+3695,i want an alarm for three today,i want an alarm for [time : three] [date : today],alarm_set,routine,audio-1495734642-headset.flac,"Echo, I want an alarm for 3 o'clock today."
+8651,notify me about the event in my calendar,notify me about the event in my calendar,calendar_set,commitment,audio-1490288433-headset.flac,Tell me about the vent in my calendar.
+7718,hey send a meeting invite to mr ross for this friday's meeting and block my calendar for friday afternoon,hey send a [event_name : meeting] invite to [person : mr ross] for [date : this friday's] meeting and block my calendar for [date : friday afternoon],calendar_set,commitment,audio-1499360495.flac,"Hey, send me a invite to Mr. Ross for the Friday's meeting in Blockwood County for Friday afternoon."
+8387,create reminder for laundry at eight pm,create reminder for laundry at [time : eight pm],calendar_set,commitment,audio-1497872371-headset.flac,Create a rinder for laundry at 8pm.
+7140,set a reminder to notify me one hour before lunch meeting,set a reminder to notify me one hour before [event_name : lunch meeting],calendar_set,commitment,audio-1490287739-headset.flac,to remind her to notify me one hour before lunch meeting.
+2166,set an alarm for tomorrow at six in the morning,set an alarm for [date : tomorrow] at [time : six] in the [timeofday : morning],alarm_set,routine,audio-1502199609-headset.flac,"Alarm for tomorrow, Essex in the morning."
+11067,please add oranges to my grocery list,please add oranges to my [list_name : grocery] list,lists_createoradd,task_personal,audio-1502892790-headset.flac,I set oranges to my grocery list.
+8990,make event,make event,calendar_set,commitment,audio-1490020483-headset.flac,Make Event
+8358,remind me about this,remind me about this,calendar_set,commitment,audio-1502375199-headset.flac,Remind me about this.
+7567,birthday,[event_name : birthday],calendar_set,commitment,audio-1501152366-headset.flac,Perfect
+8269,thirty minute reminder on meeting for tuesday,[time : thirty minute] reminder on meeting for [date : tuesday],calendar_set,commitment,audio-1490286759-headset.flac,30 minute reminder on meeting for Tuesday.
+3213,set a new alarm for that time,set a new alarm for that time,alarm_set,routine,audio-1501691730-headset.flac,setting you alarm for that.
+8206,don't let me forget to buy a gift for my sister,don't let me forget to buy a gift for my [relation : sister],calendar_set,commitment,audio-1490201643-headset.flac,Don't let me forget to buy a gift for my sister.
+8126,schedule a meeting event in my calendar,schedule a [event_name : meeting] event in my calendar,calendar_set,commitment,audio-1490202788-headset.flac,Schedule a meeting event in my calendar.
+7461,invite people to the calendar event,invite people to the calendar event,calendar_set,commitment,audio-1497619657-headset.flac,Invite people to the calendar event.
+4890,set notifications on the current weather disasters in america,set notifications on the current [event_name : weather disasters] in [place_name : america],calendar_set,commitment,audio-1501773044-headset.flac,Set notifications on the current weather disasters in America.
+8992,show meetings,show [event_name : meetings],calendar_set,commitment,audio-1501150826-headset.flac,Show meetings
+7778,remind me what i am doing on sunday afternoon,remind me what i am doing on [date : sunday] [timeofday : afternoon],calendar_set,commitment,audio-1497884808-headset.flac,Enemy what I'm doing on Sunday afternoon.
+7666,will you mark that i have a meeting with tom at three tomorrow,will you mark that i have a [event_name : meeting] with [person : tom] at [time : three] [date : tomorrow],calendar_set,commitment,audio-1490021963-headset.flac,Will you mark that I have a meeting with Tom at 3 tomorrow?
+10501,add broccoli to my grocery list,add broccoli to my [list_name : grocery] list,lists_createoradd,task_personal,audio-1490262348-headset.flac,Add broccoli to my grocery list.
+8085,i'd like to set a date for this week,i'd like to set a date for [date : this week],calendar_set,commitment,audio-1488991488.flac,I would like to start a date for this week.
+7863,remind me to start supper this afternoon at five,remind me to start [event_name : supper] this [time : afternoon at five],calendar_set,task_personal,audio-1497264789-headset.flac,"From my main star, I prepared this often at 5 p.m."
+7606,meet with joe tomorrow at three,meet with [person : joe] [date : tomorrow] at [time : three],calendar_set,commitment,audio-1488989319.flac,Meet with John tomorrow as we.
+7262,create a notification reminder for meeting tomorrow,create a notification reminder for [event_name : meeting] [date : tomorrow],calendar_set,commitment,audio-1490110411-headset.flac,Create a notification reminder for a meeting tomorrow.
+8204,please remind me to go to the post office,please remind me to go to the post office,calendar_set,task_personal,audio-1501763599-headset.flac,Please remind me to go to the post office.
+8948,add event for meeting with james,add event for [event_name : meeting] with [person : james],calendar_set,commitment,audio-1501692447-headset.flac,Add event for meeting with dreams.
+10513,i want to make this week's shopping list,i want to make this [time : week's] [list_name : shopping] list,lists_createoradd,task_personal,audio-1498564761-headset.flac,I want to make this week's shopping list.
+8415,add a meeting at the office with brian for three pm on tuesday,add a [event_name : meeting] at the [place_name : office] with [person : brian] for [time : three pm] on [date : tuesday],calendar_set,commitment,audio-1494421764-headset.flac,At a meeting at the office with Brian for 3 p.m. on Tuesday
+6923,set reminder to print the documents on tuesday morning,set reminder to [event_name : print the documents] on [date : Tuesday] [timeofday : morning],calendar_set,commitment,audio-1434530531-headset.flac,Set 3-minded to print documents on the...
+8388,i want to do laundry at eight pm create reminder,i want to do laundry at [time : eight pm] create reminder,calendar_set,commitment,audio-1500036958-headset.flac,I want to do Laundry at 8 p.m. Cue a reminder.
+7278,remind me of rita's birthday twenty four hours in advance,remind me of [person : rita's] [event_name : birthday] [time : twenty four hours in advance],calendar_set,commitment,audio-1502216607-headset.flac,I may or free this birthday adventure for hours in advance
+7477,remind me on fifth march of every year to arrange wedding anniversary presents,remind me on [date : fifth march] of [general_frequency : every year] to arrange [event_name : wedding anniversary presents],calendar_set,commitment,audio-1498570719-headset.flac,Remind me on 5th March of every year to arrange wedding anniversary presents.
+7956,can you make this event repetitive,can you make this event repetitive,calendar_set,commitment,audio-1501414872-headset.flac,Can you make this even repetitive?
+8730,please set a reminder in my calendar for my meeting on march twenty five,please set a reminder in my calendar for my [event_name : meeting] on [date : march twenty five],calendar_set,commitment,audio-1500898125-headset.flac,Please send a reminder in my Canada for my meeting on March 25th.
+8110,please add supervision to my calendar,please add [event_name : supervision] to my calendar,calendar_set,commitment,audio-1490355101-headset.flac,Please add supervision to my calendar.
+8535,will you remind me of the dentist appointment i have in two hours,will you remind me of the [event_name : dentist appointment] i have in [time : two hours],calendar_set,commitment,audio-1498564709-headset.flac,You remind me of the dentist appointment I have in two hours.
+6774,set an event for friday,set an event for [date : Friday],calendar_set,commitment,audio-1490193119-headset.flac,Set an event for Friday.
+7712,hey olly cancel all my other meetings and calls for second march as it is jim's birthday tag it as an event in your calendar,hey olly cancel all my other meetings and calls for [date : second march] as it is [person : jim's] [event_name : birthday] tag it as an event in your calendar,calendar_set,commitment,audio-1490705079-headset.flac,"Hey Oli, cancel all my other meetings and calls for 2nd of March as it's Jim's birthday, tag it as an event in your calendar."
+6789,set meeting with joanna on saturday four pm,set meeting with [person : joanna] on [date : Saturday] [time : four pm],calendar_set,commitment,audio-1497861959-headset.flac,Set meeting with Joanna on Saturday 4pm
+7711,hey cancel all my other meetings and calls for second march as it is jim's birthday tag it as an event in your calendar,hey cancel all my other meetings and calls for [date : second march] as it is [person : jim's] [event_name : birthday] tag it as an event in your calendar,calendar_set,commitment,audio-1499698108-headset.flac,"Hey, cancel all my other meetings and calls for a second March and it's James birthday tag. It is an event in your calendar."
+7199,set a notification for three two and one hours before next week's english final,set a notification for three two and one hours before [date : next week's] [event_name : english final],calendar_set,commitment,audio-1497866410-headset.flac,"Set a notification for 3, 2, and 1 hours before next week's English final."
+7161,remind this event in future,remind this event in future,calendar_set,commitment,audio-1498646450-headset.flac,Remind this event in the future.
+10996,add bob to my list of contacts,add [person : bob] to my [list_name : list of contacts],lists_createoradd,task_personal,audio-1499696859-headset.flac,Add Bob to my list of contacts.
+174,set wake up thursday seven am,set wake up [date : Thursday] [time : seven am],alarm_set,routine,audio-1490108056-headset.flac,That week up Thursday 7am.
+7100,remind me the day before my car is due,remind me the [date : day before] my [event_name : car] is due,calendar_set,commitment,audio-1501688355-headset.flac,Remind me the day before my car is due.
+8541,remind me please,remind me please,calendar_set,commitment,audio-1498565265-headset.flac,Remind me please.
+7209,can you remind me to take the garbage out on tuesday,can you remind me to take the [event_name : garbage out] on [date : tuesday],calendar_set,task_personal,audio-1490956835-headset.flac,"Yeah, can you remind me to take the Gabbage out on Tuesday?"
+7355,remind me to check the stew at six o'clock,remind me to [event_name : check the stew] at [time : six] o'clock,calendar_set,task_personal,audio-1498568544-headset.flac,Your mind needs to check this through at 6 o'clock.
+7556,set my calendar to remind me to buy groceries every friday,set my calendar to remind me to [event_name : buy groceries] [general_frequency : every friday],calendar_set,task_personal,audio-1490958044-headset.flac,I'm cutting the two remind me to buy groceries every Friday.
+10608,search the item,search the item,lists_createoradd,task_personal,audio-1498566094-headset.flac,Search the item.
+11026,add new item to list,add new item to list,lists_createoradd,task_personal,audio-1494512272-headset.flac,Add new item to list.
+7559,remind me tonight to pick up my dry cleaning at eight pm,remind me tonight to [event_name : pick up my dry cleaning] at [time : eight pm],calendar_set,commitment,audio-1490264244-headset.flac,Revind me tonight to pick up a clean at 8pm.
+8653,remind me of the event in my calendar,remind me of the event in my calendar,calendar_set,commitment,audio-1502893774-headset.flac,Remind me of the event in my calendar.
+7098,add my car payment on the twelfth in my calendar,add my [event_name : car payment] on the [date : twelfth] in my calendar,calendar_set,commitment,audio-1498484151-headset.flac,and my car payment on the 12th in my calendar.
+7520,remind me everyday at two pm for lunch,remind me [general_frequency : everyday] at [time : two pm] for [meal_type : lunch],calendar_set,commitment,audio-1501756768-headset.flac,Remind me every day at 2pm for lunch.
+7039,set me a meeting next tuesday at eleven am with jesse,set me a [event_name : meeting] next [date : tuesday] at [time : eleven am] with [person : jesse],calendar_set,commitment,audio-1501767235-headset.flac,Set me a meeting next Tuesday at 11 a.m. with Jessie.
+6815,remind me my mom's birthday a week before,remind me my [relation : mom's] [event_name : birthday] [time : a week before],calendar_set,commitment,audio-1498759003-headset.flac,It might mean my mother's first day of work before.
+11029,add to list,add to list,lists_createoradd,task_personal,audio-1501753164-headset.flac,to this
+7194,i am having a meeting on tomorrow set it,i am having a [event_name : meeting] on [date : tomorrow] set it,calendar_set,commitment,audio-1490199005-headset.flac,"I am having a meeting on tomorrow, set it."
+7726,i need to something every monday set a reminder for it,i need to something [general_frequency : every monday] set a reminder for it,calendar_set,commitment,audio-1490264275-headset.flac,"I need to run every Monday, set a reminder for it."
+8449,set a reminder for my daughters birthday,set a reminder for my [relation : daughters] [event_name : birthday],calendar_set,commitment,audio-1490202414-headset.flac,Set a reminder for my daughter's birthday.
+6539,mark today as the start of my diet,mark [date : today] as [event_name : the start of my diet],calendar_set,commitment,audio-1490261908-headset.flac,"Well, today is the start of my diet."
+8079,set a reminder in one hour for my bread to bake,set a reminder in [time : one hour] for my [event_name : bread to bake],calendar_set,commitment,audio-1501689405-headset.flac,Reminder in a one hour for my red to be.
+9155,on friday please put dentist appointment at three,on [date : friday] please put [event_name : dentist appointment] at [time : three],calendar_set,commitment,audio-1490705637-headset.flac,On Friday please put dentist appointment at 3.
+3694,i need an alarm set for five hundred and thirty am tomorrow,i need an alarm set for [time : five hundred and thirty am] [date : tomorrow],alarm_set,routine,audio--1505407222-headset.flac,I need an alarm set for 530 am tomorrow.
+9156,remind,remind,calendar_set,commitment,audio-1498571748-headset.flac,Remind.
+9114,make a repeating reminder for this calendar event,make a repeating reminder for this calendar event,calendar_set,commitment,audio-1490202461-headset.flac,for this calendar.
+7686,include mike and jack to festival calendar,include [person : mike] and [person : jack] to [event_name : festival] calendar,calendar_set,commitment,audio-1490956062-headset.flac,include my conjecture to festival calendar.
+6746,set first week of june as holiday in my calendar,set [time : first week of june] as [event_name : holiday] in my calendar,calendar_set,commitment,audio-1490194916-headset.flac,Set first week of June as holiday in my calendar.
+7565,meeting reminder,[event_name : meeting] reminder,calendar_set,commitment,audio-1434532783-headset.flac,Meeting reminder.
+7583,buddy adding event in your calendar,buddy adding event in your calendar,calendar_set,commitment,audio-1497879765-headset.flac,but adding event in your calendar.
+6764,remind me to wash the windows,remind me to [event_name : wash the windows],calendar_set,task_personal,audio-1501767928-headset.flac,Remind me to wash the windows.
+8035,remind me to get the oil changed,remind me to get the oil changed,calendar_set,task_personal,audio-1492779302-headset.flac,Remind me to get a world changed.
+8568,will you send a calendar invite out to james and alice for brunch at eleven am on tuesday,will you send a calendar invite out to [person : james and alice] for [event_name : brunch] at [time : eleven am] on [date : tuesday],calendar_set,commitment,audio-1502215751-headset.flac,We'll send the calendar invite to James and Alice for brunch at 11am on Tuesday.
+7563,remind me about the meeting tomorrow one hour before,remind me about the [event_name : meeting] [date : tomorrow] one hour before,calendar_set,commitment,audio-1501692209-headset.flac,Remind me about the meeting tomorrow one hour before.
+8073,schedule a sales meeting for wednesday at eleven am,schedule a [event_name : sales meeting] for [date : wednesday] at [time : eleven am],calendar_set,commitment,audio-1497368822.flac,schedule a sales meeting for Wednesday at 11am.
+9059,alert me at the time of the event,alert me at the time of the event,calendar_set,commitment,audio-1490289548-headset.flac,Let me at the time of this event
+5043,set my alarm for twelve pm,set my alarm for [time : twelve pm],alarm_set,routine,audio-1495377655-headset.flac,My alarm for 12 PM.
+7181,wake me at six am thursday so i have time for the meeting,wake me at [time : six am] [date : thursday] so i have time for the [event_name : meeting],calendar_set,commitment,audio--1505323793-headset.flac,Wait me at 6am Thursday so I have time for the meeting.
+8125,create a meeting event in my calendar,create a [event_name : meeting] event in my calendar,calendar_set,commitment,audio-1497862596-headset.flac,Create a meeting event in my calendar.
+10738,can you please add an item to my grocery list,can you please add an item to my [list_name : grocery] list,lists_createoradd,task_personal,audio-1490370600-headset.flac,Can you please add an item to my gloss release?
+9053,set a meeting event reminder with mona on tuesday,set a [event_name : meeting] event reminder with [person : mona] on [date : tuesday],calendar_set,commitment,audio-1497882495-headset.flac,That a meeting event reminder with Mona on Tuesday.
+10858,new list,new list,lists_createoradd,task_personal,audio-1497264670-headset.flac,New Laced.
+11157,please create new list,please create new list,lists_createoradd,task_personal,audio-1502200565-headset.flac,Please create new list.
+10600,please update my grocery list with one gallon of two percent milk,please update my [list_name : grocery] list with one gallon of two percent milk,lists_createoradd,task_personal,audio-1499266611-headset.flac,Please add my grosser's least getting of 2% milk.
+6725,remind me about my schedule for the afternoon,remind me about my schedule for the [timeofday : afternoon],calendar_set,commitment,audio-1501692566-headset.flac,Remind me about my schedule for this afternoon.
+8694,the event will include walter and gemma,the event will include [person : walter] and [person : gemma],calendar_set,commitment,audio-1495734439-headset.flac,The event will include and
+6973,add a reminder of a conference for tomorrow in new york,add a reminder of a [event_name : conference] for [date : tomorrow] in [place_name : new york],calendar_set,commitment,audio-1497360215.flac,At every Monday of a conference for tomorrow in New York.
+7654,mark april twenty as my brother's birthday,mark [date : april twenty] as my [relation : brother's] [event_name : birthday],calendar_set,commitment,audio-1500038539.flac,"Mark, after all the training, I signed Brothers for a State."
+10678,add spent five dollars in my expenses list,add spent five dollars in my [list_name : expenses] list,lists_createoradd,task_personal,audio-1498574226-headset.flac,I spent $5 in my expenses.
+8640,i want to make a note on my calendar for the event tomorrow at the library,i want to make a note on my calendar for the event [date : tomorrow] at [place_name : the library],calendar_set,commitment,audio-1498572912-headset.flac,I want to make a note on my calendar for the event tomorrow at the library.
+7894,give me an update on the election in one hour,give me an update on the [event_name : election] in [time : one hour],calendar_set,commitment,audio-1490369455-headset.flac,Can you give me an update on the election in one hour?
+7057,schedule a lunch meeting with brent on wednesday at noon,schedule a [event_name : lunch meeting] with [person : brent] on [date : Wednesday] at [timeofday : noon],calendar_set,commitment,audio-1502100124-headset.flac,Schedule a lunch meeting with Brent on Wednesday at noon.
+7557,make a reminder of location a on calendar,make a reminder of location a on calendar,calendar_set,commitment,audio-1490289475-headset.flac,a reminder of location A on calendar.
+7767,add practice to calendar on feb four at king's park at two pm,add practice to calendar on [date : feb four] at [place_name : king's park] at [time : two pm],calendar_set,commitment,audio-1500036086-headset.flac,Practice to calendar on Feb 4 at Kings Park at 2pm
+7257,please remind me to call mom in half an hour,please remind me to [event_name : call] [relation : mom] [time : in half an hour],calendar_set,task_personal,audio-1498486381-headset.flac,Please remind me to call mom in half an hour.
+13178,remind me to contact old friends that i have not talked with in six months before they pass,remind me to contact old friends that i have not talked with in six months before they pass,calendar_set,task_personal,audio-1490960740-headset.flac,Remind me to contact old friends that I have not talked within six months before they passed.
+5568,set alarm at nine am on next sunday,set alarm at [time : nine am] on [date : next sunday],alarm_set,routine,audio--1505405834-headset.flac,Sit alone at 9am on next Sunday.
+10472,help me start my kitchen list,help me start my [list_name : kitchen] list,lists_createoradd,task_personal,audio-1501414480-headset.flac,Help me start my key to the list.
+7455,remind me about the party tomorrow,remind me about the [event_name : party] [date : tomorrow],calendar_set,commitment,audio-1501778696-headset.flac,Remind me about the plot you tomorrow.
+10915,begin a new list,begin a new list,lists_createoradd,task_personal,audio-1490261675-headset.flac,Begin a new list.
+6836,remind me about the meeting tomorrow at six,remind me about the [event_name : meeting] [date : tomorrow] at [time : six],calendar_set,commitment,audio-1497884714-headset.flac,Reminding me about a million tomorrow at six.
+8868,remind me to call mom every tuesday at ten am,remind me to [event_name : call mom] [general_frequency : every tuesday] at [time : ten am],calendar_set,task_personal,audio-1499692525.flac,Reminding to call home every Tuesday at 10am.
+10812,add bananas to my shopping list,add bananas to my [list_name : shopping] list,lists_createoradd,task_personal,audio-1501764818-headset.flac,Banana is to my shopping list.
+9193,please set this date to repeat,please set this date to repeat,calendar_set,commitment,audio-1497872794-headset.flac,Please set the state on repeat.
+7808,remind me i take mom to the hairdresser's thursday at one thousand one hundred am,remind me i take [relation : mom] to the [relation : hairdresser's] [date : thursday] at [time : one thousand one hundred am],calendar_set,commitment,audio-1501764076-headset.flac,Mimey I take mom to the hairdressers Thursdays at 1.1.100 am.
+10982,put hamburger on my grocery list,put hamburger on my [list_name : grocery] list,lists_createoradd,task_personal,audio-1497860927-headset.flac,Put hamburger on my cross-leaf lid.
+9043,upcoming events in calendar,[event_name : upcoming events] in calendar,calendar_set,commitment,audio-1498568891-headset.flac,upcoming events in calendar
+5051,make a new alarm,make a new alarm,alarm_set,routine,audio-1498566837-headset.flac,Alarm.
+7970,remind me the wedding on time to buy a present,remind me the [event_name : wedding] on time to buy a present,calendar_set,commitment,audio-1490195692-headset.flac,Remind me the wedding on time to buy a present.
+7664,add a lunch with mike,add a [meal_type : lunch] with [person : mike],calendar_set,commitment,audio-1490006623-headset.flac,I realized with my
+1913,wake me up at five am,wake me up at [time : five am],alarm_set,routine,audio-1490261145-headset.flac,Wake me up at 5am.
+7463,inform my group that the new meeting date is tomorrow,inform my group that the new [event_name : meeting] date is [date : tomorrow],calendar_set,commitment,audio-1502197033-headset.flac,Inform my group that the new meeting date is tomorrow.
+7044,remind me to start getting ready by five pm please,remind me to start [event_name : getting ready] by [time : five pm] please,calendar_set,task_personal,audio-1501754163-headset.flac,Remind me to start getting ready by 5 p.m. Please
+7843,let me know in two hours that i have to leave for my violin lesson that's at four pm at musicworkz,let me know in [time : two hours] that i have to leave for my [event_name : violin lesson] that's at [time : four pm] at [place_name : musicworkz],calendar_set,commitment,audio-1498572946-headset.flac,Let me know in two hours that I have to leave for my violin lesson that's at 4pm and music works.
+8260,please alert me a day before jeff's birthday,please alert me [date : a day before] [person : jeff's] [event_name : birthday],calendar_set,commitment,audio-1501773424-headset.flac,Please alert me a day before just Thursday.
+8741,set an alert for two pm,set an alert for [time : two pm],alarm_set,routine,audio-1498578458.flac,7 alerts for 2pm
+8553,add a meeting to my calendar for nine am with tom,add a [event_name : meeting] to my calendar for [time : nine am] with [person : tom],calendar_set,commitment,audio-1434541510-headset.flac,I didn't meeting to make on for 9 a.m. at all.
+8004,dorothy needs to talk to me about our divorce can you please set up a meeting as soon as i am available,[person : dorothy] needs to talk to me about our [event_name : divorce] can you please set up a [event_name : meeting] as soon as i am available,calendar_set,commitment,audio-1488969846.flac,Dorothy needs to talk to me about our divorce. Can you please set up a meeting as soon as I am available?
+8765,put my dinner at red lobster on the calendar for today at nine,put my [meal_type : dinner] at [place_name : red lobster] on the calendar for [date : today] at [time : nine],calendar_set,commitment,audio-1490288992-headset.flac,My dinner at Red Blob store on the calendar for today at Nanoco.
+8598,remind me to pick up mark at the airport at six pm,remind me to [event_name : pick up mark] at the [place_name : airport] at [time : six pm],calendar_set,task_personal,audio-1501698699-headset.flac,Remind me to pick up Mark at the airport at 6 p.m.
+10792,i need to make a list,i need to make a list,lists_createoradd,task_personal,audio-1501691728-headset.flac,I need to make a less
+7902,set a meeting between myself and john at two pm tomorrow,set a [event_name : meeting] between myself and [person : john] at [time : two pm] [date : tomorrow],calendar_set,commitment,audio-1434528983-headset.flac,Set meeting between myself and John at 2K and tomorrow.
+10471,i need to create a new to do list,i need to create a new [list_name : to do] list,lists_createoradd,task_personal,audio-1490359951-headset.flac,I need to create a new to-do list.
+10645,add red wine to my shopping list,add red wine to my [list_name : shopping list],lists_createoradd,task_personal,audio-1497029701-headset.flac,I'll drag line to my shopping list
+8466,i have a nine am meeting on wednesday send me a reminder,i have a [time : nine am] [event_name : meeting] on [date : wednesday] send me a reminder,calendar_set,commitment,audio-1490369061-headset.flac,I have a 9am meeting on Wednesday send me a reminder
+10893,make a grocery list please,make a [list_name : grocery] list please,lists_createoradd,task_personal,audio-1501151411-headset.flac,Make a grocery list
+8825,send me a reminder of my meeting with tom next friday,send me a reminder of my [event_name : meeting] with [person : tom] next [date : friday],calendar_set,commitment,audio-1497622244-headset.flac,Send me a reminder of my meeting with Tom next Friday.
+9014,please set a notification on twenty third october about meeting with my colleague,please set a notification on [date : twenty third october] about [event_name : meeting] with my [relation : colleague],calendar_set,commitment,audio-1497558203-headset.flac,Please set a notification on 20th October about meeting with my colleague.
+13177,remind me to move so there is no weight gain,remind me to move so there is no weight gain,calendar_set,task_personal,audio-1502893978-headset.flac,Remind me to move my table so there is no weight gain.
+8907,mention event in calendar with others,mention event in calendar with others,calendar_set,commitment,audio-1497869914-headset.flac,Mission Event in Calendar with others.
+7170,it's my mother's birthday today send me a notification every year on this date,it's my [relation : mother's] [event_name : birthday] [date : today] send me a notification [general_frequency : every year] on this date,calendar_set,commitment,audio-1497885530-headset.flac,It's my mother's birthday today sent me a notification every year on this date.
+7918,calendar event send invite bill malinda,calendar event send invite [person : bill malinda],calendar_set,commitment,audio-1490198400-headset.flac,calendar event send invite Bill Melinda
+3600,remind me after ten minutes,remind me [time : after ten minutes],calendar_set,commitment,audio-1490017809-headset.flac,Remind me after 10 minutes.
+7774,add shopping to my calendar for tomorrow,add shopping to my calendar for [date : tomorrow],calendar_set,commitment,audio-1497557881-headset.flac,I'll chop into my calendar for tomorrow.
+8290,open a reminder about next weeks managers meeting on tuesday,open a reminder about [date : next weeks] [event_name : managers meeting] on [date : tuesday],calendar_set,commitment,audio-1499690724-headset.flac,Open a reminder about next week's manager's meeting on Tuesday.
+4930,turn on an alarm for three thirty pm today,turn on an alarm for [time : three thirty pm] [date : today],alarm_set,routine,audio-1497555803-headset.flac,Turn on alarm for 300 and 30 pm today.
+7000,new event,new event,calendar_set,commitment,audio-1497886447-headset.flac,new event.
+8107,set a birthday event for martin,set a [event_name : birthday] event for [person : martin],calendar_set,commitment,audio--1506078301-headset.flac,Set above the event formatting.
+612,please ring the wake up alarm at eight am next saturday,please ring the [alarm_type : wake up] alarm at [time : eight am] next [date : saturday],alarm_set,routine,audio--1504192272-headset.flac,Please ring the wake up alarm at 8am next Saturday.
+9110,exhibition two thousand and seventeen mass on mar twenty five make a note of it on the corresponding date,[event_name : exhibition two thousand and seventeen mass] on [date : mar twenty five] make a note of it on the corresponding date,calendar_set,commitment,audio-1501688227-headset.flac,Education 2017 mask on March 25 makes a note of it in the corresponding date.
+7196,remind me the meeting with allen on fifteenth march,remind me the [event_name : meeting] with [person : allen] on [time : fifteenth march],calendar_set,commitment,audio-1490369552-headset.flac,Remind me the meeting with Ellen on 15th.
+3398,please set my alarm for five pm,please set my alarm for [time : five pm],alarm_set,routine,audio-1501758877-headset.flac,Please set my alarm for 5 pm.
+8245,i would need to be notified of church services on sundays at eleven am,i would need to be notified of [event_name : church services] on [date : sundays] at [time : eleven am],calendar_set,commitment,audio-1501688010-headset.flac,I would need to be notified of child services on Sundays at 11am.
+7549,i want a meeting till three o clock,i want a [event_name : meeting] till [time : three o clock],calendar_set,commitment,audio-1490202363-headset.flac,I want to meeting till three o'clock.
+7730,i need you to mark next monday,i need you to mark next [date : monday],calendar_set,commitment,audio-1501158568-headset.flac,I need you to mark next Monday.
+7449,please schedule a meeting with this person,please schedule a [event_name : meeting] with this person,calendar_set,commitment,audio-1501686161-headset.flac,Please schedule a meeting with this person.
+10712,create a new list,create a new list,lists_createoradd,task_personal,audio-1490104396-headset.flac,Create a new list
+10816,create a playlist,create a playlist,lists_createoradd,task_personal,audio-1501687354-headset.flac,to new playlist
+5475,i need you to get me up at six am,i need you to get me up at [time : six am],alarm_set,routine,audio--1505406609-headset.flac,I need you to get me up at 6am.
+10346,start a game and play with me,start a game and play with me,play_game,other,audio-1494416358-headset.flac,Start a game and play with me.
+201,delete the alarm i just set,delete the alarm i just set,alarm_remove,other,audio--1504191551-headset.flac,Delete the alarm adjust set.
+12724,find me a train ticket to boston,find me a [transport_type : train] ticket to [place_name : boston],transport_ticket,other,audio-1490286400-headset.flac,Me trying to get to Boston.
+355,what day of the week is first april,what day of the week is [date : first april],datetime_query,other,audio-1502891526-headset.flac,What day of the week is first April?
+4874,enter song suggestion,enter song suggestion,music_likeness,other,audio-1501778757-headset.flac,Into some congestion.
+15777,tell me if i have new emails,tell me if i have new emails,email_query,other,audio-1490198424-headset.flac,Tell me if I have new emails.
+14253,how much is amazon stock,how much is [business_name : amazon] stock,qa_stock,other,audio-1497881021-headset.flac,How much is Amazon stocked?
+1874,add song to running list,add song to [playlist_name : running] list,music_likeness,other,audio-1490204482-headset.flac,Add song to running list.
+9620,can i get delilah on the radio in the bedroom,can i get delilah on the radio in the [house_place : bedroom],play_radio,other,audio-1500980502-headset.flac,Can I get Delilah on the radio in the bedroom?
+11610,give me the list of circus shows going on in the city right now,give me the list of [event_name : circus] shows going on in the [place_name : city] right now,recommendation_events,other,audio-1490103625-headset.flac,Give me the list of circus shows going on in the city right now.
+10288,play me a game of tic tac toe,play me a game of [game_name : tic tac toe],play_game,other,audio-1501407056-headset.flac,Play me a game of tic-tac-toe
+10538,please repeat my shopping list,please repeat my [list_name : shopping] list,lists_query,other,audio-1501693739-headset.flac,Please repeat my shopping list.
+11361,shadi special podcast play it,[podcast_name : shadi special] podcast play it,play_podcasts,other,audio-1498563608-headset.flac,Shadi Special Podcast Play It
+10824,olly clear the list,olly clear the list,lists_remove,other,audio-1488991806.flac,Only clear the list.
+14490,when was the bolshoi theatre constructed,when was the [place_name : bolshoi theatre] constructed,qa_factoid,other,audio-1498570406-headset.flac,It was the ball-shoe theater constructed.
+15321,has anyone commented on my status,has anyone commented on my status,social_query,other,audio-1502100588-headset.flac,Has anyone commented on my status?
+7496,do i have appointments today,do i have [event_name : appointments] [date : today],calendar_query,other,audio-1497871913-headset.flac,Do I have appointment today?
+2412,could you tell me the time in london,could you tell me the time in [place_name : london],datetime_query,other,audio-1490007224-headset.flac,You have me the time of London.
+16098,check unread emails from amy,check unread emails from [person : amy],email_query,other,audio-1501689004-headset.flac,Check unread emails from Amy.
+5128,confirm a travel ticket to german,confirm a travel ticket to [place_name : german],transport_ticket,other,audio-1501776833-headset.flac,I'm from a travel ticket to Germany.
+5554,is this song ed sheeran,is this song [artist_name : ed sheeran],music_query,other,audio-1490199090-headset.flac,"Just sewing it, you're in."
+13685,has the dollar rate increased,has the dollar rate increased,qa_currency,other,audio-1501752923-headset.flac,The dollar rate increased.
+15444,two thumbs down at company name,two thumbs down [business_name : @companyname],social_post,other,audio-1501691744-headset.flac,two thumbs down at company name
+3030,i love this song,i love this song,music_likeness,other,audio-1502893803-headset.flac,I love this song.
+9303,play the oldies station,play the [radio_name : oldies station],play_radio,other,audio-1434531424-headset.flac,Place all these stations.
+4921,turn off my first alarm,turn off my first alarm,alarm_remove,other,audio-1490181306-headset.flac,Turn off my first alarm.
+6477,baseball scores,baseball scores,general_quirky,other,audio-1490355968-headset.flac,Face boost cause.
+14453,exchange rate of euro with dollar,exchange rate of [currency_name : euro] with [currency_name : dollar],qa_currency,other,audio-1490291360-headset.flac,exchange rate of euro with dollar
+3330,i want to hear a joke,i want to hear a joke,general_joke,other,audio-1490182719-headset.flac,I want to hear a joke.
+10048,how do i make a turkey,how do i make a [food_type : turkey],cooking_recipe,other,audio-1495371459-headset.flac,"What do I make, Jack?"
+12685,what is the traffic like right now,what is the traffic like right now,transport_traffic,other,audio-1490369262-headset.flac,What is the traffic like right now?
+4266,what is todays weather,what is [date : todays] weather,weather_query,other,audio-1501686898-headset.flac,This today's video
+16163,who mailed me yesterday,who mailed me [date : yesterday],email_query,other,audio-1497268778-headset.flac,Who mailed me yesterday?
+4361,give me some good sounds,give me some good sounds,play_music,other,audio-1500980180-headset.flac,Give me some good sounds.
+576,play all by playlist,play all by playlist,play_music,other,audio-1434533562-headset.flac,"Play all bad, all buy playlist."
+11922,please look up local restaurants that are open now,please look up local [business_type : restaurants] that are open now,recommendation_locations,other,audio-1490957049-headset.flac,Place the cup local restaurants that are open now.
+6178,should i wear a jacket,should i wear a [weather_descriptor : jacket],weather_query,other,audio-1501692400-headset.flac,Should I wear a jacket?
+974,what time is it in new york now,what time is it in [place_name : new york] now,datetime_query,other,audio-1497274696-headset.flac,What time is it in New York now?
+15655,tweet to google costumer service my new nexus phone stop working help please,[media_type : tweet] to google costumer service my new nexus phone stop working help please,social_post,other,audio-1490957695-headset.flac,"Tweet to Google customer service. My new next shoes face, stopped walking, working. Help please."
+6663,vacation spots,vacation spots,general_quirky,other,audio-1501757238-headset.flac,Vacation spots.
+7817,is this true about this date,is this true about this date,calendar_query,other,audio-1500036907-headset.flac,And it is true about the state.
+15229,is there any post from my friend mike in facebook,is there any post from my [relation : friend] [person : mike] in [media_type : facebook],social_query,other,audio-1494422741-headset.flac,Is there any post for my friend Mike in Facebook?
+86,what date is it today,what date is it [date : today],datetime_query,other,audio-1490106169-headset.flac,What day is it today?
+17108,give me my latest email,give me my latest email,email_query,other,audio-1498757821-headset.flac,Name give me my latest email
+15565,can you let delta know i'm never using them again,can you let [business_name : delta] know i'm never using them again,social_post,other,audio-1502195930-headset.flac,Can you let doubter know I'm never using them again?
+14963,internet please,internet please,general_quirky,other,audio-1490367390-headset.flac,"PGA, Internet, please."
+16717,could you please email john saying i'm on leave,could you please email [person : john] saying i'm on leave,email_sendemail,other,audio-1500900650-headset.flac,Could you send email to John saying I'm on leave?
+13359,what is twelve plus one hundred and ninety six,what is twelve plus one hundred and ninety six,qa_maths,other,audio-1501752750-headset.flac,This 12 plus 196
+17042,write an email for john@gmail dot com,write an email for [email_address : john@gmail dot com],email_sendemail,other,audio-1498566376-headset.flac,Email for John at gmail.com
+1374,can you turn up your volume,can you turn up your volume,audio_volume_up,other,audio-1497868759-headset.flac,Can you turn up your volume?
+14933,tell me the info about india's geography,tell me the info about [place_name : india's] geography,qa_factoid,other,audio-1498574264-headset.flac,about India's geography.
+1372,what's a good joke,what's a [joke_type : good] joke,general_joke,other,audio-1501753652-headset.flac,It's a good joke.
+17142,what's in my inbox since we last looked,what's in my [email_folder : inbox] since we last looked,email_query,other,audio-1501686561-headset.flac,in my inbox since we last looked.
+15318,i want to thank everyone for the birthday wishes,i want to thank everyone for the [event_name : birthday] wishes,social_post,other,audio-1490108508-headset.flac,I want to thank everyone for the birthday wishes.
+9577,change the station to eighty two point four,change the station to [radio_name : eighty two point four],play_radio,other,audio-1490020401-headset.flac,Change the station to 82.4.
+4871,how is it outside,how is it outside,weather_query,other,audio-1497869976-headset.flac,How is it outside?
+5525,mute for one hour,mute for [time : one hour],audio_volume_mute,other,audio--1504191382-headset.flac,Mute for a while.
+4305,play the song major tom by david bowie,play the song [song_name : major tom] by [artist_name : david bowie],play_music,other,audio-1502216029-headset.flac,This is some major Tom by David Bowie.
+3550,put on some led zeppelin,put on some [artist_name : led zeppelin],play_music,other,audio-1498569392-headset.flac,Put on some lead daphne.
+13197,i wish it could give me advice,i wish it could give me advice,general_quirky,other,audio-1497885924-headset.flac,I wish it could give me advice.
+12468,find a train ticket to philadelphia,find a [transport_type : train] ticket to [place_name : philadelphia],transport_ticket,other,audio-1498573960-headset.flac,Find a train ticket to Philadelphia.
+16518,add a new email for julie smith,add a new email for [person : julie smith],email_sendemail,other,audio-1497884188-headset.flac,Add a new email for Julie Smith
+6557,play videos,Play videos,general_quirky,other,audio-1501689900-headset.flac,Play with your
+12851,show me direction to my home,show me direction to my [place_name : home],transport_query,other,audio-1501692092-headset.flac,Show me directions to my home.
+3161,do i have any alarms set for six am tomorrow,do i have any alarms set for [time : six am] [date : tomorrow],alarm_query,other,audio-1498568872-headset.flac,Do I have any alarms at 6am tomorrow?
+3321,please make me a cup of coffee,please make me a cup of coffee,iot_coffee,other,audio-1501693671-headset.flac,Please make a cup of coffee.
+16888,what about new mail,what about new mail,email_query,other,audio-1490966711-headset.flac,What about new mail?
+3326,turn the plug off,turn the plug off,iot_wemo_off,other,audio-1501775568-headset.flac,10 the plug off
+10321,i want to play fifa seventeen,i want to play [game_name : fifa seventeen],play_game,other,audio-1501690245-headset.flac,I want to play FIFA 17.
+3460,quiet time,quiet time,audio_volume_mute,other,audio--1504194567-headset.flac,Quiet time
+16263,did i receive any new email from robert,did i receive any new email from [person : robert],email_query,other,audio-1490282967-headset.flac,Did I receive any new email from Robert?
+7570,what is the plan today,what is the plan today,calendar_query,other,audio-1502891205-headset.flac,What is the plan today?
+10338,play for me the game harry potter and the chamber of secrets,play for me the game [game_name : harry potter and the chamber of secrets],play_game,other,audio-1494548237-headset.flac,Stay for me the game Harry Potter and the Chimp off secrets.
+13881,please give me information on michael jackson,please give me information on [artist_name : michael jackson],qa_factoid,other,audio-1490703922-headset.flac,Please give me information on Michael Jackson.
+13847,what is the exchange rate for mexico money,what is the exchange rate for [currency_name : mexico] money,qa_currency,other,audio-1502377855-headset.flac,This is the exchange rate for Mexico money.
+6366,tell me some best tourist places to visit in america,tell me some [place_name : best tourist places] to visit in [place_name : america],recommendation_locations,other,audio-1501696890-headset.flac,Tell me some best tourist places to visit in America.
+1551,turn on wemo,turn on [device_type : wemo],iot_wemo_on,other,audio-1502890099-headset.flac,Turn on Wemo.
+11616,are there any events going on downtown tonight,are there any events going on [place_name : downtown] [timeofday : tonight],recommendation_events,other,audio-1499265084-headset.flac,Are there any winds going on downtown today or tonight?
+726,summarise week's weather details,summarise [time : week's] weather details,weather_query,other,audio-1502112407-headset.flac,Sumerized week's weather details.
+6593,start a gossip,start a gossip,general_quirky,other,audio-1490356845-headset.flac,"Oh, I got it."
+11172,give me all available lists,give me all available lists,lists_query,other,audio-1499090145-headset.flac,Give me all available lists.
+11999,tell me all events for today in my city,tell me all events for [date : today] in my city,recommendation_events,other,audio-1499090533-headset.flac,Tell me all events for today in my city.
+6457,are you smart,are you smart,general_quirky,other,audio-1499088600-headset.flac,Are you smart?
+6550,i got promoted today it feels so good,i got promoted [date : today] it feels so good,general_quirky,other,audio-1501690561-headset.flac,"I got promoted today, it feels so good."
+16384,hey do i have any new emails,hey do i have any new emails,email_query,other,audio-1502100337-headset.flac,"Hey, do I have any emails?"
+10868,olly anything else left on the list,olly anything else left on the list,lists_query,other,audio-1488993127.flac,Or anything else left on the list?
+10150,how to make taco,how to make [food_type : taco],cooking_recipe,other,audio-1502216550-headset.flac,How to make taco?
+12838,how is the traffic at the moment,how is the traffic at [time : the moment],transport_traffic,other,audio-1502201234-headset.flac,It's the traffic at the moment
+3174,play music playlist,play music playlist,play_music,other,audio-1497865315-headset.flac,Pay music pay list.
+16589,who is the contact that last called me,who is the contact that last called me,email_querycontact,other,audio-1501690000-headset.flac,Who is the contact that last call me?
+11536,add podcast favourites to playlist and start,add podcast favourites to playlist and [player_setting : start],play_podcasts,other,audio-1501756040-headset.flac,Add podcast favorites to playlists and start
+11841,are there any crafts fairs happening in this area,are there any [event_name : crafts fairs] happening in this area,recommendation_events,other,audio-1501696201-headset.flac,Are there any crafts first happening in this area?
+16410,compose email,compose email,email_sendemail,other,audio-1434531986-headset.flac,Compose email.
+13487,olly what is the capital of california,olly what is the capital of [place_name : california],qa_factoid,other,audio-1494513431-headset.flac,Ollie what is the capital of California?
+16974,please check all new email of income tax department,please check all new email of [business_name : income tax department],email_query,other,audio-1502099786-headset.flac,Please check all new email of income tax department.
+2258,do i need a sweater today,do i need a [weather_descriptor : sweater] [date : today],weather_query,other,audio-1489673533-headset.flac,Do I need a sweater today?
+13666,what are pounds worth right now,what are [currency_name : pounds] worth right now,qa_currency,other,audio-1502376743-headset.flac,What a pound's worth right now.
+7609,remove meeting reminder for tuesday,remove [event_name : meeting] reminder for [date : tuesday],calendar_remove,other,audio-1501758119-headset.flac,Remove the meeting reminder for Tuesday.
+14995,what does situation mean,what does [definition_word : situation] mean,qa_definition,other,audio-1490199809-headset.flac,What does shred mean?
+473,play the weekend,play the [song_name : weekend],play_music,other,audio-1490109464-headset.flac,Play the beat.
+779,i want to hear snow by red hot chili peppers,i want to hear [song_name : snow] by [artist_name : red hot chili peppers],play_music,other,audio-1498566504-headset.flac,I want to hear snow by red hot chilli peppers.
+5410,read me the latest new york times headlines,read me the latest [media_type : new york times] headlines,news_query,other,audio-1490370187-headset.flac,We need the latest New York Times headline.
+15987,add this new email with contact,add this new email with contact,email_addcontact,other,audio--1506078372-headset.flac,Add this new email with contact.
+9871,play my favourite book,play my favourite book,play_audiobook,other,audio-1502895610-headset.flac,Play my favorite book.
+631,set notification for news about the dakota pipeline,set notification for news about the [news_topic : dakota pipeline],news_query,other,audio-1502101248-headset.flac,Set notification for a news about the Dakota pipeline.
+2198,what day of the week was december four one thousand nine hundred and eighty two,what day of the week was [date : december four one thousand nine hundred and eighty two],datetime_query,other,audio-1501692463-headset.flac,"What day of the week was December 4th, 982?"
+430,what is the weather like right now,what is the weather like right now,weather_query,other,audio-1490354652-headset.flac,Where's the weather like right now?
+15706,tweet @,[media_type : tweet] @,social_post,other,audio-1501753317.flac,"Tweet, tweet, tweet."
+3915,this is a good tune please notate file accordingly,this is a good tune please notate file accordingly,music_likeness,other,audio-1501767204-headset.flac,"This is a good tune, please notate file accordingly."
+4312,will the weather be less than ten degree in paris,will the weather be [weather_descriptor : less than ten degree] in [place_name : paris],weather_query,other,audio-1501691356-headset.flac,The weather be less than 10 degrees in.
+13762,how much wood could a woodchuck chuck if a woodchuck could chuck wood,how much wood could a woodchuck chuck if a woodchuck could chuck wood,general_quirky,other,audio-1490263574-headset.flac,"How much wood could I wood chuck? Chuck, if I wood chuck could chuck wood."
+12582,what time does the first metrolink arrive in the morning,what time does the first [transport_type : metrolink] arrive in the [timeofday : morning],transport_query,other,audio-1502461942.flac,What time is the first major league I am in the morning?
+16892,start and email to john smith,start and email to [person : john smith],email_sendemail,other,audio-1434531150-headset.flac,Start an email to John Smith.
+16029,please compose a new email to coworker,please compose a new email to [relation : coworker],email_sendemail,other,audio-1501692290-headset.flac,Please compose a new email to co-worker.
+9565,play radio with nonstop songs,play radio with nonstop songs,play_radio,other,audio-1497886921-headset.flac,Hello Radio with non-stop sounds
+11860,tell me the local events,tell me the local events,recommendation_events,other,audio-1502302378-headset.flac,Tell me the local events.
+9507,please find the radio station currently playing howard stern,please find the radio station currently playing howard stern,play_radio,other,audio-1490183816-headset.flac,Please find the radio station currently playing how it's done.
+15359,open tweet to apple that my iphone's battery is always drained,open [media_type : tweet] to [business_name : apple] that my iphone's battery is always drained,social_post,other,audio-1501688719-headset.flac,Open tweet to Apple that my iPhone's battery is always drained.
+10177,how to cook spaghetti squash,how to cook [food_type : spaghetti squash],cooking_recipe,other,audio-1490356826-headset.flac,"So, it's a good spaghetti squash."
+16668,have any emails come in since four hundred today,have any emails come in since [time : four hundred] [date : today],email_query,other,audio-1502894598-headset.flac,Have any emails come in since 400 today?
+10077,find a recipe for dinner tonight,find a recipe for [meal_type : dinner] [timeofday : tonight],cooking_recipe,other,audio-1502375482-headset.flac,Find a recipe for dinner tonight
+12951,what is the highest building in the world,what is the highest building in the [place_name : world],qa_factoid,other,audio-1499697279-headset.flac,What is the highest building in the world?
+9384,play cnn radio,play [radio_name : cnn radio],play_radio,other,audio-1434542235-headset.flac,Place the on-premise on-premise on-premise.
+9233,open pandora,open [app_name : pandora],play_radio,other,audio-1498571075-headset.flac,Open Bandoor.
+2414,i want to order a pizza from michael's pizza,i want to order a [food_type : pizza] from [business_name : michael's pizza],takeaway_order,other,audio-1488982560.flac,I want to order a pizza from Michael's Pizza.
+6433,please know that today i had a meeting with george,please know that today i had a [event_name : meeting] with [person : george],general_quirky,other,audio-1490799305-headset.flac,Please know that today I had a meeting with George.
+13690,what color are chairs,what color are chairs,qa_factoid,other,audio-1490262241-headset.flac,What colour are chairs?
+9284,play fm,play fm,play_radio,other,audio-1498485416-headset.flac,Play FN
+16838,can you send the email to the new email id,can you send the email to the new email id,email_sendemail,other,audio-1490286868-headset.flac,and you send the email to the new email id.
+11437,please play the podcast for me,please play the podcast for me,play_podcasts,other,audio-1502895756-headset.flac,Please play the podcast for me
+10247,play a game with me,play a game with me,play_game,other,audio-1490356764-headset.flac,Again with me.
+5341,please alert me to the time,please alert me to the time,datetime_query,other,audio-1501767931-headset.flac,Please alert me to the time.
+16899,have i received any emails from jeffrey burnette,have i received any emails from [person : jeffrey burnette],email_query,other,audio-1502891175-headset.flac,Have I received an email from Jeffrey Burnett?
+6061,make the coffee,make the coffee,iot_coffee,other,audio-1490192391-headset.flac,Make the coffee.
+16924,please check my gmail for new mail,please check my gmail for new mail,email_query,other,audio-1498486151-headset.flac,Please check my Gmail for new mail.
+13799,what is the definition of subjegant,what is the definition of [definition_word : subjegant],qa_definition,other,audio-1490199230-headset.flac,What is the definition of subject art?
+16711,are my contacts mostly female or male,are my contacts mostly female or male,email_querycontact,other,audio-1490801943-headset.flac,Are my contacts mostly female or male?
+3674,i would like the like in the kitchen to be a different color,i would like the like in the [house_place : kitchen] to be a different color,iot_hue_lightchange,other,audio-1500898697.flac,I would like the like in the kitchen to be a different color.
+3570,please turn off the lights in patio,please turn off the lights in [house_place : patio],iot_hue_lightoff,other,audio-1499691144-headset.flac,Please turn off the lights in page 2.
+14857,could you explain the meaning of exorbitant for me please,could you explain the meaning of [definition_word : exorbitant] for me please,qa_definition,other,audio-1490108234-headset.flac,Could you explain the meaning of exorbitant for me please?
+10031,i need a recipe that is from ingredients on my shopping list,i need a recipe that is from ingredients on my [list_name : shopping] list,cooking_recipe,other,audio-1498570608-headset.flac,I need a recipe that is from ingredients on my shopping list.
+2615,will i need to wear a jacket next wednesday,will i need to wear a [weather_descriptor : jacket] next [date : wednesday],weather_query,other,audio-1490104290-headset.flac,Will I need to wear a jacket on next Wednesday?
+2775,discontinue use of lights,discontinue use of lights,iot_hue_lightoff,other,audio-1501685755-headset.flac,This continued use of lights.
+16677,do i have any new emails in my inbox today,do i have any new emails in my [email_folder : inbox] [date : today],email_query,other,audio-1501692261-headset.flac,Do I have any new emails in my inbox today?
+41,i want the status on my screen brightness,i want the status on my screen brightness,general_quirky,other,audio-1498564775-headset.flac,I want the stages on my screen brightness.
+14461,features of google pixel,features of google pixel,general_quirky,other,audio-1434542356.flac,It's just a Google Pixel.
+14770,tell me the largest ocean in the world,tell me the largest ocean in the [place_name : world],qa_factoid,other,audio-1501759142-headset.flac,I'm in the largest ocean in the world.
+15185,birthday wishes,[event_name : birthday] wishes,social_post,other,audio-1488983970.flac,First day wishes.
+4244,olly turn on the coffee machine to make me some coffee,olly turn on the [device_type : coffee machine] to make me some coffee,iot_coffee,other,audio-1495734939-headset.flac,"Ollie, turn on the coffee machine to make me some coffee."
+12263,california,[place_name : california],transport_query,other,audio-1497268017-headset.flac,California
+5414,will you put on the music,will you put on the music,play_music,other,audio-1501697933-headset.flac,Will you put on the music?
+17147,reply to the mail with the following content hello you,reply to the mail with the following content hello you,email_sendemail,other,audio-1490281860-headset.flac,Alex replied to the email with the following content.
+13166,spell and define oscillate,spell and define [definition_word : oscillate],qa_definition,other,audio-1490706342-headset.flac,Spell and define oscillate.
+5349,olly give me some dim light,olly give me some dim light,iot_hue_lightdim,other,audio-1497451267.flac,"Oh, they give me some deep light."
+15847,how we can get credit,how we can get credit,email_sendemail,other,audio-1501752828-headset.flac,We can get credit
+1630,raise the volume of the current music,raise the volume of the current music,audio_volume_up,other,audio-1490193965-headset.flac,Raise the volume of the current music.
+5427,what is the time in canada now,what is the time in [place_name : canada] now,datetime_query,other,audio-1494609128-headset.flac,What is the time in Canada now?
+9918,how do i make a pizza,how do i make a [food_type : pizza],cooking_recipe,other,audio-1488537080.flac,How do I make a pizza?
+2355,which film the music comes from what is the name of the music,which film the music comes from what is the name of the music,music_query,other,audio-1490195170-headset.flac,Which film the music comes from? What is the name of the music?
+2781,please play some jazz music,please play some [music_genre : jazz music],play_music,other,audio-1488983597.flac,Please play some jazz music.
+2724,give me news from cnn,give me news from [media_type : cnn],news_query,other,audio-1502200291-headset.flac,Give me news from CNN
+15454,tweet at united airlines i'm angry you lost my bags,[media_type : tweet] at [business_name : united airlines] i'm angry you lost my bags,social_post,other,audio-1490800692-headset.flac,"Tweet at United Airlines, I'm angry. You lost my bag."
+486,what time is it in new york city,what time is it in [place_name : new york city],datetime_query,other,audio-1499089953-headset.flac,What time is it in New York City?
+2447,i feel like having soup for lunch order from wangs kitchen restaurant a chicken manchow soup,i feel like having [food_type : soup] for [meal_type : lunch] order from [business_name : wangs kitchen] [business_type : restaurant] a chicken manchow soup,takeaway_order,other,audio-1488986411.flac,I feel like having so far on each other from one's kitchen restaurant. I'll get you a natural soup.
+16072,email my boss that i will be late today because of an emergency and apologize to him for missing the meeting,email my [relation : boss] that i will be late [date : today] because of an emergency and apologize to him for missing the [event_name : meeting],email_sendemail,other,audio-1501688151-headset.flac,Remember my boss that I will be late today because of an emergency and apologise to him for missing the meeting.
+4689,do you know the weather,do you know the weather,weather_query,other,audio-1498572814-headset.flac,You know the weather?
+13575,when was last academy award winning movie,when was last academy award winning movie,qa_factoid,other,audio-1502101482-headset.flac,When was last Academy Award winning movie?
+680,keep me informed about bitcoin price,keep me informed about [news_topic : bitcoin price],news_query,other,audio-1497866855-headset.flac,Kimmy informed about Bitcoin price.
+3907,play me last year's hits,play me last year's hits,play_music,other,audio-1494608434-headset.flac,hit.
+348,will it rain tomorrow,will it [weather_descriptor : rain] [date : tomorrow],query,other,audio-1498483103-headset.flac,"Well, let's ring tomorrow."
+16813,beep when i get an email from john,beep when i get an email from [person : john],email_query,other,audio-1498569873-headset.flac,Beep when I get an email from John.
+11302,play last libertarian podcast,play [podcast_name : last libertarian] podcast,play_podcasts,other,audio-1497882561-headset.flac,Play last libertarian podcast
+11335,play and shuffle all slow music songs,[player_setting : play and shuffle] all slow music songs,play_music,other,audio-1502896756-headset.flac,Play and shuffle all slow music songs.
+5732,shall i change my car tyres to snow tyres soon,shall i change my car tyres to [weather_descriptor : snow tyres] soon,weather_query,other,audio-1498570661-headset.flac,I changed my car tires to snow tires soon.
+4928,play my soundtrack,play [playlist_name : my soundtrack],play_music,other,audio-1490292294-headset.flac,Play by soundtrack.
+219,should i bring an umbrella tomorrow,should i bring an [weather_descriptor : umbrella] [date : tomorrow],weather_query,other,audio-1501690895-headset.flac,So I bring in umbrella tomorrow.
+12008,are there any fun events in la today,are there any fun events in [place_name : la] [date : today],recommendation_events,other,audio-1501686030-headset.flac,Are there any fun events in LA today?
+16271,refresh my inbox and inform me about new emails,refresh my [email_folder : inbox] and inform me about new emails,email_query,other,audio-1490202252-headset.flac,Fresh my inbox and inform me about new emails.
+11953,where is the nearest walmart,where is the nearest [business_name : walmart],recommendation_locations,other,audio-1497555987-headset.flac,Where is the new raised walnut?
+16228,is it anyone i knows birthday this month,is it anyone i knows [event_name : birthday] [date : this month],email_querycontact,other,audio-1501689765-headset.flac,Is anyone I know birthday this month?
+4168,please check the weather in kansas,please check the weather in [place_name : kansas],weather_query,other,audio-1498484278-headset.flac,Please check the weather in Kansas.
+13819,what happened to the dow jones today,what happened to the dow jones [date : today],qa_stock,other,audio-1497865044-headset.flac,What happens to down drones today?
+3029,i hate this song,i hate this song,music_dislikeness,other,audio-1490022244-headset.flac,I hate this song.
+3967,rap,[music_genre : rap],play_music,other,audio-1490203815-headset.flac,Rock.
+1710,change the music mode to rock,[player_setting : change] the music mode to [music_genre : rock],music_settings,other,audio-1501767923-headset.flac,Change the music mode to rock.
+12526,what is the fastest way to get to starbucks,what is the fastest way to get to [business_name : starbucks],transport_query,other,audio--1506520685.flac,What is the fastest way to get to Starbucks?
+14053,what year did george clooney start acting,what year did [person : george clooney] start acting,qa_factoid,other,audio-1495734915-headset.flac,What year did George Clooney start acting?
+451,get me the latest stock price for costco,get me the latest [news_topic : stock price for costco],news_query,other,audio-1501692881-headset.flac,Get me the latest stock price for Costco.
+3852,what kind of weather are they having in orange tx right now,what kind of weather are they having in [place_name : orange tx] right now,weather_query,other,audio-1490263640-headset.flac,Kind of weather that have been orange. Tx right now.
+10076,can you substitute baking soda for baking powder,can you substitute [ingredient : baking soda for baking powder],cooking_recipe,other,audio-1434528205-headset.flac,Can you substitute baking soda for baking powder?
+16652,did ben's email have an attachment,did [person : ben's] email have an attachment,email_query,other,audio-1501777536-headset.flac,Did Ben's emails have an attachment?
+3205,play poker face by lady gaga,play [song_name : poker face] by [artist_name : lady gaga],play_music,other,audio-1502195840-headset.flac,Play poker face by Lady Gaga
+14316,how large is alaska,how large is [place_name : alaska],qa_factoid,other,audio-1502896651-headset.flac,Hall are just a last cut.
+15276,post a new status on facebook saying that i am enjoying the nice weather,post a new status on [media_type : facebook] saying that i am enjoying the [weather_descriptor : nice weather],social_post,other,audio-1490357183-headset.flac,Post a new status on Facebook saying that I am enjoying this nice weather.
+12054,what's happening around town,what's happening [place_name : around town],recommendation_events,other,audio-1490354203-headset.flac,What's happening around town?
+4121,what time have you set the alarm,what time have you set the alarm,alarm_query,other,audio-1502890281-headset.flac,What time have you sat there alarm?
+1256,what's the funniest joke you know,what's the [joke_type : funniest] joke you know,general_joke,other,audio-1490182133-headset.flac,What's the funniest joke you know?
+4606,find information on today's stocks,find information on [date : today's] stocks,news_query,other,audio-1490201656-headset.flac,Find information on today's stop.
+1440,play the latest rock songs having rating of four or above,play the latest [music_genre : rock] songs having [music_descriptor : rating of four or above],play_music,other,audio-1500979012-headset.flac,Play the latest rock songs having rating of 4 or above.
+1151,start vacuum cleaner,start [device_type : vacuum cleaner],iot_cleaning,other,audio-1500978920-headset.flac,Start vacuum cleaner.

@@ -21,7 +21,7 @@ Note: the app uses the BROWSER's speech-to-text (Chrome), not Whisper. Whisper i
 be run on recordings automatically; both make the same kinds of errors, but the numbers are not identical.
 
 Setup (training only, NOT in requirements.txt - the app does not need it):
-    pip install faster-whisper==1.2.1
+    pip install faster-whisper==1.2.1 av==15.1.0      (av 19 removed an argument faster-whisper uses)
     SLURP text: dataset/slurp/test.jsonl from github.com/pswietojanski/slurp -> data/external/slurp/
     SLURP audio: zenodo.org/records/4274930/files/slurp_real.tar.gz (3.9 GB) -> data/external/slurp/
 Run (from backend/):
@@ -136,7 +136,9 @@ def word_error_rate(ref: str, hyp: str) -> float:
 def label_scores(y_true, y_pred) -> dict:
     from sklearn.metrics import accuracy_score, f1_score
     return {"accuracy": round(100 * accuracy_score(y_true, y_pred), 1),
-            "macro_f1": round(f1_score(y_true, y_pred, average="macro", zero_division=0), 3)}
+            # macro over the labels that are in this test set (SLURP has no energy / plan_request / study tasks)
+            "macro_f1": round(f1_score(y_true, y_pred, labels=sorted(set(y_true)), average="macro",
+                                       zero_division=0), 3)}
 
 
 def time_scores(df: pd.DataFrame, column: str) -> dict:

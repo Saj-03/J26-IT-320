@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 
 from app.components.scheduler import stress_service as ss
-from app.components.scheduler.models import Task
+from app.components.scheduler.models import FocusSession, Task
 
 NOW = datetime(2026, 10, 17, 10, 0)
 
@@ -35,13 +35,15 @@ def test_every_lock_rule(env):
     me = current["user"]
     add_task(db, me, "Finished", status="done")
     add_task(db, me, "Dropped", status="cancelled")
-    add_task(db, me, "Working now", status="in_progress")
+    working = add_task(db, me, "Working now", status="in_progress")
+    db.add(FocusSession(user_id=me.id, task_id=working.id, started_at=NOW, planned_minutes=25))   # timer running
+    add_task(db, me, "Started yesterday", status="in_progress")      # started once, no timer now -> may be eased
     add_task(db, me, "Fixed one", is_flexible=False)
     add_task(db, me, "Overdue", days=-1)
     add_task(db, me, "Due tomorrow", days=20 / 24)
     add_task(db, me, "Final project", priority=5)
     locked, changeable = reasons(db, me)
-    assert changeable == {}
+    assert changeable == {"Started yesterday": "flexible, due in 5 days"}
     assert locked == {
         "Finished": "already done", "Dropped": "already cancelled", "Working now": "you are working on it now",
         "Fixed one": "you marked it as fixed", "Overdue": "its deadline has passed",
