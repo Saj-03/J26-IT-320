@@ -6,7 +6,6 @@ import {
   CalendarIcon, HistoryIcon, SparklesIcon, AlertCircleIcon, ShieldCheckIcon,
   UtensilsIcon, DumbbellIcon, FlameIcon, LayersIcon
 } from 'lucide-react';
-import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
@@ -118,68 +117,44 @@ export function PhysicalPlan() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <PageHeader
-          title="Personalized Wellbeing Plan"
-          subtitle={`Adaptive ${daysCount}-day schedule tailored to your available time, dietary preferences, and university workload.`}
-        />
-
-        {/* View & Duration Toggles */}
-        <div className="flex flex-wrap items-center gap-2 self-start shrink-0">
-          {/* Timeframe Selector */}
-          <div className="flex items-center gap-1 bg-white p-1 rounded-full border border-black/[0.08] shadow-sm">
-            {[
-              { label: '1 Week', count: 7 },
-              { label: '2 Weeks', count: 14 },
-              { label: '1 Month', count: 30 }
-            ].map((tf) => (
-              <button
-                key={tf.count}
-                onClick={() => setDaysCount(tf.count)}
-                disabled={viewingSavedPlan}
-                className={cn(
-                  'px-3 py-1.5 rounded-full text-xs font-bold transition-all',
-                  daysCount === tf.count
-                    ? 'bg-charcoal text-white shadow-xs'
-                    : 'text-charcoal-light hover:text-charcoal'
-                )}
-              >
-                {tf.label}
-              </button>
-            ))}
+      <section className="relative isolate overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-800 px-5 py-7 text-white shadow-xl sm:px-8 sm:py-9">
+        <div className="absolute -right-12 -top-20 -z-10 h-64 w-64 rounded-full bg-lime-300/10 blur-2xl" />
+        <div className="absolute bottom-0 right-24 -z-10 h-32 w-32 rounded-full bg-teal-300/10 blur-2xl" />
+        <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+          <div className="max-w-2xl">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold text-emerald-50">
+              <SparklesIcon size={14} className="text-lime-300" /> Your adaptive wellbeing plan
+            </div>
+            <h1 className="text-3xl font-black tracking-tight sm:text-4xl">A plan that fits your week.</h1>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-emerald-50/80">Movement and meal ideas shaped around your time, preferences, and current routine.</p>
           </div>
-
-          {/* View Toggle */}
-          <div className="flex items-center gap-1.5 bg-white p-1 rounded-full border border-black/[0.08] shadow-sm">
-            <button
-              onClick={() => setActiveTab('week')}
-              className={cn(
-                'flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all',
-                activeTab === 'week' ? 'bg-brand-500 text-white shadow-soft' : 'text-charcoal-light hover:text-charcoal'
-              )}
-            >
-              <CalendarIcon size={14} /> {daysCount}-Day Plan
-            </button>
-            <button
-              onClick={() => setActiveTab('today')}
-                disabled={viewingSavedPlan}
-              className={cn(
-                'flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all',
-                activeTab === 'today' ? 'bg-brand-500 text-white shadow-soft' : 'text-charcoal-light hover:text-charcoal'
-              )}
-            >
-              <ClockIcon size={14} /> Today's Schedule
-            </button>
+          <div className="flex gap-3">
+            <div className="min-w-28 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-50/70">Plan length</p>
+              <p className="mt-1 text-xl font-black">{daysCount} <span className="text-xs font-semibold">days</span></p>
+            </div>
+            <div className="min-w-28 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-sm">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-50/70">Workout window</p>
+              <p className="mt-1 text-xl font-black">{planData?.effective_available_minutes || userPrefs.available_minutes || 20} <span className="text-xs font-semibold">min</span></p>
+            </div>
           </div>
+        </div>
+      </section>
 
-          <button
-            type="button"
-            onClick={openHistory}
-            disabled={historyLoading}
-            className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.08] bg-white px-3.5 py-2 text-xs font-bold text-charcoal shadow-sm transition hover:border-brand-300 hover:text-brand-700 disabled:opacity-60"
-          >
-            <HistoryIcon size={14} /> {historyLoading ? 'Loading…' : 'Past Plans'}
-          </button>
+      <div className="flex flex-col gap-3 rounded-3xl border border-black/[0.06] bg-white p-3 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-center gap-1 self-start rounded-2xl bg-cream p-1">
+          {[{ label: '1 week', count: 7 }, { label: '2 weeks', count: 14 }, { label: '1 month', count: 30 }].map((tf) => (
+            <button key={tf.count} onClick={() => setDaysCount(tf.count)} disabled={viewingSavedPlan} className={cn('rounded-xl px-3.5 py-2 text-xs font-bold transition', daysCount === tf.count ? 'bg-white text-charcoal shadow-sm' : 'text-charcoal-muted hover:text-charcoal')}>
+              {tf.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1 rounded-2xl bg-cream p-1">
+            <button onClick={() => setActiveTab('week')} className={cn('flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition', activeTab === 'week' ? 'bg-emerald-800 text-white shadow-sm' : 'text-charcoal-muted hover:text-charcoal')}><CalendarIcon size={14} /> Plan</button>
+            <button onClick={() => setActiveTab('today')} disabled={viewingSavedPlan} className={cn('flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition', activeTab === 'today' ? 'bg-emerald-800 text-white shadow-sm' : 'text-charcoal-muted hover:text-charcoal')}><ClockIcon size={14} /> Today</button>
+          </div>
+          <button type="button" onClick={openHistory} disabled={historyLoading} className="inline-flex items-center gap-1.5 rounded-xl border border-black/[0.08] bg-white px-3.5 py-2.5 text-xs font-bold text-charcoal transition hover:border-brand-300 hover:text-brand-700 disabled:opacity-60"><HistoryIcon size={14} /> {historyLoading ? 'Loading…' : 'Past plans'}</button>
         </div>
       </div>
 
@@ -192,22 +167,16 @@ export function PhysicalPlan() {
         </Card>
       )}
 
-      {/* Model & Research Evaluation Control Bar */}
-      <Card padding="sm" className="bg-gradient-to-r from-cream via-white to-brand-50/40 border border-brand-200/50">
+      {/* Adaptive context and plan controls */}
+      <Card padding="md" className="border border-emerald-100 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-xl bg-brand-100 text-brand-700">
+            <span className="rounded-xl bg-emerald-50 p-2 text-emerald-700">
               <SparklesIcon size={16} />
             </span>
             <div>
-              <p className="font-extrabold text-charcoal">
-                {planData?.model_version || 'Adaptive XGBoost Engine'}
-              </p>
-              <p className="text-[11px] text-charcoal-muted">
-                {planData?.context_aware
-                  ? 'Dynamically tuned to workload, stress & physical limitations'
-                  : 'Static baseline rule filter ignoring stress context'}
-              </p>
+              <p className="font-extrabold text-charcoal">{planData?.context_aware ? 'Adaptive plan' : 'Baseline plan'}</p>
+              <p className="text-[11px] text-charcoal-muted">{planData?.context_aware ? 'Adjusted to your profile and recent check-ins' : 'Profile-based suggestions without adaptation'}</p>
             </div>
           </div>
 
@@ -217,13 +186,13 @@ export function PhysicalPlan() {
               onClick={() => setIsExamPeriod(!isExamPeriod)}
               disabled={viewingSavedPlan}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold transition-all border',
+                'flex items-center gap-1.5 rounded-xl border px-3 py-2 font-bold transition-all',
                 isExamPeriod
                   ? 'bg-amber-500 text-white border-amber-600 shadow-sm'
                   : 'bg-white text-charcoal-light border-black/10 hover:border-black/20'
               )}
             >
-              <span>📚</span> Exam Period Mode: {isExamPeriod ? 'ON (-50% workout time)' : 'OFF'}
+              <span>📚</span> Exam week {isExamPeriod ? 'on' : 'off'}
             </button>
 
             {/* Model Toggle for Research Demonstration */}
@@ -231,23 +200,21 @@ export function PhysicalPlan() {
               onClick={() => setUseBaseline(!useBaseline)}
               disabled={viewingSavedPlan}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold transition-all border',
+                'flex items-center gap-1.5 rounded-xl border px-3 py-2 font-bold transition-all',
                 useBaseline
                   ? 'bg-charcoal text-white border-charcoal'
                   : 'bg-white text-brand-700 border-brand-300 hover:bg-brand-50'
               )}
               title="Toggle between Model 1 (Static Baseline) and Model 2 (Adaptive AI)"
             >
-              <LayersIcon size={13} /> {useBaseline ? 'Model 1 (Baseline)' : 'Model 2 (Adaptive AI)'}
+              <LayersIcon size={13} /> {useBaseline ? 'Use adaptive plan' : 'Compare baseline'}
             </button>
           </div>
         </div>
 
         {/* User Profile Active Preferences Bar */}
-        <div className="mt-3 pt-3 border-t border-black/[0.05] flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-bold text-charcoal-muted uppercase tracking-wider mr-1">
-            Active Profile:
-          </span>
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-black/[0.05] pt-3">
+          <span className="mr-1 text-[10px] font-bold uppercase tracking-wider text-charcoal-muted">Plan uses</span>
           <span className="px-2.5 py-1 rounded-full bg-white border border-black/[0.06] font-semibold text-charcoal text-xs">
             🥗 Diet: <strong className="capitalize">{userPrefs.diet_pref || 'Balanced'}</strong>
           </span>
