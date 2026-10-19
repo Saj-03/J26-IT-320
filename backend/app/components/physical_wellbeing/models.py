@@ -82,6 +82,7 @@ class PeerChallenge(Base):
     invite_code: Mapped[str] = mapped_column(String, unique=True, index=True, default=lambda: secrets.token_urlsafe(18))
     owner_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
     title: Mapped[str] = mapped_column(String(80))
+    goal_text: Mapped[str | None] = mapped_column(String(80), nullable=True)
     metric: Mapped[str] = mapped_column(String(16))  # minutes, steps, workouts
     target: Mapped[int] = mapped_column(Integer)
     duration_days: Mapped[int] = mapped_column(Integer)

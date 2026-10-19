@@ -45,8 +45,9 @@ class HabitIn(BaseModel):
 
 class PeerChallengeCreateIn(BaseModel):
     title: str = Field(min_length=3, max_length=80)
+    goal_text: str = Field(min_length=1, max_length=80)
     metric: Literal["minutes", "steps", "workouts"]
-    target: int = Field(gt=0, le=1000000)
+    target: int = Field(gt=0)
     duration_days: int = Field(default=7, ge=1, le=30)
     nickname: str = Field(min_length=2, max_length=24)
 

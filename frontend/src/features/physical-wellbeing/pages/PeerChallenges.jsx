@@ -159,7 +159,7 @@ export function PeerChallenges() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
-  const [form, setForm] = useState({ title: '', metric: 'minutes', target: '150', duration_days: '7', nickname: '' });
+  const [form, setForm] = useState({ title: '', goal: '', metric: '', target: '', duration_days: '', nickname: '' });
 
   const refresh = async () => setChallenges(await getPeerChallenges());
   useEffect(() => {
@@ -172,7 +172,7 @@ export function PeerChallenges() {
     setError('');
     try {
       await createPeerChallenge({ ...form, target: Number(form.target), duration_days: Number(form.duration_days) });
-      setForm({ ...form, title: '' });
+      setForm({ title: '', goal: '', metric: '', target: '', duration_days: '', nickname: form.nickname });
       await refresh();
     } catch (err) {
       setError(apiErrorMessage(err, 'Could not create this challenge.'));
@@ -206,12 +206,18 @@ export function PeerChallenges() {
           </div>
           <form onSubmit={create} className="space-y-3.5">
             <Field label="Challenge name" required minLength="3" maxLength="80" placeholder="e.g. Campus walk week" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} />
-            <label className="block space-y-1.5"><span className="text-sm font-semibold text-charcoal-light">Challenge goal</span><select className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-charcoal outline-none focus:border-brand-400" value={form.metric} onChange={(event) => setForm({ ...form, metric: event.target.value, target: event.target.value === 'minutes' ? '150' : event.target.value === 'steps' ? '30000' : '5' })}><option value="minutes">Active minutes</option><option value="steps">Steps</option><option value="workouts">Workout sessions</option></select></label>
-            <Field label={`Target (${METRICS[form.metric].unit})`} type="number" min="1" max="1000000" required value={form.target} onChange={(event) => setForm({ ...form, target: event.target.value })} />
-            <label className="block space-y-1.5"><span className="text-sm font-semibold text-charcoal-light">Length</span><select className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-charcoal outline-none focus:border-brand-400" value={form.duration_days} onChange={(event) => setForm({ ...form, duration_days: event.target.value })}><option value="3">3 days</option><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option></select></label>
+            <Field label="Challenge goal" required value={form.goal}
+              onChange={(event) => {
+                const goal = event.target.value;
+                const normalizedGoal = goal.toLowerCase();
+                const metric = normalizedGoal.includes('step') ? 'steps' : normalizedGoal.includes('min') ? 'minutes' : 'workouts';
+                setForm({ ...form, goal, metric });
+              }} />
+            <Field label={`Target${form.metric ? ` (${METRICS[form.metric].unit})` : ''}`} type="number" inputMode="numeric" min="1" step="1" required value={form.target} onChange={(event) => setForm({ ...form, target: event.target.value })} className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
+            <Field label="Length (days)" type="number" inputMode="numeric" min="1" max="30" step="1" required value={form.duration_days} onChange={(event) => setForm({ ...form, duration_days: event.target.value })} hint="Choose any length from 1 to 30 days." className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
             <Field label="Your challenge nickname" required minLength="2" maxLength="24" placeholder="e.g. Nilu" value={form.nickname} onChange={(event) => setForm({ ...form, nickname: event.target.value })} />
             {error && <p role="alert" className="text-xs font-semibold text-rose-700">{error}</p>}
-            <Button type="submit" fullWidth disabled={creating || !form.title.trim() || !form.nickname.trim()}>{creating ? 'Creating…' : 'Create & get invite link'} <LinkIcon size={15} /></Button>
+            <Button type="submit" fullWidth disabled={creating || !form.title.trim() || !form.goal.trim() || !form.nickname.trim() || !Number.isInteger(Number(form.target)) || Number(form.target) < 1 || !Number.isInteger(Number(form.duration_days)) || Number(form.duration_days) < 1 || Number(form.duration_days) > 30}>{creating ? 'Creating…' : 'Create & get invite link'} <LinkIcon size={15} /></Button>
           </form>
           <p className="mt-3 text-[10px] leading-relaxed text-charcoal-muted">Friends join from your private link with a nickname. Up to five guests can join you; no IHSD account is needed.</p>
         </Card>

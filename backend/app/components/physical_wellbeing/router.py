@@ -25,6 +25,7 @@ def _challenge_payload(db: Session, challenge: PeerChallenge, member_id: str | N
     return {
         "id": challenge.id,
         "title": challenge.title,
+        "goal_text": challenge.goal_text,
         "metric": challenge.metric,
         "target": challenge.target,
         "duration_days": challenge.duration_days,
@@ -77,6 +78,7 @@ def create_peer_challenge(data: schemas.PeerChallengeCreateIn, db: Session = Dep
     challenge = PeerChallenge(
         owner_id=user.id,
         title=title,
+        goal_text=data.goal_text.strip(),
         metric=data.metric,
         target=data.target,
         duration_days=data.duration_days,
