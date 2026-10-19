@@ -77,6 +77,7 @@ class TaskUpdate(BaseModel):
     task_type: TaskType | None = None
     deadline: datetime | None = None
     estimated_minutes: int | None = Field(default=None, ge=5, le=24 * 60)
+    predicted_minutes: int | None = Field(default=None, ge=5, le=24 * 60)   # student sets the real duration (overrides M3)
     priority: int | None = Field(default=None, ge=1, le=5)
     is_flexible: bool | None = None
     cognitive_load: CognitiveLoad | None = None   # changing this = student overrides the AI
@@ -499,6 +500,17 @@ class BadgeOut(BaseModel):
     target: int
 
 
+class MilestoneOut(BaseModel):
+    code: str
+    title: str
+    unit: str                        # focus_minutes / tasks_done / study_days
+    target: int
+    progress: int                    # capped at target
+    xp: int                          # bonus XP when reached
+    earned: bool
+    earned_at: datetime | None
+
+
 class ProgressOut(BaseModel):
     total_xp: int
     level: int
@@ -506,6 +518,8 @@ class ProgressOut(BaseModel):
     streak: StreakOut
     badges: list[BadgeOut]
     new_badges: list[str]            # earned just now
+    milestones: list[MilestoneOut] = []
+    new_milestones: list[str] = []   # reached just now
 
 
 # ===========================================================================
@@ -669,3 +683,40 @@ class ParticipantModeOut(BaseModel):
 
 class ResearcherOut(BaseModel):
     is_researcher: bool
+
+
+class DurationOut(BaseModel):
+    """M3: how long a task will really take (Objective 2)."""
+    task_id: str
+    estimated_minutes: int           # what the student said
+    predicted_minutes: int | None    # what the plan uses (M3 or the student's own choice)
+    model_minutes: int | None        # what M3 says right now (differs from predicted = student kept their own)
+    low: int | None                  # 10% - 90% range from M3
+    high: int | None
+    history_used: int                # finished tasks with logged time that M3 learned from
+    source: str                      # m3_model / model_unavailable
+
+
+class UsefulnessIn(BaseModel):
+    """1-5: how helpful a stress suggestion / timer length was (evaluation, proposal Table 3)."""
+    model_config = ConfigDict(extra="forbid")
+    rating: int = Field(ge=1, le=5)
+
+
+class UsefulnessOut(BaseModel):
+    id: str
+    rating: int
+
+
+class FocusAlertOut(BaseModel):
+    """FR-16: a sustained drop in focus quality or study habit (no diagnosis)."""
+    alert: bool
+    kind: Literal["quality", "habit"] | None
+    title: str | None
+    message: str | None
+    details: dict                    # recent vs usual: sessions, finished_rate, avg_rating, days_per_week
+
+
+class FocusAlertDismissIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    kind: Literal["quality", "habit"]

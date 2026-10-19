@@ -130,7 +130,7 @@ export function MissedSession() {
                   </p>
                 </div>
                 {i === 0 && chanceByHour &&
-                    <span className="text-[10px] font-bold uppercase tracking-wide text-white bg-brand-500 rounded-full px-2 py-0.5 shrink-0">Best</span>}
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-white bg-brand-500 rounded-full px-2 py-0.5 shrink-0">Best</span>}
               </button>)}
           </div>
         </Card>}

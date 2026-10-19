@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from app.components.scheduler import attention_service
 from app.components.scheduler.commitment_service import SL_OFFSET, get_availability, subtract
-from app.components.scheduler.engine import cp_scheduler, m1_predictor
+from app.components.scheduler.engine import cp_scheduler, m1_predictor, m3_predictor
 from app.components.scheduler.engine.cp_scheduler import WorkItem
 from app.components.scheduler.focus_service import break_for, recommend_timer
 from app.components.scheduler.models import PlannedSession, SchedulerAuditLog, Task
@@ -51,9 +51,10 @@ def open_tasks(db: Session, user, now: datetime) -> tuple[list[Task], list[Task]
     return flexible, fixed
 
 
-def work_left(task: Task) -> int:
+def work_left(task: Task, predicted: int | None = None) -> int:
     """Minutes still to do = (M3 prediction if we have it, else the student's estimate) - done."""
-    return max((task.predicted_minutes or task.estimated_minutes) - (task.actual_minutes or 0), 0)
+    total = predicted or task.predicted_minutes or task.estimated_minutes
+    return max(total - (task.actual_minutes or 0), 0)
 
 
 def free_time(db: Session, user, fixed: list[Task], now: datetime) -> list[tuple[datetime, datetime]]:
@@ -117,12 +118,19 @@ def solve(db: Session, user, now: datetime) -> dict:
     focus, rest, timer_source = piece_size(db, user, settings, profile)
     fit, attention_source = attention_fit(settings, profile, sessions, hours, focus, now)
 
-    items = [WorkItem(t.id, work_left(t), t.deadline, t.priority, t.cognitive_load) for t in tasks]
+    # M3: tasks made before the model (no prediction yet) get one now; a student's own choice is kept
+    durations = {}
+    if m3_predictor.available():
+        past = m3_predictor.history(db, user.id)
+        durations = {t.id: m3_predictor.predict(t.estimated_minutes, t.cognitive_load, t.task_type, past)["minutes"]
+                     for t in tasks if t.predicted_minutes is None}
+    items = [WorkItem(t.id, work_left(t, durations.get(t.id)), t.deadline, t.priority, t.cognitive_load)
+             for t in tasks]
     result = cp_scheduler.schedule(items, free_time(db, user, fixed, now), now,
                                    piece_minutes=focus, break_minutes=rest,
                                    day_cap_minutes=settings["max_study_minutes_per_day"],
                                    study_day=study_day, local_hour=local_hour, fit=fit)
-    return {"settings": settings, "tasks": tasks, "result": result, "focus_minutes": focus,
+    return {"settings": settings, "tasks": tasks, "result": result, "durations": durations, "focus_minutes": focus,
             "break_minutes": rest, "timer_source": timer_source, "attention_source": attention_source,
             "peak_hours": profile["peak_hours"] if attention_source == "m1_model" else []}
 
@@ -146,6 +154,8 @@ def build_plan(db: Session, user, now: datetime | None = None) -> dict:
         first_start.setdefault(s["task_id"], s["start"])
     for t in tasks:
         t.scheduled_start = first_start.get(t.id)                    # None = could not be planned
+        if t.id in plan["durations"]:
+            t.predicted_minutes = plan["durations"][t.id]            # save the new M3 prediction
 
     latency_ms = round((time.perf_counter() - began) * 1000)         # NFR-01: p95 must stay under 2 s
     db.add(SchedulerAuditLog(user_id=user.id, event_type="plan_generated", mode=settings["mode"],

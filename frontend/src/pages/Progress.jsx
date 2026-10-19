@@ -16,7 +16,7 @@ const CALENDAR_DAYS = 35;          // 5 weeks
 const DAY_CHANGE_HOUR = 3;         // work until 03:00 counts to the day before (same as the backend)
 const XP_RULES = [
     { emoji: '⏱️', title: 'Finish a focus session', text: '1 XP per focused minute - ×1.2 for medium and ×1.5 for heavy work.' },
-    { emoji: '✅', title: 'Complete a task', text: '+10 light · +20 medium · +35 heavy. Every 200 XP is a new level.' },
+    { emoji: '✅', title: 'Complete a task', text: '+10 light · +20 medium · +35 heavy. Milestones give bonus XP. Every 200 XP is a new level.' },
     { emoji: '🔥', title: 'Keep a streak', text: 'Study a little every day. One missed day a week and stressful days are forgiven.' },
 ];
 
@@ -136,6 +136,32 @@ export function Progress() {
               </Card>
             </motion.div>)}
         </div>
+      </div>
+
+      <Milestones items={progress.milestones}/>
+    </div>;
+}
+
+// "12 / 25 h", "7 / 10 tasks", "3 / 7 days"
+const UNIT = { focus_minutes: (n) => `${Math.floor(n / 60)}h${n % 60 ? ` ${n % 60}m` : ''}`, tasks_done: (n) => `${n}`, study_days: (n) => `${n}` };
+const UNIT_WORD = { focus_minutes: '', tasks_done: ' tasks', study_days: ' days' };
+
+function Milestones({ items }) {
+    if (!items?.length) return null;
+    return <div>
+      <h3 className="text-lg font-bold text-charcoal mb-3">Milestones</h3>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {items.map((m) => <Card key={m.code} padding="sm" className={cn('flex flex-col gap-2', !m.earned && 'opacity-80')}>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-bold text-charcoal">{m.earned ? '🏁 ' : ''}{m.title}</p>
+              <span className="text-xs font-bold bg-brand-50 text-brand-700 rounded-full px-2.5 py-1 shrink-0">+{m.xp} XP</span>
+            </div>
+            <ProgressBar value={Math.round(m.progress / m.target * 100)} color={m.earned ? 'bg-sage' : 'bg-brand-500'}/>
+            <p className="text-xs font-semibold text-charcoal-muted">
+              {m.earned ? `Reached ${toDate(m.earned_at)?.toLocaleDateString([], { month: 'short', day: 'numeric' })}`
+                  : `${UNIT[m.unit](m.progress)} / ${UNIT[m.unit](m.target)}${UNIT_WORD[m.unit]}`}
+            </p>
+          </Card>)}
       </div>
     </div>;
 }

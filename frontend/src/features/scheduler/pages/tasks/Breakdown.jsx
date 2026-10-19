@@ -131,10 +131,10 @@ export function TaskBreakdown() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      <button onClick={() => setEditing({ ...s })} className="w-8 h-8 rounded-full flex items-center justify-center text-charcoal-muted hover:bg-black/[0.04] transition-colors" aria-label={`Edit ${s.title}`}>
+                      <button onClick={() => setEditing({ ...s })} className="w-11 h-11 rounded-full flex items-center justify-center text-charcoal-muted hover:bg-black/[0.04] transition-colors" aria-label={`Edit ${s.title}`}>
                         <PencilIcon size={14}/>
                       </button>
-                      <button onClick={() => remove(s)} className="w-8 h-8 rounded-full flex items-center justify-center text-charcoal-muted hover:bg-brand-50 hover:text-brand-600 transition-colors" aria-label={`Delete ${s.title}`}>
+                      <button onClick={() => remove(s)} className="w-11 h-11 rounded-full flex items-center justify-center text-charcoal-muted hover:bg-brand-50 hover:text-brand-600 transition-colors" aria-label={`Delete ${s.title}`}>
                         <Trash2Icon size={14}/>
                       </button>
                     </div>

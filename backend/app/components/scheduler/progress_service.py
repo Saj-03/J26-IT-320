@@ -36,6 +36,20 @@ BADGES = {
 }
 
 
+# MILESTONES = long-term goals with bonus XP (Objective 7). code -> (title, what is counted, target, bonus XP)
+MILESTONES = {
+    "focus_1h":   ("First hour of focus",   "focus_minutes", 60, 20),
+    "focus_10h":  ("10 hours of focus",     "focus_minutes", 600, 50),
+    "focus_25h":  ("25 hours of focus",     "focus_minutes", 1500, 100),
+    "focus_50h":  ("50 hours of focus",     "focus_minutes", 3000, 150),
+    "tasks_10":   ("10 tasks finished",     "tasks_done", 10, 40),
+    "tasks_25":   ("25 tasks finished",     "tasks_done", 25, 80),
+    "tasks_50":   ("50 tasks finished",     "tasks_done", 50, 150),
+    "days_7":     ("7 study days",          "study_days", 7, 30),
+    "days_30":    ("30 study days",         "study_days", 30, 100),
+}
+
+
 def study_day(moment: datetime) -> date:
     """Sri Lanka study day of a UTC time."""
     return (moment + SL_OFFSET - timedelta(hours=DAY_CHANGE_HOUR)).date()
@@ -126,6 +140,27 @@ def award_badges(db: Session, user, progress: dict[str, int]) -> list[str]:
     return new
 
 
+def milestone_counts(db: Session, user, done: list[FocusSession]) -> dict[str, int]:
+    """Focused minutes (all valid sessions), finished tasks and study days so far."""
+    minutes = (db.query(func.sum(FocusSession.actual_minutes))
+                 .filter(FocusSession.user_id == user.id, FocusSession.is_valid.is_(True),
+                         FocusSession.was_missed.is_(False)).scalar() or 0)
+    tasks = db.query(Task).filter(Task.user_id == user.id, Task.status == "done").count()
+    return {"focus_minutes": int(minutes), "tasks_done": tasks,
+            "study_days": len({study_day(x.started_at) for x in done})}
+
+
+def award_milestones(db: Session, user, counts: dict[str, int]) -> list[str]:
+    """Give each reached milestone once, with its bonus XP (id = "milestone-<code>-<user>")."""
+    new = []
+    for code, (title, what, target, xp) in MILESTONES.items():
+        key = f"milestone-{code}-{user.id}"
+        if counts[what] >= target and db.get(RewardEvent, key) is None:
+            db.add(RewardEvent(id=key, user_id=user.id, kind="milestone", amount=xp, label=title))
+            new.append(code)
+    return new
+
+
 def check_progress(db: Session, user, now: datetime | None = None) -> dict:
     """XP, level, streak and badges. New badges are given here (safe to call often)."""
     now = now or datetime.utcnow()
@@ -133,7 +168,10 @@ def check_progress(db: Session, user, now: datetime | None = None) -> dict:
     s = streak({study_day(x.started_at) for x in done}, stress_days(db, user), study_day(now))
     progress = badge_progress(db, user, done, s["current"])
     new = award_badges(db, user, progress)
+    counts = milestone_counts(db, user, done)
+    new_milestones = award_milestones(db, user, counts)
     db.commit()
+    reached = {r.id: r.created_at for r in db.query(RewardEvent).filter_by(user_id=user.id, kind="milestone")}
 
     earned = {r.id: r.created_at for r in db.query(RewardEvent).filter_by(user_id=user.id, kind="badge")}
     total = db.query(func.sum(RewardEvent.amount)).filter(RewardEvent.user_id == user.id).scalar() or 0
@@ -148,4 +186,10 @@ def check_progress(db: Session, user, now: datetime | None = None) -> dict:
                     "progress": min(progress[code], target), "target": target}
                    for code, (emoji, title, how, target) in BADGES.items()],
         "new_badges": new,
+        "milestones": [{"code": code, "title": title, "target": target, "xp": xp,
+                        "progress": min(counts[what], target), "unit": what,
+                        "earned": f"milestone-{code}-{user.id}" in reached,
+                        "earned_at": reached.get(f"milestone-{code}-{user.id}")}
+                       for code, (title, what, target, xp) in MILESTONES.items()],
+        "new_milestones": new_milestones,
     }

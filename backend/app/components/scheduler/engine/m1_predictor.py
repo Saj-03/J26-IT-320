@@ -102,7 +102,8 @@ class M1Student:
         by_length = dict(zip(TIMER_OPTIONS, self.chances([(peak, m, load) for m in TIMER_OPTIONS])))
         logit = lambda p: np.log(max(p, 1e-6) / max(1 - p, 1e-6))
         short = logit(by_length[TIMER_OPTIONS[0]])
-        capacity = max(m for m, p in by_length.items() if logit(p) >= short - CAPACITY_DROP)
+        capacity = max((m for m, p in by_length.items() if logit(p) >= short - CAPACITY_DROP),
+                   default=TIMER_OPTIONS[0])                 # no usable answer (e.g. NaN) -> shortest timer
         focus = int(min(max(round(capacity / 5) * 5, POMODORO_MIN), POMODORO_MAX))
 
         return {

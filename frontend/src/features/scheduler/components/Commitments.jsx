@@ -93,7 +93,7 @@ export default function Commitments({ items, onChanged }) {
                     </p>
                   </div>
                   {c.kind !== 'protected_block' &&
-                    <button onClick={() => remove(c.id)} aria-label={`Delete ${c.title}`} className="w-9 h-9 rounded-full flex items-center justify-center text-charcoal-muted hover:bg-black/[0.05] hover:text-red-600 transition-colors">
+                    <button onClick={() => remove(c.id)} aria-label={`Delete ${c.title}`} className="w-11 h-11 rounded-full flex items-center justify-center text-charcoal-muted hover:bg-black/[0.05] hover:text-red-600 transition-colors">
                       <Trash2Icon size={15}/>
                     </button>}
                 </li>;

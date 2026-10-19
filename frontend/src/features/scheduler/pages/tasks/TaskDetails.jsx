@@ -9,6 +9,7 @@ import { Button } from '../../../../shared/components/ui/Button';
 import { ProgressBar } from '../../../../shared/components/ui/ProgressBar';
 import { ErrorState, LoadingState } from '../../../../shared/components/ui/States';
 import { LoadPicker, EstimatedTime, SectionTitle, formatMinutes } from '../../components/PlanPrimitives';
+import DurationCard from '../../components/DurationCard';
 import { apiErrorMessage } from '../../../../shared/api/client';
 import { finishTask, getTask, updateTask } from '../../api';
 import { LOAD_LABEL, LOAD_VALUE, dayText, dueText, isOpen, priorityWord } from '../../lib';
@@ -34,9 +35,11 @@ export function TaskDetails() {
     const steps = task.subtasks;
     const done = steps.filter((s) => s.status === 'done').length;
     const progress = steps.length ? done / steps.length * 100 : task.status === 'done' ? 100 : 0;
+    // Work left uses the M3 time when there is one (what the plan uses), minus focus minutes already logged
+    const left = (t) => Math.max((t.predicted_minutes || t.estimated_minutes) - (t.actual_minutes || 0), 0);
     const remaining = steps.length
-        ? steps.filter((s) => s.status !== 'done').reduce((sum, s) => sum + s.estimated_minutes, 0)
-        : (task.status === 'done' ? 0 : task.estimated_minutes);
+        ? steps.filter((s) => s.status !== 'done').reduce((sum, s) => sum + left(s), 0)
+        : (task.status === 'done' ? 0 : left(task));
 
     // Student changes a step's effort -> saved (and recorded as a correction of the AI)
     const changeLoad = (step, label) =>
@@ -56,6 +59,9 @@ export function TaskDetails() {
           </div>}/>
 
       {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
+
+      {/* M3: how long it will really take (only for a task without steps that is still open) */}
+      {!steps.length && isOpen(task) && <DurationCard taskId={task.id} onChanged={load}/>}
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Overview */}

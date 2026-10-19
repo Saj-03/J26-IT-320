@@ -13,6 +13,7 @@ export const getTask = (id) => api.get(`/scheduler/tasks/${id}`).then((r) => r.d
 export const createTask = (task) => api.post("/scheduler/tasks", task).then((r) => r.data);
 export const updateTask = (id, changes) => api.patch(`/scheduler/tasks/${id}`, changes).then((r) => r.data);
 export const deleteTask = (id) => api.delete(`/scheduler/tasks/${id}`);
+export const getTaskDuration = (id) => api.get(`/scheduler/tasks/${id}/duration`).then((r) => r.data);   // M3
 // FR-03: the task cut into steps that fit my focus length (GET = preview, POST = create them)
 export const suggestSteps = (id) => api.get(`/scheduler/tasks/${id}/suggested-steps`).then((r) => r.data);
 export const createSuggestedSteps = (id) => api.post(`/scheduler/tasks/${id}/suggested-steps`).then((r) => r.data);
@@ -40,6 +41,12 @@ export const resumeFocus = (id) => api.post(`/scheduler/focus/${id}/resume`).the
 export const endFocus = (id, rating) =>
   api.post(`/scheduler/focus/${id}/end`, rating ? { focus_rating: rating } : {}).then(progressChanged);
 
+export const rateTimer = (id, rating) => api.post(`/scheduler/focus/${id}/timer-rating`, { rating }).then((r) => r.data);   // 1-5 usefulness
+
+// FR-16: focus quality / habit drop note (GET), hide it for 7 days (POST)
+export const getFocusAlert = () => api.get("/scheduler/focus/alert").then((r) => r.data);
+export const dismissFocusAlert = (kind) => api.post("/scheduler/focus/alert/dismiss", { kind }).then((r) => r.data);
+
 // --- Attention profile (M1 model): best / worst hours, capacity, chance per hour ---
 export const getAttentionProfile = () => api.get("/scheduler/attention/profile").then((r) => r.data);
 
@@ -51,6 +58,7 @@ export const listStressProposals = () => api.get("/scheduler/stress/proposals").
 export const proposeStressChanges = () => api.post("/scheduler/stress/propose").then((r) => r.data);
 export const decideStressProposal = (id, decision, keep) =>
   api.post(`/scheduler/stress/proposals/${id}/decision`, keep ? { decision, keep } : { decision }).then((r) => r.data);
+export const rateStressProposal = (id, rating) => api.post(`/scheduler/stress/proposals/${id}/rating`, { rating }).then((r) => r.data);
 export const restoreStressProposal = (id) => api.post(`/scheduler/stress/proposals/${id}/restore`).then((r) => r.data);
 
 // The backend sends UTC times without a "Z" (e.g. "2026-10-17T13:30:00").

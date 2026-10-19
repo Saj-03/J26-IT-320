@@ -12,10 +12,11 @@ from app.db.session import get_db
 from app.core.dependencies import get_current_user
 from app.components.scheduler import (
     schemas, service, task_service, commitment_service, focus_service, settings_service, stress_service,
-    attention_service, progress_service, planner_service, research_service,
+    attention_service, progress_service, planner_service, research_service, feedback_service,
+    alert_service, research_export,
 )
 from app.components.scheduler.models import Task, FocusSession, ScheduleChange
-from app.components.scheduler.engine import m1_predictor, stress_rules
+from app.components.scheduler.engine import m1_predictor, m3_predictor, stress_rules
 from app.shared.integration import c3_weekly_summary as weekly_summary
 
 router = APIRouter()
@@ -46,6 +47,16 @@ def list_tasks(
 def get_task(task_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """One task with its subtasks."""
     return task_service.get_task_detail(db, user, task_id)
+
+
+@router.get("/tasks/{task_id}/duration", response_model=schemas.DurationOut)
+def task_duration(task_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """M3: how long this task will really take, with a 10-90% range."""
+    task = task_service.get_own_task(db, user, task_id)
+    p = m3_predictor.predict_task(db, task)
+    return {"task_id": task.id, "estimated_minutes": task.estimated_minutes, "predicted_minutes": task.predicted_minutes,
+            "model_minutes": p["minutes"] if p else None, "low": p["low"] if p else None, "high": p["high"] if p else None,
+            "history_used": p["history_used"] if p else 0, "source": "m3_model" if p else "model_unavailable"}
 
 
 @router.get("/tasks/{task_id}/suggested-steps", response_model=schemas.SuggestedStepsOut)
@@ -187,6 +198,26 @@ def end_focus(session_id: str, data: schemas.FocusEndIn | None = None,
     return focus_service.end_session(db, user, session_id, data or schemas.FocusEndIn())
 
 
+@router.get("/focus/alert", response_model=schemas.FocusAlertOut)
+def focus_alert(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """FR-16: has my focus quality or study habit dropped compared with my usual weeks?"""
+    return alert_service.focus_alert(db, user)
+
+
+@router.post("/focus/alert/dismiss")
+def dismiss_focus_alert(data: schemas.FocusAlertDismissIn,
+                        db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Hide this kind of alert for 7 days."""
+    return alert_service.dismiss(db, user, data.kind)
+
+
+@router.post("/focus/{session_id}/timer-rating", response_model=schemas.UsefulnessOut)
+def rate_timer(session_id: str, data: schemas.UsefulnessIn,
+               db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """1-5: was the suggested session length useful? (adaptive timer acceptance, once per session)"""
+    return feedback_service.rate_timer(db, user, session_id, data.rating)
+
+
 @router.post("/focus/{session_id}/rating", response_model=schemas.FocusSessionOut)
 def rate_focus(session_id: str, data: schemas.FocusRatingIn,
                db: Session = Depends(get_db), user=Depends(get_current_user)):
@@ -283,6 +314,13 @@ def stress_decide(change_id: str, data: schemas.StressDecisionIn,
     return stress_service.decide(db, user, change_id, data.decision, data.keep)
 
 
+@router.post("/stress/proposals/{change_id}/rating", response_model=schemas.UsefulnessOut)
+def rate_stress_proposal(change_id: str, data: schemas.UsefulnessIn,
+                         db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """1-5: how helpful was this lighter-plan suggestion? (deferral appropriateness, once, after deciding)"""
+    return feedback_service.rate_proposal(db, user, change_id, data.rating)
+
+
 @router.post("/stress/proposals/{change_id}/restore", response_model=schemas.StressProposalOut)
 def stress_restore(change_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Undo an accepted proposal - back to the plan I had before."""
@@ -355,3 +393,11 @@ def research_set_mode(research_id: str, data: schemas.ParticipantModeIn,
                       db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Set a participant's experiment mode (static / adaptive / attention_only) and AB/BA group."""
     return research_service.set_mode(db, user, research_id, data.mode, data.pilot_group)
+
+
+@router.get("/research/export.csv")
+def research_export_csv(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """FR-12: pilot metrics (proposal Table 3) per participant x mode, research IDs only. Researchers only."""
+    csv_text = research_export.export_csv(db, user)
+    name = f"c3_pilot_metrics_{datetime.utcnow():%Y%m%d}.csv"
+    return Response(csv_text, media_type="text/csv", headers={"Content-Disposition": f'attachment; filename="{name}"'})

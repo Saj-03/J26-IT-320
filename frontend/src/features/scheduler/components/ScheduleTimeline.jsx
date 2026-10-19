@@ -28,13 +28,13 @@ export function ScheduleTimeline({ tasks }) {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h4 className="font-bold text-charcoal text-sm">{t.title}</h4>
-                  <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full', pri.bg, pri.text)}>{pri.label}</span>
+                  <span className={cn('text-[11px] font-semibold px-2 py-0.5 rounded-full', pri.bg, pri.text)}>{pri.label}</span>
                 </div>
                 <p className="text-xs text-charcoal-muted mt-0.5">
                   {LOAD_LABEL[t.cognitive_load]} effort · {formatMinutes(t.estimated_minutes)}
                 </p>
               </div>
-              <button onClick={() => navigate('/app/focus/setup', { state: { taskId: t.id } })} className="shrink-0 w-9 h-9 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 transition-colors shadow-glow" aria-label={`Start ${t.title}`}>
+              <button onClick={() => navigate('/app/focus/setup', { state: { taskId: t.id } })} className="shrink-0 w-11 h-11 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 transition-colors shadow-glow" aria-label={`Start ${t.title}`}>
                 <PlayIcon size={14} fill="currentColor"/>
               </button>
             </div>

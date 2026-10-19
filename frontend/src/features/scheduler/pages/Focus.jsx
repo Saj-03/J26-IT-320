@@ -8,7 +8,8 @@ import { Modal } from '../../../shared/components/ui/Modal';
 import { LoadingState } from '../../../shared/components/ui/States';
 import { apiErrorMessage } from '../../../shared/api/client';
 import { cn } from '../../../shared/lib/cn';
-import { endFocus, getActiveFocus, getTask, pauseFocus, resumeFocus, utcMs } from '../api';
+import { endFocus, getActiveFocus, getTask, pauseFocus, resumeFocus, utcMs, rateTimer } from '../api';
+import UsefulnessRating from '../components/UsefulnessRating';
 
 // Badge codes from the backend (progress_service.BADGES) -> what the student sees
 const BADGE_NAMES = {
@@ -171,6 +172,9 @@ export function Focus() {
                 <p className="text-sm font-bold text-emerald-800">New badge{result.new_badges.length > 1 ? 's' : ''}!</p>
                 <p className="text-sm text-emerald-700 mt-1">{result.new_badges.map((c) => BADGE_NAMES[c] ?? c).join(' · ')}</p>
               </div>}
+            {result.session.timer_recommended &&
+              <UsefulnessRating question={`Was the suggested ${result.session.planned_minutes}-minute length right for you?`}
+                  send={(n) => rateTimer(result.session.id, n)}/>}
             <Button size="lg" fullWidth onClick={() => navigate('/app')}>Done</Button>
           </div>}
       </Modal>

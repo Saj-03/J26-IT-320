@@ -26,6 +26,9 @@ def env(monkeypatch):
     # test_scheduler_m2_app.py switches it back on.
     from app.components.scheduler.engine import m2_classifier
     monkeypatch.setattr(m2_classifier, "available", lambda: False)
+    # M3 (duration model) off too: work left = the student's estimate. test_scheduler_m3_app.py turns it on.
+    from app.components.scheduler.engine import m3_predictor
+    monkeypatch.setattr(m3_predictor, "available", lambda: False)
 
     engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
     Base.metadata.create_all(engine)

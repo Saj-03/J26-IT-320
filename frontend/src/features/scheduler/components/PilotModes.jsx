@@ -3,7 +3,8 @@
 // Participants are shown by research ID only (no names), and only if they gave research consent.
 // Researchers = SCHEDULER_RESEARCHER_EMAILS in backend/.env; everyone else sees a short note.
 import React, { useEffect, useState } from 'react';
-import { FlaskConicalIcon } from 'lucide-react';
+import { DownloadIcon, FlaskConicalIcon } from 'lucide-react';
+import { Button } from '../../../shared/components/ui/Button';
 import { Card } from '../../../shared/components/ui/Card';
 import api, { apiErrorMessage } from '../../../shared/api/client';
 import { toDate } from '../lib';
@@ -14,14 +15,14 @@ const MODES = [
     { value: 'adaptive', label: 'Adaptive' },
     { value: 'attention_only', label: 'Attention only' },
 ];
-const URL = '/scheduler/research/participants';
+const PARTICIPANTS = '/scheduler/research/participants';
 
 export default function PilotModes() {
     const [isResearcher, setIsResearcher] = useState(null);
     const [data, setData] = useState(null);
     const [error, setError] = useState('');
 
-    const load = () => api.get(URL).then((r) => setData(r.data)).catch((e) => setError(apiErrorMessage(e)));
+    const load = () => api.get(PARTICIPANTS).then((r) => setData(r.data)).catch((e) => setError(apiErrorMessage(e)));
     useEffect(() => {
         api.get('/scheduler/research/me')
             .then((r) => { setIsResearcher(r.data.is_researcher); if (r.data.is_researcher) load(); })
@@ -30,7 +31,19 @@ export default function PilotModes() {
 
     const change = (researchId, body) => {
         setError('');
-        api.patch(`${URL}/${researchId}`, body).then(load).catch((e) => setError(apiErrorMessage(e)));
+        api.patch(`${PARTICIPANTS}/${researchId}`, body).then(load).catch((e) => setError(apiErrorMessage(e)));
+    };
+
+    // FR-12: pilot metrics CSV (research IDs only). Fetched with the login token, then saved by the browser.
+    const download = () => {
+        setError('');
+        api.get('/scheduler/research/export.csv', { responseType: 'blob' }).then((r) => {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(r.data);
+            link.download = `c3_pilot_metrics_${new Date().toISOString().slice(0, 10)}.csv`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }).catch((e) => setError(apiErrorMessage(e)));
     };
 
     const counts = Object.fromEntries(MODES.map((m) => [m.value, data?.participants.filter((p) => p.mode === m.value).length ?? 0]));
@@ -38,12 +51,13 @@ export default function PilotModes() {
     return (<Card padding="none">
       <div className="p-5 border-b border-black/[0.05] flex items-start gap-3">
         <span className="w-9 h-9 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0"><FlaskConicalIcon size={17}/></span>
-        <div>
+        <div className="flex-1">
           <h3 className="font-bold text-charcoal">Scheduler pilot modes</h3>
           <p className="text-xs text-charcoal-muted">
             Research IDs of consenting students only · Static = baseline, Adaptive = attention + stress, Attention only = ablation · AB / BA = order of the two conditions
           </p>
         </div>
+        {isResearcher && <Button size="sm" variant="outline" onClick={download}><DownloadIcon size={15}/> Metrics CSV</Button>}
       </div>
 
       {isResearcher === false &&

@@ -12,6 +12,7 @@ import { cn } from '../../../shared/lib/cn';
 import { fakeExtract } from '../utils/fakeExtract';
 import { useVoiceInput } from '../hooks/useVoiceInput';
 import { LoadBadge } from '../components/PlanPrimitives';
+import DurationCard from '../components/DurationCard';
 import { createTask, getAttentionProfile } from '../api';
 import { LOAD_LABEL, PRIORITY_NUMBER, dayText, hoursLabel } from '../lib';
 
@@ -101,6 +102,7 @@ export function AddTask() {
                 : saved.load_confidence ? `AI read your task as ${saved.cognitive_load} effort (${Math.round(saved.load_confidence * 100)}% sure). You can change it on the task.`
                 : 'Effort set to medium - change it on the task if needed.'}
           </div>
+          <DurationCard taskId={saved.id}/>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button className="flex-1" onClick={() => navigate('/app/schedule')}>
               <CheckIcon size={16}/> Go to my schedule
@@ -129,7 +131,7 @@ export function AddTask() {
               <textarea id="task-text" value={input} onChange={(e) => setInput(e.target.value)} rows={3} placeholder="Try typing: Submit chemistry report by Friday, about 3 hours" className="w-full rounded-2xl border border-black/10 bg-cream/50 pl-4 pr-16 py-3.5 text-sm text-charcoal placeholder:text-charcoal-muted outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 resize-none"/>
 
               {voice.supported ?
-                <button type="button" onClick={toggleMic} aria-pressed={voice.listening} aria-label={voice.listening ? 'Stop voice input' : 'Start voice input'} title={voice.listening ? 'Click to stop' : 'Speak your task'} className={cn('absolute right-3 top-3 w-10 h-10 rounded-full flex items-center justify-center transition-colors', voice.listening ? 'bg-red-500 text-white' : 'bg-white text-brand-600 border border-black/10 hover:bg-brand-50')}>
+                <button type="button" onClick={toggleMic} aria-pressed={voice.listening} aria-label={voice.listening ? 'Stop voice input' : 'Start voice input'} title={voice.listening ? 'Click to stop' : 'Speak your task'} className={cn('absolute right-3 top-3 w-11 h-11 rounded-full flex items-center justify-center transition-colors', voice.listening ? 'bg-red-500 text-white' : 'bg-white text-brand-600 border border-black/10 hover:bg-brand-50')}>
                   {voice.listening && <span className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-60"/>}
                   <MicIcon size={18} className="relative"/>
                 </button> :

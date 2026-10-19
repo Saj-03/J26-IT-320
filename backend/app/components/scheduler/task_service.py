@@ -16,7 +16,7 @@ from datetime import datetime
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.components.scheduler.engine import m2_classifier
+from app.components.scheduler.engine import m2_classifier, m3_predictor
 from app.components.scheduler.models import FocusSession, PlannedSession, SchedulerAuditLog, Task
 from app.components.scheduler.schemas import TaskCreate, TaskUpdate
 
@@ -87,8 +87,12 @@ def create_task(db: Session, user, data: TaskCreate) -> Task:
     task = Task(user_id=user.id, load_set_by_student=student_picked_load, load_confidence=confidence, **fields)
     db.add(task)
     db.flush()                                   # gives task.id before commit
+    # M3: how long it will REALLY take, from the student's own past over-runs (None = keep the estimate)
+    duration = m3_predictor.predict_task(db, task)
+    task.predicted_minutes = duration["minutes"] if duration else None
     audit(db, user.id, "task_created", task_id=task.id, load=task.cognitive_load, load_source=load_source,
-          load_confidence=confidence, estimated_minutes=task.estimated_minutes, is_subtask=bool(task.parent_id))
+          load_confidence=confidence, estimated_minutes=task.estimated_minutes, is_subtask=bool(task.parent_id),
+          predicted_minutes=task.predicted_minutes)
     db.commit()
     db.refresh(task)
     return task
@@ -141,8 +145,22 @@ def update_task(db: Session, user, task_id: str, data: TaskUpdate) -> Task:
     if "scheduled_start" in changes:
         drop_planned_pieces(db, [task.id])
 
+    # Student set the duration themselves (e.g. "keep my estimate") -> that wins over M3.
+    # Sending null = "use the AI time again".
+    student_duration = changes.get("predicted_minutes")
+    if "predicted_minutes" in changes:
+        audit(db, user.id, "duration_overridden" if student_duration else "duration_ai_restored",
+              task_id=task.id, before=task.predicted_minutes, student=student_duration,
+              estimated=task.estimated_minutes)
+
     for field, value in changes.items():
         setattr(task, field, value)
+
+    # Estimate / load / type changed (or the student asked for the AI time) -> ask M3 again
+    ask_again = changes.keys() & {"estimated_minutes", "cognitive_load", "task_type"}
+    if ("predicted_minutes" in changes and student_duration is None) or (ask_again and "predicted_minutes" not in changes):
+        duration = m3_predictor.predict_task(db, task)
+        task.predicted_minutes = duration["minutes"] if duration else None
 
     audit(db, user.id, "task_updated", task_id=task.id, fields=sorted(changes))
     db.commit()

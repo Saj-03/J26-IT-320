@@ -16,8 +16,9 @@ import { apiErrorMessage } from '../../../../shared/api/client';
 import { cn } from '../../../../shared/lib/cn';
 import {
     decideStressProposal, getStressStatus, getTaskSafety, listStressProposals,
-    proposeStressChanges, restoreStressProposal, utcMs,
+    proposeStressChanges, restoreStressProposal, utcMs, rateStressProposal,
 } from '../../api';
+import UsefulnessRating from '../../components/UsefulnessRating';
 
 const ICON = { move: CalendarClockIcon, split: ScissorsIcon, rest: CoffeeIcon };
 const LOAD_LABEL = { low: 'Light', medium: 'Medium', heavy: 'Heavy' };   // PlanPrimitives uses these words
@@ -207,6 +208,9 @@ export function StressAdjust() {
                     ? 'Changed your mind? You can go back to your original plan.'
                     : 'Remember to take short breaks.'}
                 </p>
+                {proposal.decision !== 'restored' &&
+                  <UsefulnessRating className="mt-3" question="How helpful was this suggestion?"
+                      send={(n) => rateStressProposal(proposal.id, n)}/>}
               </div>
               <div className="flex flex-wrap gap-2">
                 {(proposal.decision === 'accepted' || proposal.decision === 'edited') &&

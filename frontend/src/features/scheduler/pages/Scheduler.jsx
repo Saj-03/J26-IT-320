@@ -16,6 +16,7 @@ import { ErrorState, LoadingState } from '../../../shared/components/ui/States';
 import { LoadBadge, SectionTitle, formatMinutes } from '../components/PlanPrimitives';
 import PlannedTasks from '../components/PlannedTasks';
 import Commitments from '../components/Commitments';
+import FocusAlert from '../components/FocusAlert';
 import { categoryStyles } from '../../../shared/lib/data';
 import { apiErrorMessage } from '../../../shared/api/client';
 import { finishTask, getAttentionProfile, getPlan, getRecovery, getStressStatus, listCommitments, listTasks, planMyWeek, updateTask, utcMs } from '../api';
@@ -138,6 +139,9 @@ export function Scheduler() {
               <SparklesIcon size={16}/> {planning ? 'Planning…' : 'Plan my week'}
             </Button>}/>
 
+      {/* FR-16: focus quality / habit dropped this week */}
+      <FocusAlert/>
+
       {/* FR-09: missed study sessions -> recovery plan preview (applied only when the student says so) */}
       {recovery?.missed.length > 0 && !result &&
         <Card padding="lg" className="border border-brand-100 bg-brand-50/60">
@@ -221,7 +225,7 @@ export function Scheduler() {
               <div />
               {days.map((d, i) => <div key={i} className="text-center pb-2">
                   <p className={cn('text-sm font-bold', i === 0 ? 'text-brand-600' : 'text-charcoal')}>{d.toLocaleDateString([], { weekday: 'short' })}</p>
-                  <span className={cn('text-[10px] font-semibold', i === 0 ? 'text-brand-500' : 'text-charcoal-muted')}>
+                  <span className={cn('text-[11px] font-semibold', i === 0 ? 'text-brand-500' : 'text-charcoal-muted')}>
                     {i === 0 ? 'Today' : d.toLocaleDateString([], { day: 'numeric', month: 'short' })}
                   </span>
                 </div>)}
@@ -249,7 +253,7 @@ export function Scheduler() {
                     <p className={cn('text-[11px] font-bold leading-tight truncate', cat.text, done && 'line-through')}>
                       {peak && '🔥 '}{b.title}
                     </p>
-                    <p className="text-[9px] text-charcoal-muted font-medium">
+                    <p className="text-[11px] text-charcoal-muted font-medium">
                       {formatMinutes(Math.round((b.end - b.start) / 60000))}{b.piece && b.piece.of > 1 && ` · part ${b.piece.piece}/${b.piece.of}`}
                     </p>
                   </div>);
