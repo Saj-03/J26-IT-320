@@ -679,7 +679,8 @@ def save_plan_checkin(data: schemas.PlanCheckInIn, db: Session = Depends(get_db)
 @router.get("/week-plan/history")
 def list_week_plan_history(db: Session = Depends(get_db), user=Depends(get_current_user)):
     snapshots = (db.query(PhysicalPlanSnapshot)
-                 .filter_by(user_id=user.id)
+                 .filter(PhysicalPlanSnapshot.user_id == user.id,
+                         PhysicalPlanSnapshot.plan_date < datetime.date.today())
                  .order_by(PhysicalPlanSnapshot.plan_date.desc(), PhysicalPlanSnapshot.created_at.desc())
                  .limit(90).all())
     results = []

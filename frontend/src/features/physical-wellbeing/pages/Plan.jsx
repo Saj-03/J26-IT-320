@@ -11,6 +11,7 @@ import { Button } from '../../../shared/components/ui/Button';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { PhysicalNav } from '../components/PhysicalNav';
 import { AdaptedChip } from '../components/Shared';
+import { WELLBEING_HERO_SLIDES } from '../components/WellbeingHeroBanner';
 import { getWeekPlan, getWeekPlanHistory, getWeekPlanSnapshot, deleteWeekPlanSnapshot, updatePlanDuration, getPlanCheckins, savePlanCheckin, getProfile } from '../api';
 import { cn } from '../../../shared/lib/cn';
 import { RecommendationImage, mealImageFallbacks, exerciseImageFallback } from '../components/RecommendationImage';
@@ -27,6 +28,7 @@ export function PhysicalPlan() {
 
   // Mode and view state
   const [activeTab, setActiveTab] = useState('week'); // 'week' | 'today'
+  const [heroSlideIdx, setHeroSlideIdx] = useState(0);
   const [daysCount, setDaysCount] = useState(7); // customizable 1–31 day plan length
   const [daysDraft, setDaysDraft] = useState('7');
   const [durationPreferenceLoaded, setDurationPreferenceLoaded] = useState(false);
@@ -71,6 +73,13 @@ export function PhysicalPlan() {
     }),
   ];
   const selectedHistoryRecords = historyDateGroups[selectedHistoryDate] || [];
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setHeroSlideIdx((index) => (index + 1) % WELLBEING_HERO_SLIDES.length);
+    }, 3500);
+    return () => window.clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -259,10 +268,22 @@ export function PhysicalPlan() {
 
   return (
     <div className="space-y-6">
-      <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-800 px-4 py-5 text-white shadow-lg sm:px-6 sm:py-6">
-        <div className="absolute -right-12 -top-20 -z-10 h-64 w-64 rounded-full bg-lime-300/10 blur-2xl" />
-        <div className="absolute bottom-0 right-24 -z-10 h-32 w-32 rounded-full bg-teal-300/10 blur-2xl" />
-        <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
+      <section className="relative isolate min-h-[285px] overflow-hidden rounded-[1.75rem] bg-emerald-950 px-4 py-5 text-white shadow-lg sm:px-6 sm:py-6">
+        <div className="pointer-events-none absolute inset-0 z-0">
+          {WELLBEING_HERO_SLIDES.map((slide, index) => (
+            <motion.div
+              key={slide.src}
+              className="absolute inset-0"
+              style={{ zIndex: index === heroSlideIdx ? 2 : 1 }}
+              animate={{ opacity: index === heroSlideIdx ? 1 : 0 }}
+              transition={{ duration: 0.7, ease: 'easeInOut' }}
+            >
+              <img src={slide.src} alt="" aria-hidden="true" className="h-full w-full object-cover object-center" loading={index === 0 ? 'eager' : 'lazy'} />
+            </motion.div>
+          ))}
+        </div>
+        <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-emerald-950/95 via-emerald-950/80 to-emerald-950/40" />
+        <div className="relative z-20 flex min-h-[237px] flex-col justify-between gap-5 xl:flex-row xl:items-center">
           <div className="max-w-2xl">
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold text-emerald-50">
               <SparklesIcon size={14} className="text-lime-300" /> Your adaptive wellbeing plan
@@ -290,6 +311,13 @@ export function PhysicalPlan() {
               >
                 <span>📚</span> Exam week {isExamPeriod ? 'on' : 'off'}
               </button>
+            </div>
+            <div className="mt-4 flex items-center gap-1.5" aria-label="Plan card images">
+              {WELLBEING_HERO_SLIDES.map((slide, index) => (
+                <button key={slide.label} type="button" onClick={() => setHeroSlideIdx(index)} aria-label={`Show ${slide.label} image`} className="transition-all duration-300">
+                  <span className="block h-1.5 rounded-full transition-all duration-300" style={{ width: index === heroSlideIdx ? 20 : 6, backgroundColor: index === heroSlideIdx ? slide.accent : 'rgba(255,255,255,0.45)' }} />
+                </button>
+              ))}
             </div>
           </div>
           <div className="w-full shrink-0 space-y-3 xl:w-[410px]">
@@ -360,9 +388,9 @@ export function PhysicalPlan() {
             <p className="mb-3 text-xs font-medium text-charcoal-muted">Meal and water check-ins weren’t recorded for this older plan.</p>
           )}
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-            <div className="rounded-xl border border-emerald-100 bg-white/90 p-3"><span className="block text-lg font-black text-emerald-800">{savedProgressSummary.workouts_completed}</span><span className="text-[10px] font-bold text-emerald-700">Workouts</span></div>
+            <div className="rounded-xl border border-emerald-100 bg-white/90 p-3"><span className="block text-lg font-black text-emerald-800">{savedProgressSummary.workouts_completed}</span><span className="text-[10px] font-bold text-emerald-700">Workouts logged</span></div>
             <div className="rounded-xl border border-emerald-100 bg-white/90 p-3"><span className="block text-lg font-black text-emerald-800">{savedProgressSummary.days_with_checkins ? savedProgressSummary.meal_checkins : '—'}</span><span className="text-[10px] font-bold text-emerald-700">Meals checked off</span></div>
-            <div className="rounded-xl border border-emerald-100 bg-white/90 p-3"><span className="block text-lg font-black text-emerald-800">{savedProgressSummary.active_minutes}</span><span className="text-[10px] font-bold text-emerald-700">Active minutes</span></div>
+            <div className="rounded-xl border border-emerald-100 bg-white/90 p-3"><span className="block text-lg font-black text-emerald-800">{savedProgressSummary.active_minutes}</span><span className="text-[10px] font-bold text-emerald-700">Active minutes logged</span></div>
             <div className="rounded-xl border border-emerald-100 bg-white/90 p-3"><span className="block text-lg font-black text-emerald-800">{savedProgressSummary.steps.toLocaleString()}</span><span className="text-[10px] font-bold text-emerald-700">Steps logged</span></div>
             <div className="rounded-xl border border-emerald-100 bg-white/90 p-3"><span className="block text-lg font-black text-emerald-800">{savedProgressSummary.days_with_checkins ? savedProgressSummary.water_goal_days : '—'}</span><span className="text-[10px] font-bold text-emerald-700">8-glass days</span></div>
           </div>
@@ -533,7 +561,7 @@ export function PhysicalPlan() {
             <div className="rounded-2xl border border-dashed border-black/15 bg-cream/60 p-8 text-center">
               <span className="text-3xl">🗓️</span>
               <p className="mt-2 font-bold text-charcoal">No saved plans yet</p>
-              <p className="mt-1 text-sm text-charcoal-muted">Your schedule will appear here after you open the plan page.</p>
+              <p className="mt-1 text-sm text-charcoal-muted">Today’s plan will appear here as past history starting tomorrow.</p>
             </div>
           )}
         </Card>

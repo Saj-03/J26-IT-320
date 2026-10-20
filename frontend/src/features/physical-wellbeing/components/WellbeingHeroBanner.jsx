@@ -7,7 +7,7 @@ import { HeartPulseIcon, ZapIcon, LeafIcon, FlameIcon } from 'lucide-react';
  * Local images are served from /public/img/ 
  * Unsplash fallback URLs for stretching & running.
  */
-const SLIDES = [
+export const WELLBEING_HERO_SLIDES = [
     {
         src: '/img/pw_workout.png',
         label: 'Workout',
@@ -76,7 +76,7 @@ export function WellbeingHeroBanner({ studentName = 'Student', isActive = false,
     /* Cycle images every 1.5 s */
     useEffect(() => {
         intervalRef.current = setInterval(() => {
-            setSlideIdx((i) => (i + 1) % SLIDES.length);
+            setSlideIdx((i) => (i + 1) % WELLBEING_HERO_SLIDES.length);
         }, 3500);
         return () => clearInterval(intervalRef.current);
     }, []);
@@ -89,7 +89,7 @@ export function WellbeingHeroBanner({ studentName = 'Student', isActive = false,
         return () => clearInterval(ref);
     }, []);
 
-    const slide = SLIDES[slideIdx];
+    const slide = WELLBEING_HERO_SLIDES[slideIdx];
 
     const hour = new Date().getHours();
     const greeting =
@@ -101,7 +101,7 @@ export function WellbeingHeroBanner({ studentName = 'Student', isActive = false,
             style={{ minHeight: 220 }}
         >
             {/* Stacked crossfade — all images always in DOM, active one fades in on top */}
-            {SLIDES.map((s, i) => (
+            {WELLBEING_HERO_SLIDES.map((s, i) => (
                 <motion.div
                     key={s.src}
                     className="absolute inset-0"
@@ -183,7 +183,7 @@ export function WellbeingHeroBanner({ studentName = 'Student', isActive = false,
 
                     {/* Slide dot indicators */}
                     <div className="mt-4 flex items-center gap-1.5">
-                        {SLIDES.map((s, i) => (
+                        {WELLBEING_HERO_SLIDES.map((s, i) => (
                             <button
                                 key={s.label}
                                 onClick={() => setSlideIdx(i)}
