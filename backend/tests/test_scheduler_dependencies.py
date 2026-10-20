@@ -122,3 +122,25 @@ def test_a_big_task_with_steps_keeps_no_time_of_its_own(env):
     db.expire_all()
     assert db.get(Task, big["id"]).scheduled_start is None               # shown through its steps only
     assert pieces(db, step["id"])
+
+
+def test_stress_parts_stay_short_sittings_with_breaks():
+    """Found 2026-10-20 in the app: a HIGH-stress split (25 + 25 + 10) was glued back into 43-min blocks,
+    with an 8-min part and no break between parts. Short steps must give short sittings."""
+    parts = [task(f"S{i}", m, due_days=5, load="heavy") for i, m in enumerate([35, 35, 15])]   # M3 made them longer
+    for p in parts:
+        p.piece_max = 25
+    out = cp.schedule(parts, free_days(7), NOW, piece_minutes=50, break_minutes=10, day_cap_minutes=360,
+                      study_day=lambda x: x.date(), local_hour=lambda x: x.hour,
+                      chains={"steps:big": ["S0", "S1", "S2"]})
+    assert not out["unplaced"]
+    pieces = sorted(out["sessions"], key=lambda s: s["start"])
+    sittings = []                                                     # parts back to back = one sitting
+    for s in pieces:
+        if sittings and sittings[-1]["end"] == s["start"]:
+            sittings[-1] = {"start": sittings[-1]["start"], "end": s["end"]}
+        else:
+            sittings.append({"start": s["start"], "end": s["end"]})
+    assert all(s["end"] - s["start"] <= timedelta(minutes=25) for s in sittings)
+    assert all(b["start"] - a["end"] >= timedelta(minutes=10) for a, b in zip(sittings, sittings[1:]))
+    assert [s["task_id"] for s in pieces] == sorted(s["task_id"] for s in pieces)    # still in order

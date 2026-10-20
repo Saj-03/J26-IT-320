@@ -56,6 +56,7 @@ class WorkItem:
     priority: int = 3              # 1..5
     load: str = "medium"           # heavy / medium / low
     earliest: datetime | None = None   # not before this (a stress proposal moved the task later)
+    piece_max: int | None = None       # a step: one sitting is never longer than this (e.g. stress 25-min parts)
 
 
 def piece_plan(minutes: int, piece_minutes: int) -> tuple[int, int]:
@@ -93,7 +94,8 @@ def schedule(items: list[WorkItem], free: list[tuple[datetime, datetime]], now: 
         return _split_chains(out, chains, by_id)
     origin = _round_up(now)
     items = [it for it in items if it.minutes > 0]
-    plan = {it.task_id: piece_plan(it.minutes, piece_minutes) for it in items}     # task -> (count, size)
+    plan = {it.task_id: piece_plan(it.minutes, min(piece_minutes, it.piece_max or piece_minutes))
+            for it in items}                                           # task -> (count, size)
     moment = lambda cell: origin + timedelta(minutes=cell * STEP_MINUTES)
     model = cp_model.CpModel()
 
@@ -254,9 +256,11 @@ def _merge_chains(items, after, chains):
     for name, members in chains.items():
         steps = [by_id[m] for m in members]
         earliest = [s.earliest for s in steps if s.earliest]
+        sizes = [s.piece_max for s in steps if s.piece_max]
         merged.append(WorkItem(name, sum(s.minutes for s in steps), min(s.deadline for s in steps),
                                max(s.priority for s in steps), max((s.load for s in steps), key=LOAD_ORDER.get),
-                               earliest=max(earliest) if earliest else None))
+                               earliest=max(earliest) if earliest else None,
+                               piece_max=max(sizes) if sizes else None))   # short steps -> short sittings
     merged_after = {}
     for later, firsts in (after or {}).items():                      # "B after a step" -> "B after the chain"
         for first in firsts:

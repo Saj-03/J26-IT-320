@@ -28,6 +28,7 @@ PLAN_DAYS = 7
 DAY_CHANGE_HOUR = 3                       # work until 03:00 counts to the day before
 SURVEY_HOUR_CHANCE, OTHER_HOUR_CHANCE = 0.7, 0.5     # cold start: hours the student said they like
 OPEN = ("pending", "in_progress")
+MIN_STEP_SITTING = 25                     # a step's sitting is at most its own size, but never under 25 min
 
 
 def local_hour(moment: datetime) -> int:
@@ -41,11 +42,12 @@ def study_day(moment: datetime):
 # ---------------------------------------------------------------------------
 # 1. What to plan
 # ---------------------------------------------------------------------------
-def open_tasks(db: Session, user, now: datetime) -> tuple[list[Task], list[Task]]:
-    """(tasks to plan, fixed tasks).  A big task with steps is skipped - its steps are planned."""
-    tasks = db.query(Task).filter(Task.user_id == user.id, Task.status.in_(OPEN)).all()
-    parents = {t.parent_id for t in db.query(Task.parent_id).filter(Task.user_id == user.id,
-                                                                    Task.parent_id.isnot(None))}
+def open_tasks(db: Session, user, now: datetime, mine: list[Task] | None = None) -> tuple[list[Task], list[Task]]:
+    """(tasks to plan, fixed tasks).  A big task with steps is skipped - its steps are planned.
+    mine: all of the student's tasks if already loaded (each trip to the Neon database costs ~0.3 s)."""
+    mine = mine if mine is not None else db.query(Task).filter(Task.user_id == user.id).all()
+    tasks = [t for t in mine if t.status in OPEN]
+    parents = {t.parent_id for t in mine if t.parent_id}
     leaves = [t for t in tasks if t.id not in parents]
     fixed = [t for t in leaves if not t.is_flexible and t.scheduled_start]
     flexible = [t for t in leaves if t.is_flexible and t.deadline > now and work_left(t) > 0]
@@ -119,7 +121,8 @@ def solve(db: Session, user, now: datetime, today_cap: int | None = None) -> dic
     """Make a plan with CP-SAT but do NOT save it (used by build_plan and the missed-session preview).
     today_cap: a lower study cap for today only (voice planner: "I'm tired today")."""
     settings = get_settings(db, user)
-    tasks, fixed = open_tasks(db, user, now)
+    mine = db.query(Task).filter(Task.user_id == user.id).all()        # ONE trip, used by open_tasks + task_order
+    tasks, fixed = open_tasks(db, user, now, mine)
     # Load the focus history and study hours ONCE (each database trip to Neon costs ~0.3 s)
     hours = [h % 24 for h in range(settings["day_start_hour"], settings["day_end_hour"])]
     if settings["mode"] == "static":                                  # baseline: no attention at all
@@ -137,7 +140,7 @@ def solve(db: Session, user, now: datetime, today_cap: int | None = None) -> dic
         durations = {t.id: m3_predictor.predict(t.estimated_minutes, t.cognitive_load, t.task_type, past)["minutes"]
                      for t in tasks if t.predicted_minutes is None}
     later = moved_later(db, user)
-    after, wait_until, chains = task_order(db, user, tasks, fixed)
+    after, wait_until, chains = task_order(db, user, tasks, fixed, mine)
     for task_id, moment in wait_until.items():                      # waits for a task fixed in time
         later[task_id] = max(later.get(task_id, moment), moment)
     running = running_pieces(db, user, now)
@@ -145,8 +148,9 @@ def solve(db: Session, user, now: datetime, today_cap: int | None = None) -> dic
     for piece in running:
         doing_now[piece.task_id] = doing_now.get(piece.task_id, 0) + piece.minutes
     items = [WorkItem(t.id, max(work_left(t, durations.get(t.id)) - doing_now.get(t.id, 0), 0), t.deadline,
-                      t.priority, t.cognitive_load,
-                      earliest=later.get(t.id)) for t in tasks]
+                      t.priority, t.cognitive_load, earliest=later.get(t.id),
+                      piece_max=max(t.estimated_minutes, MIN_STEP_SITTING) if t.parent_id else None)
+             for t in tasks]
     result = cp_scheduler.schedule(items, free_time(db, user, fixed, now, running), now,
                                    piece_minutes=focus, break_minutes=rest,
                                    day_cap_minutes=settings["max_study_minutes_per_day"],
@@ -159,14 +163,15 @@ def solve(db: Session, user, now: datetime, today_cap: int | None = None) -> dic
             "peak_hours": profile["peak_hours"] if attention_source == "m1_model" else []}
 
 
-def task_order(db: Session, user, tasks: list[Task], fixed: list[Task]) -> tuple[dict, dict, dict]:
+def task_order(db: Session, user, tasks: list[Task], fixed: list[Task],
+               mine: list[Task] | None = None) -> tuple[dict, dict, dict]:
     """FR-04 dependency constraints for the tasks being planned:
         * 'do B after A' set by the student (after_task_id)
         * the steps of a big task in their order (step 2 after step 1 ...)
     Returns ({B: [A, ...]} among planned tasks, {B: earliest start} when A is fixed in time,
              {"steps:<big task>": [step ids in order]} - planned as one chain by the engine).
     A finished / cancelled A does not make anyone wait."""
-    mine = {t.id: t for t in db.query(Task).filter(Task.user_id == user.id).all()}
+    mine = {t.id: t for t in (mine if mine is not None else db.query(Task).filter(Task.user_id == user.id).all())}
     planned = {t.id for t in tasks}
     steps = {}
     for t in mine.values():
