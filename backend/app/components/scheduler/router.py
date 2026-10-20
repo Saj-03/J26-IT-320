@@ -330,7 +330,9 @@ def get_settings(db: Session = Depends(get_db), user=Depends(get_current_user)):
 @router.patch("/settings", response_model=schemas.SettingsOut)
 def update_settings(data: schemas.SettingsUpdate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Change my settings (send only what changed). Experiment mode can't be changed here."""
-    return settings_service.update_settings(db, user, data)
+    saved = settings_service.update_settings(db, user, data)
+    planner_service.auto_replan(db, user, "settings_changed")      # new study hours / daily cap -> new plan
+    return saved
 
 
 # ===========================================================================

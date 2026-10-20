@@ -23,10 +23,11 @@ export function TaskDetails() {
     const [failed, setFailed] = useState(false);
     const [error, setError] = useState('');
     const [others, setOthers] = useState([]);           // tasks this one can wait for (FR-04)
+    const [estimate, setEstimate] = useState('');        // "your time estimate" being edited (minutes)
 
     const load = () => {
         setFailed(false);
-        getTask(id).then(setTask).catch(() => setFailed(true));
+        getTask(id).then((t) => { setTask(t); setEstimate(String(t.estimated_minutes)); }).catch(() => setFailed(true));
         listTasks().then((t) => setOthers(t.filter((x) => x.id !== id && x.parent_id !== id && !x.parent_id
             && (isOpen(x) || x.status === 'done')))).catch(() => {});
     };
@@ -52,6 +53,12 @@ export function TaskDetails() {
     const changeAfter = (value) => updateTask(task.id, { after_task_id: value || null }).then(load)
         .catch((e) => setError(apiErrorMessage(e)));
     const waitsFor = others.find((x) => x.id === task.after_task_id);
+    // The student's own time guess can be fixed later; M3 then predicts again and the plan follows by itself
+    const minutes = Math.round(Number(estimate));
+    const estimateChanged = minutes !== task.estimated_minutes;
+    const estimateOk = Number.isFinite(minutes) && minutes >= 5 && minutes <= 1440;
+    const saveEstimate = () => updateTask(task.id, { estimated_minutes: minutes }).then(load)
+        .catch((e) => setError(apiErrorMessage(e)));
 
     return (<div className="space-y-6">
       <PageHeader title={task.title} subtitle={task.description || `${LOAD_LABEL[task.cognitive_load]} effort · ${dueText(task.deadline)}`} action={<div className="flex flex-wrap gap-2">
@@ -68,7 +75,7 @@ export function TaskDetails() {
       {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
 
       {/* M3: how long it will really take (only for a task without steps that is still open) */}
-      {!steps.length && isOpen(task) && <DurationCard taskId={task.id} onChanged={load}/>}
+      {!steps.length && isOpen(task) && <DurationCard key={`${task.estimated_minutes}-${task.predicted_minutes}`} taskId={task.id} onChanged={load}/>}
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Overview */}
@@ -87,6 +94,19 @@ export function TaskDetails() {
                 <span className="text-sm font-bold text-charcoal capitalize">{r.v}</span>
               </div>)}
           </div>
+
+          {isOpen(task) && !steps.length &&
+            <div className="mt-4">
+              <label htmlFor="task-estimate" className="text-sm font-medium text-charcoal-muted">Your time estimate (minutes)</label>
+              <div className="mt-1 flex gap-2">
+                <input id="task-estimate" type="number" min={5} max={1440} step={5} value={estimate}
+                  onChange={(e) => setEstimate(e.target.value)}
+                  className="w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-charcoal min-h-[44px]"/>
+                {estimateChanged &&
+                  <Button size="sm" onClick={saveEstimate} disabled={!estimateOk}><CheckIcon size={15}/> Save</Button>}
+              </div>
+              {estimateChanged && !estimateOk && <span className="block text-xs text-red-600 mt-1">Between 5 and 1440 minutes.</span>}
+            </div>}
 
           {isOpen(task) && !task.parent_id &&
             <label className="mt-4 block">
