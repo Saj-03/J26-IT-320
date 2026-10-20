@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from app.components.scheduler import focus_service as fs
+from app.components.scheduler.focus import focus_service as fs
 from app.components.scheduler.models import RewardEvent, Task
 from app.components.scheduler.schemas import FocusEndIn, FocusStartIn
 

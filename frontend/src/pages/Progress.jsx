@@ -73,7 +73,7 @@ export function Progress() {
               </div>)}
           </div>
 
-          {/* How XP is earned (same numbers as the backend, engine/gamification.py) */}
+          {/* How XP is earned (same numbers as the backend, scheduler/rewards/gamification.py) */}
           <div className="mt-6 pt-5 border-t border-black/[0.05] flex-1 flex flex-col">
             <h3 className="font-bold text-charcoal">How you earn XP</h3>
             <div className="grid sm:grid-cols-3 gap-3 mt-3 flex-1">

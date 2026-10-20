@@ -1,7 +1,7 @@
 """Tests for the stress safety rules (Module F, F2): which tasks may never be changed."""
 from datetime import datetime, timedelta
 
-from app.components.scheduler import stress_service as ss
+from app.components.scheduler.stress import stress_service as ss
 from app.components.scheduler.models import FocusSession, Task
 
 NOW = datetime(2026, 10, 17, 10, 0)

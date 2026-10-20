@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import pytest
 from fastapi import HTTPException
 
-from app.components.scheduler import stress_service as ss
+from app.components.scheduler.stress import stress_service as ss
 from app.components.scheduler.models import SchedulerAuditLog, Task
 from app.shared.integration.models import SignalEvent
 

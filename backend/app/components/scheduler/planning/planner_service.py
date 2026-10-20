@@ -15,11 +15,12 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from app.components.scheduler import attention_service
-from app.components.scheduler.commitment_service import SL_OFFSET, get_availability, subtract
-from app.components.scheduler.engine import cp_scheduler, m1_predictor, m3_predictor
-from app.components.scheduler.engine.cp_scheduler import WorkItem
-from app.components.scheduler.focus_service import break_for, recommend_timer
+from app.components.scheduler.focus import attention_service
+from app.components.scheduler.tasks.commitment_service import SL_OFFSET, get_availability, subtract
+from app.components.scheduler.planning import cp_scheduler
+from app.components.scheduler.ml import m1_predictor, m3_predictor
+from app.components.scheduler.planning.cp_scheduler import WorkItem
+from app.components.scheduler.focus.focus_service import break_for, recommend_timer
 from app.components.scheduler.models import PlannedSession, ScheduleChange, SchedulerAuditLog, Task
 from app.components.scheduler.settings_service import get_settings
 
@@ -57,10 +58,20 @@ def work_left(task: Task, predicted: int | None = None) -> int:
     return max(total - (task.actual_minutes or 0), 0)
 
 
-def free_time(db: Session, user, fixed: list[Task], now: datetime) -> list[tuple[datetime, datetime]]:
-    """Free gaps for the next PLAN_DAYS days, also without the tasks the student fixed in time."""
-    busy = sorted((t.scheduled_start, t.scheduled_start + timedelta(minutes=t.estimated_minutes), t)
-                  for t in fixed)
+def running_pieces(db: Session, user, now: datetime) -> list[PlannedSession]:
+    """Planned pieces happening RIGHT NOW (started, not over). A new plan keeps them and plans only the rest -
+    otherwise the same work is planned twice (FR-09: no duplicate session)."""
+    return (db.query(PlannedSession)
+              .filter(PlannedSession.user_id == user.id, PlannedSession.start < now, PlannedSession.end > now)
+              .all())
+
+
+def free_time(db: Session, user, fixed: list[Task], now: datetime,
+              running: list[PlannedSession] = ()) -> list[tuple[datetime, datetime]]:
+    """Free gaps for the next PLAN_DAYS days, also without the tasks the student fixed in time
+    and without the piece that is happening now."""
+    busy = [(t.scheduled_start, t.scheduled_start + timedelta(minutes=t.estimated_minutes), t) for t in fixed]
+    busy = sorted(busy + [(p.start, p.end, p) for p in running], key=lambda b: (b[0], b[1]))
     gaps = []
     for day in get_availability(db, user, PLAN_DAYS, now)["days"]:
         for slot in day["slots"]:
@@ -126,14 +137,20 @@ def solve(db: Session, user, now: datetime, today_cap: int | None = None) -> dic
         durations = {t.id: m3_predictor.predict(t.estimated_minutes, t.cognitive_load, t.task_type, past)["minutes"]
                      for t in tasks if t.predicted_minutes is None}
     later = moved_later(db, user)
-    items = [WorkItem(t.id, work_left(t, durations.get(t.id)), t.deadline, t.priority, t.cognitive_load,
+    running = running_pieces(db, user, now)
+    doing_now = {}
+    for piece in running:
+        doing_now[piece.task_id] = doing_now.get(piece.task_id, 0) + piece.minutes
+    items = [WorkItem(t.id, max(work_left(t, durations.get(t.id)) - doing_now.get(t.id, 0), 0), t.deadline,
+                      t.priority, t.cognitive_load,
                       earliest=later.get(t.id)) for t in tasks]
-    result = cp_scheduler.schedule(items, free_time(db, user, fixed, now), now,
+    result = cp_scheduler.schedule(items, free_time(db, user, fixed, now, running), now,
                                    piece_minutes=focus, break_minutes=rest,
                                    day_cap_minutes=settings["max_study_minutes_per_day"],
                                    study_day=study_day, local_hour=local_hour, fit=fit,
                                    day_caps={study_day(now): today_cap} if today_cap is not None else None)
-    return {"settings": settings, "tasks": tasks, "result": result, "durations": durations, "focus_minutes": focus,
+    return {"settings": settings, "tasks": tasks, "result": result, "durations": durations, "running": running,
+            "focus_minutes": focus,
             "break_minutes": rest, "timer_source": timer_source, "attention_source": attention_source,
             "peak_hours": profile["peak_hours"] if attention_source == "m1_model" else []}
 
@@ -141,7 +158,7 @@ def solve(db: Session, user, now: datetime, today_cap: int | None = None) -> dic
 def moved_later(db: Session, user) -> dict[str, datetime]:
     """Tasks an ACCEPTED stress proposal moved later -> {task id: not before}. Undone (restored) ones don't count,
     so "Plan my week" can never quietly put a moved task back to where it was."""
-    from app.components.scheduler.stress_service import STRESS_TRIGGER
+    from app.components.scheduler.stress.stress_service import STRESS_TRIGGER
     changes = db.query(ScheduleChange).filter(ScheduleChange.user_id == user.id,
                                               ScheduleChange.trigger == STRESS_TRIGGER,
                                               ScheduleChange.decision.in_(("accepted", "edited"))).all()
@@ -185,7 +202,8 @@ def build_plan(db: Session, user, now: datetime | None = None, today_cap: int | 
                               mode=settings["mode"], created_at=now))
         first_start.setdefault(s["task_id"], s["start"])
     for t in tasks:
-        t.scheduled_start = first_start.get(t.id)                    # None = could not be planned
+        now_piece = next((r.start for r in plan["running"] if r.task_id == t.id), None)
+        t.scheduled_start = now_piece or first_start.get(t.id)       # None = could not be planned
         if t.id in plan["durations"]:
             t.predicted_minutes = plan["durations"][t.id]            # save the new M3 prediction
 
@@ -230,7 +248,7 @@ def plan_view(db: Session, user, now: datetime | None = None, mode: str | None =
 # ---------------------------------------------------------------------------
 def suggest_steps(db: Session, user, task_id: str) -> dict:
     """Preview only: 180 min with a 50-min focus length -> 4 steps of 45 min (same cut as the planner)."""
-    from app.components.scheduler.task_service import get_own_task
+    from app.components.scheduler.tasks.task_service import get_own_task
     task = get_own_task(db, user, task_id)
     timer = recommend_timer(db, user)                          # M1 / rules / survey / default
     minutes = work_left(task)
@@ -245,7 +263,7 @@ def suggest_steps(db: Session, user, task_id: str) -> dict:
 def create_suggested_steps(db: Session, user, task_id: str) -> Task:
     """Create the suggested steps as subtasks (only for a task that has no steps yet)."""
     from fastapi import HTTPException
-    from app.components.scheduler.task_service import audit, drop_planned_pieces, get_own_task
+    from app.components.scheduler.tasks.task_service import audit, drop_planned_pieces, get_own_task
     task = get_own_task(db, user, task_id)
     if task.parent_id:
         raise HTTPException(400, "A step cannot be split again")

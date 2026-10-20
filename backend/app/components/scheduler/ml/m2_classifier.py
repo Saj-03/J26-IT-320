@@ -13,11 +13,11 @@ Safe fallback: no model file / missing library / embedder not downloaded
 -> `available()` is False and the task gets the default "medium" (as before).
 """
 from functools import lru_cache
-from pathlib import Path
 
 import numpy as np
+from app.components.scheduler.ml import MODELS_DIR
 
-MODEL_FILE = Path(__file__).resolve().parents[4] / "ml_models" / "m2_load_classifier.joblib"
+MODEL_FILE = MODELS_DIR / "m2_load_classifier.joblib"
 
 
 @lru_cache(maxsize=1)

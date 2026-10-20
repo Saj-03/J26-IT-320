@@ -4,19 +4,22 @@ Component 3 - HTTP endpoints, all under /api/scheduler.
 Routers stay thin: read the request -> call a service function -> return the result.
 Every endpoint needs a logged-in student (get_current_user).
 """
-from datetime import datetime, timedelta
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.core.dependencies import get_current_user
-from app.components.scheduler import (
-    schemas, service, task_service, commitment_service, focus_service, settings_service, stress_service,
-    attention_service, progress_service, planner_service, research_service, feedback_service,
-    alert_service, research_export, notification_service, insights_service, brain_dump_service,
-)
-from app.components.scheduler.models import Task, FocusSession, ScheduleChange
-from app.components.scheduler.engine import m1_predictor, m3_predictor, stress_rules
+from app.components.scheduler import schemas, settings_service
+from app.components.scheduler.focus import focus_service, attention_service, alert_service
+from app.components.scheduler.rewards import progress_service, notification_service, insights_service
+from app.components.scheduler.research import research_service, feedback_service, research_export
+from app.components.scheduler.stress import stress_service
+from app.components.scheduler.planning import planner_service
+from app.components.scheduler.voice import brain_dump_service
+from app.components.scheduler.tasks import task_service, commitment_service
+from app.components.scheduler.models import Task
+from app.components.scheduler.ml import m1_predictor, m3_predictor
 from app.shared.integration import c3_weekly_summary as weekly_summary
 
 router = APIRouter()
@@ -395,39 +398,12 @@ def send_weekly_summary(weeks: int = Query(1, ge=1, le=weekly_summary.MAX_BACKFI
     return weekly_summary.send_recent_weeks(db, user, weeks)
 
 
-@router.post("/focus")
-def log_focus(data: schemas.FocusIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    """OLD endpoint: logs an already-finished session in one call (kept for the current frontend)."""
-    ended = data.started_at + timedelta(minutes=data.actual_minutes)   # finished -> never "active"
-    db.add(FocusSession(user_id=user.id, ended_at=ended, **data.model_dump())); db.commit()
-    return {"ok": True}
-
-
-@router.post("/adapt")
-def adapt(db: Session = Depends(get_db), user=Depends(get_current_user)):
-    risk = service.latest_risk_level(db, user.research_id)
-    tasks = db.query(Task).filter_by(user_id=user.id).all()
-    proposal = stress_rules.propose_changes(tasks, risk, datetime.utcnow())
-    ch = ScheduleChange(user_id=user.id, reason=proposal["reason"], change_set=proposal["changes"])
-    db.add(ch); db.commit()
-    return {"change_id": ch.id, **proposal}
-
-
-@router.post("/changes/{change_id}/decision")
-def decide(change_id: str, data: schemas.DecisionIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    ch = db.get(ScheduleChange, change_id)
-    if not ch or ch.user_id != user.id:
-        raise HTTPException(404)
-    ch.decision = data.decision; db.commit()
-    return {"ok": True}
-
-
 @router.post("/tasks/{task_id}/complete")
 def complete(task_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
     t = db.get(Task, task_id)
     if not t or t.user_id != user.id:
         raise HTTPException(404)
-    done = service.complete_task(db, user, t)
+    done = progress_service.complete_task(db, user, t)
     planner_service.auto_replan(db, user, "task_done")
     return done
 

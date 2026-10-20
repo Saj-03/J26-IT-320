@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 
 from app.components.scheduler.models import FocusSession, ScheduleChange, SchedulerAuditLog
-from app.components.scheduler.stress_service import STRESS_TRIGGER
+from app.components.scheduler.stress.stress_service import STRESS_TRIGGER
 
 
 def test_stress_suggestion_can_be_rated_once_after_deciding(env):

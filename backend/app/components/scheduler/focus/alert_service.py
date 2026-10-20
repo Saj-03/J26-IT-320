@@ -12,8 +12,8 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
 from app.components.scheduler.models import FocusSession, SchedulerAuditLog
-from app.components.scheduler.progress_service import study_day
-from app.components.scheduler.task_service import audit
+from app.components.scheduler.rewards.progress_service import study_day
+from app.components.scheduler.tasks.task_service import audit
 
 RECENT_DAYS, USUAL_DAYS = 7, 21
 MIN_USUAL_SESSIONS, MIN_RECENT_SESSIONS = 6, 3

@@ -1,8 +1,8 @@
 """Voice planner preview: one paragraph -> editable items. Nothing is saved."""
 from datetime import datetime, timedelta
 
-from app.components.scheduler import brain_dump_service as bd
-from app.components.scheduler.commitment_service import SL_OFFSET
+from app.components.scheduler.voice import brain_dump_service as bd
+from app.components.scheduler.tasks.commitment_service import SL_OFFSET
 from app.components.scheduler.models import Commitment, PlannedSession, SchedulerAuditLog, Task
 
 NOW = datetime(2026, 10, 19, 3, 30)                 # Monday 09:00 in Sri Lanka
@@ -108,7 +108,7 @@ def test_confirm_low_energy_plans_a_lighter_today(env):
     cap = body["today_cap_minutes"]
     assert body["planned"] is True and body["sessions"] > 0 and cap > 0
 
-    from app.components.scheduler.planner_service import study_day
+    from app.components.scheduler.planning.planner_service import study_day
     today = study_day(datetime.utcnow())
     planned_today = sum(s.minutes for s in db.query(PlannedSession).all() if study_day(s.start) == today)
     assert planned_today <= cap
@@ -165,3 +165,17 @@ def test_preview_messy_speech_fillers_and_self_correction(env):
 def test_clean_speech_self_repair():
     assert bd.clean_speech("meeting at 5 sorry 6") == "meeting at 6"
     assert bd.clean_speech("lab from 8:00 to 9:00.10:00") == "lab from 8:00 to 10:00"
+
+
+def test_preview_time_said_after_the_event(env):
+    """Real speech (2026-10-20): "lecture for. So 8:00 AM to 6:00 PM" - the time belongs to the lecture;
+    "And not only that", "Can you do it" are filler, not cards."""
+    _, db, current, _ = env
+    said = ("I have soft engineering lecture for.So 8:00 AM to 6:00 PM.And also.I want to get a breakfast during "
+            "that time.And not only that, I need plan my day.Can you do it?")
+    out = bd.preview(db, current["user"], said, NOW)
+    lecture = out["items"][0]
+    assert (lecture["title"], lecture["start"], lecture["end"]) == ("Soft engineering lecture", "08:00", "18:00")
+    assert sum(i["type"] == "commitment" for i in out["items"]) == 1          # no separate "So" card
+    assert {"And not only that", "Can you do it"} <= set(out["ignored"])
+    assert out["plan_requested"] is True

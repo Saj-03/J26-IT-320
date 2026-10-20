@@ -25,10 +25,11 @@ from fastapi import HTTPException, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.components.scheduler.engine import attention_model, gamification
+from app.components.scheduler.focus import attention_model
+from app.components.scheduler.rewards import gamification
 from app.components.scheduler.models import FocusSession, RewardEvent, SchedulerSettings, Task
 from app.components.scheduler.schemas import FocusEndIn, FocusStartIn
-from app.components.scheduler.task_service import audit, get_own_task
+from app.components.scheduler.tasks.task_service import audit, get_own_task
 
 DEFAULT_FOCUS = 25            # classic Pomodoro
 DEFAULT_BREAK = 5
@@ -81,7 +82,7 @@ def recommend_timer(db: Session, user) -> dict:
       5. no history yet                             -> onboarding survey answer
       6. nothing known                              -> 25 / 5
     """
-    from app.components.scheduler.attention_service import m1_timer   # here to avoid an import loop
+    from app.components.scheduler.focus.attention_service import m1_timer   # here to avoid an import loop
     s = get_settings(db, user)
 
     # 1. Student's own fixed timer always wins (student control)
@@ -276,7 +277,7 @@ def end_session(db: Session, user, session_id: str, data: FocusEndIn,
     db.commit()
 
     # 7. Streak + badges (a finished session may earn a new badge)
-    from app.components.scheduler.progress_service import check_progress   # here to avoid an import loop
+    from app.components.scheduler.rewards.progress_service import check_progress   # here to avoid an import loop
     progress = check_progress(db, user, now)
     db.refresh(session)
     return {"session": session, "xp_awarded": xp, "total_xp": progress["total_xp"], "level": progress["level"],

@@ -559,21 +559,6 @@ class WeeklySummarySentOut(BaseModel):
 
 
 # ===========================================================================
-# OLD ENDPOINTS (kept so the current frontend keeps working)
-# ===========================================================================
-class FocusIn(BaseModel):
-    task_id: str | None = None
-    started_at: datetime
-    planned_minutes: int
-    actual_minutes: int
-    completed: bool
-
-
-class DecisionIn(BaseModel):
-    decision: str   # accepted / edited / rejected
-
-
-# ===========================================================================
 # PLAN MY WEEK (Module D - CP-SAT scheduler)
 # ===========================================================================
 class PlannedSessionOut(BaseModel):

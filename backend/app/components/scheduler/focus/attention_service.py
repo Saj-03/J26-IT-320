@@ -12,7 +12,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from app.components.scheduler.engine import m1_predictor
+from app.components.scheduler.ml import m1_predictor
 from app.components.scheduler.models import FocusSession
 from app.components.scheduler.settings_service import get_settings
 

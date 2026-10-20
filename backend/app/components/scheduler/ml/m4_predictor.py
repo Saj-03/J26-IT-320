@@ -6,9 +6,9 @@ Uses ml_models/m4_brain_dump.joblib (made by ml_training/scheduler/train_m4.py).
 No model file -> the keyword rules from training are used, so the feature still works (less accurately).
 """
 from functools import lru_cache
-from pathlib import Path
+from app.components.scheduler.ml import MODELS_DIR
 
-MODEL_FILE = Path(__file__).resolve().parents[4] / "ml_models" / "m4_brain_dump.joblib"
+MODEL_FILE = MODELS_DIR / "m4_brain_dump.joblib"
 
 
 @lru_cache(maxsize=1)

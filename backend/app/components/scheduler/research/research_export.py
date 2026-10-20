@@ -24,16 +24,16 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from app.components.scheduler import attention_service
-from app.components.scheduler.commitment_service import SL_OFFSET
-from app.components.scheduler.engine import m1_predictor
+from app.components.scheduler.focus import attention_service
+from app.components.scheduler.tasks.commitment_service import SL_OFFSET
+from app.components.scheduler.ml import m1_predictor
 from app.components.scheduler.models import (
     FocusSession, PlannedSession, ScheduleChange, SchedulerAuditLog, SchedulerSettings, Task,
 )
-from app.components.scheduler.progress_service import study_day
-from app.components.scheduler.research_service import require_researcher
+from app.components.scheduler.rewards.progress_service import study_day
+from app.components.scheduler.research.research_service import require_researcher
 from app.components.scheduler.settings_service import DEFAULTS
-from app.components.scheduler.stress_service import STRESS_TRIGGER
+from app.components.scheduler.stress.stress_service import STRESS_TRIGGER
 from app.shared.integration.models import SignalEvent
 from app.shared.users.models import User
 

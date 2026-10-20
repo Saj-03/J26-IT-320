@@ -22,9 +22,10 @@ from fastapi import HTTPException
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from app.components.scheduler import planner_service, task_service
-from app.components.scheduler.commitment_service import SL_OFFSET, create_commitment
-from app.components.scheduler.engine import m2_classifier, m3_predictor, m4_predictor
+from app.components.scheduler.planning import planner_service
+from app.components.scheduler.tasks import task_service
+from app.components.scheduler.tasks.commitment_service import SL_OFFSET, create_commitment
+from app.components.scheduler.ml import m2_classifier, m3_predictor, m4_predictor
 from app.components.scheduler.models import COMMITMENT_KINDS, TASK_TYPES
 from app.components.scheduler.schemas import CommitmentCreate, TaskCreate
 from app.components.scheduler.settings_service import get_settings
@@ -48,7 +49,8 @@ CLOCK = r"\d{1,2}(?:[:.]\d\d)?\s*(?:am|pm|a\.m\.|p\.m\.)?"
 REPAIR = r"(?:no make that|make that|or rather|no sorry|no wait|no i mean|i mean|i meant|or no|sorry|oops|wait|actually|rather|no)"
 NOISE_WORDS = {"yeah", "yes", "yep", "no", "ok", "okay", "sorry", "um", "uh", "umm", "hmm", "and", "also", "so",
                "well", "like", "i", "have", "has", "a", "an", "the", "need", "to", "is", "it", "that", "then",
-               "wait", "actually", "mean", "just", "oh", "right", "hi", "hello", "hey", "there"}
+               "wait", "actually", "mean", "just", "oh", "right", "hi", "hello", "hey", "there",
+               "not", "only", "can", "could", "would", "will", "you", "do", "me", "help", "please"}   # "not only that", "can you do it"
 LONG_EVENT_MINUTES = 8 * 60            # longer than a work shift -> probably a misheard time, ask to check
 ERRAND =r"(?:buy|pick up|pay|call|clean|wash|cook|get|order|book|send|return|collect)"   # "other" + errand verb -> personal task
 LEADING_DURATION = re.compile(
@@ -58,7 +60,7 @@ FILLERS = re.compile(
     r"i have got to|i've got|i have got|i have an?|i have|i need|need to|have to|i must|i want to|"
     r"i'm going to|i am going to|gotta|remind me to|remember to|don't forget to|add|put|there's an?|there is an?)\s+",
     re.IGNORECASE)
-DANGLING = re.compile(r"\s+(?:by|on|at|from|for|about|around|until|till|before|to|in|the|this|and|it|my|a)\s*$",
+DANGLING = re.compile(r"\s+(?:by|on|at|from|for|about|around|until|till|before|to|in|the|this|and|it|my|a|so|also)\s*$",
                       re.IGNORECASE)
 COMMITMENT_KIND = [("lecture", r"lecture|class|lab|tutorial|practical|seminar"),
                    ("work", r"work|shift|job|office|internship"),
@@ -144,7 +146,12 @@ def preview(db: Session, user, text: str, now: datetime | None = None) -> dict:
         # "work from 2 to 6" has a clock time: an event of its own, not a detail of the item before
         only_details = (label == "other" and slots.found and not slots.start
                         and len(short_title(piece, slots.found).split()) <= 1)
-        if only_details and merged:
+        # "SE lecture for. So 8:00 AM to 6:00 PM": a time with no real title of its own completes the event before
+        no_title = all(w in NOISE_WORDS for w in re.findall(r"[a-z']+", short_title(piece, slots.found).lower()))
+        time_for_previous = (slots.start is not None and no_title and merged
+                             and merged[-1]["label"] in ("commitment", "routine")
+                             and extract(merged[-1]["text"], today).start is None)
+        if (only_details or time_for_previous) and merged:
             merged[-1]["text"] += ", " + piece
             continue
         guessed = label == "other" and (slots.start is not None or bool(re.match(ERRAND, piece, re.IGNORECASE)))

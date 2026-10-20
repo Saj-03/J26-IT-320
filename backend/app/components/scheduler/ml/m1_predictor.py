@@ -12,14 +12,14 @@ scheduler keeps using its rules - the app never breaks because of M1.
 """
 from datetime import datetime, timedelta
 from functools import lru_cache
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from app.components.scheduler.commitment_service import SL_OFFSET
+from app.components.scheduler.tasks.commitment_service import SL_OFFSET
+from app.components.scheduler.ml import MODELS_DIR
 
-MODEL_FILE = Path(__file__).resolve().parents[4] / "ml_models" / "m1_focus_net.pt"
+MODEL_FILE = MODELS_DIR / "m1_focus_net.pt"
 DAY_CHANGE_HOUR = 3                 # late-night work until 03:00 counts to the day before (same as training)
 TIMER_OPTIONS = [15, 20, 25, 30, 40, 45, 50, 60, 90]
 CAPACITY_DROP = 0.2                 # capacity = longest timer not clearly worse than 15 min (same as training)

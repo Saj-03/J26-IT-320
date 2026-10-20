@@ -1,5 +1,5 @@
 """Pilot study: only researchers can see participants (by research ID) and set their experiment mode."""
-from app.components.scheduler import research_service
+from app.components.scheduler.research import research_service
 from app.components.scheduler.models import SchedulerAuditLog, SchedulerSettings
 
 URL = "/api/scheduler/research/participants"

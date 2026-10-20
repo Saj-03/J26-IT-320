@@ -25,8 +25,8 @@ import uuid
 from datetime import datetime, timedelta
 
 import app.db.base  # noqa: F401  (registers every table)
-from app.components.scheduler.commitment_service import SL_OFFSET
-from app.components.scheduler.engine import gamification
+from app.components.scheduler.tasks.commitment_service import SL_OFFSET
+from app.components.scheduler.rewards import gamification
 from app.components.scheduler.models import FocusSession, RewardEvent, Task
 from app.db.session import SessionLocal
 from app.shared.users.models import User

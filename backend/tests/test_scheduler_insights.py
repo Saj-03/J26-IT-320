@@ -1,7 +1,7 @@
 """Insights: real numbers from the student's own data (no sample data)."""
 from datetime import datetime, timedelta
 
-from app.components.scheduler import insights_service
+from app.components.scheduler.rewards import insights_service
 from app.components.scheduler.models import FocusSession, Task
 from app.shared.integration.contracts import RiskSignal
 from app.shared.integration.validator import record

@@ -2,8 +2,8 @@
 import time
 from datetime import datetime, timedelta
 
-from app.components.scheduler.engine import cp_scheduler as cp
-from app.components.scheduler.engine.cp_scheduler import WorkItem
+from app.components.scheduler.planning import cp_scheduler as cp
+from app.components.scheduler.planning.cp_scheduler import WorkItem
 
 NOW = datetime(2026, 10, 19, 8, 0)          # Monday 08:00 (tests use local time = UTC)
 

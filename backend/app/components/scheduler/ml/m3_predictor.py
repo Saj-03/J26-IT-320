@@ -10,13 +10,13 @@ No model file / scikit-learn missing -> available() is False and the app keeps t
 """
 import math
 from functools import lru_cache
-from pathlib import Path
 
 from sqlalchemy.orm import Session
 
 from app.components.scheduler.models import Task
+from app.components.scheduler.ml import MODELS_DIR
 
-MODEL_FILE = Path(__file__).resolve().parents[4] / "ml_models" / "m3_duration.joblib"
+MODEL_FILE = MODELS_DIR / "m3_duration.joblib"
 MIN_LOGGED_MINUTES = 5            # a finished task with less logged focus time tells us nothing
 MAX_HISTORY = 30
 RATIO_LIMITS = (0.5, 3.0)         # never predict less than half or more than 3x the student's guess

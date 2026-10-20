@@ -1,5 +1,5 @@
 """
-M3 features - the SAME code is used for training and inside the app (engine/m3_predictor.py).
+M3 features - the SAME code is used for training and inside the app (app/components/scheduler/ml/m3_predictor.py).
 
 M3 predicts   log(actual minutes / student's estimate)
 for a new task, from the task itself + the student's OWN past tasks (only tasks finished before it).

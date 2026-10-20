@@ -13,10 +13,10 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from app.components.scheduler import attention_service
-from app.components.scheduler.commitment_service import SL_OFFSET
+from app.components.scheduler.focus import attention_service
+from app.components.scheduler.tasks.commitment_service import SL_OFFSET
 from app.components.scheduler.models import FocusSession, Task
-from app.components.scheduler.progress_service import study_day
+from app.components.scheduler.rewards.progress_service import study_day
 from app.shared.integration.models import SignalEvent
 
 DAYS = 7

@@ -54,7 +54,7 @@ def test_m1_used_after_enough_sessions(env):
 
 
 def test_rules_used_when_model_missing(env, monkeypatch):
-    from app.components.scheduler.engine import m1_predictor
+    from app.components.scheduler.ml import m1_predictor
     monkeypatch.setattr(m1_predictor, "available", lambda: False)
     client, db, current, _ = env
     completed_sessions(db, current["user"], minutes=35)

@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from app.components.scheduler.models import FocusSession, SchedulerSettings
 from app.components.scheduler.schemas import SettingsUpdate
-from app.components.scheduler.task_service import audit
+from app.components.scheduler.tasks.task_service import audit
 
 # Same values as the column defaults in models.py
 DEFAULTS = {

@@ -159,8 +159,8 @@ def time_scores(df: pd.DataFrame, column: str) -> dict:
 # ---------------------------------------------------------------------------
 def spoken_days(df: pd.DataFrame, n: int = 150) -> dict:
     from unittest.mock import MagicMock
-    from app.components.scheduler import brain_dump_service as bd
-    from app.components.scheduler.engine import m3_predictor
+    from app.components.scheduler.voice import brain_dump_service as bd
+    from app.components.scheduler.ml import m3_predictor
     m3_predictor.history = lambda db, uid: []              # no database here
     rng = random.Random(SEED)
     useful = df[df["label"] != "other"].to_dict("records")
@@ -184,13 +184,13 @@ def spoken_days(df: pd.DataFrame, n: int = 150) -> dict:
 
 
 def use_model(path: Path) -> None:
-    from app.components.scheduler.engine import m4_predictor
+    from app.components.scheduler.ml import m4_predictor
     m4_predictor.MODEL_FILE = path
     m4_predictor._load.cache_clear()
 
 
 def scores_for(df: pd.DataFrame) -> dict:
-    from app.components.scheduler.engine import m4_predictor
+    from app.components.scheduler.ml import m4_predictor
     model = lambda texts: [lab for lab, _, _ in m4_predictor.classify(list(texts))]
     pred = model(df["asr"])
     return {"on_human_text": label_scores(df["label"], model(df["text"])),

@@ -9,7 +9,7 @@ from datetime import datetime, time, timedelta
 
 import pytest
 
-from app.components.scheduler import commitment_service as cs
+from app.components.scheduler.tasks import commitment_service as cs
 from app.components.scheduler.models import Commitment, Task
 
 NOW = datetime(2026, 10, 18, 18, 30)       # UTC  (= Mon 19 Oct 00:00 in Sri Lanka)

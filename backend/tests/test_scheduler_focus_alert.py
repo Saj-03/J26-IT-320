@@ -1,7 +1,7 @@
 """FR-16: alert on a sustained drop in focus quality or study habit, with dismiss."""
 from datetime import datetime, timedelta
 
-from app.components.scheduler import alert_service
+from app.components.scheduler.focus import alert_service
 from app.components.scheduler.models import FocusSession
 
 NOW = datetime(2026, 10, 19, 12, 0)

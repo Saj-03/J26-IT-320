@@ -1,8 +1,8 @@
 """Module D - "Plan my week" inside the app (planner_service + /plan endpoints)."""
 from datetime import datetime, timedelta
 
-from app.components.scheduler import planner_service as planner
-from app.components.scheduler.commitment_service import SL_OFFSET
+from app.components.scheduler.planning import planner_service as planner
+from app.components.scheduler.tasks.commitment_service import SL_OFFSET
 from app.components.scheduler.models import (
     Commitment, FocusSession, PlannedSession, SchedulerAuditLog, SchedulerSettings, Task,
 )
@@ -231,3 +231,24 @@ def test_a_task_moved_by_hand_stays_where_the_student_put_it(env):
     for s in client.get("/api/scheduler/plan").json()["sessions"]:        # B is planned around it
         start = datetime.fromisoformat(s["start"].replace("Z", ""))
         assert start >= spot + timedelta(minutes=60) or start + timedelta(minutes=s["minutes"]) <= spot
+
+
+def test_a_piece_happening_now_is_not_planned_again(env):
+    """Found in the app (2026-10-20): re-planning at 9:35 during a 9:00-9:40 piece planned that work AGAIN at 11:00.
+    FR-09 acceptance: no duplicate session. The running piece stays, only the rest of the work is planned."""
+    client, db, current, _ = env
+    me = current["user"]
+    now = datetime.utcnow()
+    task = client.post("/api/scheduler/tasks", json={"title": "DBMS notes", "estimated_minutes": 60,
+                                                     "deadline": (now + timedelta(days=3)).isoformat()}).json()
+    running = PlannedSession(user_id=me.id, task_id=task["id"], plan_id="earlier", start=now - timedelta(minutes=10),
+                             end=now + timedelta(minutes=30), minutes=40, break_minutes=10, piece=1, piece_count=2,
+                             mode="adaptive", created_at=now - timedelta(hours=1))
+    db.add(running)
+    db.commit()
+    client.post("/api/scheduler/plan")
+    pieces = db.query(PlannedSession).filter_by(task_id=task["id"]).all()
+    new = [p for p in pieces if p.plan_id != "earlier"]
+    assert running in pieces                                          # kept
+    assert sum(p.minutes for p in new) == 20                          # only the 20 minutes still left
+    assert all(p.start >= running.end for p in new)                   # nothing on top of the running piece

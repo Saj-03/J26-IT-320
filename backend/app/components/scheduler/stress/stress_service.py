@@ -40,10 +40,10 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.config import settings as app_settings
-from app.components.scheduler.commitment_service import SL_OFFSET
+from app.components.scheduler.tasks.commitment_service import SL_OFFSET
 from app.components.scheduler.models import Commitment, FocusSession, ScheduleChange, SchedulerAuditLog, Task
 from app.components.scheduler.settings_service import get_settings
-from app.components.scheduler.task_service import audit, drop_planned_pieces
+from app.components.scheduler.tasks.task_service import audit, drop_planned_pieces
 from app.shared.integration.models import SignalEvent
 
 SIGNAL_MAX_AGE = timedelta(hours=app_settings.RISK_SIGNAL_MAX_AGE_HOURS)   # same rule as the integration validator

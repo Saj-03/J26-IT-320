@@ -20,7 +20,7 @@ import uuid
 from datetime import datetime, timezone
 
 import app.db.base  # noqa: F401  (registers every table)
-from app.components.scheduler import stress_service
+from app.components.scheduler.stress import stress_service
 from app.components.scheduler.models import ScheduleChange
 from app.db.session import SessionLocal
 from app.shared.integration.contracts import RiskSignal

@@ -1,7 +1,7 @@
 """FR-11 notifications: built from real data; unread until the student opens the page."""
 from datetime import datetime, timedelta
 
-from app.components.scheduler import notification_service as ns
+from app.components.scheduler.rewards import notification_service as ns
 from app.components.scheduler.models import PlannedSession, RewardEvent, Task
 from app.shared.integration.contracts import RiskSignal
 from app.shared.integration.validator import record

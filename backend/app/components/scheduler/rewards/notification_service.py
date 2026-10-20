@@ -13,9 +13,11 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from app.components.scheduler import alert_service, planner_service, stress_service
+from app.components.scheduler.focus import alert_service
+from app.components.scheduler.planning import planner_service
+from app.components.scheduler.stress import stress_service
 from app.components.scheduler.models import PlannedSession, RewardEvent, SchedulerAuditLog, Task
-from app.components.scheduler.task_service import audit
+from app.components.scheduler.tasks.task_service import audit
 
 SOON_HOURS = 3                 # "your session starts in ..." if it starts within 3 h
 DUE_HOURS = 24

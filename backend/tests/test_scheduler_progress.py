@@ -1,7 +1,7 @@
 """Tests for gamification progress (Module G): streak, freeze, stress protection, badges."""
 from datetime import date, datetime, timedelta
 
-from app.components.scheduler import progress_service as ps
+from app.components.scheduler.rewards import progress_service as ps
 from app.components.scheduler.models import FocusSession, RewardEvent, ScheduleChange, Task
 from app.shared.integration.models import SignalEvent
 

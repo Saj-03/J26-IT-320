@@ -14,10 +14,11 @@ from datetime import date, datetime, timedelta
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.components.scheduler.commitment_service import SL_OFFSET
-from app.components.scheduler.engine import gamification
+from app.components.scheduler.tasks.commitment_service import SL_OFFSET
+from app.components.scheduler.rewards import gamification
 from app.components.scheduler.models import FocusSession, RewardEvent, ScheduleChange, Task
-from app.components.scheduler.stress_service import STRESS_TRIGGER
+from app.components.scheduler.stress.stress_service import STRESS_TRIGGER
+from app.components.scheduler.tasks.task_service import drop_planned_pieces
 from app.shared.integration.models import SignalEvent
 
 DAY_CHANGE_HOUR = 3            # work until 03:00 counts to the day before (same as M1)
@@ -121,7 +122,7 @@ def heavy_in_peak(db: Session, user, done: list[FocusSession]) -> int:
     heavy = [s for s in done if s.task_load == "heavy"]
     if not heavy:
         return 0
-    from app.components.scheduler.attention_service import attention_profile   # M1, only when needed
+    from app.components.scheduler.focus.attention_service import attention_profile   # M1, only when needed
     profile = attention_profile(db, user)
     if profile["source"] != "m1_model":
         return 0
@@ -193,3 +194,15 @@ def check_progress(db: Session, user, now: datetime | None = None) -> dict:
                        for code, (title, what, target, xp) in MILESTONES.items()],
         "new_milestones": new_milestones,
     }
+
+
+def complete_task(db: Session, user, task: Task) -> dict:
+    task.status = "done"
+    task.completed_at = task.completed_at or datetime.utcnow()
+    drop_planned_pieces(db, [task.id])          # finished -> its future planned pieces are free time again
+    key = f"task-{task.id}"
+    if not db.get(RewardEvent, key):
+        db.add(RewardEvent(id=key, user_id=user.id, kind="xp", amount=gamification.xp_for_task(task.cognitive_load)))
+    db.commit()
+    total = db.query(func.sum(RewardEvent.amount)).filter_by(user_id=user.id).scalar() or 0
+    return {"total_xp": total, "level": gamification.level_from_xp(total)}

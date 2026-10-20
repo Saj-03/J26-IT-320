@@ -3,9 +3,9 @@ import csv
 import io
 from datetime import datetime, timedelta
 
-from app.components.scheduler import research_export, research_service
+from app.components.scheduler.research import research_export, research_service
 from app.components.scheduler.models import FocusSession, ScheduleChange, SchedulerAuditLog, Task
-from app.components.scheduler.stress_service import STRESS_TRIGGER
+from app.components.scheduler.stress.stress_service import STRESS_TRIGGER
 from app.shared.integration.models import SignalEvent
 
 URL = "/api/scheduler/research/export.csv"
@@ -76,7 +76,7 @@ def test_csv_has_no_identifiers(env, monkeypatch):
 
 
 def test_peak_window_stability_is_high_for_a_steady_student():
-    from app.components.scheduler.commitment_service import SL_OFFSET
+    from app.components.scheduler.tasks.commitment_service import SL_OFFSET
     sessions = []
     for d in range(28):                                                 # 4 weeks: always 20:00 good, 09:00 bad
         for hour, done in ((20, True), (9, False)):

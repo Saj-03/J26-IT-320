@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from app.components.scheduler import planner_service as planner
-from app.components.scheduler.engine import m3_predictor
+from app.components.scheduler.planning import planner_service as planner
+from app.components.scheduler.ml import m3_predictor
 from app.components.scheduler.models import SchedulerAuditLog, Task
 
 SOON = lambda days=4: (datetime.utcnow() + timedelta(days=days)).isoformat()

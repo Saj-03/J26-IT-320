@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.components.scheduler.models import FocusSession, SchedulerSettings, Task
 from app.components.scheduler.settings_service import DEFAULTS
-from app.components.scheduler.task_service import audit
+from app.components.scheduler.tasks.task_service import audit
 from app.shared.users.models import User
 
 
@@ -95,8 +95,8 @@ def overview(db: Session, user, now: datetime | None = None) -> dict:
     from datetime import timedelta
     from statistics import fmean
     from app.components.scheduler.models import ScheduleChange
-    from app.components.scheduler.progress_service import study_day
-    from app.components.scheduler.stress_service import STRESS_TRIGGER
+    from app.components.scheduler.rewards.progress_service import study_day
+    from app.components.scheduler.stress.stress_service import STRESS_TRIGGER
     from app.shared.integration.models import SignalEvent
 
     require_researcher(user)

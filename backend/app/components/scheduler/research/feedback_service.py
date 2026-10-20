@@ -11,8 +11,8 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.components.scheduler.models import FocusSession, SchedulerAuditLog
-from app.components.scheduler.stress_service import get_own_proposal
-from app.components.scheduler.task_service import audit
+from app.components.scheduler.stress.stress_service import get_own_proposal
+from app.components.scheduler.tasks.task_service import audit
 
 PROPOSAL_RATED = "stress_proposal_rated"
 TIMER_RATED = "timer_rated"

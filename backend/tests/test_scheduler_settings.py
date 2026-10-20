@@ -1,8 +1,8 @@
 """Tests for GET/PATCH /settings - student preferences and controls."""
 from datetime import datetime
 
-from app.components.scheduler import commitment_service as cs
-from app.components.scheduler import focus_service as fs
+from app.components.scheduler.tasks import commitment_service as cs
+from app.components.scheduler.focus import focus_service as fs
 from app.components.scheduler.models import FocusSession, SchedulerSettings
 
 URL = "/api/scheduler/settings"
