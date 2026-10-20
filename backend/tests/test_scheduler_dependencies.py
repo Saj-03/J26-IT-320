@@ -108,3 +108,17 @@ def test_a_chain_of_ten_steps_still_gets_a_plan_in_time():
     parts = sorted((s for s in out["sessions"] if s["task_id"].startswith("P")), key=lambda s: int(s["task_id"][1:]))
     assert [s["task_id"] for s in parts] == [f"P{i}" for i in range(len(parts))]     # only a first part of the chain
     assert all(a["end"] <= b["start"] for a, b in zip(parts, parts[1:]))              # and in order
+
+
+def test_a_big_task_with_steps_keeps_no_time_of_its_own(env):
+    """Found in the app (2026-10-20): a task planned before it was split kept its old time -> a ghost 2-hour block."""
+    client, db, *_ = env
+    big = new_task(client, "Collect survey data", 120, days=5)
+    client.post(f"{API}/plan")
+    db.expire_all()
+    assert db.get(Task, big["id"]).scheduled_start is not None          # planned as one task first
+    step = new_task(client, "Write the questions", 60, parent_id=big["id"])   # now it has a step
+    client.post(f"{API}/plan")
+    db.expire_all()
+    assert db.get(Task, big["id"]).scheduled_start is None               # shown through its steps only
+    assert pieces(db, step["id"])

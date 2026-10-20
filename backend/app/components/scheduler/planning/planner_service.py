@@ -253,6 +253,10 @@ def build_plan(db: Session, user, now: datetime | None = None, today_cap: int | 
         t.scheduled_start = now_piece or first_start.get(t.id)       # None = could not be planned
         if t.id in plan["durations"]:
             t.predicted_minutes = plan["durations"][t.id]            # save the new M3 prediction
+    # A big task is planned through its steps: an old time of its own (from before it had steps) is cleared
+    parent_ids = {t.parent_id for t in tasks if t.parent_id}
+    if parent_ids:
+        db.query(Task).filter(Task.id.in_(parent_ids), Task.scheduled_start.isnot(None))           .update({Task.scheduled_start: None}, synchronize_session=False)
 
     latency_ms = round((time.perf_counter() - began) * 1000)         # NFR-01: p95 must stay under 2 s
     db.add(SchedulerAuditLog(user_id=user.id, event_type="plan_generated", mode=settings["mode"],
@@ -325,6 +329,7 @@ def create_suggested_steps(db: Session, user, task_id: str) -> Task:
                     priority=task.priority, is_flexible=True, cognitive_load=task.cognitive_load,
                     load_set_by_student=task.load_set_by_student, source="scheduler"))
     drop_planned_pieces(db, [task.id])                          # the big task is now planned through its steps
+    task.scheduled_start = None                                 # its old time would show as a ghost 2-hour block
     audit(db, user.id, "steps_suggested_created", task_id=task.id, steps=len(plan["steps"]),
           focus_minutes=plan["focus_minutes"], source=plan["source"])
     db.commit()

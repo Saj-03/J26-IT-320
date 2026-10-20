@@ -49,6 +49,7 @@ function itemsByDay(days, tasks, plan, commitments) {
     const inRange = (d) => shown.has(dayKey(d));
 
     const planned = new Set();
+    const parents = new Set(tasks.map((t) => t.parent_id).filter(Boolean));
     for (const p of plan) {
         const s = toDate(p.start), task = byId[p.task_id];
         planned.add(p.task_id);
@@ -56,7 +57,7 @@ function itemsByDay(days, tasks, plan, commitments) {
             add(s, { kind: 'study', start: s, end: toDate(p.end), title: p.title, task, part: p.of > 1 ? `Part ${p.piece} of ${p.of}` : null });
     }
     for (const t of tasks) {
-        if (t.scheduled_start && !planned.has(t.id)) {
+        if (t.scheduled_start && !planned.has(t.id) && !parents.has(t.id)) {     // a big task shows through its steps
             const s = toDate(t.scheduled_start);
             if (inRange(s)) add(s, { kind: 'study', start: s, end: new Date(s.getTime() + t.estimated_minutes * 60000), title: t.title, task: t });
         }

@@ -54,9 +54,10 @@ function weekBlocks(tasks, plan, commitments, firstDay) {
         if (s >= firstDay && s < lastDay && byId[p.task_id])
             blocks.push({ day: dayOf(s), start: s, end: e, title: p.title, kind: 'task', task: byId[p.task_id], piece: p });
     }
-    // 2. tasks planned by hand (no pieces)
+    // 2. tasks planned by hand (no pieces); a big task with steps is shown through its steps only
+    const parents = new Set(tasks.map((t) => t.parent_id).filter(Boolean));
     for (const t of tasks) {
-        if (!t.scheduled_start || planned.has(t.id)) continue;
+        if (!t.scheduled_start || planned.has(t.id) || parents.has(t.id)) continue;
         const s = new Date(utcMs(t.scheduled_start));
         if (s >= firstDay && s < lastDay)
             blocks.push({ day: dayOf(s), start: s, end: new Date(s.getTime() + t.estimated_minutes * 60000), title: t.title, kind: 'task', task: t });
