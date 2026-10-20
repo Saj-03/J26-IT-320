@@ -1,6 +1,7 @@
-// OPTIONAL webcam exercise feedback with MediaPipe Pose (runs in browser).
-// Video frames are processed locally and NEVER uploaded or stored (NFR04).
-// TODO: load @mediapipe/tasks-vision and count reps from landmark angles.
-export default function PoseCoach() {
-  return <p className="text-sm text-charcoal-muted">Webcam coach coming soon (optional).</p>;
+// Compatibility wrapper for places that need the optional browser-only pose
+// view. PoseTracker owns camera permission, cleanup, and the no-upload behavior.
+import { PoseTracker } from './PoseTracker';
+
+export default function PoseCoach({ exerciseName = '' }) {
+  return <PoseTracker exerciseName={exerciseName} />;
 }

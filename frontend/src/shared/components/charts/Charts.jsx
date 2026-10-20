@@ -1,18 +1,18 @@
 import React from 'react';
 // Lightweight, dependency-free SVG charts tuned to the IHSD palette.
 const BRAND = '#2E9C88';
-export function BarChart({ data, color = BRAND, height = 160, unit = '', highlightMax = true }) {
+export function BarChart({ data, color = BRAND, height = 160, unit = '', highlightMax = true, showValues = false, thinBars = false }) {
     const max = Math.max(...data.map((d) => d.value), 1);
     const maxIdx = data.reduce((mi, d, i, arr) => d.value > arr[mi].value ? i : mi, 0);
     return (<div className="flex items-end justify-between gap-2" style={{ height }}>
       {data.map((d, i) => {
             const isMax = highlightMax && i === maxIdx;
             return (<div key={d.label} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-            <span className="text-[10px] font-semibold text-charcoal-muted opacity-0 group-hover:opacity-100 transition-opacity">
-              {d.value}
+            <span className={`text-[10px] font-semibold text-charcoal-muted transition-opacity ${showValues ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+              {d.value.toLocaleString()}
               {unit}
             </span>
-            <div className="w-full rounded-full transition-all duration-500" style={{
+            <div className={`rounded-t-md rounded-b-sm transition-all duration-500 ${thinBars ? 'w-1/2 max-w-8' : 'w-full'}`} style={{
                     height: `${d.value / max * (height - 34)}px`,
                     background: isMax ? color : '#CDEEE5',
                     minHeight: 6

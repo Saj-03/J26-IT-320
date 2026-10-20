@@ -23,6 +23,7 @@ import schedulerRoutes from "./features/scheduler/routes";
 import burnoutRoutes from "./features/burnout/routes";
 import careerRoutes from "./features/career/routes";
 import physicalRoutes, { physicalSetupRoutes } from "./features/physical-wellbeing/routes";
+import { PeerChallengeInvite } from "./features/physical-wellbeing/pages/PeerChallenges";
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/challenge/:inviteCode" element={<PeerChallengeInvite />} />
 
       <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
         <Route path="/onboarding" element={<Onboarding />} />

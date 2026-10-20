@@ -1,98 +1,208 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { PlusIcon, ShuffleIcon, CheckIcon } from 'lucide-react';
-import { PageHeader } from '../../../shared/components/layout/PageHeader';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { HeartIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { PhysicalNav } from '../components/PhysicalNav';
+import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { AIInsightCard } from '../../../shared/components/domain/AIInsightCard';
-import { SectionTitle, AdaptedChip, ChoiceChip } from '../components/Shared';
-import { meals, alternativeMeals } from '../data';
+import { SectionTitle, ChoiceChip } from '../components/Shared';
+import { RecommendationImage, mealImageFallbacks } from '../components/RecommendationImage';
+import { getRecommendations, getProfile, getFavorites, addFavorite, removeFavorite, getPlanCheckins, savePlanCheckin } from '../api';
 import { cn } from '../../../shared/lib/cn';
+
 const slots = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
+
 export function PhysicalNutrition() {
-    const [slot, setSlot] = useState('Lunch');
-    const [cuisine, setCuisine] = useState('All');
-    const [added, setAdded] = useState([]);
-    const meal = meals.find((m) => m.slot === slot);
-    const alts = alternativeMeals.filter((a) => cuisine === 'All' || a.cuisine === cuisine);
-    return (<div className="space-y-6">
-      <PageHeader title="Your Nutrition Plan" subtitle="Student-friendly meals that match your preferences and today’s activity level."/>
+  const [slot, setSlot] = useState('Lunch');
+  const [cuisineFilter, setCuisineFilter] = useState('All');
+  const [showAllMeals, setShowAllMeals] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [eatenSlots, setEatenSlots] = useState([]);
+  const [savingMeal, setSavingMeal] = useState(false);
+  const [mealSaveError, setMealSaveError] = useState('');
+  
+  const [recomData, setRecomData] = useState(null);
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    Promise.all([
+      getRecommendations(false, false).catch(() => null),
+      getProfile().catch(() => null),
+      getFavorites('meal').catch(() => [])
+    ]).then(([rec, prof, savedFavorites]) => {
+      setRecomData(rec);
+      setProfile(prof);
+      setFavorites(savedFavorites || []);
+    });
+  }, []);
+
+  const slotKey = slot.toLowerCase() === 'snacks' ? 'snack' : slot.toLowerCase();
+  const today = (() => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; })();
+  useEffect(() => {
+    getPlanCheckins(today, today).then((progress) => setEatenSlots(progress?.daily?.[today]?.completed_items || [])).catch(() => setEatenSlots([]));
+  }, [today]);
+  const currentSlotMeals = recomData?.today_slots?.[slotKey] || [];
+  const featuredMeal = currentSlotMeals[0] || recomData?.meals?.[0] || {
+    name: 'Red Rice with Dhal Curry, Kola Mallum & Soya Meat Curry',
+    calories: 420, protein: 24, carbs: 68, fat: 7.5, prep_time: 20,
+    cuisine: 'sri_lankan', diet_category: 'vegan',
+    description: 'Nutrient-dense Sri Lankan meal with balanced plant protein, unpolished red rice, and gotukola greens.'
+  };
+
+  const allMeals = recomData?.meals || [];
+  const filteredMeals = allMeals.filter((m) => {
+    if (cuisineFilter === 'All') return true;
+    if (cuisineFilter === 'Sri Lankan') return m.cuisine === 'sri_lankan' || m.region?.toLowerCase().includes('sri');
+    if (cuisineFilter === 'International') return m.cuisine === 'western' || m.region?.toLowerCase().includes('balanced');
+    return true;
+  });
+  const visibleMeals = showAllMeals ? filteredMeals : filteredMeals.slice(0, 3);
+  const isFavorite = (meal) => favorites.some((favorite) => favorite.item_name === meal.name);
+  const toggleFavorite = async (meal) => {
+    setSavingMeal(true);
+    setMealSaveError('');
+    try {
+      if (isFavorite(meal)) {
+        await removeFavorite('meal', meal.name);
+        setFavorites((current) => current.filter((favorite) => favorite.item_name !== meal.name));
+      } else {
+        await addFavorite('meal', meal);
+        setFavorites((current) => [...current, { item_type: 'meal', item_name: meal.name, item: meal }]);
+      }
+    } catch (error) {
+      setMealSaveError(error?.response?.data?.detail || 'Could not update this favorite. Please try again.');
+    } finally {
+      setSavingMeal(false);
+    }
+  };
+  const toggleEaten = async (meal) => {
+    const codes = { breakfast: 'bf', lunch: 'lu', dinner: 'dn', snack: 'sn' };
+    const code = codes[slotKey];
+    const next = eatenSlots.includes(code) ? eatenSlots.filter((item) => item !== code) : [...eatenSlots, code];
+    setSavingMeal(true);
+    setMealSaveError('');
+    try {
+      const progress = await getPlanCheckins(today, today);
+      const water = progress?.daily?.[today]?.water_glasses || 0;
+      await savePlanCheckin({ day: today, completed_items: next, water_glasses: water });
+      setEatenSlots(next);
+    } catch (error) {
+      setMealSaveError(error?.response?.data?.detail || 'Could not save today’s meal check-in. Please try again.');
+    } finally {
+      setSavingMeal(false);
+    }
+  };
+  const eatenCode = ({ breakfast: 'bf', lunch: 'lu', dinner: 'dn', snack: 'sn' })[slotKey];
+
+  const dietPrefDisplay = profile?.diet_pref === 'vegan' ? 'Vegan 🌱' : (profile?.diet_pref === 'veg' ? 'Vegetarian 🥬' : profile?.diet_pref === 'non-veg' ? 'Non-vegetarian 🥩' : 'No specific preference');
+  const mealStyleDisplay = profile?.meal_style === 'sri_lankan' ? 'Sri Lankan 🇱🇰' : (profile?.meal_style === 'western' ? 'International 🌍' : 'Sri Lankan & International');
+
+  return (
+    <div className="space-y-6">
+      <PhysicalMasterCard
+        title="Student Nutrition & Meal Plans"
+        subtitle="Healthy Sri Lankan and international meals tailored to your diet, study schedule, and available prep time."
+        eyebrow="Food & nourishment"
+      />
 
       <PhysicalNav />
 
       {/* Slot tabs */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
-        {slots.map((s) => <button key={s} onClick={() => setSlot(s)} className={cn('shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-colors', slot === s ? 'bg-brand-500 text-white' : 'bg-white text-charcoal-light border border-black/[0.05]')}>
+        {slots.map((s) => (
+          <button
+            key={s}
+            onClick={() => setSlot(s)}
+            className={cn(
+              'shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all',
+              slot === s
+                ? 'bg-brand-500 text-white shadow-soft'
+                : 'bg-white text-charcoal-light border border-black/[0.06] hover:border-brand-300'
+            )}
+          >
             {s}
-          </button>)}
+          </button>
+        ))}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Featured meal */}
-        <motion.div key={meal.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-2">
-          <Card padding="none" className="overflow-hidden h-full">
-            {meal.image &&
-            <div className="relative">
-                <img src={meal.image} alt="" className="w-full h-48 sm:h-64 object-cover"/>
-                <span className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wide bg-white/90 text-charcoal rounded-full px-2.5 py-1">
-                  {meal.cuisine}
+        <motion.div
+          key={slot + (featuredMeal.name || '')}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="lg:col-span-2"
+        >
+          <Card padding="none" className="overflow-hidden h-full flex flex-col justify-between">
+            <RecommendationImage src={featuredMeal.image} alt={featuredMeal.name || 'Recommended meal'} fallbackSrc={featuredMeal.cuisine === 'sri_lankan' ? mealImageFallbacks.sri_lankan : mealImageFallbacks.international} className="h-56 w-full object-cover sm:h-64" />
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-50 px-3 py-1 rounded-full border border-brand-200">
+                  Recommended {slot}
                 </span>
-              </div>}
-            <div className="p-5 sm:p-6">
-              <p className="text-sm font-semibold text-brand-600">Recommended {meal.slot}</p>
-              <h2 className="text-lg sm:text-xl font-extrabold text-charcoal mt-1 leading-snug">
-                {meal.emoji} {meal.name}
-              </h2>
-
-              <div className="grid grid-cols-4 gap-2 mt-4">
-                {[
-            { l: 'Calories', v: `${meal.kcal}`, u: 'kcal' },
-            { l: 'Protein', v: `${meal.protein}`, u: 'g' },
-            { l: 'Carbs', v: `${meal.carbs}`, u: 'g' },
-            { l: 'Veg', v: `${meal.veg}`, u: 'serv' }
-        ].
-            map((m) => <div key={m.l} className="bg-cream rounded-2xl p-3 text-center">
-                    <p className="text-base font-extrabold text-charcoal leading-none">{m.v}</p>
-                    <p className="text-[10px] text-charcoal-muted font-medium">{m.u}</p>
-                    <p className="text-[10px] font-semibold text-charcoal-muted mt-1">{m.l}</p>
-                  </div>)}
+                <span className="text-xs font-semibold text-charcoal-muted">
+                  {featuredMeal.cuisine === 'sri_lankan' ? '🇱🇰 Sri Lankan Cuisine' : '🌍 International Cuisine'}
+                </span>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2 mt-5">
-                <Button size="lg" className="flex-1" variant={added.includes(meal.id) ? 'secondary' : 'primary'} onClick={() => setAdded((a) => a.includes(meal.id) ? a : [...a, meal.id])}>
-                  {added.includes(meal.id) ?
-            <>
-                      <CheckIcon size={17}/> Added to Today
-                    </> :
-            <>
-                      <PlusIcon size={17}/> Add to Today
-                    </>}
+              <h2 className="text-xl sm:text-2xl font-black text-charcoal mt-1 leading-snug">
+                {featuredMeal.name}
+              </h2>
+
+              <p className="text-sm text-charcoal-muted mt-2 leading-relaxed">
+                {featuredMeal.description || 'Specially selected to support sustained cognitive stamina during university study sessions.'}
+              </p>
+
+              <div className="grid grid-cols-4 gap-2.5 mt-5">
+                {[
+                  { l: 'Calories', v: `${featuredMeal.calories || 400}`, u: 'kcal' },
+                  { l: 'Protein', v: `${featuredMeal.protein || 20}`, u: 'g' },
+                  { l: 'Carbs', v: `${featuredMeal.carbs || 60}`, u: 'g' },
+                  { l: 'Prep Time', v: `${featuredMeal.prep_time || 15}`, u: 'mins' }
+                ].map((m) => (
+                  <div key={m.l} className="bg-emerald-50 rounded-2xl p-3 text-center border border-emerald-100">
+                    <p className="text-base sm:text-lg font-black text-emerald-800 leading-none">{m.v}</p>
+                    <p className="text-[10px] text-emerald-700 font-medium mt-0.5">{m.u}</p>
+                    <p className="text-[10px] font-bold text-emerald-800/75 mt-1">{m.l}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-6 pt-0">
+              <div className="flex flex-col sm:flex-row gap-2 mt-4 pt-4 border-t border-black/[0.05]">
+                <Button size="md" variant={isFavorite(featuredMeal) ? 'secondary' : 'outline'} disabled={savingMeal} aria-label={isFavorite(featuredMeal) ? `Remove ${featuredMeal.name} from favorites` : `Favorite ${featuredMeal.name}`} title={isFavorite(featuredMeal) ? 'Remove from favorites' : 'Add to favorites'} onClick={() => toggleFavorite(featuredMeal)}>
+                  <HeartIcon size={18} fill={isFavorite(featuredMeal) ? 'currentColor' : 'none'} />
                 </Button>
-                <Button size="lg" variant="outline">
-                  <ShuffleIcon size={16}/> Find Alternative
+                <Button size="md" variant={eatenSlots.includes(eatenCode) ? 'secondary' : 'primary'} disabled={savingMeal} onClick={() => toggleEaten(featuredMeal)}>
+                  {eatenSlots.includes(eatenCode) ? 'Eaten today' : 'Mark as eaten'}
                 </Button>
               </div>
             </div>
           </Card>
         </motion.div>
 
-        {/* Why */}
+        {/* Why + Preferences */}
         <div className="space-y-6">
-          <AIInsightCard title="Why this meal?">{meal.why}</AIInsightCard>
+          <AIInsightCard title="Why this meal was suggested">
+            Suggestions use your saved food preferences and selected meal time. Check ingredients and nutrition details against your own needs.
+          </AIInsightCard>
+
           <Card>
-            <SectionTitle title="Your preferences"/>
-            <div className="space-y-2 text-sm">
+            <SectionTitle title="Your Active Food Profile" />
+            <div className="space-y-2.5 text-sm">
               {[
-            { l: 'Diet', v: 'Non-Vegetarian' },
-            { l: 'Meal style', v: 'Sri Lankan & International' },
-            { l: 'Avoiding', v: 'Deep fried food' },
-            { l: 'Allergies', v: 'None' }
-        ].
-            map((p) => <div key={p.l} className="flex items-center justify-between">
-                  <span className="text-charcoal-muted font-medium">{p.l}</span>
-                  <span className="font-bold text-charcoal">{p.v}</span>
-                </div>)}
+                { l: 'Dietary Preference', v: dietPrefDisplay },
+                { l: 'Meal Style', v: mealStyleDisplay },
+                { l: 'Avoiding', v: profile?.avoid_foods || 'Deep fried food' },
+                { l: 'Allergies', v: profile?.allergies || 'None reported' }
+              ].map((p) => (
+                <div key={p.l} className="flex items-center justify-between py-1 border-b border-black/[0.03]">
+                  <span className="text-xs text-charcoal-muted font-medium">{p.l}</span>
+                  <span className="text-xs font-bold text-charcoal">{p.v}</span>
+                </div>
+              ))}
             </div>
           </Card>
         </div>
@@ -100,36 +210,65 @@ export function PhysicalNutrition() {
 
       {/* Alternatives */}
       <div>
-        <SectionTitle title="Other options" subtitle="Sri Lankan and international meals, all student-budget friendly." action={<AdaptedChip>Matched to preferences</AdaptedChip>}/>
-        <div className="flex gap-2 mb-4">
-          {['All', 'Sri Lankan', 'International'].map((c) => <ChoiceChip key={c} selected={cuisine === c} onClick={() => setCuisine(c)}>
+        <SectionTitle
+          title="More meal options"
+          subtitle="Choose another meal for the selected slot."
+        />
+
+        {showAllMeals && <div className="flex gap-2 mb-4">
+          {['All', 'Sri Lankan', 'International'].map((c) => (
+            <ChoiceChip key={c} selected={cuisineFilter === c} onClick={() => setCuisineFilter(c)}>
               {c}
-            </ChoiceChip>)}
-        </div>
+            </ChoiceChip>
+          ))}
+        </div>}
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {alts.map((a, i) => <motion.div key={a.name} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-              <Card padding="sm" hover className="h-full flex flex-col">
-                {a.image && <img src={a.image} alt="" className="w-full h-28 object-cover rounded-2xl mb-3"/>}
-                <div className="flex items-start gap-2">
-                  <span className="text-xl shrink-0">{a.emoji}</span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-charcoal leading-snug">{a.name}</p>
-                    <p className="text-xs text-charcoal-muted mt-0.5">
-                      {a.cuisine} · {a.kcal} kcal
-                    </p>
+          {visibleMeals.map((a, i) => (
+            <motion.div
+              key={a.name + i}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04 }}
+            >
+              <Card padding="sm" hover className="h-full flex flex-col justify-between">
+                <div>
+                  <RecommendationImage src={a.image} alt={a.name || 'Recommended meal'} fallbackSrc={a.cuisine === 'sri_lankan' ? mealImageFallbacks.sri_lankan : mealImageFallbacks.international} className="mb-3 h-36 w-full rounded-2xl object-cover" />
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-charcoal-muted">
+                      {a.cuisine === 'sri_lankan' ? '🇱🇰 Sri Lankan' : '🌍 International'}
+                    </span>
+                    <span className="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">
+                      {a.slot || 'Meal'}
+                    </span>
                   </div>
-                </div>
-                <button className="mt-auto pt-3 text-xs font-bold text-brand-600 hover:text-brand-700 text-left">
-                  + Add to plan
-                </button>
-              </Card>
-            </motion.div>)}
-        </div>
-      </div>
 
-      <p className="text-xs text-charcoal-muted bg-cream rounded-2xl p-3.5 leading-relaxed">
-        Meal suggestions are general wellbeing guidance, not clinical nutrition advice. Adjust portions to suit you.
-      </p>
-    </div>);
+                  <p className="text-sm font-bold text-charcoal leading-snug">{a.name}</p>
+                  <p className="text-xs text-charcoal-muted mt-1 line-clamp-2">
+                    {a.description}
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-black/[0.05] flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <span className="font-extrabold text-charcoal">
+                    {a.calories} kcal · {a.protein}g P
+                  </span>
+                  <button type="button" aria-label={isFavorite(a) ? `Remove ${a.name} from favorites` : `Favorite ${a.name}`} title={isFavorite(a) ? 'Remove from favorites' : 'Add to favorites'} disabled={savingMeal} onClick={() => toggleFavorite(a)} className="inline-flex items-center justify-center rounded-full p-2 text-brand-700 hover:bg-brand-50 disabled:opacity-50">
+                    <HeartIcon size={17} fill={isFavorite(a) ? 'currentColor' : 'none'} />
+                  </button>
+                  <button type="button" disabled={savingMeal} onClick={() => toggleEaten(a)} className="font-bold text-emerald-700 hover:text-emerald-800 disabled:opacity-50">
+                    {eatenSlots.includes(eatenCode) ? 'Eaten today' : 'Mark eaten'}
+                  </button>
+                </div>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+        {mealSaveError && <p role="alert" className="mt-3 text-sm font-semibold text-rose-700">{mealSaveError}</p>}
+        {filteredMeals.length > 3 && <button type="button" onClick={() => setShowAllMeals((shown) => !shown)} className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-brand-700 hover:text-brand-800">
+          {showAllMeals ? <>Show fewer <ChevronUpIcon size={16} /></> : <>See all {filteredMeals.length} options <ChevronDownIcon size={16} /></>}
+        </button>}
+      </div>
+    </div>
+  );
 }
