@@ -52,6 +52,9 @@ class TaskCreate(BaseModel):
     # Optional: makes this task a SUBTASK of another task
     parent_id: str | None = None
 
+    # Optional (FR-04): plan this task only after that task is finished
+    after_task_id: str | None = None
+
     @field_validator("title")
     @classmethod
     def title_not_blank(cls, v: str) -> str:
@@ -78,6 +81,7 @@ class TaskUpdate(BaseModel):
     task_type: TaskType | None = None
     deadline: datetime | None = None
     estimated_minutes: int | None = Field(default=None, ge=5, le=24 * 60)
+    after_task_id: str | None = None                          # FR-04: null = no longer depends on a task
     predicted_minutes: int | None = Field(default=None, ge=5, le=24 * 60)   # student sets the real duration (overrides M3)
     priority: int | None = Field(default=None, ge=1, le=5)
     is_flexible: bool | None = None
@@ -117,6 +121,7 @@ class TaskOut(BaseModel):
     status: str
     actual_minutes: int | None
     completed_at: datetime | None
+    after_task_id: str | None = None                          # FR-04 dependency
     created_at: datetime
     updated_at: datetime
 
@@ -670,6 +675,18 @@ class ParticipantModeOut(BaseModel):
 
 class ResearcherOut(BaseModel):
     is_researcher: bool
+    research_withdrawn_at: datetime | None = None   # the student left the study (proposal 3.2.2)
+
+
+class WithdrawIn(BaseModel):
+    """Body of POST /research/me/withdraw - must say yes on purpose."""
+    model_config = ConfigDict(extra="forbid")
+    confirm: Literal[True]
+
+
+class WithdrawOut(BaseModel):
+    research_withdrawn_at: datetime
+    records_deleted: int
 
 
 class DurationOut(BaseModel):
@@ -752,6 +769,7 @@ class BrainDumpItemOut(BaseModel):
     load: str | None                 # M2
     predicted_minutes: int | None    # M3
     warning: str | None = None       # e.g. a 10-hour breakfast: probably a misheard time
+    urgent: bool = False             # "urgent exam" -> top priority when saved
 
 
 class BrainDumpOut(BaseModel):
@@ -776,6 +794,7 @@ class BrainDumpSaveItem(BaseModel):
     duration_minutes: int | None = Field(default=None, ge=5, le=24 * 60)
     deadline: dt.date | None = None                             # tasks
     load: CognitiveLoad | None = None                           # kept only if the student changed it
+    urgent: bool = False                                        # -> priority 5
     # learning loop: what M4 said and what the student changed (no spoken text is stored)
     model_type: str | None = Field(default=None, max_length=40)
     confidence: float | None = Field(default=None, ge=0, le=1)

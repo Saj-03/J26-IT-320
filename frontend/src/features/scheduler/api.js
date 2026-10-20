@@ -51,6 +51,10 @@ export const getFocusAlert = () => api.get("/scheduler/focus/alert").then((r) =>
 export const dismissFocusAlert = (kind) => api.post("/scheduler/focus/alert/dismiss", { kind }).then((r) => r.data);
 
 // --- Attention profile (M1 model): best / worst hours, capacity, chance per hour ---
+// --- My scheduler settings (study hours, daily cap, timer, opt-outs) ---
+export const getSchedulerSettings = () => api.get("/scheduler/settings").then((r) => r.data);
+export const updateSchedulerSettings = (changes) => api.patch("/scheduler/settings", changes).then((r) => r.data);
+
 export const getAttentionProfile = () => api.get("/scheduler/attention/profile").then((r) => r.data);
 
 // --- Stress adaptation (uses Component 4's wellbeing signal) ---

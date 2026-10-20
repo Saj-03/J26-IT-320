@@ -31,7 +31,7 @@ components and branches still import the old paths). They contain no code.
 | FR-01 | create / edit / delete tasks | `POST/GET/PATCH/DELETE /tasks` | `tasks/task_service.py` | `test_scheduler_tasks.py` |
 | FR-02 | fixed commitments + study periods | `/commitments`, `GET /availability`, `GET /conflicts` | `tasks/commitment_service.py` | `test_scheduler_commitments.py` |
 | FR-03 | split a large task into steps sized to attention + load tag | `GET/POST /tasks/{id}/suggested-steps` | `planning/planner_service.py` → `suggest_steps` · load: `ml/m2_classifier.py` | `test_scheduler_plan.py`, `test_scheduler_m2_app.py` |
-| FR-04 | feasible schedule (deadline, priority, duration, availability) | `POST /plan`, `GET /plan` | `planning/cp_scheduler.py` → `schedule` · `planning/planner_service.py` → `build_plan` | `test_scheduler_cp.py`, `test_scheduler_plan.py` |
+| FR-04 | feasible schedule (deadline, priority, duration, availability, **dependencies**: "do B after A", steps in order) | `POST /plan`, `GET /plan`, `after_task_id` on tasks | `planning/cp_scheduler.py` → `schedule` · `planning/planner_service.py` → `build_plan`, `task_order` | `test_scheduler_cp.py`, `test_scheduler_plan.py`, `test_scheduler_dependencies.py` |
 | FR-05 | record focus sessions (start, pause, end, misses, rating) | `/focus/start`, `/focus/{id}/pause\|resume\|end\|rating` | `focus/focus_service.py` | `test_scheduler_focus_*.py` |
 | FR-06 | receive + validate the C4 risk payload (stale / malformed rejected) | `POST /api/integration/risk-signal` (shared) · `GET /stress/status` | `app/shared/integration/validator.py` · `stress/stress_service.py` → `stress_status` | `test_c4_c3_contract.py`, `test_scheduler_stress_status.py` |
 | FR-07 | elevated risk → protect urgent work, propose move / split / rest | `GET /stress/proposals` (made by itself), `POST /stress/propose` | `stress/stress_service.py` → `task_safety`, `build_changes`, `auto_propose` | `test_scheduler_stress_safety.py`, `test_scheduler_stress_propose.py` |
@@ -39,7 +39,8 @@ components and branches still import the old paths). They contain no code.
 | FR-09 | missed session → feasible recovery plan | `GET /plan/recovery` | `planning/planner_service.py` → `missed_pieces`, `recovery_preview` | `test_scheduler_plan.py` |
 | FR-10 | XP, streaks, badges, milestones (once per event) | `GET /progress`, `POST /tasks/{id}/complete` | `rewards/gamification.py`, `rewards/progress_service.py` | `test_scheduler_progress.py` |
 | FR-11 | show schedule, progress, deadlines, risk changes, rewards | `GET /notifications`, `GET /insights` (+ frontend pages) | `rewards/notification_service.py`, `rewards/insights_service.py` | `test_scheduler_notifications.py`, `test_scheduler_insights.py` |
-| FR-12 | pseudonymous pilot export | `GET /research/export.csv` | `research/research_export.py` | `test_scheduler_research_export.py` |
+| FR-12 | pseudonymous pilot export | `GET /research/export.csv` | `research/research_export.py` | `test_scheduler_research_export.py`, `test_scheduler_research_engagement.py` |
+| 3.2.2 | a student can leave the study and have their research data deleted | `POST /research/me/withdraw` | `research/research_service.py` → `withdraw` | `test_scheduler_research_withdraw.py` |
 | FR-13 | attention capacity + peak / low windows after a minimum history | `GET /attention/profile` | `focus/attention_service.py` · `ml/m1_predictor.py` | `test_scheduler_attention.py`, `test_scheduler_m1.py` |
 | FR-14 | heavy work in peak windows, light work in low windows | `POST /plan` | `planning/planner_service.py` → `attention_fit` | `test_scheduler_plan.py` |
 | FR-15 | adaptive Pomodoro focus / break with manual override | `GET /focus/recommendation` | `focus/focus_service.py` → `recommend_timer` | `test_scheduler_focus_start.py` |
@@ -55,6 +56,7 @@ The whole student journey (all of the above working together) is in `tests/test_
 | M2 | task cognitive load (heavy / medium / light) | `ml/m2_classifier.py` | `train_m2.py` | `data/m2_results.json` |
 | M3 | real task duration from the student's past over-runs | `ml/m3_predictor.py` | `train_m3.py` | `data/m3_results.json` |
 | M4 | what each piece of a spoken day is (task, commitment, energy …) | `ml/m4_predictor.py` | `train_m4.py`, `m4_speech_eval.py` | `data/m4_results.json`, `data/m4_speech_results.json` |
+| M4 v2 | where each new item starts in a spoken day (MiniLM, token level) | `ml/m4v2_segmenter.py` | `m4v2_dataset.py`, `train_m4v2.py`, `try_m4v2.py` | `data/m4v2_results.json` |
 
 If a model file is missing the app falls back to simple rules; `tests/test_ml_model_files.py` makes sure
 that never happens silently.

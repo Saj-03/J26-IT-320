@@ -22,3 +22,4 @@ backend/ml_training/scheduler/data/tasks.csv
 backend/ml_training/scheduler/data/external/
 backend/ml_training/scheduler/data/m4_train.csv
 backend/ml_training/scheduler/data/m4_test.csv
+backend/ml_training/scheduler/data/m4v2_*.jsonl

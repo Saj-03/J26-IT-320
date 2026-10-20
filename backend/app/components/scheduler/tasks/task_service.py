@@ -27,7 +27,7 @@ DEFAULT_LOAD = "medium"   # used when the student picks nothing and the M2 model
 # Small helpers
 # ---------------------------------------------------------------------------
 PLAN_FIELDS = {"scheduled_start", "estimated_minutes", "predicted_minutes", "deadline", "status", "is_flexible",
-               "cognitive_load"}
+               "cognitive_load", "after_task_id"}
 
 
 def audit(db: Session, user_id: str, event_type: str, **details) -> None:
@@ -73,9 +73,22 @@ def check_parent(db: Session, user, parent_id: str, deadline: datetime) -> Task:
 # ---------------------------------------------------------------------------
 # CRUD
 # ---------------------------------------------------------------------------
+def check_after(db: Session, user, task_id: str | None, after_id: str) -> None:
+    """FR-04: 'do B after A' must point at one of my own tasks, not at itself, and never make a loop."""
+    first = get_own_task(db, user, after_id)                 # 404 if not mine
+    seen = {task_id}
+    while first is not None:
+        if first.id in seen:
+            raise HTTPException(422, "This would make a loop: the tasks would wait for each other")
+        seen.add(first.id)
+        first = db.get(Task, first.after_task_id) if first.after_task_id else None
+
+
 def create_task(db: Session, user, data: TaskCreate) -> Task:
     if data.parent_id:
         check_parent(db, user, data.parent_id, data.deadline)
+    if data.after_task_id:
+        check_after(db, user, None, data.after_task_id)
 
     fields = data.model_dump()
     student_picked_load = fields["cognitive_load"] is not None
@@ -125,6 +138,9 @@ def get_task_detail(db: Session, user, task_id: str) -> dict:
 def update_task(db: Session, user, task_id: str, data: TaskUpdate) -> Task:
     task = get_own_task(db, user, task_id)
     changes = data.model_dump(exclude_unset=True)      # only the fields the student sent
+
+    if changes.get("after_task_id"):
+        check_after(db, user, task.id, changes["after_task_id"])
 
     # A subtask's new deadline must still fit inside its parent
     if "deadline" in changes and task.parent_id:
@@ -190,7 +206,11 @@ def delete_task(db: Session, user, task_id: str) -> None:
     # 2. planned pieces point to the tasks -> remove them first (foreign key)
     drop_planned_pieces(db, all_ids, future_only=False)
 
-    # 3. delete subtasks first, then the parent (foreign key order)
+    # 3. tasks that waited for these ones no longer wait (FR-04 dependency)
+    db.query(Task).filter(Task.after_task_id.in_(all_ids)) \
+      .update({Task.after_task_id: None}, synchronize_session=False)
+
+    # 4. delete subtasks first, then the parent (foreign key order)
     db.query(Task).filter(Task.id.in_(subtask_ids)).delete(synchronize_session=False)
     db.delete(task)
 

@@ -156,7 +156,7 @@ def test_preview_messy_speech_fillers_and_self_correction(env):
     said = ("Yeah, tomorrow I have lecture.6:00 AM to 6:00.9:00 PM. Sorry.And also I have a.I need to get the "
             "breakfast 8:00 AM to 6:00 PM.")
     out = bd.preview(db, current["user"], said, NOW)
-    assert out["ignored"] == ["Yeah", "Sorry", "And", "also I have a"]          # no cards for filler
+    assert " ".join(out["ignored"]) == "Yeah Sorry And also I have a"              # no cards for filler
     lecture, breakfast = out["items"]
     assert (lecture["title"], lecture["start"], lecture["end"]) == ("Lecture", "06:00", "21:00")   # last time wins
     assert breakfast["warning"] and breakfast["needs_check"]                    # 10 hours -> check the times
@@ -179,3 +179,15 @@ def test_preview_time_said_after_the_event(env):
     assert sum(i["type"] == "commitment" for i in out["items"]) == 1          # no separate "So" card
     assert {"And not only that", "Can you do it"} <= set(out["ignored"])
     assert out["plan_requested"] is True
+
+
+def test_spoken_day_with_and_without_full_stops(env):
+    """Found in the app (2026-10-20): "eat 8 to | 9 and study" was cut inside the time, giving a "9 and study" task."""
+    _, db, current, _ = env
+    for said in ("I want to go my office at 8:00.Then eat 8 to 9 and study. I have the urgent exam tomorrow.",
+                 "i want go my office at 8 then eat 8 to 9 and study i have urgent exam tomorrow"):
+        items = bd.preview(db, current["user"], said, NOW)["items"]
+        assert [i["title"].lower() for i in items] == ["office", "eat", "study", "urgent exam"], said
+        eat, exam = items[1], items[3]
+        assert (eat["start"], eat["end"]) == ("08:00", "09:00")
+        assert exam["urgent"] is True and exam["deadline"] == TOMORROW

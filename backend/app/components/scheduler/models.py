@@ -79,6 +79,8 @@ class Task(Base):
     # --- Planning and progress ---
     source: Mapped[str] = mapped_column(String, default="student")          # see TASK_SOURCES
     scheduled_start: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # FR-04 dependency: do this task only after that one is finished (no FK: a plain id, cleared on delete)
+    after_task_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     status: Mapped[str] = mapped_column(String, default="pending", index=True)  # see TASK_STATUSES
     actual_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)  # sum of focus sessions
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
@@ -220,6 +222,8 @@ class SchedulerSettings(Base):
 
     # --- Student control (ethics 3.7) ---
     focus_tracking_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    # proposal 3.2.2: the student left the C3 study -> never exported again, research-only records deleted
+    research_withdrawn_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     stress_adaptation_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     fixed_timer_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)  # set = ignore M1
 

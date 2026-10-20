@@ -11,7 +11,7 @@ def make_researcher(monkeypatch, email="me@test.lk"):
 
 def test_students_cannot_see_or_change_modes(env):
     client, _, _, other = env
-    assert client.get("/api/scheduler/research/me").json() == {"is_researcher": False}
+    assert client.get("/api/scheduler/research/me").json()["is_researcher"] is False
     assert client.get(URL).status_code == 403
     assert client.patch(f"{URL}/{other.research_id}", json={"mode": "static"}).status_code == 403
 
@@ -21,7 +21,7 @@ def test_researcher_sees_only_consenting_participants_without_names(env, monkeyp
     make_researcher(monkeypatch)
     other.research_consent = True; db.commit()
     body = client.get(URL).json()
-    assert client.get("/api/scheduler/research/me").json() == {"is_researcher": True}
+    assert client.get("/api/scheduler/research/me").json()["is_researcher"] is True
     assert [p["research_id"] for p in body["participants"]] == [other.research_id]
     assert body["without_consent"] == 1                            # "me" did not consent
     assert "email" not in body["participants"][0] and "full_name" not in body["participants"][0]

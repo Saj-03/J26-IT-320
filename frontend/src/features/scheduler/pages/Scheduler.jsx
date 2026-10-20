@@ -17,6 +17,7 @@ import { LoadBadge, SectionTitle, formatMinutes } from '../components/PlanPrimit
 import PlannedTasks from '../components/PlannedTasks';
 import Commitments from '../components/Commitments';
 import FocusAlert from '../components/FocusAlert';
+import MonthCalendar from '../components/MonthCalendar';
 import { categoryStyles } from '../../../shared/lib/data';
 import { apiErrorMessage } from '../../../shared/api/client';
 import { finishTask, getAttentionProfile, getPlan, getRecovery, getStressStatus, listCommitments, listStressProposals, listTasks, planMyWeek, updateTask, utcMs } from '../api';
@@ -53,9 +54,10 @@ function weekBlocks(tasks, plan, commitments, firstDay) {
         if (s >= firstDay && s < lastDay && byId[p.task_id])
             blocks.push({ day: dayOf(s), start: s, end: e, title: p.title, kind: 'task', task: byId[p.task_id], piece: p });
     }
-    // 2. tasks planned by hand (no pieces)
+    // 2. tasks planned by hand (no pieces); a big task with steps is shown through its steps only
+    const parents = new Set(tasks.map((t) => t.parent_id).filter(Boolean));
     for (const t of tasks) {
-        if (!t.scheduled_start || planned.has(t.id)) continue;
+        if (!t.scheduled_start || planned.has(t.id) || parents.has(t.id)) continue;
         const s = new Date(utcMs(t.scheduled_start));
         if (s >= firstDay && s < lastDay)
             blocks.push({ day: dayOf(s), start: s, end: new Date(s.getTime() + t.estimated_minutes * 60000), title: t.title, kind: 'task', task: t });
@@ -92,6 +94,8 @@ export function Scheduler() {
     const [planning, setPlanning] = useState(false);
     const [result, setResult] = useState(null);             // answer of the last "Plan my week"
     const [reloadKey, setReloadKey] = useState(0);
+    const [view, setView] = useState(() => { try { return localStorage.getItem('schedule-view') || 'week'; } catch { return 'week'; } });
+    const pickView = (v) => { setView(v); try { localStorage.setItem('schedule-view', v); } catch { /* private window */ } };
 
     const load = () => {
         setFailed(false);
@@ -213,8 +217,14 @@ export function Scheduler() {
 
       <PlannedTasks reloadKey={reloadKey}/>
 
-      {/* Legend */}
+      {/* Week grid or month calendar + legend */}
       <div className="flex flex-wrap items-center gap-3">
+        <div className="flex bg-white rounded-full p-1 border border-black/[0.05] shadow-soft mr-2" role="group" aria-label="Calendar view">
+          {[['week', 'Week'], ['month', 'Month']].map(([v, label]) => <button key={v} type="button" onClick={() => pickView(v)} aria-pressed={view === v}
+              className={cn('px-4 py-1.5 rounded-full text-sm font-semibold transition-colors min-h-[36px]', view === v ? 'bg-brand-500 text-white' : 'text-charcoal-light')}>
+              {label}
+            </button>)}
+        </div>
         {LEGEND.map(([cat, label]) => <span key={cat} className="inline-flex items-center gap-2 text-xs font-semibold text-charcoal-muted">
             <span className={cn('w-3 h-3 rounded-md', categoryStyles[cat].dot)}/>
             {label}
@@ -222,7 +232,7 @@ export function Scheduler() {
         <span className="inline-flex items-center gap-1 text-xs font-semibold text-charcoal-muted">🔥 In your best focus hours</span>
       </div>
 
-      {/* Grid of the next 7 days */}
+      {view === 'month' ? <MonthCalendar tasks={tasks} plan={plan} commitments={commitments}/> :
       <Card padding="sm">
         <div className="overflow-x-auto no-scrollbar">
           <div className="min-w-[720px]">
@@ -266,7 +276,7 @@ export function Scheduler() {
             </div>
           </div>
         </div>
-      </Card>
+      </Card>}
 
       {/* Lectures, work and other busy time (FR-02) */}
       <Commitments items={commitments} onChanged={() => setReloadKey((k) => k + 1)}/>

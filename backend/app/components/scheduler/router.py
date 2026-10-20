@@ -330,7 +330,9 @@ def get_settings(db: Session = Depends(get_db), user=Depends(get_current_user)):
 @router.patch("/settings", response_model=schemas.SettingsOut)
 def update_settings(data: schemas.SettingsUpdate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Change my settings (send only what changed). Experiment mode can't be changed here."""
-    return settings_service.update_settings(db, user, data)
+    saved = settings_service.update_settings(db, user, data)
+    planner_service.auto_replan(db, user, "settings_changed")      # new study hours / daily cap -> new plan
+    return saved
 
 
 # ===========================================================================
@@ -412,9 +414,16 @@ def complete(task_id: str, db: Session = Depends(get_db), user=Depends(get_curre
 # PILOT STUDY  (researcher only) - experiment mode per participant (proposal 3.1)
 # ===========================================================================
 @router.get("/research/me", response_model=schemas.ResearcherOut)
-def research_me(user=Depends(get_current_user)):
-    """Am I a researcher? (the frontend shows the pilot controls only then)"""
-    return {"is_researcher": research_service.is_researcher(user)}
+def research_me(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Am I a researcher? (the frontend shows the pilot controls only then) Did I leave the study?"""
+    return {"is_researcher": research_service.is_researcher(user),
+            "research_withdrawn_at": research_service.withdrawn_at(db, user)}
+
+
+@router.post("/research/me/withdraw", response_model=schemas.WithdrawOut)
+def research_withdraw(data: schemas.WithdrawIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Proposal 3.2.2: leave the C3 study and delete my research records (the app keeps working)."""
+    return research_service.withdraw(db, user)
 
 
 @router.get("/research/overview")

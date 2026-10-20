@@ -18,7 +18,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.components.scheduler.models import FocusSession, SchedulerSettings, Task
+from app.components.scheduler.models import FocusSession, SchedulerAuditLog, SchedulerSettings, Task
 from app.components.scheduler.settings_service import DEFAULTS
 from app.components.scheduler.tasks.task_service import audit
 from app.shared.users.models import User
@@ -37,10 +37,43 @@ def require_researcher(user) -> None:
         raise HTTPException(403, "Only researchers can see or change pilot modes")
 
 
+def withdrawn_ids(db: Session) -> set[str]:
+    """Students who left the C3 study (proposal 3.2.2) - left out of every research view and export."""
+    return {uid for (uid,) in db.query(SchedulerSettings.user_id)
+            .filter(SchedulerSettings.research_withdrawn_at.isnot(None))}
+
+
+def withdrawn_at(db: Session, user) -> datetime | None:
+    row = db.get(SchedulerSettings, user.id)
+    return row.research_withdrawn_at if row else None
+
+
+def withdraw(db: Session, user, now: datetime | None = None) -> dict:
+    """
+    Proposal 3.2.2: "Users can ... request deletion of their research data."
+    * from now on the student is never in a research view or CSV export again
+    * the research-only records are deleted: the C3 audit log (ratings, overrides, decisions, timings)
+    * the app keeps working: tasks, focus history, plan, streak and badges stay (they are the student's own
+      app data; they leave the research data set because the student is excluded from every export)
+    Not undone from the app - a researcher handles a request to rejoin, as the ethics procedure says.
+    """
+    now = now or datetime.utcnow()
+    row = db.get(SchedulerSettings, user.id)
+    if row is None:
+        row = SchedulerSettings(user_id=user.id, **DEFAULTS)
+        db.add(row)
+    deleted = db.query(SchedulerAuditLog).filter(SchedulerAuditLog.user_id == user.id).delete(synchronize_session=False)
+    row.research_withdrawn_at = row.research_withdrawn_at or now
+    db.commit()
+    return {"research_withdrawn_at": row.research_withdrawn_at, "records_deleted": deleted}
+
+
 def participants(db: Session, user) -> dict:
     """Consenting students with their mode, group and a little activity (no names)."""
     require_researcher(user)
-    students = db.query(User).filter(User.research_consent.is_(True)).order_by(User.created_at).all()
+    gone = withdrawn_ids(db)
+    students = [s for s in db.query(User).filter(User.research_consent.is_(True)).order_by(User.created_at).all()
+                if s.id not in gone]
     ids = [s.id for s in students]
     settings = {r.user_id: r for r in db.query(SchedulerSettings).filter(SchedulerSettings.user_id.in_(ids))}
     sessions = dict(db.query(FocusSession.user_id, func.count())

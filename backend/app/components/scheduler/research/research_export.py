@@ -14,6 +14,7 @@ Columns (blank = not enough data):
     duration_mae_student, duration_mae_m3, focus_completion_rate, attention_capacity_mae,
     focus_duration_mae, heavy_success_peak / heavy_success_other, timer_acceptance, timer_usefulness,
     deferral_acceptance, deferral_helpfulness, active_days, completed_sessions, plan_latency_p95_ms,
+    engagement (Table 3: "streak retention and reward interactions"): longest_streak_days, xp_earned, badges_earned,
     risk_handling_median_min, peak_window_stability
 """
 import csv
@@ -28,10 +29,10 @@ from app.components.scheduler.focus import attention_service
 from app.components.scheduler.tasks.commitment_service import SL_OFFSET
 from app.components.scheduler.ml import m1_predictor
 from app.components.scheduler.models import (
-    FocusSession, PlannedSession, ScheduleChange, SchedulerAuditLog, SchedulerSettings, Task,
+    FocusSession, PlannedSession, RewardEvent, ScheduleChange, SchedulerAuditLog, SchedulerSettings, Task,
 )
 from app.components.scheduler.rewards.progress_service import study_day
-from app.components.scheduler.research.research_service import require_researcher
+from app.components.scheduler.research.research_service import require_researcher, withdrawn_ids
 from app.components.scheduler.settings_service import DEFAULTS
 from app.components.scheduler.stress.stress_service import STRESS_TRIGGER
 from app.shared.integration.models import SignalEvent
@@ -47,7 +48,8 @@ COLUMNS = [
     "sessions_started", "completed_sessions", "focus_completion_rate",
     "attention_capacity_mae", "focus_duration_mae", "heavy_success_peak", "heavy_success_other",
     "timer_acceptance", "timer_usefulness", "deferral_acceptance", "deferral_helpfulness",
-    "active_days", "plan_latency_p95_ms", "risk_handling_median_min", "peak_window_stability",
+    "active_days", "longest_streak_days", "xp_earned", "badges_earned",
+ "plan_latency_p95_ms", "risk_handling_median_min", "peak_window_stability",
 ]
 
 
@@ -104,6 +106,18 @@ def peak_window_stability(sessions: list[FocusSession]) -> float | None:
     return round(statistics.fmean(overlaps), 3) if overlaps else None
 
 
+def longest_streak(days: set) -> int:
+    """Most study days in a row (dates with at least one finished focus session)."""
+    best = 0
+    for d in days:
+        if d - timedelta(days=1) not in days:                         # the first day of a run
+            n = 1
+            while d + timedelta(days=n) in days:
+                n += 1
+            best = max(best, n)
+    return best
+
+
 def participant_rows(db: Session, student: User, now: datetime) -> list[dict]:
     timeline = mode_timeline(db, student)
     row = db.get(SchedulerSettings, student.id)
@@ -141,6 +155,8 @@ def participant_rows(db: Session, student: User, now: datetime) -> list[dict]:
         by_mode[e.mode or mode_at(timeline, e.created_at)]["events"].append(e)
     for p in proposals:
         by_mode[mode_at(timeline, p.created_at)]["proposals"].append(p)
+    for r in db.query(RewardEvent).filter(RewardEvent.user_id == student.id).all():
+        by_mode[mode_at(timeline, r.created_at)]["rewards"].append(r)
 
     rows = []
     for mode, d in by_mode.items():
@@ -183,6 +199,9 @@ def participant_rows(db: Session, student: User, now: datetime) -> list[dict]:
             "deferral_acceptance": rate(len([p for p in decided if p.decision in ("accepted", "edited")]), len(decided)),
             "deferral_helpfulness": mean([e.details["rating"] for e in evs if e.event_type == "stress_proposal_rated"]),
             "active_days": len({study_day(s.started_at) for s in mode_sessions}),
+            "longest_streak_days": longest_streak({study_day(s.started_at) for s in mode_sessions if s.completed}),
+            "xp_earned": sum(r.amount or 0 for r in d["rewards"]),
+            "badges_earned": len([r for r in d["rewards"] if r.kind in ("badge", "milestone")]),
             "plan_latency_p95_ms": latencies[max(0, int(len(latencies) * 0.95) - 1)] if latencies else None,
             "risk_handling_median_min": round(statistics.median(handling), 1) if handling else None,
             "peak_window_stability": stability,
@@ -196,8 +215,9 @@ def participant_rows(db: Session, student: User, now: datetime) -> list[dict]:
 def export_rows(db: Session, researcher, now: datetime | None = None) -> list[dict]:
     require_researcher(researcher)
     now = now or datetime.utcnow()
+    gone = withdrawn_ids(db)                                           # left the study (proposal 3.2.2)
     students = db.query(User).filter(User.research_consent.is_(True)).order_by(User.research_id).all()
-    return [r for s in students for r in participant_rows(db, s, now)]
+    return [r for s in students if s.id not in gone for r in participant_rows(db, s, now)]
 
 
 def export_csv(db: Session, researcher, now: datetime | None = None) -> str:

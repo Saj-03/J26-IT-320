@@ -29,6 +29,30 @@ NUMBERS = {"one": "1", "two": "2", "three": "3", "four": "4", "five": "5", "six"
            "eight": "8", "nine": "9", "ten": "10", "eleven": "11", "twelve": "12"}
 
 
+# Common non-native English mistakes (Sri Lankan students): small words dropped, wrong verb form.
+# The MEANING (and every label) stays the same, so a model trained on these learns to read past grammar.
+DROP_AFTER = {"want", "need", "have", "going", "has", "try", "decided", "decide", "plan"}   # "want to go" -> "want go"
+ARTICLES = {"a", "an", "the"}
+WRONG_FORM = {"decided": "decide", "woke": "wake", "went": "go", "finished": "finish", "studied": "study",
+              "going": "go", "has": "have", "goes": "go", "started": "start", "doing": "do", "wanted": "want"}
+
+
+def grammar_noise(text: str, rng: random.Random) -> str:
+    """'I want to go to my office at 8' -> 'I want go my office at 8' (each mistake only sometimes)."""
+    words, out = text.split(), []
+    for i, w in enumerate(words):
+        low = w.lower()
+        prev = words[i - 1].lower() if i else ""
+        if low == "to" and (prev in DROP_AFTER or prev in ("go", "come")) and rng.random() < 0.6:
+            continue                                         # "want to go" / "go to my office"
+        if low in ARTICLES and rng.random() < 0.4:
+            continue                                         # "I have a lecture" -> "I have lecture"
+        if low in WRONG_FORM and rng.random() < 0.35:
+            w = WRONG_FORM[low]                              # "I have decided" -> "I have decide"
+        out.append(w)
+    return " ".join(out) if out else text
+
+
 def mine_cues(top: int = 40) -> list[tuple[str, int]]:
     """Words / phrases that people ADDED when they spoke a sentence (not in the original sentence)."""
     data = json.loads(DISFL_QA.read_text(encoding="utf-8"))

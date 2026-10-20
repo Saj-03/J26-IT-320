@@ -28,6 +28,7 @@ PLAN_DAYS = 7
 DAY_CHANGE_HOUR = 3                       # work until 03:00 counts to the day before
 SURVEY_HOUR_CHANCE, OTHER_HOUR_CHANCE = 0.7, 0.5     # cold start: hours the student said they like
 OPEN = ("pending", "in_progress")
+MIN_STEP_SITTING = 25                     # a step's sitting is at most its own size, but never under 25 min
 
 
 def local_hour(moment: datetime) -> int:
@@ -41,11 +42,12 @@ def study_day(moment: datetime):
 # ---------------------------------------------------------------------------
 # 1. What to plan
 # ---------------------------------------------------------------------------
-def open_tasks(db: Session, user, now: datetime) -> tuple[list[Task], list[Task]]:
-    """(tasks to plan, fixed tasks).  A big task with steps is skipped - its steps are planned."""
-    tasks = db.query(Task).filter(Task.user_id == user.id, Task.status.in_(OPEN)).all()
-    parents = {t.parent_id for t in db.query(Task.parent_id).filter(Task.user_id == user.id,
-                                                                    Task.parent_id.isnot(None))}
+def open_tasks(db: Session, user, now: datetime, mine: list[Task] | None = None) -> tuple[list[Task], list[Task]]:
+    """(tasks to plan, fixed tasks).  A big task with steps is skipped - its steps are planned.
+    mine: all of the student's tasks if already loaded (each trip to the Neon database costs ~0.3 s)."""
+    mine = mine if mine is not None else db.query(Task).filter(Task.user_id == user.id).all()
+    tasks = [t for t in mine if t.status in OPEN]
+    parents = {t.parent_id for t in mine if t.parent_id}
     leaves = [t for t in tasks if t.id not in parents]
     fixed = [t for t in leaves if not t.is_flexible and t.scheduled_start]
     flexible = [t for t in leaves if t.is_flexible and t.deadline > now and work_left(t) > 0]
@@ -119,7 +121,8 @@ def solve(db: Session, user, now: datetime, today_cap: int | None = None) -> dic
     """Make a plan with CP-SAT but do NOT save it (used by build_plan and the missed-session preview).
     today_cap: a lower study cap for today only (voice planner: "I'm tired today")."""
     settings = get_settings(db, user)
-    tasks, fixed = open_tasks(db, user, now)
+    mine = db.query(Task).filter(Task.user_id == user.id).all()        # ONE trip, used by open_tasks + task_order
+    tasks, fixed = open_tasks(db, user, now, mine)
     # Load the focus history and study hours ONCE (each database trip to Neon costs ~0.3 s)
     hours = [h % 24 for h in range(settings["day_start_hour"], settings["day_end_hour"])]
     if settings["mode"] == "static":                                  # baseline: no attention at all
@@ -137,22 +140,71 @@ def solve(db: Session, user, now: datetime, today_cap: int | None = None) -> dic
         durations = {t.id: m3_predictor.predict(t.estimated_minutes, t.cognitive_load, t.task_type, past)["minutes"]
                      for t in tasks if t.predicted_minutes is None}
     later = moved_later(db, user)
+    after, wait_until, chains = task_order(db, user, tasks, fixed, mine)
+    for task_id, moment in wait_until.items():                      # waits for a task fixed in time
+        later[task_id] = max(later.get(task_id, moment), moment)
     running = running_pieces(db, user, now)
     doing_now = {}
     for piece in running:
         doing_now[piece.task_id] = doing_now.get(piece.task_id, 0) + piece.minutes
     items = [WorkItem(t.id, max(work_left(t, durations.get(t.id)) - doing_now.get(t.id, 0), 0), t.deadline,
-                      t.priority, t.cognitive_load,
-                      earliest=later.get(t.id)) for t in tasks]
+                      t.priority, t.cognitive_load, earliest=later.get(t.id),
+                      piece_max=max(t.estimated_minutes, MIN_STEP_SITTING) if t.parent_id else None)
+             for t in tasks]
     result = cp_scheduler.schedule(items, free_time(db, user, fixed, now, running), now,
                                    piece_minutes=focus, break_minutes=rest,
                                    day_cap_minutes=settings["max_study_minutes_per_day"],
                                    study_day=study_day, local_hour=local_hour, fit=fit,
-                                   day_caps={study_day(now): today_cap} if today_cap is not None else None)
+                                   day_caps={study_day(now): today_cap} if today_cap is not None else None,
+                                   after=after, chains=chains)
     return {"settings": settings, "tasks": tasks, "result": result, "durations": durations, "running": running,
             "focus_minutes": focus,
             "break_minutes": rest, "timer_source": timer_source, "attention_source": attention_source,
             "peak_hours": profile["peak_hours"] if attention_source == "m1_model" else []}
+
+
+def task_order(db: Session, user, tasks: list[Task], fixed: list[Task],
+               mine: list[Task] | None = None) -> tuple[dict, dict, dict]:
+    """FR-04 dependency constraints for the tasks being planned:
+        * 'do B after A' set by the student (after_task_id)
+        * the steps of a big task in their order (step 2 after step 1 ...)
+    Returns ({B: [A, ...]} among planned tasks, {B: earliest start} when A is fixed in time,
+             {"steps:<big task>": [step ids in order]} - planned as one chain by the engine).
+    A finished / cancelled A does not make anyone wait."""
+    mine = {t.id: t for t in (mine if mine is not None else db.query(Task).filter(Task.user_id == user.id).all())}
+    planned = {t.id for t in tasks}
+    steps = {}
+    for t in mine.values():
+        if t.parent_id:
+            steps.setdefault(t.parent_id, []).append(t)
+    before = {}
+    for siblings in steps.values():                                  # step order = the order they were made
+        siblings.sort(key=lambda t: (t.created_at, t.title))
+        for prev, nxt in zip(siblings, siblings[1:]):
+            before.setdefault(nxt.id, []).append(prev)
+    for t in mine.values():
+        if t.after_task_id in mine:
+            before.setdefault(t.id, []).append(mine[t.after_task_id])
+        parent = mine.get(t.parent_id)
+        if parent is not None and parent.after_task_id in mine:      # the big task waits -> its steps wait too
+            before.setdefault(t.id, []).append(mine[parent.after_task_id])
+
+    after, wait_until = {}, {}
+    fixed_ids = {t.id for t in fixed}
+    for task_id, firsts in before.items():
+        if task_id not in planned:
+            continue
+        for first in [step for f in firsts for step in steps.get(f.id, [f])]:   # waiting for a big task = its steps
+            if first.status in ("done", "cancelled"):
+                continue
+            if first.id in planned:
+                after.setdefault(task_id, []).append(first.id)
+            elif first.id in fixed_ids and first.scheduled_start:
+                end = first.scheduled_start + timedelta(minutes=first.estimated_minutes)
+                wait_until[task_id] = max(wait_until.get(task_id, end), end)
+    chains = {f"steps:{parent}": [t.id for t in siblings if t.id in planned]
+              for parent, siblings in steps.items()}
+    return after, wait_until, chains
 
 
 def moved_later(db: Session, user) -> dict[str, datetime]:
@@ -206,6 +258,10 @@ def build_plan(db: Session, user, now: datetime | None = None, today_cap: int | 
         t.scheduled_start = now_piece or first_start.get(t.id)       # None = could not be planned
         if t.id in plan["durations"]:
             t.predicted_minutes = plan["durations"][t.id]            # save the new M3 prediction
+    # A big task is planned through its steps: an old time of its own (from before it had steps) is cleared
+    parent_ids = {t.parent_id for t in tasks if t.parent_id}
+    if parent_ids:
+        db.query(Task).filter(Task.id.in_(parent_ids), Task.scheduled_start.isnot(None))           .update({Task.scheduled_start: None}, synchronize_session=False)
 
     latency_ms = round((time.perf_counter() - began) * 1000)         # NFR-01: p95 must stay under 2 s
     db.add(SchedulerAuditLog(user_id=user.id, event_type="plan_generated", mode=settings["mode"],
@@ -278,6 +334,7 @@ def create_suggested_steps(db: Session, user, task_id: str) -> Task:
                     priority=task.priority, is_flexible=True, cognitive_load=task.cognitive_load,
                     load_set_by_student=task.load_set_by_student, source="scheduler"))
     drop_planned_pieces(db, [task.id])                          # the big task is now planned through its steps
+    task.scheduled_start = None                                 # its old time would show as a ghost 2-hour block
     audit(db, user.id, "steps_suggested_created", task_id=task.id, steps=len(plan["steps"]),
           focus_minutes=plan["focus_minutes"], source=plan["source"])
     db.commit()
