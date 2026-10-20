@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HeartIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import { HeartIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { PhysicalNav } from '../components/PhysicalNav';
@@ -161,10 +161,10 @@ export function PhysicalNutrition() {
                   { l: 'Carbs', v: `${featuredMeal.carbs || 60}`, u: 'g' },
                   { l: 'Prep Time', v: `${featuredMeal.prep_time || 15}`, u: 'mins' }
                 ].map((m) => (
-                  <div key={m.l} className="bg-cream rounded-2xl p-3 text-center border border-black/[0.04]">
-                    <p className="text-base sm:text-lg font-black text-charcoal leading-none">{m.v}</p>
-                    <p className="text-[10px] text-charcoal-muted font-medium mt-0.5">{m.u}</p>
-                    <p className="text-[10px] font-bold text-charcoal-light mt-1">{m.l}</p>
+                  <div key={m.l} className="bg-emerald-50 rounded-2xl p-3 text-center border border-emerald-100">
+                    <p className="text-base sm:text-lg font-black text-emerald-800 leading-none">{m.v}</p>
+                    <p className="text-[10px] text-emerald-700 font-medium mt-0.5">{m.u}</p>
+                    <p className="text-[10px] font-bold text-emerald-800/75 mt-1">{m.l}</p>
                   </div>
                 ))}
               </div>
@@ -175,8 +175,8 @@ export function PhysicalNutrition() {
                 <Button size="md" variant={isFavorite(featuredMeal) ? 'secondary' : 'outline'} disabled={savingMeal} aria-label={isFavorite(featuredMeal) ? `Remove ${featuredMeal.name} from favorites` : `Favorite ${featuredMeal.name}`} title={isFavorite(featuredMeal) ? 'Remove from favorites' : 'Add to favorites'} onClick={() => toggleFavorite(featuredMeal)}>
                   <HeartIcon size={18} fill={isFavorite(featuredMeal) ? 'currentColor' : 'none'} />
                 </Button>
-                <Button size="md" className="flex-1" variant={eatenSlots.includes(eatenCode) ? 'secondary' : 'primary'} disabled={savingMeal} onClick={() => toggleEaten(featuredMeal)}>
-                  <CheckIcon size={17} /> {eatenSlots.includes(eatenCode) ? 'Eaten today ✓' : 'Mark as eaten'}
+                <Button size="sm" variant={eatenSlots.includes(eatenCode) ? 'secondary' : 'primary'} disabled={savingMeal} onClick={() => toggleEaten(featuredMeal)}>
+                  {eatenSlots.includes(eatenCode) ? 'Eaten today' : 'Mark as eaten'}
                 </Button>
               </div>
             </div>
@@ -257,7 +257,7 @@ export function PhysicalNutrition() {
                     <HeartIcon size={17} fill={isFavorite(a) ? 'currentColor' : 'none'} />
                   </button>
                   <button type="button" disabled={savingMeal} onClick={() => toggleEaten(a)} className="font-bold text-emerald-700 hover:text-emerald-800 disabled:opacity-50">
-                    {eatenSlots.includes(eatenCode) ? 'Eaten today ✓' : 'Mark eaten'}
+                    {eatenSlots.includes(eatenCode) ? 'Eaten today' : 'Mark eaten'}
                   </button>
                 </div>
               </Card>
