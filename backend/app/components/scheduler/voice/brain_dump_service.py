@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session
 from app.components.scheduler.planning import planner_service
 from app.components.scheduler.tasks import task_service
 from app.components.scheduler.tasks.commitment_service import SL_OFFSET, create_commitment
-from app.components.scheduler.ml import m2_classifier, m3_predictor, m4_predictor
+from app.components.scheduler.ml import m2_classifier, m3_predictor, m4_predictor, m4v2_segmenter
 from app.components.scheduler.models import COMMITMENT_KINDS, TASK_TYPES
 from app.components.scheduler.schemas import CommitmentCreate, TaskCreate
 from app.components.scheduler.settings_service import get_settings
@@ -36,6 +36,8 @@ DEFAULT_TASK_MINUTES = 60
 DEFAULT_EVENT_MINUTES = 60
 MAX_TEXT = 2000
 DEFAULT_DEADLINE_DAYS = {"task_academic": 7, "task_personal": 2}   # no deadline said -> student sees this date
+EXAM_WORDS = r"\b(?:exam|exams|test|quiz|viva|mid ?term|final|submission)\b"
+URGENT = r"\b(?:urgent|asap|as soon as possible|important|high priority|immediately|right away)\b"
 LOW_ENERGY_SHARE = 0.5                 # "I'm tired today" -> plan only half of the usual study time today
 
 CONNECTORS = r"(?:and_then|after that|then|also|plus|ඊට පස්සේ|eeta passe|ita passe)"
@@ -58,7 +60,10 @@ LEADING_DURATION = re.compile(
 FILLERS = re.compile(
     r"^(?:and then|and|after that|then|also|plus|so|ok|okay|hey|um|well|please|i need to|i have to|i've got to|"
     r"i have got to|i've got|i have got|i have an?|i have|i need|need to|have to|i must|i want to|"
-    r"i'm going to|i am going to|gotta|remind me to|remember to|don't forget to|add|put|there's an?|there is an?)\s+",
+    r"i'm going to|i am going to|gotta|remind me to|remember to|don't forget to|add|put|there's an?|there is an?|"
+    # spoken / non-native grammar at the start of a title: "the decide to study", "go my office", "the urgent exam"
+    r"i want to|i want|want to|i decided to|decided to|i decide to|decide to|have decide to|go to the|go to|go|"
+    r"the|a|an|my)\s+",
     re.IGNORECASE)
 DANGLING = re.compile(r"\s+(?:by|on|at|from|for|about|around|until|till|before|to|in|the|this|and|it|my|a|so|also)\s*$",
                       re.IGNORECASE)
@@ -78,30 +83,83 @@ def clean_speech(text: str) -> str:
         "work from.26"  -> "work from 2 to 6"     ("from two to six" heard as one number)
         "report by 8.30" stays (a dot between digits is a time, not a sentence end)"""
     text = re.sub(r"([A-Za-z])\.(\d)", r"\1 \2", text)
+    text = re.sub(r"(\d)\.\s*(am|pm|a\.m\.|p\.m\.)(?![a-z])", r"\1 \2", text, flags=re.IGNORECASE)   # "10:00.PM"
     # self-correction: the LAST time counts ("to 6:00.9:00 PM", "at 6 sorry 7", "at 5 I mean 6")
     text = re.sub(r"\b\d{1,2}:\d\d\s*(?:am|pm)?\s*\.?\s*(?=\d{1,2}:\d\d)", "", text, flags=re.IGNORECASE)
     text = re.sub(rf"\b{CLOCK}\s*[.,]?\s*{REPAIR}\s*[.,]?\s*(?={CLOCK})", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\b(from|between)\s+([1-9])([1-9])\b",
                   lambda m: f"{m[1]} {m[2]} to {m[3]}" if int(m[3]) > int(m[2]) else m[0], text, flags=re.IGNORECASE)
     # "work from 2 to 6 finish the report" (no full stop) -> "work from 2 to 6. finish the report"
-    return re.sub(rf"({TIME_RANGE})\s+(?!{AFTER_RANGE}\b)(?=[A-Za-z])", r"\1. ", text, flags=re.IGNORECASE)
+    text = re.sub(rf"({TIME_RANGE})\s+(?!{AFTER_RANGE}\b)(?=[A-Za-z])", r"\1. ", text, flags=re.IGNORECASE)
+    # "eat 8 to 9 and study" (no "from"): a time range then "and / then + word" -> the next item starts there
+    return re.sub(r"(\b\d{1,2}(?::\d\d)?\s*(?:am|pm)?\s*(?:to|-|till|until)\s*\d{1,2}(?::\d\d)?(?:\s*(?:am|pm))?)"
+                  r"\s+(?=(?:and|then|also)\s+[a-z])", r"\1. ", text, flags=re.IGNORECASE)
+
+
+TIME_GLUE = {"to", "till", "until", "from", "at", "between", "and", "-", "by", "about", "around", "before", "after"}
+
+
+def rule_split(part: str) -> list[str]:
+    """Old way (no model): split before 'then / and then / after that / I'm / plan my' (connector stays)."""
+    joined = re.sub(r"\band\s+then\b", "and_then", part, flags=re.IGNORECASE)
+    return [piece.replace("and_then", "and then").strip()
+            for piece in re.split(rf"\s+(?={CONNECTORS}\b|{NEW_THOUGHT}\b)", joined, flags=re.IGNORECASE)]
+
+
+def model_split(part: str) -> list[str] | None:
+    """M4 v2 (token model): 'office at 8 then eat 8 to 9 and study' -> ['office at 8', 'then eat 8 to 9', ...].
+    None when the model is not available -> rule_split."""
+    words = part.split()
+    low = [w.lower().strip('"()') for w in words]
+    starts = m4v2_segmenter.item_starts(low)
+    if starts is None:
+        return None
+    # never cut inside a time: "eat 8 to | 9" (found in the app, 2026-10-20) - a hard rule on top of the model
+    starts = [i for i in starts if not (low[i - 1] in TIME_GLUE and re.match(r"\d", low[i]))]
+    # "... and study i have urgent exam": a new "I have / I need / I'm" thought starts a new item (model misses some)
+    starts = sorted(set(starts) | {i for i in range(2, len(low))
+                                   if low[i] in ("i'm", "i've") or (low[i] == "i" and low[i + 1:i + 2] in (["have"], ["need"], ["am"]))})
+    cuts = [0] + starts + [len(words)]
+    return [" ".join(words[a:b]) for a, b in zip(cuts, cuts[1:]) if b > a]
 
 
 def split_pieces(text: str) -> list[str]:
-    """Sentences, then commas, then 'and then / after that' (the connector stays with the next piece)."""
+    """Sentences, then commas, then where a new item starts inside (M4 v2, or connector rules without it)."""
     pieces = []
     for sentence in re.split(r"(?<!\d)\.|\.(?!\d)|[!?;\n]+", clean_speech(text)):
         for part in re.split(r",\s*", sentence):
-            # split before a connector; "and then" is kept as one connector (not "and" | "then ...")
-            joined = re.sub(r"\band\s+then\b", "and_then", part, flags=re.IGNORECASE)
-            for piece in re.split(rf"\s+(?={CONNECTORS}\b|{NEW_THOUGHT}\b)", joined, flags=re.IGNORECASE):
-                piece = piece.replace("and_then", "and then").strip()
+            for piece in model_split(part) or rule_split(part):
                 # "About 3 hours by eggs" -> "About 3 hours" (detail of the item before) | "by eggs"
                 lead = LEADING_DURATION.match(piece)
                 for part2 in ([lead[1], lead[2]] if lead else [piece]):
                     if part2.strip():
                         pieces.append(part2.strip())
     return pieces
+
+
+def only_a_day(piece: str, today) -> bool:
+    """'tomorrow' / 'on Friday' alone - a day and nothing else (no time, no duration, no real words)."""
+    slots = extract(piece, today)
+    if not slots.date or slots.start or slots.duration_minutes or slots.deadline:
+        return False
+    rest = piece
+    for _, matched in slots.found:
+        rest = re.sub(re.escape(matched), " ", rest, flags=re.IGNORECASE)
+    return all(w in NOISE_WORDS | {"on", "for", "this", "next"} for w in re.findall(r"[a-z']+", rest.lower()))
+
+
+def day_first(pieces: list[str], today) -> list[str]:
+    """'tomorrow' | 'I have lecture 6 to 9' -> 'tomorrow I have lecture 6 to 9': a day said first belongs to the
+    item AFTER it (a duration said last, 'about 3 hours', belongs to the item before - see preview)."""
+    out, carry = [], ""
+    for piece in pieces:
+        piece = f"{carry} {piece}".strip() if carry else piece
+        carry = ""
+        if only_a_day(piece, today):
+            carry = piece
+            continue
+        out.append(piece)
+    return out + ([carry] if carry else [])
 
 
 def short_title(piece: str, found: list) -> str:
@@ -126,7 +184,7 @@ def preview(db: Session, user, text: str, now: datetime | None = None) -> dict:
     now = now or datetime.utcnow()
     local_now = now + SL_OFFSET
     today = local_now.date()
-    pieces = split_pieces(text[:MAX_TEXT])
+    pieces = day_first(split_pieces(text[:MAX_TEXT]), today)
     # speech hears "buy eggs" as "by eggs": a piece that starts with "by" but has no deadline in it
     pieces = [re.sub(r"^by\b", "buy", p, flags=re.IGNORECASE) if re.match(r"by\s", p, re.IGNORECASE)
               and extract(p, today).deadline is None else p for p in pieces]
@@ -158,6 +216,9 @@ def preview(db: Session, user, text: str, now: datetime | None = None) -> dict:
         if guessed:                         # still marked "please check"
             # "work from 2 to 6": a clock time -> most likely an event;  "buy eggs" -> a personal job
             label = "commitment" if slots.start is not None else "task_personal"
+        if label == "commitment" and slots.start is None and re.search(EXAM_WORDS, piece, re.IGNORECASE):
+            # "I have an urgent exam tomorrow" with no time: what the planner needs is time to PREPARE for it
+            label, guessed = "task_academic", True
         merged.append({"text": piece, "label": label, "confidence": conf, "source": source, "guessed": guessed})
 
     history = m3_predictor.history(db, user.id) if m3_predictor.available() else []
@@ -168,9 +229,10 @@ def preview(db: Session, user, text: str, now: datetime | None = None) -> dict:
                 "title": short_title(m["text"], slots.found), "kind": None, "date": slots.date,
                 "start": slots.start, "end": slots.end, "duration_minutes": slots.duration_minutes,
                 "deadline": slots.deadline, "in_minutes": slots.in_minutes, "after_previous": slots.after_previous,
-                "load": None, "predicted_minutes": None, "include": m["label"] != "other", "warning": None}
+                "load": None, "predicted_minutes": None, "include": m["label"] != "other", "warning": None,
+                "urgent": False}
         missing = False
-        if m["label"] == "commitment":
+        if m["label"] in ("commitment", "routine"):
             item["kind"] = first_match(m["text"], COMMITMENT_KIND) or "personal"
             before = next((it for it in reversed(items) if it["type"] == "commitment"), None)
             if item["date"] is None and item["after_previous"] and before:
@@ -195,6 +257,8 @@ def preview(db: Session, user, text: str, now: datetime | None = None) -> dict:
             item["duration_minutes"] = estimate
             if m3_predictor.available():
                 item["predicted_minutes"] = m3_predictor.predict(estimate, item["load"], item["kind"], history)["minutes"]
+            item["deadline"] = item["deadline"] or item["date"]          # "exam tomorrow" = due tomorrow
+            item["urgent"] = bool(re.search(URGENT, m["text"], re.IGNORECASE))
             missing = m["label"] == "task_academic" and item["deadline"] is None
         elif m["label"] == "energy":
             level = ("low" if re.search(LOW_ENERGY, m["text"], re.IGNORECASE)
@@ -222,7 +286,7 @@ def _as_task(item, today) -> TaskCreate:
     return TaskCreate(
         title=item.title, task_type=(item.kind if item.kind in TASK_TYPES else "assignment") if academic else "other",
         deadline=_utc(due, time(23, 59)), estimated_minutes=item.duration_minutes or DEFAULT_TASK_MINUTES,
-        priority=3 if academic else 2,
+        priority=5 if item.urgent else 3 if academic else 2,
         cognitive_load=item.load if "load" in item.changed else None)      # unchanged -> M2 decides again
 
 

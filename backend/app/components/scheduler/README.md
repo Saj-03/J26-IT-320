@@ -55,6 +55,7 @@ The whole student journey (all of the above working together) is in `tests/test_
 | M2 | task cognitive load (heavy / medium / light) | `ml/m2_classifier.py` | `train_m2.py` | `data/m2_results.json` |
 | M3 | real task duration from the student's past over-runs | `ml/m3_predictor.py` | `train_m3.py` | `data/m3_results.json` |
 | M4 | what each piece of a spoken day is (task, commitment, energy …) | `ml/m4_predictor.py` | `train_m4.py`, `m4_speech_eval.py` | `data/m4_results.json`, `data/m4_speech_results.json` |
+| M4 v2 | where each new item starts in a spoken day (MiniLM, token level) | `ml/m4v2_segmenter.py` | `m4v2_dataset.py`, `train_m4v2.py`, `try_m4v2.py` | `data/m4v2_results.json` |
 
 If a model file is missing the app falls back to simple rules; `tests/test_ml_model_files.py` makes sure
 that never happens silently.

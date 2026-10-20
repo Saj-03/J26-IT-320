@@ -752,6 +752,7 @@ class BrainDumpItemOut(BaseModel):
     load: str | None                 # M2
     predicted_minutes: int | None    # M3
     warning: str | None = None       # e.g. a 10-hour breakfast: probably a misheard time
+    urgent: bool = False             # "urgent exam" -> top priority when saved
 
 
 class BrainDumpOut(BaseModel):
@@ -776,6 +777,7 @@ class BrainDumpSaveItem(BaseModel):
     duration_minutes: int | None = Field(default=None, ge=5, le=24 * 60)
     deadline: dt.date | None = None                             # tasks
     load: CognitiveLoad | None = None                           # kept only if the student changed it
+    urgent: bool = False                                        # -> priority 5
     # learning loop: what M4 said and what the student changed (no spoken text is stored)
     model_type: str | None = Field(default=None, max_length=40)
     confidence: float | None = Field(default=None, ge=0, le=1)

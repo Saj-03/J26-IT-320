@@ -53,9 +53,9 @@ def get_mode(db: Session, user) -> str:
     return s.mode if s else "adaptive"
 
 
-def get_active_session(db: Session, user) -> FocusSession | None:
+def get_active_session(db: Session, user, now: datetime | None = None) -> FocusSession | None:
     """The session that is running now (started, not ended), if any."""
-    auto_close_stale_sessions(db, user)              # a forgotten old session must not block the student
+    auto_close_stale_sessions(db, user, now)         # a forgotten old session must not block the student
     return (db.query(FocusSession)
               .filter(FocusSession.user_id == user.id,
                       FocusSession.ended_at.is_(None),
@@ -133,7 +133,7 @@ def start_session(db: Session, user, data: FocusStartIn, now: datetime | None = 
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Focus tracking is turned off in your settings")
 
     # Only one running session at a time
-    if get_active_session(db, user):
+    if get_active_session(db, user, now):
         raise HTTPException(status.HTTP_409_CONFLICT, "You already have a running focus session")
 
     # The task (if given) must be the student's and still open
@@ -176,12 +176,12 @@ def start_session(db: Session, user, data: FocusStartIn, now: datetime | None = 
 # ---------------------------------------------------------------------------
 # 3. Pause / resume
 # ---------------------------------------------------------------------------
-def get_own_running_session(db: Session, user, session_id: str) -> FocusSession:
+def get_own_running_session(db: Session, user, session_id: str, now: datetime | None = None) -> FocusSession:
     """A session of this student that has not ended yet (else 404 / 409)."""
     session = db.get(FocusSession, session_id)
     if session is None or session.user_id != user.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Focus session not found")
-    auto_close_stale_sessions(db, user)              # pressing End 10 hours later must not count 10 hours
+    auto_close_stale_sessions(db, user, now)         # pressing End 10 hours later must not count 10 hours
     if session.auto_closed:
         raise HTTPException(status.HTTP_409_CONFLICT,
                             "This session was open too long and was closed automatically")
@@ -196,7 +196,7 @@ def pause_session(db: Session, user, session_id: str, now: datetime | None = Non
     Pauses are a signal for M1: many pauses = attention was harder to keep.
     """
     now = now or datetime.utcnow()
-    session = get_own_running_session(db, user, session_id)
+    session = get_own_running_session(db, user, session_id, now)
     if session.paused_at is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, "Session is already paused")
 
@@ -211,7 +211,7 @@ def pause_session(db: Session, user, session_id: str, now: datetime | None = Non
 def resume_session(db: Session, user, session_id: str, now: datetime | None = None) -> FocusSession:
     """Continue the timer and add this pause's length to the total."""
     now = now or datetime.utcnow()
-    session = get_own_running_session(db, user, session_id)
+    session = get_own_running_session(db, user, session_id, now)
     if session.paused_at is None:
         raise HTTPException(status.HTTP_409_CONFLICT, "Session is not paused")
 
@@ -242,7 +242,7 @@ def end_session(db: Session, user, session_id: str, data: FocusEndIn,
     Returns {session, xp_awarded, total_xp, level}.
     """
     now = now or datetime.utcnow()
-    session = get_own_running_session(db, user, session_id)
+    session = get_own_running_session(db, user, session_id, now)
 
     # 1. Close a pause that is still open
     if session.paused_at is not None:

@@ -23,7 +23,7 @@ const TASK_KINDS = [['assignment', 'Assignment'], ['exam_prep', 'Exam preparatio
     ['reading', 'Reading'], ['lecture_review', 'Lecture review'], ['other', 'Other']];
 const DEFAULT_KIND = { commitment: 'personal', routine: 'personal', task_academic: 'assignment', task_personal: 'other' };
 const DEADLINE_DAYS = { task_academic: 7, task_personal: 2 };     // same defaults as the backend
-const EDITABLE = ['type', 'title', 'kind', 'date', 'start', 'end', 'duration_minutes', 'deadline', 'load'];
+const EDITABLE = ['type', 'title', 'kind', 'date', 'start', 'end', 'duration_minutes', 'deadline', 'load', 'urgent'];
 const EXAMPLE = 'I have a software engineering lecture tomorrow from 8 to 10, then work from 2 to 6. ' +
     'Finish the machine learning report by Friday, about 3 hours. Buy eggs and bread. I\'m really tired today. Plan my day.';
 
@@ -112,6 +112,11 @@ function ItemCard({ card, number, onChange }) {
             </SelectField>}
         </div>}
 
+      {isTask(card.type) &&
+        <label className={cn('inline-flex items-center gap-2 text-sm font-semibold', card.urgent ? 'text-red-600' : 'text-charcoal-light')}>
+          <input type="checkbox" checked={Boolean(card.urgent)} onChange={(e) => onChange({ urgent: e.target.checked })} className="w-4 h-4 accent-red-500"/>
+          Urgent (planned first)
+        </label>}
       {showM3 &&
         <p className="text-xs text-charcoal-light">From your past tasks, this may really take about <b>{card.predicted_minutes} min</b>. The planner uses that.</p>}
       {card.warning && card.include && card.start === card.original.start && card.end === card.original.end &&
@@ -170,7 +175,8 @@ export default function BrainDump() {
         const items = chosen.map((c) => ({
             type: c.type, title: c.title?.trim() || 'Untitled', kind: c.kind,
             ...(isTask(c.type)
-                ? { deadline: c.deadline, duration_minutes: c.duration_minutes, load: c.type === 'task_academic' ? c.load : null }
+                ? { deadline: c.deadline, duration_minutes: c.duration_minutes, load: c.type === 'task_academic' ? c.load : null,
+                    urgent: Boolean(c.urgent) }
                 : { date: c.date, start: c.start, end: c.end, duration_minutes: c.duration_minutes }),
             // learning loop: what the AI said + what the student changed (the backend never stores the spoken text)
             model_type: c.original.type, confidence: c.confidence,

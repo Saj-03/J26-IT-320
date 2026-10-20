@@ -33,9 +33,9 @@
       "spoken_day": {
         "days": 150,
         "items_said": 452,
-        "cards_made": 163,
-        "item_recall_pct": 35.4,
-        "card_precision_pct": 98.2
+        "cards_made": 407,
+        "item_recall_pct": 80.8,
+        "card_precision_pct": 89.7
       },
       "examples_wrong_on_speech": [
         {
@@ -142,9 +142,9 @@
       "spoken_day": {
         "days": 150,
         "items_said": 452,
-        "cards_made": 162,
-        "item_recall_pct": 35.2,
-        "card_precision_pct": 98.1
+        "cards_made": 406,
+        "item_recall_pct": 80.3,
+        "card_precision_pct": 89.4
       },
       "examples_wrong_on_speech": [
         {
