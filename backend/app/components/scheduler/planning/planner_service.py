@@ -137,6 +137,9 @@ def solve(db: Session, user, now: datetime, today_cap: int | None = None) -> dic
         durations = {t.id: m3_predictor.predict(t.estimated_minutes, t.cognitive_load, t.task_type, past)["minutes"]
                      for t in tasks if t.predicted_minutes is None}
     later = moved_later(db, user)
+    after, wait_until, chains = task_order(db, user, tasks, fixed)
+    for task_id, moment in wait_until.items():                      # waits for a task fixed in time
+        later[task_id] = max(later.get(task_id, moment), moment)
     running = running_pieces(db, user, now)
     doing_now = {}
     for piece in running:
@@ -148,11 +151,55 @@ def solve(db: Session, user, now: datetime, today_cap: int | None = None) -> dic
                                    piece_minutes=focus, break_minutes=rest,
                                    day_cap_minutes=settings["max_study_minutes_per_day"],
                                    study_day=study_day, local_hour=local_hour, fit=fit,
-                                   day_caps={study_day(now): today_cap} if today_cap is not None else None)
+                                   day_caps={study_day(now): today_cap} if today_cap is not None else None,
+                                   after=after, chains=chains)
     return {"settings": settings, "tasks": tasks, "result": result, "durations": durations, "running": running,
             "focus_minutes": focus,
             "break_minutes": rest, "timer_source": timer_source, "attention_source": attention_source,
             "peak_hours": profile["peak_hours"] if attention_source == "m1_model" else []}
+
+
+def task_order(db: Session, user, tasks: list[Task], fixed: list[Task]) -> tuple[dict, dict, dict]:
+    """FR-04 dependency constraints for the tasks being planned:
+        * 'do B after A' set by the student (after_task_id)
+        * the steps of a big task in their order (step 2 after step 1 ...)
+    Returns ({B: [A, ...]} among planned tasks, {B: earliest start} when A is fixed in time,
+             {"steps:<big task>": [step ids in order]} - planned as one chain by the engine).
+    A finished / cancelled A does not make anyone wait."""
+    mine = {t.id: t for t in db.query(Task).filter(Task.user_id == user.id).all()}
+    planned = {t.id for t in tasks}
+    steps = {}
+    for t in mine.values():
+        if t.parent_id:
+            steps.setdefault(t.parent_id, []).append(t)
+    before = {}
+    for siblings in steps.values():                                  # step order = the order they were made
+        siblings.sort(key=lambda t: (t.created_at, t.title))
+        for prev, nxt in zip(siblings, siblings[1:]):
+            before.setdefault(nxt.id, []).append(prev)
+    for t in mine.values():
+        if t.after_task_id in mine:
+            before.setdefault(t.id, []).append(mine[t.after_task_id])
+        parent = mine.get(t.parent_id)
+        if parent is not None and parent.after_task_id in mine:      # the big task waits -> its steps wait too
+            before.setdefault(t.id, []).append(mine[parent.after_task_id])
+
+    after, wait_until = {}, {}
+    fixed_ids = {t.id for t in fixed}
+    for task_id, firsts in before.items():
+        if task_id not in planned:
+            continue
+        for first in [step for f in firsts for step in steps.get(f.id, [f])]:   # waiting for a big task = its steps
+            if first.status in ("done", "cancelled"):
+                continue
+            if first.id in planned:
+                after.setdefault(task_id, []).append(first.id)
+            elif first.id in fixed_ids and first.scheduled_start:
+                end = first.scheduled_start + timedelta(minutes=first.estimated_minutes)
+                wait_until[task_id] = max(wait_until.get(task_id, end), end)
+    chains = {f"steps:{parent}": [t.id for t in siblings if t.id in planned]
+              for parent, siblings in steps.items()}
+    return after, wait_until, chains
 
 
 def moved_later(db: Session, user) -> dict[str, datetime]:

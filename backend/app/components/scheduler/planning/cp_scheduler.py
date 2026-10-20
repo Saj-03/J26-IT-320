@@ -25,6 +25,7 @@ so the only difference between the two pilot conditions is the attention learnin
 
 Everything here is plain Python (no database), so it is easy to test.
 """
+import bisect
 import math
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -68,6 +69,8 @@ def schedule(items: list[WorkItem], free: list[tuple[datetime, datetime]], now: 
              study_day: Callable[[datetime], object], local_hour: Callable[[datetime], int],
              fit: Callable[[int, int, str], float] | None = None,
              day_caps: dict | None = None,
+             after: dict[str, list[str]] | None = None,
+             chains: dict[str, list[str]] | None = None,
              time_limit: float = TIME_LIMIT_SECONDS) -> dict:
     """
     items      : open tasks (work left > 0)
@@ -75,9 +78,19 @@ def schedule(items: list[WorkItem], free: list[tuple[datetime, datetime]], now: 
     fit        : ADAPTIVE mode -> fit(local_hour, minutes, load) = M1 chance 0..1;  None -> STATIC mode
     study_day / local_hour : turn a UTC time into the Sri Lanka study day / clock hour
     day_caps   : {study day: minutes} for days with a different cap (e.g. "I'm tired today" -> half)
+    after      : {task: [tasks that must be FINISHED first]} - FR-04 dependency constraints
+    chains     : {name: [step 1, step 2, ...]} - steps of one big task, done in this order (see _merge_chains)
 
     Returns {"sessions": [...], "unplaced": [...], "status": "..."}
     """
+    chains = {name: [m for m in members if m in {it.task_id for it in items}] for name, members in (chains or {}).items()}
+    chains = {name: members for name, members in chains.items() if len(members) > 1}
+    if chains:                                                         # plan each chain as one item, then split
+        merged_items, merged_after, by_id = _merge_chains(items, after, chains)
+        out = schedule(merged_items, free, now, piece_minutes=piece_minutes, break_minutes=break_minutes,
+                       day_cap_minutes=day_cap_minutes, study_day=study_day, local_hour=local_hour, fit=fit,
+                       day_caps=day_caps, after=merged_after, time_limit=time_limit)
+        return _split_chains(out, chains, by_id)
     origin = _round_up(now)
     items = [it for it in items if it.minutes > 0]
     plan = {it.task_id: piece_plan(it.minutes, piece_minutes) for it in items}     # task -> (count, size)
@@ -118,6 +131,45 @@ def schedule(items: list[WorkItem], free: list[tuple[datetime, datetime]], now: 
             if len(mine) > MAX_PIECES_PER_TASK_PER_DAY:
                 model.Add(sum(mine) <= MAX_PIECES_PER_TASK_PER_DAY)
 
+    # FR-04 dependency: every piece of B starts after the end of EVERY piece of A.
+    # Time-indexed precedence: late[j] = how many A pieces start at A's j-th possible cell or later;
+    # B may start at cell t only if no A piece is still running after t. Each constraint has 2 variables.
+    # (Two earlier versions - "only if" constraints and big-M start/end variables - made CP-SAT return no
+    # plan in 1.2 s for a chain of 10 steps.)
+    cells_of = {}
+    for (task_id, cell), var in starts.items():
+        cells_of.setdefault(task_id, []).append((cell, var))
+    late_of = {}
+
+    def suffix_counts(task_id):                                        # late[j] for A's cells in time order
+        if task_id not in late_of:
+            options = sorted(cells_of[task_id], key=lambda cv: cv[0])
+            count = plan[task_id][0]
+            late = [model.NewIntVar(0, count, f"late {task_id} {j}") for j in range(len(options) + 1)]
+            model.Add(late[-1] == 0)
+            for j, (_, var) in enumerate(options):
+                model.Add(late[j] == late[j + 1] + var)
+            late_of[task_id] = ([c for c, _ in options], late)
+        return late_of[task_id]
+
+    for task_id, firsts in (after or {}).items():
+        for first in firsts:
+            if task_id not in cells_of or first == task_id:
+                continue
+            if first not in cells_of:                                  # A can not be planned at all -> neither B
+                for _, var in cells_of[task_id]:
+                    model.Add(var == 0)
+                continue
+            first_cells, late = suffix_counts(first)
+            size = _cells(plan[first][1])
+            count = plan[first][0]
+            for cell, var in cells_of[task_id]:
+                j = bisect.bisect_right(first_cells, cell - size)      # A pieces starting here or later end after t
+                if j < len(first_cells):
+                    model.Add(late[j] <= count * (1 - var))
+            # nothing of B while nothing of A is planned ("step 2" never comes before "step 1")
+            model.Add(sum(v for _, v in cells_of[task_id]) <= plan[task_id][0] * late[0])
+
     # ------------------------------------------------------------------
     # 3. Soft goals: every yes gets a score, CP-SAT maximises the total
     # ------------------------------------------------------------------
@@ -148,6 +200,9 @@ def schedule(items: list[WorkItem], free: list[tuple[datetime, datetime]], now: 
     solver = cp_model.CpSolver()
     solver.parameters.max_time_in_seconds = time_limit
     solver.parameters.num_workers = 8
+    # Probing (a presolve step) used most of the 1.2 s: with a chain of 10 steps (FR-04) no plan at all was found
+    # in time; without probing: chain 1.6 s total with a full plan, and plans without chains 1.1 s -> 0.6 s
+    solver.parameters.cp_model_probing_level = 0
     result = solver.Solve(model)
     status = solver.StatusName(result)
     if result not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
@@ -180,6 +235,61 @@ def schedule(items: list[WorkItem], free: list[tuple[datetime, datetime]], now: 
         if left > 0:
             unplaced.append({"task_id": it.task_id, "minutes": left})
     return {"status": status, "sessions": sorted(sessions, key=lambda s: s["start"]), "unplaced": unplaced}
+
+
+# ---------------------------------------------------------------------------
+# chains: the steps of one big task in their order
+# ---------------------------------------------------------------------------
+# Steps (and stress "part 1/3, 2/3 ...") must be done in order. Giving CP-SAT one precedence rule per pair
+# made a chain of 10 steps too slow for the 2 s limit. Instead the chain is planned as ONE item (same total
+# minutes, the earliest deadline, the highest priority, the heaviest load) and its pieces are handed to the
+# steps in time order afterwards - so the order is right by construction and the model is smaller.
+LOAD_ORDER = {"low": 0, "medium": 1, "heavy": 2}
+
+
+def _merge_chains(items, after, chains):
+    by_id = {it.task_id: it for it in items}
+    member_of = {m: name for name, members in chains.items() for m in members}
+    merged = [it for it in items if it.task_id not in member_of]
+    for name, members in chains.items():
+        steps = [by_id[m] for m in members]
+        earliest = [s.earliest for s in steps if s.earliest]
+        merged.append(WorkItem(name, sum(s.minutes for s in steps), min(s.deadline for s in steps),
+                               max(s.priority for s in steps), max((s.load for s in steps), key=LOAD_ORDER.get),
+                               earliest=max(earliest) if earliest else None))
+    merged_after = {}
+    for later, firsts in (after or {}).items():                      # "B after a step" -> "B after the chain"
+        for first in firsts:
+            a, b = member_of.get(first, first), member_of.get(later, later)
+            if a != b:
+                merged_after.setdefault(b, []).append(a)
+    return merged, merged_after, by_id
+
+
+def _split_chains(out, chains, by_id):
+    sessions = [s for s in out["sessions"] if s["task_id"] not in chains]
+    unplaced = [u for u in out["unplaced"] if u["task_id"] not in chains]
+    for name, members in chains.items():
+        todo = [[m, by_id[m].minutes] for m in members if by_id[m].minutes > 0]
+        given = {m: [] for m in members}
+        for piece in sorted((s for s in out["sessions"] if s["task_id"] == name), key=lambda s: s["start"]):
+            begin, left = piece["start"], piece["minutes"]
+            while left > 0 and todo:                                   # fill step 1, then step 2, ...
+                step, need = todo[0]
+                use = min(need, left)
+                given[step].append({**piece, "task_id": step, "start": begin, "end": begin + timedelta(minutes=use),
+                                    "minutes": use, "load": by_id[step].load})
+                begin += timedelta(minutes=use)
+                left -= use
+                todo[0][1] -= use
+                if todo[0][1] == 0:
+                    todo.pop(0)
+        for step, pieces in given.items():
+            for number, s in enumerate(pieces, start=1):
+                s["piece"], s["of"] = number, len(pieces)
+            sessions += pieces
+        unplaced += [{"task_id": step, "minutes": need} for step, need in todo]
+    return {"status": out["status"], "sessions": sorted(sessions, key=lambda s: s["start"]), "unplaced": unplaced}
 
 
 # ---------------------------------------------------------------------------

@@ -4,7 +4,7 @@ import { CircleIcon, FlaskConicalIcon, ShieldCheckIcon } from 'lucide-react';
 import { PageHeader } from '../shared/components/layout/PageHeader';
 import { Card } from '../shared/components/ui/Card';
 import { Button } from '../shared/components/ui/Button';
-import api from '../shared/api/client';
+import api, { apiErrorMessage } from '../shared/api/client';
 import { useAuth } from '../shared/context/AuthContext';
 import { cn } from '../shared/lib/cn';
 
@@ -19,6 +19,21 @@ export function ResearchParticipant() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [sessions, setSessions] = useState(null);
+    const [withdrawnAt, setWithdrawnAt] = useState(null);   // proposal 3.2.2: left the study
+    const [asking, setAsking] = useState(false);            // second step of "leave the study"
+    const [busy, setBusy] = useState(false);
+    const [message, setMessage] = useState('');
+    useEffect(() => {
+        api.get('/scheduler/research/me').then((r) => setWithdrawnAt(r.data.research_withdrawn_at)).catch(() => {});
+    }, []);
+    const leave = () => {
+        setBusy(true);
+        api.post('/scheduler/research/me/withdraw', { confirm: true })
+            .then((r) => { setWithdrawnAt(r.data.research_withdrawn_at); setAsking(false);
+                           setMessage(`Done. ${r.data.records_deleted} research records were deleted.`); })
+            .catch((e) => setMessage(apiErrorMessage(e)))
+            .finally(() => setBusy(false));
+    };
     useEffect(() => {
         api.get('/scheduler/focus/history', { params: { limit: 1 } })
             .then((r) => setSessions(r.data.summary.sessions)).catch(() => setSessions(null));
@@ -65,11 +80,34 @@ export function ResearchParticipant() {
         </div>
       </div>
 
-      <Card padding="sm" className="flex items-center justify-between gap-4">
+      <Card padding="lg" className="space-y-3">
         <p className="text-sm text-charcoal-muted flex items-center gap-2">
           <ShieldCheckIcon size={16} className="shrink-0"/> You can withdraw at any time without affecting your account.
         </p>
-        <Button variant="ghost" size="sm" onClick={() => navigate('/app/settings')}>Manage participation</Button>
+        {withdrawnAt ?
+          <p className="text-sm font-semibold text-emerald-700 bg-sage-light rounded-2xl px-4 py-3">
+            You left the scheduler study on {new Date(withdrawnAt.endsWith('Z') ? withdrawnAt : `${withdrawnAt}Z`).toLocaleDateString()}.
+            Your research records were deleted and you are not in any research data. ThriveU keeps working as before.
+          </p> :
+          asking ?
+          <div className="rounded-2xl border border-red-200 bg-red-50/60 p-4 space-y-3">
+            <p className="text-sm text-charcoal">
+              <b>Leave the study and delete my research records?</b> Your scheduler research records (ratings, choices,
+              timings) are deleted and you are never included in the research data again. Your tasks, plan, focus
+              history and streak stay - only the research copy goes. To join again, contact the research team.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" className="bg-red-600 hover:bg-red-700" onClick={leave} disabled={busy}>
+                {busy ? 'Deleting…' : 'Yes, leave and delete'}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setAsking(false)}>Keep taking part</Button>
+            </div>
+          </div> :
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => setAsking(true)}>Leave the study & delete my research records</Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/app/settings')}>Manage participation</Button>
+          </div>}
+        {message && <p className="text-sm font-semibold text-charcoal-light" aria-live="polite">{message}</p>}
       </Card>
     </div>);
 }

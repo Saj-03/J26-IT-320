@@ -11,8 +11,8 @@ import { cn } from '../../../shared/lib/cn';
 import { LoadBadge } from '../components/PlanPrimitives';
 import DurationCard from '../components/DurationCard';
 import BrainDump from '../components/BrainDump';
-import { createTask, getAttentionProfile } from '../api';
-import { LOAD_LABEL, PRIORITY_NUMBER, dayText, hoursLabel } from '../lib';
+import { createTask, getAttentionProfile, listTasks } from '../api';
+import { LOAD_LABEL, PRIORITY_NUMBER, dayText, hoursLabel, isOpen } from '../lib';
 
 // Backend task types (TASK_TYPES in models.py)
 const TASK_TYPES = [
@@ -31,7 +31,10 @@ export function AddTask() {
     const [error, setError] = useState('');
     const [profile, setProfile] = useState(null);      // M1 attention profile (best hours)
 
+    const [openTasks, setOpenTasks] = useState([]);    // for "Do after" (FR-04 dependency)
+
     useEffect(() => { getAttentionProfile().then(setProfile).catch(() => {}); }, []);
+    useEffect(() => { listTasks().then((t) => setOpenTasks(t.filter((x) => isOpen(x) && !x.parent_id))).catch(() => {}); }, [saved]);
 
     // Send one task to the backend. No load chosen -> the M2 model decides.
     const save = (task) => {
@@ -54,6 +57,7 @@ export function AddTask() {
             estimated_minutes: Math.round(Number(f.get('hours')) * 60),
             priority: PRIORITY_NUMBER[f.get('priority')],
             cognitive_load: f.get('load') || null,
+            after_task_id: f.get('after') || null,
         });
     };
 
@@ -120,6 +124,11 @@ export function AddTask() {
                 <option value="low">Low</option>
               </SelectField>
             </div>
+            {openTasks.length > 0 &&
+              <SelectField label="Do after (optional)" name="after" defaultValue="">
+                <option value="">No - it can start any time</option>
+                {openTasks.map((t) => <option key={t.id} value={t.id}>After “{t.title}” is finished</option>)}
+              </SelectField>}
             <Button type="submit" size="lg" fullWidth disabled={saving}>
               {saving ? 'Saving…' : 'Create Task'} <ArrowRightIcon size={18}/>
             </Button>

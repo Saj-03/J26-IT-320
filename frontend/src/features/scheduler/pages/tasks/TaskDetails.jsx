@@ -11,7 +11,7 @@ import { ErrorState, LoadingState } from '../../../../shared/components/ui/State
 import { LoadPicker, EstimatedTime, SectionTitle, formatMinutes } from '../../components/PlanPrimitives';
 import DurationCard from '../../components/DurationCard';
 import { apiErrorMessage } from '../../../../shared/api/client';
-import { finishTask, getTask, updateTask } from '../../api';
+import { finishTask, getTask, listTasks, updateTask } from '../../api';
 import { LOAD_LABEL, LOAD_VALUE, dayText, dueText, isOpen, priorityWord } from '../../lib';
 import { cn } from '../../../../shared/lib/cn';
 
@@ -22,10 +22,13 @@ export function TaskDetails() {
     const [task, setTask] = useState(null);
     const [failed, setFailed] = useState(false);
     const [error, setError] = useState('');
+    const [others, setOthers] = useState([]);           // tasks this one can wait for (FR-04)
 
     const load = () => {
         setFailed(false);
         getTask(id).then(setTask).catch(() => setFailed(true));
+        listTasks().then((t) => setOthers(t.filter((x) => x.id !== id && x.parent_id !== id && !x.parent_id
+            && (isOpen(x) || x.status === 'done')))).catch(() => {});
     };
     useEffect(() => { if (id) load(); else navigate('/app/tasks', { replace: true }); }, [id]);   // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -45,6 +48,10 @@ export function TaskDetails() {
     const changeLoad = (step, label) =>
         updateTask(step.id, { cognitive_load: LOAD_VALUE[label] }).then(load).catch((e) => setError(apiErrorMessage(e)));
     const markDone = () => finishTask(task.id).then(load).catch((e) => setError(apiErrorMessage(e)));
+    // FR-04: "do this after that task" - the planner keeps the order (a loop is refused by the backend)
+    const changeAfter = (value) => updateTask(task.id, { after_task_id: value || null }).then(load)
+        .catch((e) => setError(apiErrorMessage(e)));
+    const waitsFor = others.find((x) => x.id === task.after_task_id);
 
     return (<div className="space-y-6">
       <PageHeader title={task.title} subtitle={task.description || `${LOAD_LABEL[task.cognitive_load]} effort · ${dueText(task.deadline)}`} action={<div className="flex flex-wrap gap-2">
@@ -80,6 +87,18 @@ export function TaskDetails() {
                 <span className="text-sm font-bold text-charcoal capitalize">{r.v}</span>
               </div>)}
           </div>
+
+          {isOpen(task) && !task.parent_id &&
+            <label className="mt-4 block">
+              <span className="text-sm font-medium text-charcoal-muted">Do after</span>
+              <select value={task.after_task_id || ''} onChange={(e) => changeAfter(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-charcoal min-h-[44px]">
+                <option value="">Any time - no other task first</option>
+                {others.map((x) => <option key={x.id} value={x.id}>After “{x.title}”{x.status === 'done' ? ' (done)' : ''}</option>)}
+              </select>
+              {waitsFor && waitsFor.status !== 'done' &&
+                <span className="block text-xs text-charcoal-muted mt-1">Planned only after “{waitsFor.title}” is finished.</span>}
+            </label>}
 
           <div className="mt-5 pt-5 border-t border-black/[0.05]">
             <div className="flex justify-between text-sm mb-2">
