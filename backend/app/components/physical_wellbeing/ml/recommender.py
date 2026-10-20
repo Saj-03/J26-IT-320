@@ -905,6 +905,8 @@ def get_scored_meals_for_profile(profile: dict, is_exam_period: bool = False) ->
                 adherence = min(0.99, adherence * 1.25)
 
         m_copy = dict(m)
+        if m.get("name") in profile.get("favorite_meal_names", []):
+            adherence = min(0.99, adherence * 1.20)
         recent_count = int((profile.get("plan_history") or {}).get("meal_counts", {}).get(m["name"], 0))
         if recent_count:
             # Past plans add variety; completion/adherence is learned from explicit check-ins.
@@ -1203,6 +1205,8 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
             activity_match = max(activity_match, 2)
 
         ex_copy = dict(ex)
+        if ex.get("name") in profile.get("favorite_workout_names", []):
+            prob = min(0.99, prob * 1.20)
         recent_count = int((profile.get("plan_history") or {}).get("exercise_counts", {}).get(ex["name"], 0))
         if recent_count:
             # Avoid repeating recently scheduled items without changing safety or XGBoost features.
@@ -1217,6 +1221,7 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
     # Recent check-ins can gently shorten future sessions after repeated missed workouts.
     scored_exercises.sort(
         key=lambda x: (
+            0 if x.get("name") in profile.get("favorite_workout_names", []) else 1,
             abs(x["duration_mins"] - min(effective_avail_mins, behavior_target_mins)),
             -x.get("activity_match", 0),
             -x["adherence_probability"]
@@ -1237,6 +1242,7 @@ def get_baseline_recommendations(profile: dict, k: int = 3) -> Dict[str, Any]:
     raw_exercises = [ex for ex in CURATED_EXERCISES if ex["duration_mins"] <= avail_mins + 10]
     if not raw_exercises:
         raw_exercises = CURATED_EXERCISES[:k]
+    raw_exercises.sort(key=lambda ex: ex["name"] not in profile.get("favorite_workout_names", []))
 
     formatted_exercises = []
     for ex in raw_exercises[:k]:
@@ -1257,6 +1263,7 @@ def get_baseline_recommendations(profile: dict, k: int = 3) -> Dict[str, Any]:
         m_copy = dict(m)
         m_copy["adherence_probability"] = 0.50
         raw_meals.append(m_copy)
+    raw_meals.sort(key=lambda meal: meal["name"] not in profile.get("favorite_meal_names", []))
 
     return {
         "model_version": "Model 1 - Generic Baseline",

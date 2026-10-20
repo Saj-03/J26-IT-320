@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ClockIcon, GaugeIcon, DumbbellIcon, FlameIcon, PlayIcon,
-  ShieldCheckIcon, AlertTriangleIcon
+  ShieldCheckIcon, AlertTriangleIcon, HeartIcon
 } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
@@ -11,7 +11,7 @@ import { PhysicalNav } from '../components/PhysicalNav';
 import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { AIInsightCard } from '../../../shared/components/domain/AIInsightCard';
 import { SectionTitle, AdaptedChip } from '../components/Shared';
-import { getRecommendations, getProfile } from '../api';
+import { getRecommendations, getProfile, getFavorites, addFavorite, removeFavorite } from '../api';
 import { RecommendationImage, exerciseImageFallback } from '../components/RecommendationImage';
 import { ActivityTrackingPanel } from './Activity';
 
@@ -20,14 +20,18 @@ export function PhysicalExercise() {
   const [recomData, setRecomData] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState([]);
+  const [favoriteBusy, setFavoriteBusy] = useState(false);
 
   useEffect(() => {
     Promise.all([
       getRecommendations(false, false).catch(() => null),
-      getProfile().catch(() => null)
-    ]).then(([rec, prof]) => {
+      getProfile().catch(() => null),
+      getFavorites('workout').catch(() => [])
+    ]).then(([rec, prof, savedFavorites]) => {
       setRecomData(rec);
       setProfile(prof);
+      setFavorites(savedFavorites || []);
       setLoading(false);
     });
   }, []);
@@ -49,6 +53,19 @@ export function PhysicalExercise() {
     shorterAlternative,
     ...workouts.filter((workout) => workout !== featured && workout !== shorterAlternative)
   ])].filter(Boolean).slice(0, 3);
+  const featuredIsFavorite = favorites.some((favorite) => favorite.item_name === featured.name);
+  const toggleFavorite = async (workout) => {
+    setFavoriteBusy(true);
+    try {
+      if (favorites.some((favorite) => favorite.item_name === workout.name)) {
+        await removeFavorite('workout', workout.name);
+        setFavorites((current) => current.filter((favorite) => favorite.item_name !== workout.name));
+      } else {
+        await addFavorite('workout', workout);
+        setFavorites((current) => [...current, { item_type: 'workout', item_name: workout.name, item: workout }]);
+      }
+    } finally { setFavoriteBusy(false); }
+  };
 
   return (
     <div className="space-y-6">
@@ -107,6 +124,9 @@ export function PhysicalExercise() {
 
           <div className="px-5 pb-5">
             <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-black/[0.05]">
+              <Button size="md" variant={featuredIsFavorite ? 'secondary' : 'outline'} disabled={favoriteBusy} aria-label={featuredIsFavorite ? `Remove ${featured.name} from favorites` : `Favorite ${featured.name}`} title={featuredIsFavorite ? 'Remove from favorites' : 'Add to favorites'} onClick={() => toggleFavorite(featured)}>
+                <HeartIcon size={18} fill={featuredIsFavorite ? 'currentColor' : 'none'} />
+              </Button>
               <Button size="lg" className="flex-1" disabled={loading} onClick={() => navigate('/app/physical/workout', { state: { workout: featured } })}>
                 <PlayIcon size={17} fill="currentColor" /> Start Workout
               </Button>
@@ -154,13 +174,16 @@ export function PhysicalExercise() {
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {alternatives.map((a, i) => (
-              <motion.button
+              <motion.div
                 key={a.name + i}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
+                role="button"
+                tabIndex={0}
                 onClick={() => navigate('/app/physical/workout', { state: { workout: a } })}
-                className="text-left rounded-3xl bg-white border border-black/[0.04] shadow-soft p-5 hover:shadow-card transition-all flex flex-col justify-between"
+                onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') navigate('/app/physical/workout', { state: { workout: a } }); }}
+                className="text-left rounded-3xl bg-white border border-black/[0.04] shadow-soft p-5 hover:shadow-card transition-all flex flex-col justify-between cursor-pointer"
               >
                 <div>
                   <RecommendationImage src={a.image} alt={a.name || 'Alternative workout'} fallbackSrc={exerciseImageFallback} className="mb-4 h-36 w-full rounded-2xl object-cover" />
@@ -172,6 +195,9 @@ export function PhysicalExercise() {
                       {a.minutes} min
                     </span>
                   </div>
+                  <button type="button" aria-label={favorites.some((favorite) => favorite.item_name === a.name) ? `Remove ${a.name} from favorites` : `Favorite ${a.name}`} title={favorites.some((favorite) => favorite.item_name === a.name) ? 'Remove from favorites' : 'Add to favorites'} disabled={favoriteBusy} onClick={(event) => { event.stopPropagation(); toggleFavorite(a); }} className="mt-2 inline-flex items-center justify-center rounded-full p-2 text-rose-700 hover:bg-rose-50 disabled:opacity-50">
+                    <HeartIcon size={17} fill={favorites.some((favorite) => favorite.item_name === a.name) ? 'currentColor' : 'none'} />
+                  </button>
                   <p className="font-extrabold text-charcoal text-base mt-2 leading-snug">{a.name}</p>
                   <p className="text-xs text-charcoal-muted mt-1 line-clamp-2">{a.description}</p>
                 </div>
@@ -182,7 +208,7 @@ export function PhysicalExercise() {
                   </span>
                   <span className="font-bold text-brand-600">Start Routine →</span>
                 </div>
-              </motion.button>
+              </motion.div>
             ))}
           </div>
         </div>

@@ -14,6 +14,9 @@ export const getWeekPlanSnapshot = (id) => api.get(`/physical/week-plan/history/
 export const deleteWeekPlanSnapshot = (id) => api.delete(`/physical/week-plan/history/${id}`).then((r) => r.data);
 export const getPlanCheckins = (startDate, endDate) => api.get('/physical/plan-checkins', { params: { start_date: startDate, end_date: endDate } }).then((r) => r.data);
 export const savePlanCheckin = (checkin) => api.put('/physical/plan-checkins', checkin).then((r) => r.data);
+export const getFavorites = (itemType) => api.get('/physical/favorites', { params: itemType ? { item_type: itemType } : {} }).then((r) => r.data);
+export const addFavorite = (itemType, item) => api.put('/physical/favorites', { item_type: itemType, item }).then((r) => r.data);
+export const removeFavorite = (itemType, itemName) => api.delete('/physical/favorites', { params: { item_type: itemType, item_name: itemName } }).then((r) => r.data);
 export const updatePlanDuration = (daysCount) => api.put('/physical/profile/plan-duration', { days_count: daysCount }).then((r) => r.data);
 export const getActivitySummary = () => api.get("/physical/activity").then((r) => r.data);
 export const logActivity = (a) => api.post("/physical/activity", a);

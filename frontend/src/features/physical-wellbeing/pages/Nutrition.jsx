@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlusIcon, ShuffleIcon, CheckIcon, UtensilsIcon, SparklesIcon } from 'lucide-react';
+import { HeartIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { PhysicalNav } from '../components/PhysicalNav';
 import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { AIInsightCard } from '../../../shared/components/domain/AIInsightCard';
-import { SectionTitle, AdaptedChip, ChoiceChip } from '../components/Shared';
+import { SectionTitle, ChoiceChip } from '../components/Shared';
 import { RecommendationImage, mealImageFallbacks } from '../components/RecommendationImage';
-import { getRecommendations, getProfile } from '../api';
+import { getRecommendations, getProfile, getFavorites, addFavorite, removeFavorite, getPlanCheckins, savePlanCheckin } from '../api';
 import { cn } from '../../../shared/lib/cn';
 
 const slots = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
@@ -16,24 +16,32 @@ const slots = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
 export function PhysicalNutrition() {
   const [slot, setSlot] = useState('Lunch');
   const [cuisineFilter, setCuisineFilter] = useState('All');
-  const [added, setAdded] = useState([]);
+  const [showAllMeals, setShowAllMeals] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [eatenSlots, setEatenSlots] = useState([]);
+  const [savingMeal, setSavingMeal] = useState(false);
+  const [mealSaveError, setMealSaveError] = useState('');
   
   const [recomData, setRecomData] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       getRecommendations(false, false).catch(() => null),
-      getProfile().catch(() => null)
-    ]).then(([rec, prof]) => {
+      getProfile().catch(() => null),
+      getFavorites('meal').catch(() => [])
+    ]).then(([rec, prof, savedFavorites]) => {
       setRecomData(rec);
       setProfile(prof);
-      setLoading(false);
+      setFavorites(savedFavorites || []);
     });
   }, []);
 
   const slotKey = slot.toLowerCase() === 'snacks' ? 'snack' : slot.toLowerCase();
+  const today = (() => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; })();
+  useEffect(() => {
+    getPlanCheckins(today, today).then((progress) => setEatenSlots(progress?.daily?.[today]?.completed_items || [])).catch(() => setEatenSlots([]));
+  }, [today]);
   const currentSlotMeals = recomData?.today_slots?.[slotKey] || [];
   const featuredMeal = currentSlotMeals[0] || recomData?.meals?.[0] || {
     name: 'Red Rice with Dhal Curry, Kola Mallum & Soya Meat Curry',
@@ -49,8 +57,45 @@ export function PhysicalNutrition() {
     if (cuisineFilter === 'International') return m.cuisine === 'western' || m.region?.toLowerCase().includes('balanced');
     return true;
   });
+  const visibleMeals = showAllMeals ? filteredMeals : filteredMeals.slice(0, 3);
+  const isFavorite = (meal) => favorites.some((favorite) => favorite.item_name === meal.name);
+  const toggleFavorite = async (meal) => {
+    setSavingMeal(true);
+    setMealSaveError('');
+    try {
+      if (isFavorite(meal)) {
+        await removeFavorite('meal', meal.name);
+        setFavorites((current) => current.filter((favorite) => favorite.item_name !== meal.name));
+      } else {
+        await addFavorite('meal', meal);
+        setFavorites((current) => [...current, { item_type: 'meal', item_name: meal.name, item: meal }]);
+      }
+    } catch (error) {
+      setMealSaveError(error?.response?.data?.detail || 'Could not update this favorite. Please try again.');
+    } finally {
+      setSavingMeal(false);
+    }
+  };
+  const toggleEaten = async (meal) => {
+    const codes = { breakfast: 'bf', lunch: 'lu', dinner: 'dn', snack: 'sn' };
+    const code = codes[slotKey];
+    const next = eatenSlots.includes(code) ? eatenSlots.filter((item) => item !== code) : [...eatenSlots, code];
+    setSavingMeal(true);
+    setMealSaveError('');
+    try {
+      const progress = await getPlanCheckins(today, today);
+      const water = progress?.daily?.[today]?.water_glasses || 0;
+      await savePlanCheckin({ day: today, completed_items: next, water_glasses: water });
+      setEatenSlots(next);
+    } catch (error) {
+      setMealSaveError(error?.response?.data?.detail || 'Could not save today’s meal check-in. Please try again.');
+    } finally {
+      setSavingMeal(false);
+    }
+  };
+  const eatenCode = ({ breakfast: 'bf', lunch: 'lu', dinner: 'dn', snack: 'sn' })[slotKey];
 
-  const dietPrefDisplay = profile?.diet_pref === 'vegan' ? 'Vegan 🌱' : (profile?.diet_pref === 'veg' ? 'Vegetarian 🥬' : 'Non-Vegetarian 🥩');
+  const dietPrefDisplay = profile?.diet_pref === 'vegan' ? 'Vegan 🌱' : (profile?.diet_pref === 'veg' ? 'Vegetarian 🥬' : profile?.diet_pref === 'non-veg' ? 'Non-vegetarian 🥩' : 'No specific preference');
   const mealStyleDisplay = profile?.meal_style === 'sri_lankan' ? 'Sri Lankan 🇱🇰' : (profile?.meal_style === 'western' ? 'International 🌍' : 'Sri Lankan & International');
 
   return (
@@ -127,21 +172,11 @@ export function PhysicalNutrition() {
 
             <div className="p-6 pt-0">
               <div className="flex flex-col sm:flex-row gap-2 mt-4 pt-4 border-t border-black/[0.05]">
-                <Button
-                  size="lg"
-                  className="flex-1"
-                  variant={added.includes(featuredMeal.name) ? 'secondary' : 'primary'}
-                  onClick={() => setAdded((a) => a.includes(featuredMeal.name) ? a : [...a, featuredMeal.name])}
-                >
-                  {added.includes(featuredMeal.name) ? (
-                    <>
-                      <CheckIcon size={17} /> Added to Today's Plan
-                    </>
-                  ) : (
-                    <>
-                      <PlusIcon size={17} /> Add to Today's Plan
-                    </>
-                  )}
+                <Button size="md" variant={isFavorite(featuredMeal) ? 'secondary' : 'outline'} disabled={savingMeal} aria-label={isFavorite(featuredMeal) ? `Remove ${featuredMeal.name} from favorites` : `Favorite ${featuredMeal.name}`} title={isFavorite(featuredMeal) ? 'Remove from favorites' : 'Add to favorites'} onClick={() => toggleFavorite(featuredMeal)}>
+                  <HeartIcon size={18} fill={isFavorite(featuredMeal) ? 'currentColor' : 'none'} />
+                </Button>
+                <Button size="md" className="flex-1" variant={eatenSlots.includes(eatenCode) ? 'secondary' : 'primary'} disabled={savingMeal} onClick={() => toggleEaten(featuredMeal)}>
+                  <CheckIcon size={17} /> {eatenSlots.includes(eatenCode) ? 'Eaten today ✓' : 'Mark as eaten'}
                 </Button>
               </div>
             </div>
@@ -150,9 +185,8 @@ export function PhysicalNutrition() {
 
         {/* Why + Preferences */}
         <div className="space-y-6">
-          <AIInsightCard title="AI Nutrition Recommendation">
-            This meal is optimized for your <strong>{profile?.diet_pref || 'dietary'}</strong> profile and study routine.
-            It provides clean, low-glycemic fuel to prevent post-lecture blood sugar crashes.
+          <AIInsightCard title="Why this meal was suggested">
+            Suggestions use your saved food preferences and selected meal time. Check ingredients and nutrition details against your own needs.
           </AIInsightCard>
 
           <Card>
@@ -177,21 +211,20 @@ export function PhysicalNutrition() {
       {/* Alternatives */}
       <div>
         <SectionTitle
-          title="Curated Healthy Meals Catalog"
-          subtitle="Explore authentic Sri Lankan staples and international healthy meals."
-          action={<AdaptedChip>Matched to {profile?.diet_pref || 'your diet'}</AdaptedChip>}
+          title="More meal options"
+          subtitle="Choose another meal for the selected slot."
         />
 
-        <div className="flex gap-2 mb-4">
+        {showAllMeals && <div className="flex gap-2 mb-4">
           {['All', 'Sri Lankan', 'International'].map((c) => (
             <ChoiceChip key={c} selected={cuisineFilter === c} onClick={() => setCuisineFilter(c)}>
               {c}
             </ChoiceChip>
           ))}
-        </div>
+        </div>}
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {filteredMeals.map((a, i) => (
+          {visibleMeals.map((a, i) => (
             <motion.div
               key={a.name + i}
               initial={{ opacity: 0, y: 10 }}
@@ -216,21 +249,25 @@ export function PhysicalNutrition() {
                   </p>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-black/[0.05] flex items-center justify-between text-xs">
+                <div className="mt-4 pt-3 border-t border-black/[0.05] flex flex-wrap items-center justify-between gap-2 text-xs">
                   <span className="font-extrabold text-charcoal">
                     {a.calories} kcal · {a.protein}g P
                   </span>
-                  <button
-                    onClick={() => setAdded((curr) => curr.includes(a.name) ? curr : [...curr, a.name])}
-                    className="font-bold text-brand-600 hover:text-brand-700"
-                  >
-                    {added.includes(a.name) ? 'Added ✓' : '+ Add to Plan'}
+                  <button type="button" aria-label={isFavorite(a) ? `Remove ${a.name} from favorites` : `Favorite ${a.name}`} title={isFavorite(a) ? 'Remove from favorites' : 'Add to favorites'} disabled={savingMeal} onClick={() => toggleFavorite(a)} className="inline-flex items-center justify-center rounded-full p-2 text-brand-700 hover:bg-brand-50 disabled:opacity-50">
+                    <HeartIcon size={17} fill={isFavorite(a) ? 'currentColor' : 'none'} />
+                  </button>
+                  <button type="button" disabled={savingMeal} onClick={() => toggleEaten(a)} className="font-bold text-emerald-700 hover:text-emerald-800 disabled:opacity-50">
+                    {eatenSlots.includes(eatenCode) ? 'Eaten today ✓' : 'Mark eaten'}
                   </button>
                 </div>
               </Card>
             </motion.div>
           ))}
         </div>
+        {mealSaveError && <p role="alert" className="mt-3 text-sm font-semibold text-rose-700">{mealSaveError}</p>}
+        {filteredMeals.length > 3 && <button type="button" onClick={() => setShowAllMeals((shown) => !shown)} className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-brand-700 hover:text-brand-800">
+          {showAllMeals ? <>Show fewer <ChevronUpIcon size={16} /></> : <>See all {filteredMeals.length} options <ChevronDownIcon size={16} /></>}
+        </button>}
       </div>
     </div>
   );

@@ -234,6 +234,7 @@ export function PhysicalPlan() {
   };
 
   const currentDay = planData?.days?.[selectedDayIdx] || planData?.days?.[0];
+  const currentMeals = currentDay?.meals || {};
   const userPrefs = planData?.user_preferences || userProfile || {};
   const todayProgress = Object.values(statuses).filter((status) => status === 'done').length + (water >= 8 ? 1 : 0);
 
@@ -577,7 +578,7 @@ export function PhysicalPlan() {
                     {viewingSavedPlan && (
                       <p className="mt-1 text-[11px] font-semibold text-emerald-800">
                         {selectedDayProgress.workout_completed ? 'Workout completed' : 'No workout logged'}
-                        {' · '}{selectedDayProgress.has_checkin ? `${selectedDayProgress.completed_items?.length || 0} of 3 meals checked` : 'Meals not recorded'}
+                        {' · '}{selectedDayProgress.has_checkin ? `${selectedDayProgress.completed_items?.length || 0} of 4 meals checked` : 'Meals not recorded'}
                         {' · '}{selectedDayProgress.has_checkin ? `${selectedDayProgress.water_glasses || 0}/8 glasses` : 'Water not recorded'}
                       </p>
                     )}
@@ -673,7 +674,7 @@ export function PhysicalPlan() {
                   <div className="grid md:grid-cols-2 gap-4">
                     {['breakfast', 'lunch', 'dinner', 'snack'].map((slotKey) => {
                       const meta = slotMeta[slotKey];
-                      const slotMeals = currentDay.meals?.[slotKey] || [];
+                      const slotMeals = currentMeals?.[slotKey] || [];
                       const primary = slotMeals[0];
                       const alternative = slotMeals[1];
 
@@ -758,10 +759,10 @@ export function PhysicalPlan() {
                 <p className="mt-1 text-lg font-black tracking-tight text-emerald-950">Small steps make a strong day</p>
               </div>
               <span className="rounded-full border border-emerald-200 bg-white/80 px-3 py-1.5 text-xs font-extrabold text-emerald-800">
-                {todayProgress} of 4 complete
+                {todayProgress} of 5 complete
               </span>
             </div>
-            <ProgressBar value={(todayProgress / 4) * 100} color="bg-emerald-600" track="bg-emerald-900/10" />
+            <ProgressBar value={(todayProgress / 5) * 100} color="bg-emerald-600" track="bg-emerald-900/10" />
             <p className="mt-3 text-xs leading-relaxed text-emerald-900/65">Check off your meals and reach your water goal as you go. Your check-ins help shape future recommendations.</p>
             {progressSaveError && <p role="alert" className="mt-2 text-xs font-semibold text-rose-700">{progressSaveError}</p>}
           </Card>
@@ -835,10 +836,10 @@ export function PhysicalPlan() {
                     Midday Lunch
                   </span>
                   <h4 className="font-extrabold text-charcoal text-base mt-1">
-                    {currentDay?.meals?.lunch?.[0]?.name || 'Red Rice with Dhal Curry & Vegetables'}
+                    {currentMeals?.lunch?.[0]?.name || 'Red Rice with Dhal Curry & Vegetables'}
                   </h4>
                   <p className="text-xs text-charcoal-muted">
-                    {currentDay?.meals?.lunch?.[0]?.calories} kcal · {currentDay?.meals?.lunch?.[0]?.protein}g Protein
+                    {currentMeals?.lunch?.[0]?.calories} kcal · {currentMeals?.lunch?.[0]?.protein}g Protein
                   </p>
                 </div>
               </div>
@@ -858,13 +859,17 @@ export function PhysicalPlan() {
                   <span className="w-10 h-10 rounded-2xl bg-sky-100 text-sky-800 flex items-center justify-center text-lg shrink-0">
                     💧
                   </span>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <h4 className="font-bold text-charcoal text-sm">Water & Healthy Snack</h4>
                     <p className="text-xs text-charcoal-muted">
                       {currentDay?.meals?.snack?.[0]?.name}
                     </p>
                   </div>
                 </div>
+
+                <Button size="sm" variant={statuses['sn'] === 'done' ? 'secondary' : 'primary'} onClick={() => setStatus('sn', statuses['sn'] === 'done' ? 'todo' : 'done')}>
+                  {statuses['sn'] === 'done' ? 'Eaten ✓' : 'Mark snack eaten'}
+                </Button>
 
                 <div className="flex items-center gap-1.5">
                   <button

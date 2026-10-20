@@ -9,7 +9,7 @@ from app.core.dependencies import get_current_user
 from app.components.physical_wellbeing import schemas, service
 from app.components.physical_wellbeing.models import (
     WellbeingProfile, ActivityLog, Habit, WorkoutFeedback,
-    PhysicalPlanSnapshot, PlanCheckIn, PeerChallenge, PeerChallengeMember,
+    PhysicalPlanSnapshot, PlanCheckIn, FavoriteItem, PeerChallenge, PeerChallengeMember,
 )
 from app.components.physical_wellbeing.ml import recommender
 
@@ -511,6 +511,7 @@ def recommendations(is_exam_period: bool = False, use_baseline: bool = False, db
         raise HTTPException(404, "Create your wellbeing profile first")
     
     profile_dict = _attach_plan_history(db, user.id, _attach_behavior_history(db, user.id, _profile_to_dict(p)))
+    profile_dict = _attach_favorites(db, user.id, profile_dict)
 
     if use_baseline:
         res = recommender.get_baseline_recommendations(profile_dict, k=10)
@@ -568,6 +569,7 @@ def get_week_plan(
         raise HTTPException(404, "Create your wellbeing profile first")
     
     profile_dict = _attach_plan_history(db, user.id, _attach_behavior_history(db, user.id, _profile_to_dict(p)))
+    profile_dict = _attach_favorites(db, user.id, profile_dict)
     plan = recommender.generate_week_plan(
         profile_dict,
         is_exam_period=is_exam_period,
@@ -674,6 +676,44 @@ def save_plan_checkin(data: schemas.PlanCheckInIn, db: Session = Depends(get_db)
         db.add(checkin)
     db.commit()
     return {"ok": True, "day": data.day.isoformat()}
+
+
+def _attach_favorites(db: Session, user_id: str, profile_dict: dict) -> dict:
+    favorites = db.query(FavoriteItem).filter_by(user_id=user_id).all()
+    profile_dict["favorite_meal_names"] = [row.item_name for row in favorites if row.item_type == "meal"]
+    profile_dict["favorite_workout_names"] = [row.item_name for row in favorites if row.item_type == "workout"]
+    return profile_dict
+
+
+@router.get("/favorites")
+def get_favorites(item_type: str | None = None, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    query = db.query(FavoriteItem).filter_by(user_id=user.id)
+    if item_type in {"meal", "workout"}:
+        query = query.filter_by(item_type=item_type)
+    return [{"item_type": row.item_type, "item_name": row.item_name, "item": row.item_data} for row in query.all()]
+
+
+@router.put("/favorites")
+def add_favorite(data: schemas.FavoriteIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    name = str(data.item.get("name") or data.item.get("title") or "").strip()
+    if not name:
+        raise HTTPException(422, "A named meal or workout is required")
+    row = db.query(FavoriteItem).filter_by(user_id=user.id, item_type=data.item_type, item_name=name).first()
+    if row:
+        row.item_data = data.item
+    else:
+        db.add(FavoriteItem(user_id=user.id, item_type=data.item_type, item_name=name, item_data=data.item))
+    db.commit()
+    return {"ok": True, "item_type": data.item_type, "item_name": name}
+
+
+@router.delete("/favorites")
+def delete_favorite(item_type: str, item_name: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    row = db.query(FavoriteItem).filter_by(user_id=user.id, item_type=item_type, item_name=item_name).first()
+    if row:
+        db.delete(row)
+        db.commit()
+    return {"ok": True, "removed": bool(row)}
 
 
 @router.get("/week-plan/history")

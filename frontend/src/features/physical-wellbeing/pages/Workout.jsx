@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { PauseIcon, PlayIcon, SkipForwardIcon, FlagIcon, CheckIcon, CameraIcon } from 'lucide-react';
+import { PauseIcon, PlayIcon, SkipForwardIcon, FlagIcon, CheckIcon, CameraIcon, HeartIcon } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { ProgressRing } from '../../../shared/components/ui/ProgressRing';
 import { featuredExercise } from '../data';
-import { getRecommendations, saveWorkoutFeedback } from '../api';
+import { getRecommendations, saveWorkoutFeedback, getFavorites, addFavorite, removeFavorite } from '../api';
 import { cn } from '../../../shared/lib/cn';
 import { PoseTracker } from '../components/PoseTracker';
 
@@ -35,6 +35,8 @@ export function PhysicalWorkout() {
     const [savingCompletion, setSavingCompletion] = useState(false);
     const [saveError, setSaveError] = useState('');
     const [poseTracking, setPoseTracking] = useState(false);
+    const [workoutFavorite, setWorkoutFavorite] = useState(false);
+    const [favoriteBusy, setFavoriteBusy] = useState(false);
 
     useEffect(() => {
         if (selectedWorkout) {
@@ -53,6 +55,17 @@ export function PhysicalWorkout() {
     };
     const workoutTitle = workout.name || workout.title || featuredExercise.title;
     const workoutMins = Number(workout.minutes || workout.duration_mins || 20);
+    useEffect(() => {
+        getFavorites('workout').then((items) => setWorkoutFavorite((items || []).some((item) => item.item_name === workoutTitle))).catch(() => setWorkoutFavorite(false));
+    }, [workoutTitle]);
+    const toggleWorkoutFavorite = async () => {
+        setFavoriteBusy(true);
+        try {
+            if (workoutFavorite) await removeFavorite('workout', workoutTitle);
+            else await addFavorite('workout', workout);
+            setWorkoutFavorite((saved) => !saved);
+        } finally { setFavoriteBusy(false); }
+    };
     const workoutDay = location.state?.dayName;
     const currentSteps = [{
         name: workoutTitle,
@@ -244,9 +257,14 @@ export function PhysicalWorkout() {
                     <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-brand-700">Focused workout</p>
                     <h1 className="mt-1 text-lg font-bold leading-snug text-charcoal sm:text-xl">{workoutTitle}</h1>
                 </div>
-                <span className="inline-flex w-fit shrink-0 rounded-full border border-brand-100 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-800">
-                    {workoutDay ? `${workoutDay}’s planned workout` : `${workoutMins}-minute session`}
-                </span>
+                <div className="flex items-center gap-2">
+                    <button type="button" aria-label={workoutFavorite ? `Remove ${workoutTitle} from favorites` : `Favorite ${workoutTitle}`} title={workoutFavorite ? 'Remove from favorites' : 'Add to favorites'} disabled={favoriteBusy} onClick={toggleWorkoutFavorite} className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-white p-2 text-rose-700 hover:bg-rose-50 disabled:opacity-50">
+                        <HeartIcon size={16} fill={workoutFavorite ? 'currentColor' : 'none'} />
+                    </button>
+                    <span className="inline-flex w-fit shrink-0 rounded-full border border-brand-100 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-800">
+                        {workoutDay ? `${workoutDay}’s planned workout` : `${workoutMins}-minute session`}
+                    </span>
+                </div>
             </div>
 
             {/* Step dots */}

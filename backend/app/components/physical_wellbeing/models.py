@@ -87,6 +87,18 @@ class PlanCheckIn(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class FavoriteItem(Base):
+    """A meal or workout the user wants recommendations to remember."""
+    __tablename__ = "physical_favorites"
+    __table_args__ = (UniqueConstraint("user_id", "item_type", "item_name", name="uq_physical_favorite_user_item"),)
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    item_type: Mapped[str] = mapped_column(String(16))
+    item_name: Mapped[str] = mapped_column(String(200))
+    item_data: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 class PeerChallenge(Base):
     """A private, invite-only challenge. Stores no wellbeing profile data."""
     __tablename__ = "physical_peer_challenges"

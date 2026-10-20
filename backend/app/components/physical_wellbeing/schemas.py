@@ -31,8 +31,13 @@ class PlanDurationIn(BaseModel):
 
 class PlanCheckInIn(BaseModel):
     day: date
-    completed_items: list[Literal["bf", "lu", "dn"]] = Field(default_factory=list)
+    completed_items: list[Literal["bf", "lu", "dn", "sn"]] = Field(default_factory=list)
     water_glasses: int = Field(default=0, ge=0, le=8)
+
+
+class FavoriteIn(BaseModel):
+    item_type: Literal["meal", "workout"]
+    item: dict[str, Any]
 
 
 class ActivityIn(BaseModel):
