@@ -19,7 +19,7 @@ function localDateString(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
-export function ActivityTrackingPanel({ embedded = false }) {
+export function ActivityTrackingPanel({ embedded = false, summaryOnly = false, hideSummary = false }) {
   const [metric, setMetric] = useState('Steps');
   const [log, setLog] = useState({ steps: '', exercise_minutes: '' });
   const [saving, setSaving] = useState(false);
@@ -130,9 +130,9 @@ export function ActivityTrackingPanel({ embedded = false }) {
         <PhysicalNav />
       </>}
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className={summaryOnly ? 'space-y-5' : 'grid lg:grid-cols-3 gap-6'}>
         {/* Today */}
-        <Card padding="lg" className="lg:col-span-1">
+        {!hideSummary && <Card padding="lg" className="lg:col-span-1">
           <SectionTitle
             title="Today's movement"
             subtitle={
@@ -171,10 +171,10 @@ export function ActivityTrackingPanel({ embedded = false }) {
               💡 Log your morning steps or workout in the form below to update your daily progress rings!
             </div>
           )}
-        </Card>
+        </Card>}
 
         {/* Weekly chart */}
-        <Card padding="lg" className="lg:col-span-2">
+        {!summaryOnly && <Card padding="lg" className="lg:col-span-2">
           <SectionTitle
             title="Movement over the past 7 days"
             subtitle={
@@ -203,10 +203,10 @@ export function ActivityTrackingPanel({ embedded = false }) {
               </p>
             </div>
           )}
-        </Card>
+        </Card>}
       </div>
 
-      <Card padding="lg">
+      {!summaryOnly && <Card padding="lg">
         <SectionTitle
           title="Log Today's Activity"
           subtitle="Log real measurements to update today's totals and your 7-day movement history. Workout check-ins help tune future session length."
@@ -234,13 +234,13 @@ export function ActivityTrackingPanel({ embedded = false }) {
             {saved ? 'Saved ✓' : saving ? 'Saving…' : 'Save Activity'}
           </Button>
         </form>
-      </Card>
+      </Card>}
 
-      <AIInsightCard>
+      {!summaryOnly && <AIInsightCard>
         {todayMins > 0 || todaySteps > 0
           ? `You have logged ${todaySteps.toLocaleString()} steps and ${todayMins} active minutes today! The adaptive engine preserves recovery slots while maintaining consistency.`
           : 'No movement logged yet today. Even a brisk 15-minute campus power walk elevates mood, burns calories, and sharpens attention.'}
-      </AIInsightCard>
+      </AIInsightCard>}
     </div>
   );
 }

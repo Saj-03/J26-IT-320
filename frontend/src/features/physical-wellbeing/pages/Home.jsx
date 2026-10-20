@@ -186,7 +186,7 @@ export function PhysicalHome() {
                   <p className="text-xs font-semibold text-amber-700">{feedback === null ? 'A quick check-in' : 'Your wellbeing buddy'}</p>
                   <p className="mt-0.5 text-base font-extrabold text-charcoal">
                     {feedback === null
-                      ? `Hey, ${student?.name?.split?.(' ')[0] || 'there'}! Did you work out today?`
+                      ? `Quick movement check ✨ Did you get a workout in today?`
                       : feedback
                         ? 'Thanks for checking in! Your effort helps shape your next plan.'
                         : 'That’s okay. We can try a smaller goal next time.'}
@@ -197,8 +197,7 @@ export function PhysicalHome() {
               </div>
               {feedback === null && buddyChoice === null && (
                 <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
-                  <Button size="sm" disabled={feedbackSaving} onClick={() => answerWorkout(true)}>Yes</Button>
-                  <Button size="sm" variant="outline" disabled={feedbackSaving} onClick={() => answerWorkout(false)}>Not yet</Button>
+                  <Button size="sm" onClick={() => navigate('/app/physical/exercise')}>Log movement</Button>
                   <button type="button" disabled={feedbackSaving} onClick={remindBuddyLater} className="rounded-full px-3 py-2 text-xs font-semibold text-charcoal-muted hover:bg-black/[0.04] disabled:opacity-50">Remind me later</button>
                 </div>
               )}
@@ -234,8 +233,8 @@ export function PhysicalHome() {
             <div className="min-w-0 flex-1 pr-1">
               <p className="text-xs font-bold text-brand-700">Your wellbeing buddy</p>
               <p className="mt-0.5 text-sm font-semibold text-charcoal">
-                {!checkInDoneForToday
-                  ? `Hey, ${student?.name?.split?.(' ')[0] || 'there'}! Did you work out today?`
+                  {!checkInDoneForToday
+                  ? 'Tiny movement check ✨ Did you get a workout in today?'
                   : 'I’m here whenever you need me.'}
               </p>
               {buddyChoice !== null && <p className={`mt-1 text-xs font-semibold ${buddyChoice ? 'text-emerald-700' : 'text-amber-700'}`}>{buddyChoice ? 'Amazing! Thanks for checking in 💛' : 'That’s okay. We can try a smaller goal next time.'}</p>}
@@ -244,8 +243,7 @@ export function PhysicalHome() {
           </div>
           {!checkInDoneForToday && (
             <div className="mt-2 flex flex-wrap justify-end gap-1.5">
-              <Button size="sm" disabled={feedbackSaving} onClick={() => answerWorkout(true)}>Yes</Button>
-              <Button size="sm" variant="outline" disabled={feedbackSaving} onClick={() => answerWorkout(false)}>Not today</Button>
+              <Button size="sm" onClick={() => navigate('/app/physical/exercise')}>Log movement</Button>
               <button type="button" disabled={feedbackSaving} onClick={remindBuddyLater} className="rounded-full px-2.5 py-2 text-xs font-semibold text-charcoal-muted hover:bg-black/[0.04] disabled:opacity-50">Later</button>
             </div>
           )}

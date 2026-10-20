@@ -181,16 +181,14 @@ export function PhysicalExercise() {
         </div>
       )}
 
-      <section aria-label="Daily movement tracking" className="space-y-4">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-brand-600">Daily movement</p>
-            <h2 className="text-xl font-black text-charcoal">Steps and activity</h2>
-          </div>
+      <section aria-label="Today's movement" className="space-y-4">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-xl font-black text-charcoal">Today's movement</h2>
           <p className="text-sm text-charcoal-muted">Log steps from your phone and see your weekly movement trend.</p>
         </div>
-        <ActivityTrackingPanel embedded />
+        <ActivityTrackingPanel embedded hideSummary />
       </section>
+
     </div>
   );
 }
