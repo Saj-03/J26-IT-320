@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import pytest
 from fastapi import HTTPException
 
-from app.components.scheduler import focus_service as fs
+from app.components.scheduler.focus import focus_service as fs
 from app.components.scheduler.schemas import FocusEndIn, FocusStartIn
 
 URL = "/api/scheduler/focus"

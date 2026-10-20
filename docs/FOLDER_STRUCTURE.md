@@ -37,16 +37,20 @@ ihusd/
 │   │   │   │   ├── router.py
 │   │   │   │   ├── schemas.py
 │   │   │   │   └── service.py
-│   │   │   └── scheduler/
-│   │   │       ├── engine/
-│   │   │       │   ├── attention_model.py
-│   │   │       │   ├── constraint_scheduler.py
-│   │   │       │   ├── gamification.py
-│   │   │       │   └── stress_rules.py
+│   │   │   └── scheduler/            (C3 - requirement map in scheduler/README.md)
+│   │   │       ├── focus/            focus sessions, adaptive timer, attention profile, alerts
+│   │   │       ├── ml/               M1-M4 model loaders (files in backend/ml_models)
+│   │   │       ├── planning/         Plan my week - CP-SAT scheduler, recovery
+│   │   │       ├── research/         pilot modes, CSV export, ratings
+│   │   │       ├── rewards/          XP, streaks, badges, insights, notifications
+│   │   │       ├── stress/           C4 risk signal -> proposals -> accept / undo
+│   │   │       ├── tasks/            tasks + commitments
+│   │   │       ├── voice/            "Speak your day" (M4)
 │   │   │       ├── models.py
 │   │   │       ├── router.py
 │   │   │       ├── schemas.py
-│   │   │       └── service.py
+│   │   │       ├── settings_service.py
+│   │   │       └── README.md
 │   │   ├── core/
 │   │   │   ├── config.py
 │   │   │   ├── dependencies.py

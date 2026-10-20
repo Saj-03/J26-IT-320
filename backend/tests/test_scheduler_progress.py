@@ -1,7 +1,7 @@
 """Tests for gamification progress (Module G): streak, freeze, stress protection, badges."""
 from datetime import date, datetime, timedelta
 
-from app.components.scheduler import progress_service as ps
+from app.components.scheduler.rewards import progress_service as ps
 from app.components.scheduler.models import FocusSession, RewardEvent, ScheduleChange, Task
 from app.shared.integration.models import SignalEvent
 
@@ -135,3 +135,21 @@ def test_endpoint_and_focus_end_reports_new_badges(env):
     assert end["new_badges"] == [] and end["streak"] == 0         # 0 min -> not completed, no badge
     body = client.get("/api/scheduler/progress").json()
     assert body["level"] == 1 and len(body["badges"]) == len(ps.BADGES)
+
+
+def test_milestones_give_bonus_xp_once(env):
+    from datetime import datetime, timedelta
+    from app.components.scheduler.models import FocusSession, RewardEvent
+    client, db, current, _ = env
+    start = datetime.utcnow() - timedelta(days=1)
+    db.add(FocusSession(user_id=current["user"].id, started_at=start, ended_at=start + timedelta(minutes=70),
+                        planned_minutes=70, actual_minutes=70, completed=True))
+    db.commit()
+    body = client.get("/api/scheduler/progress").json()
+    first_hour = next(m for m in body["milestones"] if m["code"] == "focus_1h")
+    assert first_hour["earned"] and first_hour["progress"] == 60 and "focus_1h" in body["new_milestones"]
+    assert next(m for m in body["milestones"] if m["code"] == "focus_10h")["progress"] == 70
+    again = client.get("/api/scheduler/progress").json()
+    assert again["new_milestones"] == []
+    assert db.query(RewardEvent).filter_by(kind="milestone").count() == 1
+    assert again["total_xp"] == body["total_xp"]

@@ -26,10 +26,10 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
 
-from app.components.scheduler.commitment_service import SL_OFFSET
+from app.components.scheduler.tasks.commitment_service import SL_OFFSET
 from app.components.scheduler.models import FocusSession, Task
 from app.components.scheduler.settings_service import get_settings
-from app.components.scheduler.task_service import audit
+from app.components.scheduler.tasks.task_service import audit
 from app.shared.integration.contracts import DeviationSignal
 from app.shared.integration.validator import is_duplicate, record
 

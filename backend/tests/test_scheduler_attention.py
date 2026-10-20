@@ -1,8 +1,8 @@
 """Tests for the M1 attention profile inside the app (Module C)."""
 from datetime import datetime, timedelta
 
-from app.components.scheduler import attention_service as att
-from app.components.scheduler.engine import m1_predictor
+from app.components.scheduler.focus import attention_service as att
+from app.components.scheduler.ml import m1_predictor
 from app.components.scheduler.models import FocusSession
 
 URL = "/api/scheduler/attention/profile"

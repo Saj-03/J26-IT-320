@@ -10,6 +10,7 @@ import { LoadingState, ErrorState } from '../../../../shared/components/ui/State
 import { AIInsightCard } from '../../../../shared/components/domain/AIInsightCard';
 import { apiErrorMessage } from '../../../../shared/api/client';
 import { getActiveFocus, getTimerRecommendation, listTasks, startFocus } from '../../api';
+import FocusAlert from '../../components/FocusAlert';
 
 // Where the suggested length came from (backend "source") -> card title
 const SOURCE_TITLE = {
@@ -28,13 +29,13 @@ function Stepper({ label, value, setValue, step, min, max, suffix }) {
     return (<div className="flex items-center justify-between rounded-2xl bg-cream p-4">
       <span className="text-sm font-semibold text-charcoal-light">{label}</span>
       <div className="flex items-center gap-3">
-        <button onClick={() => setValue(Math.max(min, value - step))} className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-charcoal-light hover:bg-black/[0.04] transition-colors" aria-label={`Decrease ${label}`}>
+        <button onClick={() => setValue(Math.max(min, value - step))} className="w-11 h-11 rounded-full bg-white flex items-center justify-center text-charcoal-light hover:bg-black/[0.04] transition-colors" aria-label={`Decrease ${label}`}>
           <MinusIcon size={15}/>
         </button>
         <span className="text-lg font-extrabold text-charcoal tabular-nums w-16 text-center">
           {value} {suffix}
         </span>
-        <button onClick={() => setValue(Math.min(max, value + step))} className="w-9 h-9 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 transition-colors" aria-label={`Increase ${label}`}>
+        <button onClick={() => setValue(Math.min(max, value + step))} className="w-11 h-11 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 transition-colors" aria-label={`Increase ${label}`}>
           <PlusIcon size={15}/>
         </button>
       </div>
@@ -87,6 +88,7 @@ export function SessionSetup() {
       <PageHeader title="Session Length" subtitle="We suggest a length that matches how you actually focus."/>
 
       <div className="max-w-xl space-y-5">
+        <FocusAlert/>
         <AIInsightCard title={SOURCE_TITLE[rec.source] ?? 'Suggested length'}>
           We suggest a <b>{rec.focus_minutes} min focus</b> / <b>{rec.break_minutes} min break</b>.
           <span className="block text-xs mt-1">{rec.reason}</span>

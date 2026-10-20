@@ -16,6 +16,9 @@ docs/C3_CHAT_HISTORY.md
 
 # Simulated sessions are big (~7 MB) and can be rebuilt: python -m ml_training.scheduler.simulate_sessions
 backend/ml_training/scheduler/data/sessions.csv
+backend/ml_training/scheduler/data/tasks.csv
 
 # Downloaded datasets (CogBench, ~11 MB) - train_m2.py downloads them again when missing
 backend/ml_training/scheduler/data/external/
+backend/ml_training/scheduler/data/m4_train.csv
+backend/ml_training/scheduler/data/m4_test.csv

@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { SearchIcon, BellIcon } from 'lucide-react';
 import { Logo } from '../ui/Logo';
 import { Avatar } from '../ui/Avatar';
-import { notifications } from '../../lib/data';
+import useNotifications from '../../../features/scheduler/hooks/useNotifications';
 import useStudent from '../../hooks/useStudent';
 export function TopHeader() {
     const student = useStudent();
     const navigate = useNavigate();
-    const unread = notifications.filter((n) => n.unread).length;
+    const { unread } = useNotifications();                   // real count from the API
     const greeting = (() => {
         const h = new Date().getHours();
         if (h < 12)

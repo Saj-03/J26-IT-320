@@ -1,10 +1,12 @@
-// SMART SCHEDULE - this week from the API: planned tasks (scheduled_start) + commitments
-// (lectures, work, protected rest blocks), the wellbeing banner (Component 4 signal) and week progress.
-// Tasks without a time get "Find a time" (reschedule page: free slots ranked by M1).
+// SMART SCHEDULE - the next 7 days from the API:
+//   * "Plan my week" pieces (CP-SAT scheduler, Module D) - heavy work in the M1 best hours
+//   * tasks the student planned by hand (scheduled_start, no pieces)
+//   * commitments (lectures, work, protected rest blocks)
+// plus the wellbeing banner (Component 4 signal) and progress for these 7 days.
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRightIcon, CheckIcon, ClockIcon, SkipForwardIcon, BrainIcon } from 'lucide-react';
+import { ArrowRightIcon, CheckIcon, ClockIcon, SkipForwardIcon, BrainIcon, SparklesIcon, PlayIcon, AlertTriangleIcon } from 'lucide-react';
 import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
@@ -13,13 +15,15 @@ import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { ErrorState, LoadingState } from '../../../shared/components/ui/States';
 import { LoadBadge, SectionTitle, formatMinutes } from '../components/PlanPrimitives';
 import PlannedTasks from '../components/PlannedTasks';
+import Commitments from '../components/Commitments';
+import FocusAlert from '../components/FocusAlert';
 import { categoryStyles } from '../../../shared/lib/data';
 import { apiErrorMessage } from '../../../shared/api/client';
-import { finishTask, getStressStatus, listCommitments, listTasks, updateTask, utcMs } from '../api';
-import { LOAD_LABEL, isOpen, stressStyles } from '../lib';
+import { finishTask, getAttentionProfile, getPlan, getRecovery, getStressStatus, listCommitments, listStressProposals, listTasks, planMyWeek, updateTask, utcMs } from '../api';
+import { LOAD_LABEL, hoursList, isOpen, stressStyles } from '../lib';
 import { cn } from '../../../shared/lib/cn';
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const DAY_COUNT = 7;
 const FIRST_HOUR = 6, LAST_HOUR = 24, ROW_HOURS = 2, ROW_PX = 64;          // grid 06:00 - 24:00
 const HOURS = Array.from({ length: (LAST_HOUR - FIRST_HOUR) / ROW_HOURS }, (_, i) => `${String(FIRST_HOUR + i * ROW_HOURS).padStart(2, '0')}:00`);
 
@@ -27,29 +31,47 @@ const HOURS = Array.from({ length: (LAST_HOUR - FIRST_HOUR) / ROW_HOURS }, (_, i
 const KIND_STYLE = { task: 'academic', lecture: 'career', work: 'work', protected_block: 'recovery', personal: 'personal', extracurricular: 'social' };
 const LEGEND = [['academic', 'Study task'], ['career', 'Lecture'], ['work', 'Work'], ['recovery', 'Rest / protected'], ['personal', 'Personal']];
 const STRESS_WORD = { LOW: 'Low', MODERATE: 'Medium', HIGH: 'High' };
+const ATTENTION_WORD = { m1_model: 'your M1 focus pattern', survey: 'the study hours you told us', none: 'the earliest free time' };
 
-const monday = (d = new Date()) => { const m = new Date(d); m.setHours(0, 0, 0, 0); m.setDate(m.getDate() - ((m.getDay() + 6) % 7)); return m; };
+const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
 const minutesOfDay = (d) => d.getHours() * 60 + d.getMinutes();
 const hm = (text) => { const [h, m] = text.split(':').map(Number); return h * 60 + m; };     // "09:30:00" -> 570
+const time = (d) => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
-// All blocks of this week: {day 0-6, startMin, endMin, title, kind, task?}
-function weekBlocks(tasks, commitments, weekStart) {
-    const weekEnd = new Date(weekStart.getTime() + 7 * 86400000);
+// All blocks of the 7 days: {day 0-6, start, end (Date), title, kind, task?, piece?}
+function weekBlocks(tasks, plan, commitments, firstDay) {
+    const lastDay = new Date(firstDay.getTime() + DAY_COUNT * 86400000);
+    const dayOf = (d) => Math.floor((d - firstDay) / 86400000);
+    const byId = Object.fromEntries(tasks.map((t) => [t.id, t]));
     const blocks = [];
-    for (const t of tasks) {
-        if (!t.scheduled_start) continue;
-        const s = new Date(utcMs(t.scheduled_start));
-        if (s < weekStart || s >= weekEnd) continue;
-        blocks.push({ day: (s.getDay() + 6) % 7, startMin: minutesOfDay(s), endMin: minutesOfDay(s) + t.estimated_minutes,
-                      title: t.title, kind: 'task', task: t });
+
+    // 1. pieces from "Plan my week"
+    const planned = new Set();
+    for (const p of plan) {
+        const s = new Date(utcMs(p.start)), e = new Date(utcMs(p.end));
+        planned.add(p.task_id);
+        if (s >= firstDay && s < lastDay && byId[p.task_id])
+            blocks.push({ day: dayOf(s), start: s, end: e, title: p.title, kind: 'task', task: byId[p.task_id], piece: p });
     }
+    // 2. tasks planned by hand (no pieces)
+    for (const t of tasks) {
+        if (!t.scheduled_start || planned.has(t.id)) continue;
+        const s = new Date(utcMs(t.scheduled_start));
+        if (s >= firstDay && s < lastDay)
+            blocks.push({ day: dayOf(s), start: s, end: new Date(s.getTime() + t.estimated_minutes * 60000), title: t.title, kind: 'task', task: t });
+    }
+    // 3. commitments (weekly ones are Sri Lanka clock times on a weekday)
     for (const c of commitments) {
-        if (c.is_recurring) {                                   // weekly, times are Sri Lanka clock times
-            blocks.push({ day: c.weekday, startMin: hm(c.start_time), endMin: hm(c.end_time), title: c.title, kind: c.kind });
+        if (c.is_recurring) {
+            for (let i = 0; i < DAY_COUNT; i++) {
+                const day = new Date(firstDay.getTime() + i * 86400000);
+                if ((day.getDay() + 6) % 7 !== c.weekday) continue;
+                const at = (min) => new Date(day.getTime() + min * 60000);
+                blocks.push({ day: i, start: at(hm(c.start_time)), end: at(hm(c.end_time)), title: c.title, kind: c.kind });
+            }
         } else if (c.start_at) {
             const s = new Date(utcMs(c.start_at)), e = new Date(utcMs(c.end_at));
-            if (s >= weekStart && s < weekEnd)
-                blocks.push({ day: (s.getDay() + 6) % 7, startMin: minutesOfDay(s), endMin: minutesOfDay(s) + (e - s) / 60000, title: c.title, kind: c.kind });
+            if (s >= firstDay && s < lastDay) blocks.push({ day: dayOf(s), start: s, end: e, title: c.title, kind: c.kind });
         }
     }
     return blocks;
@@ -58,29 +80,42 @@ function weekBlocks(tasks, commitments, weekStart) {
 export function Scheduler() {
     const navigate = useNavigate();
     const [tasks, setTasks] = useState(null);
+    const [plan, setPlan] = useState([]);
     const [commitments, setCommitments] = useState([]);
     const [stress, setStress] = useState(null);
+    const [waiting, setWaiting] = useState(null);      // a stress proposal waiting for my decision
+    const [peaks, setPeaks] = useState([]);                 // M1 best hours, e.g. [21, 20, 16]
+    const [recovery, setRecovery] = useState(null);         // FR-09: missed sessions + recovery preview
     const [failed, setFailed] = useState(false);
-    const [selected, setSelected] = useState(null);
+    const [selected, setSelected] = useState(null);         // a block of a task
     const [error, setError] = useState('');
+    const [planning, setPlanning] = useState(false);
+    const [result, setResult] = useState(null);             // answer of the last "Plan my week"
     const [reloadKey, setReloadKey] = useState(0);
 
     const load = () => {
         setFailed(false);
-        Promise.all([listTasks(), listCommitments()])
-            .then(([t, c]) => { setTasks(t); setCommitments(c); })
+        Promise.all([listTasks(), listCommitments(), getPlan()])
+            .then(([t, c, p]) => { setTasks(t); setCommitments(c); setPlan(p.sessions); })
             .catch(() => setFailed(true));
         getStressStatus().then(setStress).catch(() => {});
+        listStressProposals().then((p) => setWaiting(p[0] ?? null)).catch(() => {});
+        getAttentionProfile().then((p) => setPeaks(p.source === 'm1_model' ? p.peak_hours : [])).catch(() => {});
+        getRecovery().then(setRecovery).catch(() => setRecovery(null));
     };
     useEffect(load, [reloadKey]);   // eslint-disable-line react-hooks/exhaustive-deps
 
     if (failed) return <ErrorState onRetry={load}/>;
     if (!tasks) return <LoadingState label="Loading your week…"/>;
 
-    const weekStart = monday();
-    const todayIndex = (new Date().getDay() + 6) % 7;
-    const blocks = weekBlocks(tasks, commitments, weekStart);
+    const firstDay = startOfToday();
+    const days = Array.from({ length: DAY_COUNT }, (_, i) => new Date(firstDay.getTime() + i * 86400000));
+    const blocks = weekBlocks(tasks, plan, commitments, firstDay);
     const taskBlocks = blocks.filter((b) => b.kind === 'task');
+    // Study sessions that now overlap a lecture / work block (e.g. a lecture added after planning)
+    const busyBlocks = blocks.filter((b) => b.kind !== 'task');
+    const clashes = taskBlocks.filter((t) => isOpen(t.task) && t.end > new Date()
+        && busyBlocks.some((c) => t.start < c.end && c.start < t.end));
     const doneCount = taskBlocks.filter((b) => b.task.status === 'done').length;
     const level = stress?.level ? STRESS_WORD[stress.level] : null;
     const style = stressStyles[level ?? 'Low'];
@@ -89,10 +124,64 @@ export function Scheduler() {
         setError('');
         request.then(() => { setSelected(null); setReloadKey((k) => k + 1); }).catch((e) => setError(apiErrorMessage(e)));
     };
-    const isMissed = (t) => isOpen(t) && t.scheduled_start && utcMs(t.scheduled_start) + t.estimated_minutes * 60000 < Date.now();
+    const runPlanner = () => {
+        setError(''); setPlanning(true);
+        planMyWeek()
+            .then((r) => { setResult(r); setReloadKey((k) => k + 1); })
+            .catch((e) => setError(apiErrorMessage(e)))
+            .finally(() => setPlanning(false));
+    };
+    const isMissed = (b) => isOpen(b.task) && b.end.getTime() < Date.now();
+    const inPeak = (b) => !!b.piece && peaks.includes(b.start.getHours());     // placed in an M1 best hour
 
     return (<div className="space-y-6">
-      <PageHeader title="Smart Schedule" subtitle={`This week: ${taskBlocks.length} planned study sessions · ${doneCount} completed. Your schedule adapts to your focus and stress.`}/>
+      <PageHeader title="Smart Schedule"
+          subtitle={`Next 7 days: ${taskBlocks.length} planned study sessions · ${doneCount} completed. Your schedule adapts to your focus and stress.`}
+          action={<Button onClick={runPlanner} disabled={planning}>
+              <SparklesIcon size={16}/> {planning ? 'Planning…' : 'Plan my week'}
+            </Button>}/>
+
+      {/* FR-16: focus quality / habit dropped this week */}
+      <FocusAlert/>
+
+      {/* FR-09: missed study sessions -> recovery plan preview (applied only when the student says so) */}
+      {recovery?.missed.length > 0 && !result &&
+        <Card padding="lg" className="border border-brand-100 bg-brand-50/60">
+          <div className="flex items-start gap-3">
+            <ClockIcon size={20} className="text-brand-600 mt-0.5 shrink-0"/>
+            <div className="flex-1 min-w-0 space-y-2">
+              <p className="font-bold text-charcoal">
+                You missed {recovery.missed.length} study {recovery.missed.length === 1 ? 'session' : 'sessions'}. That's okay - here is a new plan.
+              </p>
+              <ul className="text-sm text-charcoal-light space-y-0.5">
+                {recovery.moves.map((m) => <li key={m.task_id}>• <b>{m.title}</b> → continues {new Date(utcMs(m.new_start)).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })}</li>)}
+              </ul>
+              {recovery.deadlines_ok ?
+                <p className="text-sm font-semibold text-emerald-700">✓ Every deadline still fits.</p> :
+                recovery.at_risk.map((u) => <p key={u.task_id} className="text-sm text-charcoal flex items-start gap-2">
+                    <AlertTriangleIcon size={15} className="text-amber-500 mt-0.5 shrink-0"/>
+                    <span><b>{u.title}</b>: {formatMinutes(u.minutes)} no longer fits before its deadline. Free some time or talk to your lecturer early.</span>
+                  </p>)}
+              <Button size="sm" onClick={runPlanner} disabled={planning}><SparklesIcon size={15}/> {planning ? 'Planning…' : 'Apply new plan'}</Button>
+            </div>
+          </div>
+        </Card>}
+
+      {/* A study session sits on top of a lecture / commitment -> offer to plan again */}
+      {clashes.length > 0 &&
+        <Card padding="lg" className="border border-amber-200/60 bg-amber-light/60">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <AlertTriangleIcon size={20} className="text-amber-500 shrink-0"/>
+            <p className="flex-1 text-sm text-charcoal">
+              <b>{clashes.length} study {clashes.length === 1 ? 'session clashes' : 'sessions clash'}</b> with your lectures or commitments
+              ({clashes.map((c) => c.title).filter((t, i, all) => all.indexOf(t) === i).join(', ')}). Plan again to move {clashes.length === 1 ? 'it' : 'them'} to free time.
+            </p>
+            <Button size="sm" onClick={runPlanner} disabled={planning}><SparklesIcon size={15}/> {planning ? 'Planning…' : 'Plan again'}</Button>
+          </div>
+        </Card>}
+
+      {/* What the planner just did - and anything it could not fit */}
+      {result && <PlanResult result={result} onClose={() => setResult(null)}/>}
 
       {/* Wellbeing banner - Component 4's signal and what we do with it (the student decides) */}
       {stress &&
@@ -100,18 +189,21 @@ export function Scheduler() {
         <span className={cn('w-2.5 h-2.5 rounded-full shrink-0', style.dot)}/>
         <div className="flex-1 min-w-0">
           <p className={cn('text-sm font-bold', style.text)}>{level ? `Wellbeing signal: ${level}` : 'No wellbeing signal'}</p>
-          <p className="text-base font-semibold text-charcoal mt-0.5 leading-snug">{stress.reason}</p>
+          <p className="text-base font-semibold text-charcoal mt-0.5 leading-snug">
+            {waiting ? 'A lighter plan is waiting for you to check.' : stress.reason}
+          </p>
+          {waiting && <p className="text-sm text-charcoal-light mt-0.5">{waiting.reason}</p>}
         </div>
-        {stress.action === 'propose_changes' &&
+        {(waiting || stress.action === 'propose_changes') &&
             <span className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-charcoal shrink-0">
-            See suggestions <ArrowRightIcon size={15}/>
+            {waiting ? 'Review it' : 'See suggestions'} <ArrowRightIcon size={15}/>
           </span>}
       </motion.button>}
 
-      {/* Week progress */}
+      {/* Progress over the 7 days */}
       <Card padding="lg">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-bold text-charcoal">Week progress</p>
+          <p className="text-sm font-bold text-charcoal">Progress (next 7 days)</p>
           <span className="text-sm font-extrabold text-brand-600">{doneCount} / {taskBlocks.length}</span>
         </div>
         <ProgressBar value={taskBlocks.length ? doneCount / taskBlocks.length * 100 : 0} height={10}/>
@@ -127,38 +219,48 @@ export function Scheduler() {
             <span className={cn('w-3 h-3 rounded-md', categoryStyles[cat].dot)}/>
             {label}
           </span>)}
+        <span className="inline-flex items-center gap-1 text-xs font-semibold text-charcoal-muted">🔥 In your best focus hours</span>
       </div>
 
-      {/* Week grid */}
+      {/* Grid of the next 7 days */}
       <Card padding="sm">
         <div className="overflow-x-auto no-scrollbar">
           <div className="min-w-[720px]">
             <div className="grid" style={{ gridTemplateColumns: '56px repeat(7, 1fr)' }}>
               <div />
-              {DAYS.map((d, i) => <div key={d} className="text-center pb-2">
-                  <p className={cn('text-sm font-bold', i === todayIndex ? 'text-brand-600' : 'text-charcoal')}>{d}</p>
-                  {i === todayIndex && <span className="text-[10px] font-semibold text-brand-500">Today</span>}
+              {days.map((d, i) => <div key={i} className="text-center pb-2">
+                  <p className={cn('text-sm font-bold', i === 0 ? 'text-brand-600' : 'text-charcoal')}>{d.toLocaleDateString([], { weekday: 'short' })}</p>
+                  <span className={cn('text-[11px] font-semibold', i === 0 ? 'text-brand-500' : 'text-charcoal-muted')}>
+                    {i === 0 ? 'Today' : d.toLocaleDateString([], { day: 'numeric', month: 'short' })}
+                  </span>
                 </div>)}
             </div>
 
             <div className="relative grid" style={{ gridTemplateColumns: '56px repeat(7, 1fr)' }}>
               {HOURS.map((h) => <React.Fragment key={h}>
                   <div className="text-[11px] font-medium text-charcoal-muted pr-2 text-right h-16 pt-1">{h}</div>
-                  {DAYS.map((_, di) => <div key={di} className="border-t border-l border-black/[0.05] h-16 relative first:border-l-0"/>)}
+                  {days.map((_, di) => <div key={di} className="border-t border-l border-black/[0.05] h-16 relative first:border-l-0"/>)}
                 </React.Fragment>)}
 
               {blocks.map((b, i) => {
-                const start = Math.max(b.startMin, FIRST_HOUR * 60), end = Math.min(b.endMin, LAST_HOUR * 60);
+                const start = Math.max(minutesOfDay(b.start), FIRST_HOUR * 60);
+                const end = Math.min(minutesOfDay(b.start) + (b.end - b.start) / 60000, LAST_HOUR * 60);
                 if (end <= start) return null;                          // outside 06:00-24:00
                 const cat = categoryStyles[KIND_STYLE[b.kind] ?? 'personal'];
                 const colW = `calc((100% - 56px) / 7)`;
                 const px = (min) => (min - FIRST_HOUR * 60) / (ROW_HOURS * 60) * ROW_PX;
-                return (<div key={i} onClick={() => b.task && setSelected(b.task)} title={`${b.title} · ${formatMinutes(b.endMin - b.startMin)}`}
-                    className={cn('absolute rounded-xl border p-1.5 overflow-hidden', cat.bg, cat.ring, b.task && 'cursor-pointer', b.task?.status === 'done' && 'opacity-50')}
+                const done = b.task?.status === 'done';
+                const peak = inPeak(b);
+                return (<div key={i} onClick={() => b.task && setSelected(b)} title={blockTitle(b)}
+                    className={cn('absolute rounded-xl border p-1.5 overflow-hidden', cat.bg, cat.ring, b.task && 'cursor-pointer', done && 'opacity-50')}
                     style={{ left: `calc(56px + ${b.day} * ${colW})`, top: `${px(start)}px`, width: `calc(${colW} - 6px)`,
                              height: `${Math.max(px(end) - px(start) - 4, 18)}px`, marginLeft: '3px' }}>
-                    <p className={cn('text-[11px] font-bold leading-tight truncate', cat.text, b.task?.status === 'done' && 'line-through')}>{b.title}</p>
-                    <p className="text-[9px] text-charcoal-muted font-medium">{formatMinutes(Math.round(b.endMin - b.startMin))}</p>
+                    <p className={cn('text-[11px] font-bold leading-tight truncate', cat.text, done && 'line-through')}>
+                      {peak && '🔥 '}{b.title}
+                    </p>
+                    <p className="text-[11px] text-charcoal-muted font-medium">
+                      {formatMinutes(Math.round((b.end - b.start) / 60000))}{b.piece && b.piece.of > 1 && ` · part ${b.piece.piece}/${b.piece.of}`}
+                    </p>
                   </div>);
               })}
             </div>
@@ -166,33 +268,35 @@ export function Scheduler() {
         </div>
       </Card>
 
-      {/* Study sessions by day - tap to complete, reschedule or unplan */}
+      {/* Lectures, work and other busy time (FR-02) */}
+      <Commitments items={commitments} onChanged={() => setReloadKey((k) => k + 1)}/>
+
+      {/* Study sessions by day - tap to start, complete, reschedule or unplan */}
       <div>
-        <SectionTitle title="Study sessions" subtitle="Tap a session to mark it complete, reschedule or take it off the plan." action={<Button variant="outline" size="sm" onClick={() => navigate('/app/schedule/attention')}>
+        <SectionTitle title="Study sessions" subtitle="Tap a session to start it, mark it complete, reschedule or take it off the plan." action={<Button variant="outline" size="sm" onClick={() => navigate('/app/schedule/attention')}>
               <BrainIcon size={15}/> Best study times
             </Button>}/>
         {taskBlocks.length === 0 ?
-          <Card padding="lg"><p className="text-sm text-charcoal-muted">No study sessions planned this week yet. Use “Find a time” on a task to plan one.</p></Card> :
+          <Card padding="lg"><p className="text-sm text-charcoal-muted">No study sessions planned yet. Press “Plan my week” and ThriveU places your tasks in your free time, before each deadline.</p></Card> :
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {DAYS.map((day, di) => {
-              const dayBlocks = taskBlocks.filter((b) => b.day === di).sort((a, b) => a.startMin - b.startMin);
+          {days.map((d, di) => {
+              const dayBlocks = taskBlocks.filter((b) => b.day === di).sort((a, b) => a.start - b.start);
               if (!dayBlocks.length) return null;
-              return (<Card key={day} padding="lg" className="h-full">
-                <h3 className="font-bold text-charcoal mb-3">{day}{di === todayIndex && ' · Today'}</h3>
+              return (<Card key={di} padding="lg" className="h-full">
+                <h3 className="font-bold text-charcoal mb-3">{d.toLocaleDateString([], { weekday: 'short' })}{di === 0 && ' · Today'}</h3>
                 <div className="space-y-2">
-                  {dayBlocks.map(({ task: t }) => {
-                      const s = new Date(utcMs(t.scheduled_start));
-                      const e = new Date(s.getTime() + t.estimated_minutes * 60000);
-                      const time = (d) => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-                      return <button key={t.id} onClick={() => setSelected(t)} className={cn('w-full text-left rounded-2xl bg-cream p-3 hover:bg-black/[0.04] transition-colors', t.status === 'done' && 'opacity-55')}>
+                  {dayBlocks.map((b, i) => <button key={i} onClick={() => setSelected(b)} className={cn('w-full text-left rounded-2xl bg-cream p-3 hover:bg-black/[0.04] transition-colors', b.task.status === 'done' && 'opacity-55')}>
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-bold text-charcoal-muted tabular-nums">{time(s)} – {time(e)}</span>
-                        <LoadBadge load={LOAD_LABEL[t.cognitive_load]}/>
+                        <span className="text-xs font-bold text-charcoal-muted tabular-nums">{time(b.start)} – {time(b.end)}</span>
+                        <LoadBadge load={LOAD_LABEL[b.task.cognitive_load]}/>
                       </div>
-                      <p className={cn('text-sm font-bold text-charcoal mt-1', t.status === 'done' && 'line-through')}>{t.title}</p>
-                      {isMissed(t) && <span className="text-[11px] font-bold text-brand-600">Missed · tap to reschedule</span>}
-                    </button>;
-                  })}
+                      <p className={cn('text-sm font-bold text-charcoal mt-1', b.task.status === 'done' && 'line-through')}>{b.title}</p>
+                      {b.piece && <p className="text-[11px] font-semibold text-charcoal-muted mt-0.5">
+                          {b.piece.of > 1 && `Part ${b.piece.piece} of ${b.piece.of}`}
+                          {b.piece.chance != null && `${b.piece.of > 1 ? ' · ' : ''}${Math.round(b.piece.chance * 100)}% focus chance${inPeak(b) ? ' 🔥 best hours' : ''}`}
+                        </p>}
+                      {isMissed(b) && <span className="text-[11px] font-bold text-brand-600">Missed · tap to reschedule</span>}
+                    </button>)}
                 </div>
               </Card>);
           })}
@@ -203,25 +307,69 @@ export function Scheduler() {
       <Modal open={!!selected} onClose={() => setSelected(null)} title={selected?.title}>
         {selected &&
             <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <LoadBadge load={LOAD_LABEL[selected.cognitive_load]}/>
-              <span className="text-sm font-semibold text-charcoal-muted">{formatMinutes(selected.estimated_minutes)}</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <LoadBadge load={LOAD_LABEL[selected.task.cognitive_load]}/>
+              <span className="text-sm font-semibold text-charcoal-muted">
+                {time(selected.start)} – {time(selected.end)}{selected.piece?.of > 1 && ` · part ${selected.piece.piece} of ${selected.piece.of}`}
+              </span>
             </div>
-            {isOpen(selected) ?
+            {selected.piece?.chance != null && <p className="text-sm text-charcoal-muted">
+                The AI placed this here because you have about a <b>{Math.round(selected.piece.chance * 100)}%</b> chance of finishing a session at this time.
+              </p>}
+            {isOpen(selected.task) ?
               <div className="space-y-2">
-                <Button fullWidth size="lg" onClick={() => act(finishTask(selected.id))}>
-                  <CheckIcon size={17}/> Mark Complete
+                <Button fullWidth size="lg" onClick={() => navigate('/app/focus/setup', { state: { taskId: selected.task.id } })}>
+                  <PlayIcon size={16}/> Start focus session
                 </Button>
-                <Button fullWidth size="lg" variant="outline" onClick={() => navigate(`/app/schedule/missed?id=${selected.id}`)}>
+                <Button fullWidth size="lg" variant="outline" onClick={() => act(finishTask(selected.task.id))}>
+                  <CheckIcon size={17}/> Mark task complete
+                </Button>
+                <Button fullWidth size="lg" variant="outline" onClick={() => navigate(`/app/schedule/missed?id=${selected.task.id}`)}>
                   <ClockIcon size={16}/> Reschedule
                 </Button>
-                <Button fullWidth size="lg" variant="ghost" onClick={() => act(updateTask(selected.id, { scheduled_start: null }))}>
+                <Button fullWidth size="lg" variant="ghost" onClick={() => act(updateTask(selected.task.id, { scheduled_start: null }))}>
                   <SkipForwardIcon size={16}/> Take off the plan
                 </Button>
               </div> :
-              <p className="text-sm text-charcoal-muted">This task is {selected.status}.</p>}
-            <p className="text-xs text-charcoal-muted text-center">Skipping is fine. Plan it again any time before the deadline.</p>
+              <p className="text-sm text-charcoal-muted">This task is {selected.task.status}.</p>}
+            <p className="text-xs text-charcoal-muted text-center">A task you move by hand stays at that time. The rest of your plan updates by itself when tasks or commitments change.</p>
           </div>}
       </Modal>
     </div>);
+}
+
+function blockTitle(b) {
+    const length = formatMinutes(Math.round((b.end - b.start) / 60000));
+    const chance = b.piece?.chance != null ? ` · ${Math.round(b.piece.chance * 100)}% focus chance` : '';
+    return `${b.title} · ${length}${chance}`;
+}
+
+// Summary of the last "Plan my week": what was placed, how, and what did not fit
+function PlanResult({ result, onClose }) {
+    const heavy = result.sessions.filter((s) => s.load === 'heavy');
+    const heavyGood = heavy.filter((s) => result.peak_hours.includes(new Date(utcMs(s.start)).getHours())).length;
+    return (<Card padding="lg" className="border border-brand-100 bg-brand-50/60">
+      <div className="flex items-start gap-3">
+        <span className="w-10 h-10 rounded-2xl bg-brand-500 text-white flex items-center justify-center shrink-0"><SparklesIcon size={18}/></span>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-charcoal">Planned {result.sessions.length} study sessions for the next 7 days</p>
+          <p className="text-sm text-charcoal-muted mt-0.5">
+            {result.focus_minutes}-minute parts with {result.break_minutes}-minute breaks, placed using {ATTENTION_WORD[result.attention_source] ?? 'your free time'}
+            {result.mode === 'static' && ' (standard plan)'} · around lectures and before every deadline · {(result.latency_ms / 1000).toFixed(1)} s
+          </p>
+          {heavy.length > 0 && result.peak_hours.length > 0 &&
+            <p className="text-sm font-semibold text-brand-700 mt-2">
+              🔥 {heavyGood} of {heavy.length} heavy parts are in your best focus hours ({hoursList(result.peak_hours)}).
+            </p>}
+          {result.unplaced.length > 0 &&
+            <div className="mt-3 rounded-2xl bg-white p-3 space-y-1">
+              {result.unplaced.map((u) => <p key={u.task_id} className="text-sm text-charcoal flex items-start gap-2">
+                  <AlertTriangleIcon size={15} className="text-amber-500 mt-0.5 shrink-0"/>
+                  <span><b>{u.title}</b>: {formatMinutes(u.minutes)} did not fit. {u.reason}. Move the deadline, free some time or split the task.</span>
+                </p>)}
+            </div>}
+        </div>
+        <button onClick={onClose} className="text-xs font-bold text-charcoal-muted hover:text-charcoal">Close</button>
+      </div>
+    </Card>);
 }

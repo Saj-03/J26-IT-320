@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "claude-sonnet-4-6"
     RISK_SIGNAL_MAX_AGE_HOURS: int = 24       # freshness check (C3 <- C4)
     URGENT_DEADLINE_WINDOW_HOURS: int = 48    # tasks due inside this window are never deferred
+    SCHEDULER_RESEARCHER_EMAILS: str = ""    # C3 pilot: who may set participants' experiment mode (comma-separated)
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
