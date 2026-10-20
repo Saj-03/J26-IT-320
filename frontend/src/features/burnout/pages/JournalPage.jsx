@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { MicIcon, SaveIcon, SparklesIcon, SearchIcon, PlusIcon, Trash2Icon, XIcon, PencilIcon, FlameIcon, ShuffleIcon, BookOpenIcon } from "lucide-react";
+import { MicIcon, SaveIcon, CalendarDaysIcon, PaletteIcon, SparklesIcon, SearchIcon, PlusIcon, Trash2Icon, XIcon, PencilIcon, FlameIcon, ShuffleIcon, BookOpenIcon } from "lucide-react";
 import { PageHeader } from "../../../shared/components/layout/PageHeader";
 import { Card } from "../../../shared/components/ui/Card";
 import { Button } from "../../../shared/components/ui/Button";
 import { cn } from "../../../shared/lib/cn";
 import { useAuth } from "../../../shared/context/AuthContext";
 import { CrisisCard } from "../components/CrisisCard";
+import { useJournalStyle, FONTS, PAGES } from "../journalStyle";
 import { addJournal, sendMood, listJournal, deleteJournal, updateJournal, moodHistory } from "../api";
 
 const MOODS = [
@@ -83,6 +84,8 @@ export default function JournalPage() {
   const [listening, setListening] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const { style, setStyle, fontFamily, pageColor } = useJournalStyle();
+  const [showStyle, setShowStyle] = useState(false);
 
   const load = useCallback((q) => Promise.all([listJournal(q), listJournal(""), moodHistory()])
     .then(([filtered, all, m]) => { setEntries(filtered); setAllEntries(all); setMoods(m); })
@@ -172,6 +175,32 @@ export default function JournalPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <PageHeader title={`${greeting()}${firstName ? ", " + firstName : ""}`} subtitle="Your private journal. Only you can read what you write here." />
+
+      <div className="flex flex-wrap gap-2">
+        <Link to="/app/journal/month"><Button variant="soft" size="sm"><CalendarDaysIcon size={14} /> Month view</Button></Link>
+        <Button variant="outline" size="sm" onClick={() => setShowStyle((v) => !v)}><PaletteIcon size={14} /> Customise</Button>
+      </div>
+      {showStyle && (
+        <Card padding="md">
+          <p className="text-sm font-semibold text-charcoal mb-2">Font</p>
+          <div className="flex flex-wrap gap-2">
+            {FONTS.map((f) => (
+              <button key={f.id} onClick={() => setStyle({ ...style, font: f.id })} aria-pressed={style.font === f.id}
+                style={{ fontFamily: f.css }}
+                className={cn("rounded-xl border-2 px-3 py-1.5 text-sm", style.font === f.id ? "border-brand-500 bg-brand-50" : "border-black/10 hover:border-brand-200")}>{f.label}</button>
+            ))}
+          </div>
+          <p className="text-sm font-semibold text-charcoal mt-4 mb-2">Page colour</p>
+          <div className="flex flex-wrap gap-2">
+            {PAGES.map((p) => (
+              <button key={p.id} onClick={() => setStyle({ ...style, page: p.id })} aria-pressed={style.page === p.id} aria-label={p.label} title={p.label}
+                style={{ backgroundColor: p.color }}
+                className={cn("w-9 h-9 rounded-full border-2", style.page === p.id ? "border-brand-500" : "border-black/10")} />
+            ))}
+          </div>
+          <p className="mt-3 text-[11px] text-charcoal-muted">Saved in this browser only.</p>
+        </Card>
+      )}
 
       <div className="flex flex-wrap gap-2 text-sm" aria-label="Journal summary">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 text-brand-700 font-semibold px-3 py-1.5">
@@ -280,7 +309,7 @@ export default function JournalPage() {
         </Card>
 
         {/* The page: reads like a journal page, dated, with a prompt when blank */}
-        <Card padding="lg" className="lg:col-span-2 bg-cream/40">
+        <Card padding="lg" className="lg:col-span-2" style={{ backgroundColor: pageColor }}>
           <div className="flex items-start justify-between gap-3 border-b border-black/[0.06] pb-3">
             <div>
               <p className="font-bold text-charcoal text-lg">{longDate(shownDate)}</p>
@@ -313,6 +342,7 @@ export default function JournalPage() {
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Start writing…"
                 aria-label="Journal entry"
+                style={{ fontFamily }}
                 className="mt-3 w-full rounded-2xl border border-black/10 bg-white/80 px-4 py-3.5 text-[15px] leading-7 text-charcoal placeholder:text-charcoal-muted outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 resize-none"
               />
               <div className="flex flex-wrap items-center gap-3 mt-4">
@@ -333,7 +363,7 @@ export default function JournalPage() {
               </div>
             </>
           ) : (
-            <p className="mt-4 whitespace-pre-wrap text-[15px] leading-7 text-charcoal">{selected.text}</p>
+            <p className="mt-4 whitespace-pre-wrap text-[15px] leading-7 text-charcoal" style={{ fontFamily }}>{selected.text}</p>
           )}
         </Card>
       </div>
