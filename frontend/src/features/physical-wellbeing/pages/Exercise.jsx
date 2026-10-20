@@ -60,11 +60,11 @@ export function PhysicalExercise() {
 
       <PhysicalNav />
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-[minmax(0,1.35fr)_minmax(300px,1fr)] gap-6">
         {/* Featured Exercise */}
-        <Card padding="none" className="lg:col-span-2 overflow-hidden flex flex-col justify-between">
-          <RecommendationImage src={featured.image} alt={featured.name || 'Recommended workout'} fallbackSrc={exerciseImageFallback} className="h-56 w-full object-cover sm:h-64" />
-          <div className="p-6">
+        <Card padding="none" className="overflow-hidden flex flex-col justify-between">
+          <RecommendationImage src={featured.image} alt={featured.name || 'Recommended workout'} fallbackSrc={exerciseImageFallback} className="h-44 w-full object-cover sm:h-52" />
+          <div className="p-5">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-50 px-3 py-1 rounded-full border border-brand-200">
                 Today's workout recommendation
@@ -77,19 +77,19 @@ export function PhysicalExercise() {
               )}
             </div>
 
-            <h2 className="text-2xl font-black text-charcoal">{featured.name}</h2>
-            <p className="text-sm text-charcoal-muted mt-2 leading-relaxed">
+            <h2 className="text-xl font-black text-charcoal">{featured.name}</h2>
+            <p className="text-xs text-charcoal-muted mt-2 leading-relaxed">
               {featured.description}
             </p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
               {[
                 { icon: ClockIcon, l: 'Duration', v: `${featured.minutes || 20} min` },
                 { icon: GaugeIcon, l: 'Intensity', v: featured.intensity || 'Moderate' },
                 { icon: DumbbellIcon, l: 'Equipment', v: featured.equipment || 'Bodyweight' },
                 { icon: FlameIcon, l: 'Est. Burn', v: `${featured.calories_burned || 150} kcal` }
               ].map((s) => (
-                <div key={s.l} className="bg-brand-50 rounded-2xl p-3 border border-brand-100">
+                <div key={s.l} className="bg-brand-50 rounded-2xl p-2.5 border border-brand-100">
                   <s.icon size={15} className="text-brand-600 mb-1" />
                   <p className="text-[11px] font-medium text-charcoal-muted">{s.l}</p>
                   <p className="text-sm font-extrabold text-brand-800 leading-tight mt-0.5">{s.v}</p>
@@ -105,7 +105,7 @@ export function PhysicalExercise() {
             )}
           </div>
 
-          <div className="p-6 pt-0">
+          <div className="px-5 pb-5">
             <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-black/[0.05]">
               <Button size="lg" className="flex-1" disabled={loading} onClick={() => navigate('/app/physical/workout', { state: { workout: featured } })}>
                 <PlayIcon size={17} fill="currentColor" /> Start Workout

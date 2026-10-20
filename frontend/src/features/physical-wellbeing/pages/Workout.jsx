@@ -239,12 +239,14 @@ export function PhysicalWorkout() {
 
     return (
         <div className="w-full max-w-7xl mx-auto">
-            <div className="text-center">
-                <p className="text-sm font-semibold text-brand-600">Focused workout</p>
-                <h1 className="text-xl font-extrabold text-charcoal mt-1">{workoutTitle}</h1>
-                <p className="text-sm text-charcoal-muted mt-0.5">
-                    {workoutDay ? `${workoutDay}’s planned workout` : `${workoutMins}-minute personalized session`}
-                </p>
+            <div className="flex flex-col gap-2 border-b border-black/[0.06] pb-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-brand-700">Focused workout</p>
+                    <h1 className="mt-1 text-lg font-bold leading-snug text-charcoal sm:text-xl">{workoutTitle}</h1>
+                </div>
+                <span className="inline-flex w-fit shrink-0 rounded-full border border-brand-100 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-800">
+                    {workoutDay ? `${workoutDay}’s planned workout` : `${workoutMins}-minute session`}
+                </span>
             </div>
 
             {/* Step dots */}
@@ -260,12 +262,12 @@ export function PhysicalWorkout() {
                 ))}
             </div>
 
-            <div className="mt-6 grid grid-cols-1 lg:grid-cols-[minmax(0,1.45fr)_minmax(340px,1fr)] xl:grid-cols-[minmax(0,1.7fr)_minmax(380px,1fr)] gap-5 lg:gap-7 xl:gap-8 items-start">
-                <section className="min-w-0 rounded-3xl border border-black/[0.06] bg-white p-4 sm:p-5">
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-[minmax(0,2.1fr)_minmax(320px,0.9fr)] xl:grid-cols-[minmax(0,2.35fr)_minmax(340px,0.9fr)] gap-5 lg:gap-7 xl:gap-8 items-start">
+                <section className="min-w-0 rounded-3xl border border-black/[0.06] bg-white p-5 sm:p-6">
                     <div className="flex items-center justify-between gap-3">
                         <div>
-                            <h2 className="text-sm font-bold text-charcoal">Webcam movement view <span className="font-medium text-charcoal-muted">(optional)</span></h2>
-                            <p className="mt-1 text-xs text-charcoal-muted">See your live skeleton and estimated reps for supported moves. It does not judge your form; video stays in your browser and is never uploaded or saved.</p>
+                            <h2 className="text-lg font-extrabold text-charcoal">Webcam movement view <span className="ml-1 inline-flex rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 align-middle text-xs font-bold text-rose-700">optional</span></h2>
+                            <p className="mt-2 rounded-2xl border border-rose-100 bg-rose-50/70 p-3 text-xs leading-relaxed text-rose-700">See a live pose skeleton and estimated reps for supported movements. This view does not judge your form. Video stays in your browser and is not recorded, uploaded, or saved.</p>
                         </div>
                         <button
                             type="button"
@@ -279,7 +281,7 @@ export function PhysicalWorkout() {
                     {poseTracking ? (
                         <div className="mt-4"><PoseTracker exerciseName={step?.name || workoutTitle} /></div>
                     ) : (
-                        <div className="mt-4 flex min-h-56 items-center justify-center rounded-2xl bg-brand-50/70 px-6 text-center">
+                        <div className="mt-4 flex min-h-72 items-center justify-center rounded-2xl bg-brand-50/70 px-6 text-center">
                             <div>
                                 <CameraIcon size={28} className="mx-auto text-brand-400" />
                                 <p className="mt-3 text-sm font-semibold text-charcoal">Camera is off</p>
@@ -291,7 +293,7 @@ export function PhysicalWorkout() {
 
                 <section className="min-w-0">
                     <div className="flex justify-center py-2 sm:py-4">
-                        <ProgressRing value={pct} size={poseTracking ? 210 : 240} stroke={15}>
+                        <ProgressRing value={pct} size={poseTracking ? 180 : 200} stroke={13}>
                             <span className="text-5xl">{step?.emoji || '🏋️'}</span>
                             <span className="text-4xl font-extrabold text-charcoal tracking-tight tabular-nums mt-2">{fmt(left)}</span>
                         </ProgressRing>

@@ -292,7 +292,7 @@ export function PoseTracker({ exerciseName = '' }) {
 
     /* ── Render ──────────────────────────────────────────────────────────── */
     return (
-        <div className="rounded-3xl overflow-hidden bg-[#0d1117] relative" style={{ minHeight: 280 }}>
+        <div className="rounded-3xl overflow-hidden bg-[#0d1117] relative" style={{ minHeight: 340 }}>
 
             {/* Privacy notice strip */}
             <div className="flex items-center gap-1.5 px-4 py-2 bg-emerald-900/40 border-b border-emerald-700/30">
@@ -331,7 +331,7 @@ export function PoseTracker({ exerciseName = '' }) {
             )}
 
             {/* Webcam + canvas overlay */}
-            <div className="relative" style={{ aspectRatio: '4/3' }}>
+            <div className="relative" style={{ aspectRatio: '4/3', minHeight: 340 }}>
                 {/* Live video — mirrored for natural selfie view. NO controls, NO recording. */}
                 <video
                     ref={videoRef}
