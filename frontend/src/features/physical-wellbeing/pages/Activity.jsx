@@ -15,7 +15,7 @@ function localDateString(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
-export function ActivityTrackingPanel({ embedded = false }) {
+export function ActivityTrackingPanel({ embedded = false, view = 'all' }) {
   const [log, setLog] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -77,37 +77,34 @@ export function ActivityTrackingPanel({ embedded = false }) {
         <PhysicalNav />
       </>}
 
-      <div className="grid grid-cols-1 gap-4">
-        <Card padding="md">
-          <SectionTitle
-            title="Step count · past 7 days"
-            subtitle={
-              hasLoggedAnyHistory
-                ? `7-day daily average: ${avg.toLocaleString()} steps`
-                : activitySummary
-                  ? 'No step records saved for the past 7 days yet'
-                  : 'Loading your step history…'
-            }
-          />
+      {view !== 'form' && <Card padding="md" className="overflow-hidden border-brand-100 bg-gradient-to-br from-white via-white to-brand-50/40">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-brand-700">Last 7 days</p>
+            <h2 className="mt-1 text-lg font-extrabold tracking-tight text-charcoal">Step count</h2>
+            <p className="mt-1.5 text-sm text-charcoal-muted">
+              <span className="font-medium tabular-nums text-brand-700">{hasLoggedAnyHistory ? avg.toLocaleString() : '—'}</span>
+              <span> steps/day average</span>
+            </p>
+          </div>
+        </div>
 
-          {hasLoggedAnyHistory ? (
-            <BarChart data={chartData} height={150} unit=" steps" />
-          ) : (
-            <div className="h-[150px] flex flex-col items-center justify-center rounded-2xl bg-cream/60 border border-dashed border-black/10 text-center p-4">
-              <span className="text-3xl mb-2">📊</span>
-              <p className="text-sm font-bold text-charcoal">No step data yet</p>
-              <p className="text-xs text-charcoal-muted mt-1 max-w-sm">
-                Save today's step count to start your real 7-day history.
-              </p>
-            </div>
-          )}
-        </Card>
-      </div>
+        {hasLoggedAnyHistory ? (
+          <div className="mt-4 rounded-2xl border border-brand-100/70 bg-white/75 px-3 py-3 sm:px-5">
+            <BarChart data={chartData} height={160} unit=" steps" showValues thinBars />
+          </div>
+        ) : (
+          <div className="mt-4 flex min-h-28 flex-col items-center justify-center rounded-2xl border border-dashed border-brand-200 bg-white/70 px-4 text-center">
+            <p className="text-sm font-bold text-charcoal">No steps logged this week yet</p>
+            <p className="mt-1 text-xs text-charcoal-muted">Your chart and average will appear after step counts are saved.</p>
+          </div>
+        )}
+      </Card>}
 
-      <Card padding="md">
+      {view !== 'history' && <Card padding="md" className="border-brand-100">
         <SectionTitle
           title="Log today's steps"
-          subtitle="Enter the step count recorded by your phone or wearable."
+          subtitle="Enter the total shown in your phone's health app or wearable."
         />
         <form onSubmit={submit} className="grid sm:grid-cols-[1fr_auto] gap-3 items-end">
           <Field
@@ -123,7 +120,7 @@ export function ActivityTrackingPanel({ embedded = false }) {
             {saved ? 'Saved ✓' : saving ? 'Saving…' : 'Save Steps'}
           </Button>
         </form>
-      </Card>
+      </Card>}
 
     </div>
   );

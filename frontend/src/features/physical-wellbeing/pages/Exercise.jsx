@@ -67,7 +67,7 @@ export function PhysicalExercise() {
           <div className="p-6">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-50 px-3 py-1 rounded-full border border-brand-200">
-                Top AI Recommendation
+                Today's workout recommendation
               </span>
               {featured.adherence_probability && (
                 <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1">
@@ -89,10 +89,10 @@ export function PhysicalExercise() {
                 { icon: DumbbellIcon, l: 'Equipment', v: featured.equipment || 'Bodyweight' },
                 { icon: FlameIcon, l: 'Est. Burn', v: `${featured.calories_burned || 150} kcal` }
               ].map((s) => (
-                <div key={s.l} className="bg-cream rounded-2xl p-3 border border-black/[0.04]">
-                  <s.icon size={15} className="text-brand-500 mb-1" />
+                <div key={s.l} className="bg-brand-50 rounded-2xl p-3 border border-brand-100">
+                  <s.icon size={15} className="text-brand-600 mb-1" />
                   <p className="text-[11px] font-medium text-charcoal-muted">{s.l}</p>
-                  <p className="text-sm font-extrabold text-charcoal leading-tight mt-0.5">{s.v}</p>
+                  <p className="text-sm font-extrabold text-brand-800 leading-tight mt-0.5">{s.v}</p>
                 </div>
               ))}
             </div>
@@ -138,6 +138,8 @@ export function PhysicalExercise() {
               ))}
             </div>
           </Card>
+
+          <ActivityTrackingPanel embedded view="form" />
 
         </div>
       </div>
@@ -186,12 +188,8 @@ export function PhysicalExercise() {
         </div>
       )}
 
-      <section aria-label="Today's movement" className="space-y-4">
-        <div>
-          <h2 className="text-xl font-black text-charcoal">Today's movement</h2>
-          <p className="text-sm text-charcoal-muted mt-1">View your step history and log today's step count.</p>
-        </div>
-        <ActivityTrackingPanel embedded />
+      <section aria-label="Step count history">
+        <ActivityTrackingPanel embedded view="history" />
       </section>
 
     </div>
