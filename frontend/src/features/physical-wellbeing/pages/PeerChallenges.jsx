@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ArrowUpRightIcon, CheckIcon, CopyIcon, LinkIcon, PlusIcon, ShieldCheckIcon, Trash2Icon, UsersRoundIcon } from 'lucide-react';
-import { PageHeader } from '../../../shared/components/layout/PageHeader';
+import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { Field } from '../../../shared/components/ui/Field';
@@ -204,7 +204,7 @@ export function PeerChallenges() {
   return (
     <div className="min-h-screen bg-cover bg-center bg-fixed px-3 py-5 sm:px-6 sm:py-8" style={{ backgroundImage: "linear-gradient(rgba(239,246,235,.76), rgba(239,246,235,.82)), url('/img/jungle-quest-bg.png')" }}>
       <div className="mx-auto max-w-7xl space-y-6">
-      <PageHeader title="Squad Challenges" subtitle="Invite a friend, pick one small goal, and cheer each other on." />
+      <PhysicalMasterCard title="Squad Challenges" subtitle="Invite a friend, pick one small goal, and cheer each other on." eyebrow="Private friendly challenges" />
       <PhysicalNav />
       <PrivacyNote />
 

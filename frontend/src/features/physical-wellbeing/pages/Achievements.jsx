@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRightIcon, TrophyIcon, ShieldCheckIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { PhysicalNav } from '../components/PhysicalNav';
+import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { SectionTitle } from '../components/Shared';
 import { getProfile, getActivitySummary, getHabits } from '../api';
 import { cn } from '../../../shared/lib/cn';
@@ -116,9 +116,10 @@ export function PhysicalAchievements() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PhysicalMasterCard
         title="Student Achievements"
         subtitle={`${earnedCount} of ${badges.length} badges earned so far from real verified activity.`}
+        eyebrow="Milestones & motivation"
       />
 
       <PhysicalNav />

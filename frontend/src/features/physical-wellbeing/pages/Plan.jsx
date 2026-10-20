@@ -11,6 +11,7 @@ import { Button } from '../../../shared/components/ui/Button';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { PhysicalNav } from '../components/PhysicalNav';
 import { AdaptedChip } from '../components/Shared';
+import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { getWeekPlan, getWeekPlanHistory, getWeekPlanSnapshot, deleteWeekPlanSnapshot, updatePlanDuration, getPlanCheckins, savePlanCheckin, getProfile } from '../api';
 import { cn } from '../../../shared/lib/cn';
 import { RecommendationImage, mealImageFallbacks, exerciseImageFallback } from '../components/RecommendationImage';
@@ -22,19 +23,11 @@ const slotMeta = {
   snack: { title: 'Snacks & Hydration', emoji: '🍎', tint: 'bg-rose-50 text-rose-800 border-rose-200' }
 };
 
-const PLAN_HERO_SLIDES = [
-  { src: '/img/ChatGPT%20Image%20Sep%2024,%202026,%2009_33_26%20AM%20(1).png', label: 'Campus walk', accent: '#7dd3fc' },
-  { src: '/img/ChatGPT%20Image%20Sep%2024,%202026,%2009_33_29%20AM%20(2).png', label: 'Study break', accent: '#fcd34d' },
-  { src: '/img/ChatGPT%20Image%20Sep%2024,%202026,%2009_33_31%20AM%20(3).png', label: 'Mindful rest', accent: '#c4b5fd' },
-  { src: '/img/ChatGPT%20Image%20Sep%2024,%202026,%2009_33_35%20AM%20(4).png', label: 'Move together', accent: '#fda4af' },
-];
-
 export function PhysicalPlan() {
   const navigate = useNavigate();
 
   // Mode and view state
   const [activeTab, setActiveTab] = useState('week'); // 'week' | 'today'
-  const [heroSlideIdx, setHeroSlideIdx] = useState(0);
   const [daysCount, setDaysCount] = useState(7); // customizable 1–31 day plan length
   const [daysDraft, setDaysDraft] = useState('7');
   const [durationPreferenceLoaded, setDurationPreferenceLoaded] = useState(false);
@@ -79,13 +72,6 @@ export function PhysicalPlan() {
     }),
   ];
   const selectedHistoryRecords = historyDateGroups[selectedHistoryDate] || [];
-
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      setHeroSlideIdx((index) => (index + 1) % PLAN_HERO_SLIDES.length);
-    }, 3500);
-    return () => window.clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     let active = true;
@@ -274,79 +260,32 @@ export function PhysicalPlan() {
 
   return (
     <div className="space-y-6">
-      <section className="relative isolate min-h-[285px] overflow-hidden rounded-[1.75rem] bg-slate-950 px-4 py-5 text-white shadow-lg sm:px-6 sm:py-6">
-        <div className="pointer-events-none absolute inset-0 z-0">
-          {PLAN_HERO_SLIDES.map((slide, index) => (
-            <motion.div
-              key={slide.src}
-              className="absolute inset-0"
-              style={{ zIndex: index === heroSlideIdx ? 2 : 1 }}
-              animate={{ opacity: index === heroSlideIdx ? 1 : 0 }}
-              transition={{ duration: 0.7, ease: 'easeInOut' }}
-            >
-              <img src={slide.src} alt="" aria-hidden="true" className="h-full w-full object-cover object-center" loading={index === 0 ? 'eager' : 'lazy'} />
-            </motion.div>
-          ))}
-        </div>
-        <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-slate-950/90 via-slate-950/65 to-slate-950/30" />
-        <div className="relative z-20 flex min-h-[237px] flex-col justify-between gap-5 xl:flex-row xl:items-center">
-          <div className="max-w-2xl">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold text-slate-100">
-              <SparklesIcon size={14} className="text-amber-300" /> Your adaptive wellbeing plan
-            </div>
-            <h1 className="text-2xl font-black tracking-tight sm:text-3xl">A plan that fits you.</h1>
-            <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-slate-100/80">Your assessment shapes your goals, schedule, food preferences, and safe movement. Update your preferences anytime to reshape the plan.</p>
+      <PhysicalMasterCard
+        eyebrow="Your adaptive wellbeing plan"
+        title="A plan that fits you."
+        subtitle="Your assessment shapes your goals, schedule, food preferences, and safe movement. Update your preferences anytime to reshape the plan."
+        actions={(
+          <>
             {userPrefs.physical_limitations && userPrefs.physical_limitations !== 'none' && (
-              <span className="mt-4 inline-flex rounded-full border border-amber-200/30 bg-amber-300/15 px-3 py-1.5 text-xs font-semibold text-amber-50">
-                🦵 Safety: <strong className="ml-1">{userPrefs.physical_limitations} protected</strong>
-              </span>
+              <span className="inline-flex rounded-full border border-amber-200/30 bg-amber-300/15 px-3 py-1.5 text-xs font-semibold text-amber-50">🦵 Safety: <strong className="ml-1">{userPrefs.physical_limitations} protected</strong></span>
             )}
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-left backdrop-blur-sm">
-                <SparklesIcon size={15} className="shrink-0 text-amber-300" />
-                <span>
-                  <strong className="block text-xs font-extrabold text-white">{planData?.context_aware ? 'Adaptive plan' : 'Baseline plan'}</strong>
-                  <span className="block text-[10px] font-medium text-slate-100/75">{planData?.context_aware ? 'Adjusted to your profile and recent check-ins' : 'Profile-based suggestions'}</span>
-                </span>
-              </span>
-              <button
-                type="button"
-                onClick={() => setIsExamPeriod(!isExamPeriod)}
-                disabled={viewingSavedPlan}
-                className={cn('inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-extrabold transition-all disabled:cursor-not-allowed disabled:opacity-50', isExamPeriod ? 'border-amber-300 bg-amber-300 text-amber-950 shadow-sm' : 'border-white/15 bg-white/10 text-white hover:bg-white/20')}
-              >
-                <span>📚</span> Exam week {isExamPeriod ? 'on' : 'off'}
-              </button>
-            </div>
-            <div className="mt-4 flex items-center gap-1.5" aria-label="Plan card images">
-              {PLAN_HERO_SLIDES.map((slide, index) => (
-                <button key={slide.label} type="button" onClick={() => setHeroSlideIdx(index)} aria-label={`Show ${slide.label} image`} className="transition-all duration-300">
-                  <span className="block h-1.5 rounded-full transition-all duration-300" style={{ width: index === heroSlideIdx ? 20 : 6, backgroundColor: index === heroSlideIdx ? slide.accent : 'rgba(255,255,255,0.45)' }} />
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="w-full shrink-0 space-y-3 xl:w-[410px]">
-            <div className="rounded-2xl border border-white/15 bg-white/10 p-3.5 backdrop-blur-sm">
-              <p className="mb-2.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-100/75">Plan uses</p>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                <div className="rounded-xl border border-white/10 bg-black/10 px-3 py-2">
-                  <p className="text-[10px] font-semibold text-slate-100/70">🥗 Diet</p>
-                  <p className="mt-0.5 text-sm font-extrabold capitalize text-white">{userPrefs.diet_pref || 'Any'}</p>
-                </div>
-                <div className="rounded-xl border border-white/10 bg-black/10 px-3 py-2">
-                  <p className="text-[10px] font-semibold text-slate-100/70">🍛 Cuisine</p>
-                  <p className="mt-0.5 text-sm font-extrabold capitalize text-white">{String(userPrefs.meal_style || 'Both').replace('_', ' ')}</p>
-                </div>
-                <div className="rounded-xl border border-white/10 bg-black/10 px-3 py-2">
-                  <p className="text-[10px] font-semibold text-slate-100/70">⏱️ Workout window</p>
-                  <p className="mt-0.5 whitespace-nowrap text-sm font-extrabold text-white">{planData?.effective_available_minutes || userPrefs.available_minutes || 20} mins</p>
-                </div>
-              </div>
-            </div>
+            <span className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-left backdrop-blur-sm">
+              <SparklesIcon size={15} className="shrink-0 text-amber-300" />
+              <span><strong className="block text-xs font-extrabold text-white">{planData?.context_aware ? 'Adaptive plan' : 'Baseline plan'}</strong><span className="block text-[10px] font-medium text-slate-100/75">{planData?.context_aware ? 'Adjusted to your profile and recent check-ins' : 'Profile-based suggestions'}</span></span>
+            </span>
+            <button type="button" onClick={() => setIsExamPeriod(!isExamPeriod)} disabled={viewingSavedPlan} className={cn('inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-extrabold transition-all disabled:cursor-not-allowed disabled:opacity-50', isExamPeriod ? 'border-amber-300 bg-amber-300 text-amber-950 shadow-sm' : 'border-white/15 bg-white/10 text-white hover:bg-white/20')}><span>📚</span> Exam week {isExamPeriod ? 'on' : 'off'}</button>
+          </>
+        )}
+      >
+        <div className="rounded-2xl border border-white/15 bg-white/10 p-3.5 backdrop-blur-sm">
+          <p className="mb-2.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-100/75">Plan uses</p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="rounded-xl border border-white/10 bg-black/10 px-3 py-2"><p className="text-[10px] font-semibold text-slate-100/70">🥗 Diet</p><p className="mt-0.5 text-sm font-extrabold capitalize text-white">{userPrefs.diet_pref || 'Any'}</p></div>
+            <div className="rounded-xl border border-white/10 bg-black/10 px-3 py-2"><p className="text-[10px] font-semibold text-slate-100/70">🍛 Cuisine</p><p className="mt-0.5 text-sm font-extrabold capitalize text-white">{String(userPrefs.meal_style || 'Both').replace('_', ' ')}</p></div>
+            <div className="rounded-xl border border-white/10 bg-black/10 px-3 py-2"><p className="text-[10px] font-semibold text-slate-100/70">⏱️ Workout window</p><p className="mt-0.5 whitespace-nowrap text-sm font-extrabold text-white">{planData?.effective_available_minutes || userPrefs.available_minutes || 20} mins</p></div>
           </div>
         </div>
-      </section>
+      </PhysicalMasterCard>
 
       <div className="flex flex-col gap-3 rounded-3xl border border-black/[0.06] bg-white p-3 shadow-sm lg:flex-row lg:flex-wrap lg:items-center">
         <div className="flex flex-nowrap items-center gap-2 self-start rounded-2xl bg-cream p-2">

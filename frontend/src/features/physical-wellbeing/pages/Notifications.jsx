@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { ToggleRow } from '../../../shared/components/ui/SettingsRow';
 import { PhysicalNav } from '../components/PhysicalNav';
+import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { SectionTitle } from '../components/Shared';
 import { wellbeingNotifications } from '../data';
 import { cn } from '../../../shared/lib/cn';
@@ -15,7 +15,7 @@ const toneStyles = {
 };
 export function PhysicalNotifications() {
     return (<div className="space-y-6">
-      <PageHeader title="Notifications" subtitle="Only what’s useful — we keep these deliberately few."/>
+      <PhysicalMasterCard title="Notifications" subtitle="Only what’s useful — we keep these deliberately few." eyebrow="Gentle reminders" />
 
       <PhysicalNav />
 

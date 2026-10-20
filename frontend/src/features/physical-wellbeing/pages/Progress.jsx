@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUpIcon, ArrowRightIcon, CalendarIcon } from 'lucide-react';
-import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { ProgressRing } from '../../../shared/components/ui/ProgressRing';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { BarChart, LineChart } from '../../../shared/components/charts/Charts';
 import { PhysicalNav } from '../components/PhysicalNav';
+import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { AIInsightCard } from '../../../shared/components/domain/AIInsightCard';
 import { SectionTitle } from '../components/Shared';
 import { getActivitySummary, getProfile, getHabits } from '../api';
@@ -73,26 +73,25 @@ export function PhysicalProgress() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <PageHeader
-          title="Student Progress & Trends"
-          subtitle="Real-world physical activity, weekly volume, and goal alignment without synthetic inflation."
-        />
-        <div className="flex bg-white rounded-full p-1 border border-black/[0.05] shadow-soft self-start shrink-0">
+      <PhysicalMasterCard
+        title="Student Progress & Trends"
+        subtitle="Real-world physical activity, weekly volume, and goal alignment without synthetic inflation."
+        eyebrow="Your progress"
+        actions={<div className="flex rounded-full border border-white/20 bg-slate-950/35 p-1 backdrop-blur-sm">
           {['Steps', 'Exercise Minutes'].map((t) => (
             <button
               key={t}
               onClick={() => setMetricTab(t)}
               className={cn(
                 'px-4 py-1.5 rounded-full text-xs font-bold transition-colors',
-                metricTab === t ? 'bg-brand-500 text-white' : 'text-charcoal-light hover:text-charcoal'
+                metricTab === t ? 'bg-white text-slate-900' : 'text-white/80 hover:text-white'
               )}
             >
               {t}
             </button>
           ))}
-        </div>
-      </div>
+        </div>}
+      />
 
       <PhysicalNav />
 

@@ -18,14 +18,16 @@ import { getRecommendations, getProfile, getActivitySummary, getHabits, saveWork
 export function PhysicalHome() {
   const navigate = useNavigate();
   const student = useStudent();
-  const buddyGender = localStorage.getItem(`wellbeing-buddy-gender:${student?.email || 'guest'}`) || 'Male';
-  const buddyImage = buddyGender.toLowerCase() === 'female'
+  const [profile, setProfile] = useState(null);
+  const buddyGender = profile?.assessment_data?.gender
+    || localStorage.getItem(`wellbeing-buddy-gender:${student?.email || 'guest'}`)
+    || 'Male';
+  const buddyImage = String(buddyGender).trim().toLowerCase() === 'female'
     ? '/img/wellbeing-buddy-female.png'
     : '/img/wellbeing-buddy-male.png';
   const checkInKey = `wellbeing-buddy-checkin:${student?.email || 'guest'}:${new Date().toLocaleDateString('en-CA')}`;
 
   const [recomData, setRecomData] = useState(null);
-  const [profile, setProfile] = useState(null);
   const [activitySummary, setActivitySummary] = useState(null);
   const [habits, setHabits] = useState([]);
   const [loading, setLoading] = useState(true);

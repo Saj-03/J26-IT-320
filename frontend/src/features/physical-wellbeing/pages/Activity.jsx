@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { BarChart } from '../../../shared/components/charts/Charts';
 import { PhysicalNav } from '../components/PhysicalNav';
+import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { AIInsightCard } from '../../../shared/components/domain/AIInsightCard';
 import { SectionTitle, ChoiceChip } from '../components/Shared';
 import { Field } from '../../../shared/components/ui/Field';
@@ -19,14 +19,13 @@ function localDateString(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
-export function PhysicalActivity() {
+export function ActivityTrackingPanel({ embedded = false }) {
   const [metric, setMetric] = useState('Steps');
   const [log, setLog] = useState({ steps: '', exercise_minutes: '' });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [activitySummary, setActivitySummary] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   const fetchSummary = async () => {
     try {
@@ -38,8 +37,6 @@ export function PhysicalActivity() {
       setProfile(prof);
     } catch (e) {
       console.error(e);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -123,19 +120,21 @@ export function PhysicalActivity() {
   ];
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Physical Activity"
-        subtitle="Real-time daily tracking and 7-day trends connected to your adaptive plan."
-      />
-
-      <PhysicalNav />
+    <div className={embedded ? 'space-y-5' : 'space-y-6'}>
+      {!embedded && <>
+        <PhysicalMasterCard
+          title="Movement"
+          subtitle="Your workouts, daily steps, and movement progress in one place."
+          eyebrow="Exercise & activity"
+        />
+        <PhysicalNav />
+      </>}
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Today */}
         <Card padding="lg" className="lg:col-span-1">
           <SectionTitle
-            title="Today's Activity"
+            title="Today's movement"
             subtitle={
               todaySteps === 0 && todayMins === 0
                 ? 'No activity logged yet today'
@@ -177,7 +176,7 @@ export function PhysicalActivity() {
         {/* Weekly chart */}
         <Card padding="lg" className="lg:col-span-2">
           <SectionTitle
-            title="Past 7 Days History"
+            title="Movement over the past 7 days"
             subtitle={
               hasLoggedAnyHistory
                 ? `Daily Average: ${avg.toLocaleString()} ${metric === 'Steps' ? 'steps' : 'minutes'}`

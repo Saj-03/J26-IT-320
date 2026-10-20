@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PencilIcon, RotateCwIcon, ChevronRightIcon } from 'lucide-react';
-import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { Avatar } from '../../../shared/components/ui/Avatar';
 import { PhysicalNav } from '../components/PhysicalNav';
+import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { MedicalDisclaimer } from '../components/Shared';
 import { getProfile } from '../api';
 import useStudent from '../../../shared/hooks/useStudent';
@@ -125,9 +125,7 @@ export function PhysicalProfile() {
     }, 1600);
   };
   return (<div className="space-y-6">
-    <PageHeader title="My Wellbeing Profile" subtitle="Everything the AI uses to build your plan — fully editable." action={<Button variant="outline" onClick={() => navigate('/physical-setup/assessment')}>
-      <PencilIcon size={15} /> Edit Preferences
-    </Button>} />
+    <PhysicalMasterCard title="My Wellbeing Profile" subtitle="Everything the AI uses to build your plan — fully editable." eyebrow="Your profile" actions={<Button variant="outline" className="border-white/30 bg-white/90 text-slate-900 hover:bg-white" onClick={() => navigate('/physical-setup/assessment')}><PencilIcon size={15} /> Edit Preferences</Button>} />
 
     <PhysicalNav />
 

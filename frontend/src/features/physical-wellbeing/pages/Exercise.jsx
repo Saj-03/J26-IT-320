@@ -3,16 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ClockIcon, GaugeIcon, DumbbellIcon, FlameIcon, PlayIcon,
-  BookmarkIcon, ShuffleIcon, ShieldCheckIcon, AlertTriangleIcon
+  ShieldCheckIcon, AlertTriangleIcon
 } from 'lucide-react';
-import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { PhysicalNav } from '../components/PhysicalNav';
+import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { AIInsightCard } from '../../../shared/components/domain/AIInsightCard';
 import { SectionTitle, AdaptedChip } from '../components/Shared';
 import { getRecommendations, getProfile } from '../api';
 import { RecommendationImage, exerciseImageFallback } from '../components/RecommendationImage';
+import { ActivityTrackingPanel } from './Activity';
 
 export function PhysicalExercise() {
   const navigate = useNavigate();
@@ -46,9 +47,10 @@ export function PhysicalExercise() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Personalized Exercise & Workouts"
-        subtitle="Workouts calibrated to your available time, physical limitations, and fitness goals."
+      <PhysicalMasterCard
+        title="Movement"
+        subtitle="Your personalized workout is the focus, with daily steps and activity alongside it."
+        eyebrow="Exercise & activity"
       />
 
       <PhysicalNav />
@@ -131,6 +133,7 @@ export function PhysicalExercise() {
               ))}
             </div>
           </Card>
+
         </div>
       </div>
 
@@ -177,6 +180,17 @@ export function PhysicalExercise() {
           </div>
         </div>
       )}
+
+      <section aria-label="Daily movement tracking" className="space-y-4">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-brand-600">Daily movement</p>
+            <h2 className="text-xl font-black text-charcoal">Steps and activity</h2>
+          </div>
+          <p className="text-sm text-charcoal-muted">Log steps from your phone and see your weekly movement trend.</p>
+        </div>
+        <ActivityTrackingPanel embedded />
+      </section>
     </div>
   );
 }

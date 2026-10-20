@@ -174,6 +174,7 @@ export function PhysicalAssessment() {
     getProfile().then((profile) => {
       if (profile.assessment_data && Object.keys(profile.assessment_data).length) {
         setState({ ...initialAssessment, ...profile.assessment_data });
+        if (profile.assessment_data.gender) localStorage.setItem(genderKey, profile.assessment_data.gender);
         localStorage.setItem(assessmentKey, JSON.stringify(profile.assessment_data));
         localStorage.setItem(savedAssessmentKey, 'true');
         return;

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusIcon, CheckIcon, XIcon, FlameIcon, Trash2Icon, SparklesIcon } from 'lucide-react';
-import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { Field } from '../../../shared/components/ui/Field';
 import { PhysicalNav } from '../components/PhysicalNav';
+import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { cn } from '../../../shared/lib/cn';
 import { getHabits, addHabit, habitDone, deleteHabit } from '../api';
 
@@ -103,15 +103,12 @@ export function PhysicalHabits() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <PageHeader
-          title="Healthy Habits"
-          subtitle="Real daily student habits that train discipline, energy, and mental focus."
-        />
-        <Button onClick={() => setOpen(true)} className="self-start shrink-0">
-          <PlusIcon size={16} /> Add Custom Habit
-        </Button>
-      </div>
+      <PhysicalMasterCard
+        title="Healthy Habits"
+        subtitle="Real daily student habits that train discipline, energy, and mental focus."
+        eyebrow="Everyday routines"
+        actions={<Button onClick={() => setOpen(true)}><PlusIcon size={16} /> Add Custom Habit</Button>}
+      />
 
       <PhysicalNav />
 

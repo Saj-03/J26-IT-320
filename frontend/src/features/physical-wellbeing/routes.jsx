@@ -1,10 +1,9 @@
-import { Route } from "react-router-dom";
+import { Navigate, Route } from "react-router-dom";
 import { PhysicalHome } from "./pages/Home";
 import { PhysicalPlan } from "./pages/Plan";
 import { PhysicalExercise } from "./pages/Exercise";
 import { PhysicalWorkout } from "./pages/Workout";
 import { PhysicalNutrition } from "./pages/Nutrition";
-import { PhysicalActivity } from "./pages/Activity";
 import { PhysicalHabits } from "./pages/Habits";
 import { PhysicalAchievements } from "./pages/Achievements";
 import { PhysicalAdaptation } from "./pages/Adaptation";
@@ -28,7 +27,7 @@ export default function physicalRoutes() {
       <Route path="physical/exercise" element={<PhysicalExercise />} />
       <Route path="physical/workout" element={<PhysicalWorkout />} />
       <Route path="physical/nutrition" element={<PhysicalNutrition />} />
-      <Route path="physical/activity" element={<PhysicalActivity />} />
+      <Route path="physical/activity" element={<Navigate to="/app/physical/exercise" replace />} />
       <Route path="physical/habits" element={<PhysicalHabits />} />
       <Route path="physical/achievements" element={<PhysicalAchievements />} />
       <Route path="physical/challenges" element={<PeerChallenges />} />

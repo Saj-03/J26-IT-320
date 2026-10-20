@@ -4,9 +4,8 @@ import { cn } from '../../../shared/lib/cn';
 const items = [
     { to: '/app/physical', label: 'Overview', end: true },
     { to: '/app/physical/plan', label: 'Today’s Plan' },
-    { to: '/app/physical/exercise', label: 'Exercise' },
+    { to: '/app/physical/exercise', label: 'Movement' },
     { to: '/app/physical/nutrition', label: 'Nutrition' },
-    { to: '/app/physical/activity', label: 'Activity' },
     { to: '/app/physical/habits', label: 'Habits' },
     { to: '/app/physical/achievements', label: 'Achievements' },
     { to: '/app/physical/challenges', label: 'Squad Challenges' },

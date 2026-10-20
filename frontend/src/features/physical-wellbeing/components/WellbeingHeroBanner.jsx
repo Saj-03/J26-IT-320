@@ -1,42 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HeartPulseIcon, ZapIcon, LeafIcon, FlameIcon } from 'lucide-react';
-
-/*
- * Images rotate every 1.5 s.
- * Local images are served from /public/img/ 
- * Unsplash fallback URLs for stretching & running.
- */
-export const WELLBEING_HERO_SLIDES = [
-    {
-        src: '/img/pw_workout.png',
-        label: 'Workout',
-        emoji: '💪',
-        tagline: 'Sweat it out!',
-        accent: '#16a34a',
-    },
-    {
-        src: '/img/pw_meal.png',
-        label: 'Healthy Meal',
-        emoji: '🥗',
-        tagline: 'Fuel your body!',
-        accent: '#f59e0b',
-    },
-    {
-        src: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=900&q=80',
-        label: 'Stretching',
-        emoji: '🧘',
-        tagline: 'Stay flexible!',
-        accent: '#6366f1',
-    },
-    {
-        src: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=900&q=80',
-        label: 'Running',
-        emoji: '🏃',
-        tagline: 'Keep moving!',
-        accent: '#ec4899',
-    },
-];
+import { HeartPulseIcon } from 'lucide-react';
+import { PHYSICAL_MASTER_SLIDES } from './PhysicalMasterCard';
 
 const MOTIVATIONS = [
     "You're doing amazing — keep that energy going! 🚀",
@@ -51,15 +16,15 @@ function ActivePulse({ isActive }) {
     return (
         <span className="flex items-center gap-1.5">
             <span
-                className={`relative inline-flex h-2.5 w-2.5 rounded-full ${isActive ? 'bg-emerald-400' : 'bg-slate-400'
+                className={`relative inline-flex h-2.5 w-2.5 rounded-full ${isActive ? 'bg-sky-300' : 'bg-slate-400'
                     }`}
             >
                 {isActive && (
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 animate-ping opacity-75" />
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-sky-300 animate-ping opacity-75" />
                 )}
             </span>
             <span
-                className={`text-xs font-bold uppercase tracking-widest ${isActive ? 'text-emerald-600' : 'text-slate-500'
+                className={`text-xs font-bold uppercase tracking-widest ${isActive ? 'text-sky-200' : 'text-slate-300'
                     }`}
             >
                 {isActive ? 'Active' : 'Inactive'}
@@ -76,7 +41,7 @@ export function WellbeingHeroBanner({ studentName = 'Student', isActive = false,
     /* Cycle images every 1.5 s */
     useEffect(() => {
         intervalRef.current = setInterval(() => {
-            setSlideIdx((i) => (i + 1) % WELLBEING_HERO_SLIDES.length);
+            setSlideIdx((i) => (i + 1) % PHYSICAL_MASTER_SLIDES.length);
         }, 3500);
         return () => clearInterval(intervalRef.current);
     }, []);
@@ -89,7 +54,7 @@ export function WellbeingHeroBanner({ studentName = 'Student', isActive = false,
         return () => clearInterval(ref);
     }, []);
 
-    const slide = WELLBEING_HERO_SLIDES[slideIdx];
+    const slide = PHYSICAL_MASTER_SLIDES[slideIdx];
 
     const hour = new Date().getHours();
     const greeting =
@@ -101,7 +66,7 @@ export function WellbeingHeroBanner({ studentName = 'Student', isActive = false,
             style={{ minHeight: 220 }}
         >
             {/* Stacked crossfade — all images always in DOM, active one fades in on top */}
-            {WELLBEING_HERO_SLIDES.map((s, i) => (
+            {PHYSICAL_MASTER_SLIDES.map((s, i) => (
                 <motion.div
                     key={s.src}
                     className="absolute inset-0"
@@ -116,7 +81,7 @@ export function WellbeingHeroBanner({ studentName = 'Student', isActive = false,
                         loading={i === 0 ? 'eager' : 'lazy'}
                     />
                     {/* dark gradient so text stays readable regardless of image */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#0d1a2d]/85 via-[#0d1a2d]/55 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/65 to-slate-950/30" />
                 </motion.div>
             ))}
 
@@ -183,7 +148,7 @@ export function WellbeingHeroBanner({ studentName = 'Student', isActive = false,
 
                     {/* Slide dot indicators */}
                     <div className="mt-4 flex items-center gap-1.5">
-                        {WELLBEING_HERO_SLIDES.map((s, i) => (
+                        {PHYSICAL_MASTER_SLIDES.map((s, i) => (
                             <button
                                 key={s.label}
                                 onClick={() => setSlideIdx(i)}

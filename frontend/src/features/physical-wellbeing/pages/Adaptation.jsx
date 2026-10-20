@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ActivityIcon, ArrowRightIcon, CheckCircle2Icon, Clock3Icon, RotateCwIcon, SlidersHorizontalIcon, SparklesIcon } from 'lucide-react';
-import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { PhysicalNav } from '../components/PhysicalNav';
+import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { AdaptiveLoop } from '../components/AdaptiveLoop';
 import { SectionTitle } from '../components/Shared';
 import { getActivitySummary, getHabits, getProfile, getRecommendations } from '../api';
@@ -89,7 +89,7 @@ export function PhysicalAdaptation() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Plan Adaptation" subtitle="See how your saved preferences and recent check-ins shape your current recommendations." />
+      <PhysicalMasterCard title="Plan Adaptation" subtitle="See how your saved preferences and recent check-ins shape your current recommendations." eyebrow="How your plan adapts" />
       <PhysicalNav />
 
       {loading ? (

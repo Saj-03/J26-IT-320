@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusIcon, ShuffleIcon, CheckIcon, UtensilsIcon, SparklesIcon } from 'lucide-react';
-import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { PhysicalNav } from '../components/PhysicalNav';
+import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { AIInsightCard } from '../../../shared/components/domain/AIInsightCard';
 import { SectionTitle, AdaptedChip, ChoiceChip } from '../components/Shared';
 import { RecommendationImage, mealImageFallbacks } from '../components/RecommendationImage';
@@ -55,9 +55,10 @@ export function PhysicalNutrition() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PhysicalMasterCard
         title="Student Nutrition & Meal Plans"
         subtitle="Healthy Sri Lankan and international meals tailored to your diet, study schedule, and available prep time."
+        eyebrow="Food & nourishment"
       />
 
       <PhysicalNav />
