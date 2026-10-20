@@ -356,8 +356,22 @@ CURATED_MEALS = [
 
 
 # ── Curated Exercise Catalog (Time & Goal Tailored) ──────────────────────────
-# Structured routines strictly calibrated to student available minutes (15, 20, 30, 45, 60 mins).
+# Structured routines calibrated to student available minutes (10, 15, 20, 30, 45, 60 mins).
 CURATED_EXERCISES = [
+    {
+        "id": "ex_10_gentle_mobility",
+        "name": "10-Min Gentle Mobility Reset",
+        "duration_mins": 10,
+        "intensity": "Light",
+        "intensity_level": 1,
+        "equipment": "Bodyweight / Home",
+        "primary_goal": "mobility",
+        "target_goals": ["mobility", "stress_relief", "fitness"],
+        "knee_safe": True,
+        "back_safe": True,
+        "calories_per_kg_hr": 2.5,
+        "description": "A low-impact reset with gentle shoulder rolls, supported side reaches, easy arm mobility, and relaxed breathing. Move only in a comfortable range."
+    },
     # ── 15-MINUTE ROUTINES (For time-crunched students & high stress periods) ──
     {
         "id": "ex_15_walk",

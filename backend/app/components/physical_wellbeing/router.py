@@ -513,9 +513,9 @@ def recommendations(is_exam_period: bool = False, use_baseline: bool = False, db
     profile_dict = _attach_plan_history(db, user.id, _attach_behavior_history(db, user.id, _profile_to_dict(p)))
 
     if use_baseline:
-        res = recommender.get_baseline_recommendations(profile_dict)
+        res = recommender.get_baseline_recommendations(profile_dict, k=10)
     else:
-        res = recommender.get_adaptive_recommendations(profile_dict, is_exam_period=is_exam_period)
+        res = recommender.get_adaptive_recommendations(profile_dict, is_exam_period=is_exam_period, k=10)
 
     formatted_exercises = []
     for w in res.get("recommended_workouts", []):
@@ -828,7 +828,7 @@ def log_activity(data: schemas.ActivityIn, db: Session = Depends(get_db), user=D
     today = data.day
     existing = db.query(ActivityLog).filter_by(user_id=user.id, day=today).first()
     if existing:
-        existing.steps += data.steps
+        existing.steps = data.steps
         existing.exercise_minutes += data.exercise_minutes
         if data.completed_recommendation:
             existing.completed_recommendation = True

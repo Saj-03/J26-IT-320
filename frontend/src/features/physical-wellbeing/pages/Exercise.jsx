@@ -43,7 +43,12 @@ export function PhysicalExercise() {
     description: 'Balanced circuit: push-ups, bodyweight romanian deadlifts, wall sits, plank taps, and march-in-place.'
   };
 
-  const alternatives = workouts.slice(1);
+  const workoutMinutes = (workout) => Number(workout?.minutes || workout?.duration_mins || 20);
+  const shorterAlternative = workouts.find((workout) => workout !== featured && workoutMinutes(workout) < workoutMinutes(featured));
+  const alternatives = [...new Set([
+    shorterAlternative,
+    ...workouts.filter((workout) => workout !== featured && workout !== shorterAlternative)
+  ])].filter(Boolean).slice(0, 3);
 
   return (
     <div className="space-y-6">
@@ -142,7 +147,7 @@ export function PhysicalExercise() {
         <div>
           <SectionTitle
             title="Alternative Daily Workouts"
-            subtitle="Other routines matching your available time constraint."
+            subtitle={shorterAlternative ? 'Try a different routine, including an option that takes less time.' : 'Other routines matched to your available time.'}
             action={<AdaptedChip>Safe for your profile</AdaptedChip>}
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -182,11 +187,11 @@ export function PhysicalExercise() {
       )}
 
       <section aria-label="Today's movement" className="space-y-4">
-        <div className="flex flex-col gap-1">
+        <div>
           <h2 className="text-xl font-black text-charcoal">Today's movement</h2>
-          <p className="text-sm text-charcoal-muted">Log steps from your phone and see your weekly movement trend.</p>
+          <p className="text-sm text-charcoal-muted mt-1">View your step history and log today's step count.</p>
         </div>
-        <ActivityTrackingPanel embedded hideSummary />
+        <ActivityTrackingPanel embedded />
       </section>
 
     </div>
