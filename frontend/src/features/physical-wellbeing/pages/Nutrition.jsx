@@ -175,7 +175,7 @@ export function PhysicalNutrition() {
                 <Button size="md" variant={isFavorite(featuredMeal) ? 'secondary' : 'outline'} disabled={savingMeal} aria-label={isFavorite(featuredMeal) ? `Remove ${featuredMeal.name} from favorites` : `Favorite ${featuredMeal.name}`} title={isFavorite(featuredMeal) ? 'Remove from favorites' : 'Add to favorites'} onClick={() => toggleFavorite(featuredMeal)}>
                   <HeartIcon size={18} fill={isFavorite(featuredMeal) ? 'currentColor' : 'none'} />
                 </Button>
-                <Button size="sm" variant={eatenSlots.includes(eatenCode) ? 'secondary' : 'primary'} disabled={savingMeal} onClick={() => toggleEaten(featuredMeal)}>
+                <Button size="md" variant={eatenSlots.includes(eatenCode) ? 'secondary' : 'primary'} disabled={savingMeal} onClick={() => toggleEaten(featuredMeal)}>
                   {eatenSlots.includes(eatenCode) ? 'Eaten today' : 'Mark as eaten'}
                 </Button>
               </div>

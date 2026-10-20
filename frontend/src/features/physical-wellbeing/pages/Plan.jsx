@@ -12,7 +12,7 @@ import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { PhysicalNav } from '../components/PhysicalNav';
 import { AdaptedChip } from '../components/Shared';
 import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
-import { getWeekPlan, getWeekPlanHistory, getWeekPlanSnapshot, deleteWeekPlanSnapshot, updatePlanDuration, getPlanCheckins, savePlanCheckin, getProfile } from '../api';
+import { getWeekPlan, getWeekPlanHistory, getWeekPlanSnapshot, deleteWeekPlanSnapshot, updatePlanDuration, getPlanCheckins, savePlanCheckin, getHabits, habitDone, getProfile } from '../api';
 import { cn } from '../../../shared/lib/cn';
 import { RecommendationImage, mealImageFallbacks, exerciseImageFallback } from '../components/RecommendationImage';
 
@@ -57,6 +57,10 @@ export function PhysicalPlan() {
   const [statuses, setStatuses] = useState({});
   const [water, setWater] = useState(0);
   const [savedPlanProgress, setSavedPlanProgress] = useState(null);
+  const [todayHabits, setTodayHabits] = useState([]);
+  const [habitsLoading, setHabitsLoading] = useState(false);
+  const [savingHabitId, setSavingHabitId] = useState('');
+  const [habitSaveError, setHabitSaveError] = useState('');
   const [progressSaveError, setProgressSaveError] = useState('');
 
   const historyDateGroups = historyRecords.reduce((groups, record) => {
@@ -236,7 +240,50 @@ export function PhysicalPlan() {
   const currentDay = planData?.days?.[selectedDayIdx] || planData?.days?.[0];
   const currentMeals = currentDay?.meals || {};
   const userPrefs = planData?.user_preferences || userProfile || {};
-  const todayProgress = Object.values(statuses).filter((status) => status === 'done').length + (water >= 8 ? 1 : 0);
+  const completedHabitCount = todayHabits.filter((habit) => habit.done).length;
+  const dailyActionCount = 5 + todayHabits.length;
+  const todayProgress = Object.values(statuses).filter((status) => status === 'done').length + (water >= 8 ? 1 : 0) + completedHabitCount;
+
+  useEffect(() => {
+    if (activeTab !== 'today' || viewingSavedPlan) return undefined;
+    let active = true;
+    setHabitsLoading(true);
+    setHabitSaveError('');
+    getHabits().then((items) => {
+      if (active) setTodayHabits(Array.isArray(items) ? items : []);
+    }).catch(() => {
+      if (active) setHabitSaveError('Could not load today’s habits. Open Habits to try again.');
+    }).finally(() => {
+      if (active) setHabitsLoading(false);
+    });
+    return () => { active = false; };
+  }, [activeTab, viewingSavedPlan]);
+
+  const completeHabitToday = async (habit) => {
+    if (habit.done || savingHabitId) return;
+    setSavingHabitId(habit.id);
+    setHabitSaveError('');
+    try {
+      const result = await habitDone(habit.id);
+      setTodayHabits((items) => items.map((item) => item.id === habit.id ? { ...item, done: result.done, streak: result.streak } : item));
+    } catch {
+      setHabitSaveError('Could not save that habit check-in. Please try again.');
+    } finally {
+      setSavingHabitId('');
+    }
+  };
+
+  const adaptation = planData?.behavior_adaptation || {};
+  const adaptationMessages = {
+    shorter_sessions_after_recent_missed_workouts: `Recent workout check-ins suggest a shorter ${adaptation.target_minutes || planData?.effective_available_minutes || 20}-minute target today.`,
+    shorter_sessions_after_difficult_feedback: `You rated recent workouts as difficult, so the session target is ${adaptation.target_minutes || planData?.effective_available_minutes || 20} minutes.`,
+    maintaining_duration_after_consistent_workouts: `You’ve been consistent with recent workouts, so your ${adaptation.target_minutes || planData?.effective_available_minutes || 20}-minute target is being maintained.`,
+    building_history: 'This plan is based on your assessment while it learns from your workout check-ins.',
+    maintaining_current_duration: `Your workout target stays at ${adaptation.target_minutes || planData?.effective_available_minutes || userPrefs.available_minutes || 20} minutes based on your assessment and recent check-ins.`,
+  };
+  const adaptationMessage = !planData?.context_aware
+    ? 'Today is using baseline recommendations from your assessment. Switch to the adaptive plan to use recent workout check-ins.'
+    : adaptationMessages[adaptation.reason] || 'Your plan uses your assessment and recent check-ins to guide today’s recommendations.';
 
   useEffect(() => {
     if (activeTab !== 'today' || viewingSavedPlan || !currentDay?.date) return undefined;
@@ -759,12 +806,23 @@ export function PhysicalPlan() {
                 <p className="mt-1 text-lg font-black tracking-tight text-emerald-950">Small steps make a strong day</p>
               </div>
               <span className="rounded-full border border-emerald-200 bg-white/80 px-3 py-1.5 text-xs font-extrabold text-emerald-800">
-                {todayProgress} of 5 complete
+                {todayProgress} of {dailyActionCount} complete
               </span>
             </div>
-            <ProgressBar value={(todayProgress / 5) * 100} color="bg-emerald-600" track="bg-emerald-900/10" />
-            <p className="mt-3 text-xs leading-relaxed text-emerald-900/65">Check off your meals and reach your water goal as you go. Your check-ins help shape future recommendations.</p>
+            <ProgressBar value={(todayProgress / dailyActionCount) * 100} color="bg-emerald-600" track="bg-emerald-900/10" />
+            <p className="mt-3 text-xs leading-relaxed text-emerald-900/65">Track meals, water, and daily habits here. Your check-ins help shape future recommendations.</p>
             {progressSaveError && <p role="alert" className="mt-2 text-xs font-semibold text-rose-700">{progressSaveError}</p>}
+            {habitSaveError && <p role="alert" className="mt-2 text-xs font-semibold text-rose-700">{habitSaveError}</p>}
+          </Card>
+
+          <Card padding="md" className="border border-brand-100 bg-gradient-to-r from-brand-50/80 via-white to-emerald-50/70">
+            <div className="flex items-start gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-white"><SparklesIcon size={17} /></span>
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-brand-700">Why this plan today</p>
+                <p className="mt-1 text-sm leading-relaxed text-charcoal">{adaptationMessage}</p>
+              </div>
+            </div>
           </Card>
 
           {/* Timeline Blocks */}
@@ -852,42 +910,73 @@ export function PhysicalPlan() {
               </Button>
             </Card>
 
-            {/* Afternoon Hydration & Snack */}
+            {/* Afternoon Snack */}
+            <Card padding="md" className={cn('relative flex flex-col border bg-white shadow-sm transition-all sm:flex-row sm:items-center sm:justify-between gap-4', statuses['sn'] === 'done' ? 'border-emerald-200 bg-emerald-50/50' : 'border-black/[0.05]')}>
+              <div className="flex items-center gap-3">
+                <span className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-800 flex items-center justify-center text-xl shrink-0">🍎</span>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-rose-800 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">Afternoon Snack</span>
+                  <h4 className="font-extrabold text-charcoal text-base mt-1">{currentDay?.meals?.snack?.[0]?.name || 'Healthy snack'}</h4>
+                </div>
+              </div>
+              <Button size="md" variant={statuses['sn'] === 'done' ? 'secondary' : 'primary'} onClick={() => setStatus('sn', statuses['sn'] === 'done' ? 'todo' : 'done')}>
+                {statuses['sn'] === 'done' ? 'Eaten today' : 'Mark as eaten'}
+              </Button>
+            </Card>
+
+            {/* Hydration */}
             <Card padding="md" className="relative border border-sky-100 bg-gradient-to-r from-sky-50/70 to-white shadow-sm">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="w-10 h-10 rounded-2xl bg-sky-100 text-sky-800 flex items-center justify-center text-lg shrink-0">
-                    💧
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="font-bold text-charcoal text-sm">Water & Healthy Snack</h4>
-                    <p className="text-xs text-charcoal-muted">
-                      {currentDay?.meals?.snack?.[0]?.name}
-                    </p>
+                  <span className="w-10 h-10 rounded-2xl bg-sky-100 text-sky-800 flex items-center justify-center text-lg shrink-0">💧</span>
+                  <div>
+                    <h4 className="font-bold text-charcoal text-sm">Water</h4>
+                    <p className="text-xs text-charcoal-muted">Daily goal: 8 glasses</p>
                   </div>
                 </div>
-
-                <Button size="sm" variant={statuses['sn'] === 'done' ? 'secondary' : 'primary'} onClick={() => setStatus('sn', statuses['sn'] === 'done' ? 'todo' : 'done')}>
-                  {statuses['sn'] === 'done' ? 'Eaten ✓' : 'Mark snack eaten'}
-                </Button>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => changeWater(-1)}
-                    className="w-7 h-7 rounded-full bg-cream flex items-center justify-center text-charcoal-light hover:bg-black/[0.06]"
-                  >
-                    <MinusIcon size={13} />
-                  </button>
-                  <span className="text-xs font-extrabold text-brand-600 px-1">{water} / 8 glasses</span>
-                  <button
-                    onClick={() => changeWater(1)}
-                    className="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600"
-                  >
-                    <PlusIcon size={13} />
-                  </button>
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                  <button aria-label="Remove one glass of water" onClick={() => changeWater(-1)} className="w-8 h-8 rounded-full bg-cream flex items-center justify-center text-charcoal-light hover:bg-black/[0.06]"><MinusIcon size={14} /></button>
+                  <span className="min-w-[5.5rem] text-center text-sm font-extrabold text-brand-700">{water} / 8 glasses</span>
+                  <button aria-label="Add one glass of water" onClick={() => changeWater(1)} className="w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600"><PlusIcon size={14} /></button>
                 </div>
               </div>
               <ProgressBar value={(water / 8) * 100} color="bg-sky-400" />
+            </Card>
+
+            {/* Today's Habits */}
+            <Card padding="md" className="relative border border-violet-100 bg-gradient-to-r from-violet-50/60 to-white shadow-sm">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 className="font-extrabold text-charcoal">Today’s habits</h3>
+                  <p className="mt-0.5 text-xs text-charcoal-muted">Your daily routines, checked off in one place.</p>
+                </div>
+                <span className="rounded-full border border-violet-100 bg-white px-2.5 py-1 text-xs font-bold text-violet-800">{completedHabitCount}/{todayHabits.length} done</span>
+              </div>
+              {habitsLoading ? (
+                <p className="rounded-xl bg-white/80 p-3 text-xs font-medium text-charcoal-muted">Loading habits…</p>
+              ) : todayHabits.length ? (
+                <div className="space-y-2">
+                  {todayHabits.map((habit) => (
+                    <div key={habit.id} className={cn('flex items-center justify-between gap-3 rounded-xl border bg-white/90 px-3 py-2.5', habit.done ? 'border-emerald-200' : 'border-black/[0.05]')}>
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <span className="text-lg">{habit.emoji || '✨'}</span>
+                        <div className="min-w-0">
+                          <p className={cn('truncate text-sm font-semibold text-charcoal', habit.done && 'text-charcoal-muted')}>{habit.name}</p>
+                          <p className="text-[11px] text-charcoal-muted">{habit.done ? `Done today · ${habit.streak || 0} day streak` : 'Not done yet'}</p>
+                        </div>
+                      </div>
+                      <Button size="sm" variant={habit.done ? 'secondary' : 'outline'} disabled={habit.done || Boolean(savingHabitId)} onClick={() => completeHabitToday(habit)}>
+                        {habit.done ? <><CheckIcon size={14} /> Done</> : 'Mark done'}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-start gap-2 rounded-xl bg-white/80 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs text-charcoal-muted">No habits yet. Add a daily routine to include it in today’s plan.</p>
+                  <Button size="sm" variant="outline" onClick={() => navigate('/app/physical/habits')}>Add habits</Button>
+                </div>
+              )}
             </Card>
 
             {/* Evening Dinner */}

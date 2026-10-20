@@ -154,7 +154,7 @@ export function PhysicalAchievements() {
             <span className="text-sm font-semibold text-charcoal-light bg-cream rounded-full px-4 py-2 w-fit">
               Reward: Neurocognitive focus badge + 100 XP
             </span>
-            <Button className="sm:ml-auto" onClick={() => navigate('/app/physical/activity')}>
+            <Button className="sm:ml-auto bg-emerald-600 hover:bg-emerald-700 shadow-none" onClick={() => navigate('/app/physical/activity')}>
               Log Activity <ArrowRightIcon size={16} />
             </Button>
           </div>

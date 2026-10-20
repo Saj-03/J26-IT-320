@@ -4,7 +4,13 @@ from app.components.physical_wellbeing.models import Habit
 
 def mark_habit_done(db, habit: Habit) -> Habit:
     now = datetime.utcnow()
-    if habit.last_done and now - habit.last_done < timedelta(hours=36):
+    today = now.date()
+    last_done_day = habit.last_done.date() if habit.last_done else None
+    # A habit can only add one streak day per calendar day, even if the
+    # completion request is repeated or retried by the client.
+    if last_done_day == today:
+        return habit
+    if last_done_day == today - timedelta(days=1):
         habit.streak += 1
     else:
         habit.streak = 1

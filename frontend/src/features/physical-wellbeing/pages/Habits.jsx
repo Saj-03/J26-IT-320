@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlusIcon, CheckIcon, XIcon, FlameIcon, Trash2Icon, SparklesIcon } from 'lucide-react';
+import { PlusIcon, CheckIcon, FlameIcon, Trash2Icon } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
+import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { Field } from '../../../shared/components/ui/Field';
 import { PhysicalNav } from '../components/PhysicalNav';
@@ -24,6 +25,8 @@ export function PhysicalHabits() {
   const [name, setName] = useState('');
   const [goal, setGoal] = useState('');
   const [addingQuick, setAddingQuick] = useState(false);
+  const [busyId, setBusyId] = useState('');
+  const [error, setError] = useState('');
 
   const fetchHabits = async () => {
     try {
@@ -31,6 +34,7 @@ export function PhysicalHabits() {
       setHabits(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
+      setError('Could not load your habits. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -41,6 +45,10 @@ export function PhysicalHabits() {
   }, []);
 
   const toggle = async (id) => {
+    const selected = habits.find((habit) => habit.id === id);
+    if (!selected || selected.done || busyId) return;
+    setBusyId(id);
+    setError('');
     try {
       const res = await habitDone(id);
       setHabits((prev) =>
@@ -50,6 +58,9 @@ export function PhysicalHabits() {
       );
     } catch (err) {
       console.error(err);
+      setError('Could not save that check-in. Please try again.');
+    } finally {
+      setBusyId('');
     }
   };
 
@@ -90,16 +101,19 @@ export function PhysicalHabits() {
   };
 
   const remove = async (id) => {
+    setError('');
     try {
       await deleteHabit(id);
       setHabits((prev) => prev.filter((h) => h.id !== id));
     } catch (err) {
       console.error(err);
+      setError('Could not remove that habit. Please try again.');
     }
   };
 
   const doneCount = habits.filter((h) => h.done).length;
   const maxStreak = habits.length > 0 ? Math.max(...habits.map((h) => h.streak || 0), 0) : 0;
+  const completionPct = habits.length ? Math.round((doneCount / habits.length) * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -119,7 +133,7 @@ export function PhysicalHabits() {
           <div className="text-5xl">🔥</div>
           <div className="flex-1">
             <p className="text-2xl font-extrabold text-charcoal">
-              {maxStreak > 0 ? `${maxStreak} Day Best Streak` : 'Start Your First Streak'}
+              {maxStreak > 0 ? `${maxStreak} day streak` : 'Build your first streak'}
             </p>
             <p className="text-sm text-charcoal-muted mt-0.5">
               {habits.length > 0
@@ -129,7 +143,16 @@ export function PhysicalHabits() {
           </div>
           <FlameIcon size={24} className="text-brand-500 shrink-0" />
         </div>
+        {habits.length > 0 && <div className="relative mt-5">
+          <div className="mb-2 flex items-center justify-between text-xs">
+            <span className="font-semibold text-charcoal-muted">Today’s progress</span>
+            <span className="font-bold tabular-nums text-brand-700">{doneCount}/{habits.length}</span>
+          </div>
+          <ProgressBar value={completionPct} color="bg-emerald-500" />
+        </div>}
       </Card>
+
+      {error && <p role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">{error}</p>}
 
       {/* Habits List or Clean Empty State */}
       {loading ? (
@@ -182,15 +205,18 @@ export function PhysicalHabits() {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => toggle(h.id)}
+                      disabled={h.done || Boolean(busyId)}
                       aria-pressed={h.done}
+                      aria-label={h.done ? `${h.name} completed today` : `Mark ${h.name} complete today`}
+                      title={h.done ? 'Completed today' : 'Mark complete today'}
                       className={cn(
                         'w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 transition-colors',
                         h.done
                           ? 'bg-brand-500 text-white shadow-soft'
-                          : 'bg-cream text-charcoal-muted hover:bg-black/[0.06]'
+                          : 'bg-cream text-charcoal-muted hover:bg-emerald-50 hover:text-emerald-700'
                       )}
                     >
-                      {h.done ? <CheckIcon size={20} strokeWidth={3} /> : <span className="text-xs font-bold text-charcoal-muted">DONE?</span>}
+                      {h.done ? <CheckIcon size={20} strokeWidth={3} /> : <span className="text-[10px] font-bold text-charcoal-muted">DONE</span>}
                     </button>
 
                     <div className="flex-1 min-w-0">
@@ -198,7 +224,7 @@ export function PhysicalHabits() {
                         {h.emoji || '⭐'} {h.name}
                       </p>
                       <p className="text-xs text-charcoal-muted mt-0.5">
-                        🔥 {h.streak || 0} day streak · {h.done ? 'Completed today' : 'Pending today'}
+                        <span className="text-orange-500">🔥</span> {h.streak || 0} day streak · {h.done ? 'Completed today' : 'Not done yet'}
                       </p>
                     </div>
 
