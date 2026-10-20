@@ -75,6 +75,18 @@ class PhysicalPlanSnapshot(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
+class PlanCheckIn(Base):
+    """Per-day meal and hydration check-ins shown in plan history."""
+    __tablename__ = "physical_plan_checkins"
+    __table_args__ = (UniqueConstraint("user_id", "day", name="uq_physical_plan_checkin_user_day"),)
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    day: Mapped[date] = mapped_column(Date, index=True)
+    completed_items: Mapped[list] = mapped_column(JSON, default=list)
+    water_glasses: Mapped[int] = mapped_column(Integer, default=0)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class PeerChallenge(Base):
     """A private, invite-only challenge. Stores no wellbeing profile data."""
     __tablename__ = "physical_peer_challenges"

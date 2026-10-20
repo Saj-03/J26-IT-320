@@ -9,7 +9,7 @@ from app.core.dependencies import get_current_user
 from app.components.physical_wellbeing import schemas, service
 from app.components.physical_wellbeing.models import (
     WellbeingProfile, ActivityLog, Habit, WorkoutFeedback,
-    PhysicalPlanSnapshot, PeerChallenge, PeerChallengeMember,
+    PhysicalPlanSnapshot, PlanCheckIn, PeerChallenge, PeerChallengeMember,
 )
 from app.components.physical_wellbeing.ml import recommender
 
@@ -599,24 +599,108 @@ def get_week_plan(
     return plan
 
 
+def _plan_progress_for_dates(db: Session, user_id: str, dates: list[datetime.date]) -> dict:
+    dates = sorted(set(dates))
+    if not dates:
+        return {"daily": {}, "summary": {"has_data": False, "workouts_completed": 0, "meal_checkins": 0, "active_minutes": 0, "steps": 0, "water_goal_days": 0, "days_with_checkins": 0}}
+
+    start_date, end_date = dates[0], dates[-1]
+    checkins = db.query(PlanCheckIn).filter(
+        PlanCheckIn.user_id == user_id,
+        PlanCheckIn.day >= start_date,
+        PlanCheckIn.day <= end_date,
+    ).all()
+    activities = db.query(ActivityLog).filter(
+        ActivityLog.user_id == user_id,
+        ActivityLog.day >= start_date,
+        ActivityLog.day <= end_date,
+    ).all()
+    feedback = db.query(WorkoutFeedback).filter(
+        WorkoutFeedback.user_id == user_id,
+        WorkoutFeedback.day >= start_date,
+        WorkoutFeedback.day <= end_date,
+    ).all()
+    checkins_by_day = {row.day: row for row in checkins}
+    activity_by_day = {row.day: row for row in activities}
+    feedback_by_day = {row.day: row for row in feedback}
+    daily = {}
+    for day in dates:
+        checkin = checkins_by_day.get(day)
+        activity = activity_by_day.get(day)
+        workout_feedback = feedback_by_day.get(day)
+        daily[day.isoformat()] = {
+            "completed_items": list(checkin.completed_items or []) if checkin else [],
+            "water_glasses": checkin.water_glasses if checkin else 0,
+            "workout_completed": bool((workout_feedback and workout_feedback.did_workout) or (activity and activity.completed_recommendation)),
+            "exercise_minutes": activity.exercise_minutes if activity else (workout_feedback.workout_minutes if workout_feedback and workout_feedback.did_workout else 0),
+            "steps": activity.steps if activity else 0,
+            "has_checkin": checkin is not None,
+        }
+    summary = {
+        "has_data": bool(checkins or activities or feedback),
+        "workouts_completed": sum(1 for item in daily.values() if item["workout_completed"]),
+        "meal_checkins": sum(len(item["completed_items"]) for item in daily.values()),
+        "active_minutes": sum(item["exercise_minutes"] for item in daily.values()),
+        "steps": sum(item["steps"] for item in daily.values()),
+        "water_goal_days": sum(1 for item in daily.values() if item["water_glasses"] >= 8),
+        "days_with_checkins": sum(1 for item in daily.values() if item["has_checkin"]),
+    }
+    return {"daily": daily, "summary": summary}
+
+
+@router.get("/plan-checkins")
+def get_plan_checkins(start_date: datetime.date, end_date: datetime.date, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    if end_date < start_date:
+        raise HTTPException(400, "End date must be on or after start date")
+    if (end_date - start_date).days > 366:
+        raise HTTPException(400, "Date range cannot exceed one year")
+    dates = [start_date + datetime.timedelta(days=offset) for offset in range((end_date - start_date).days + 1)]
+    return _plan_progress_for_dates(db, user.id, dates)
+
+
+@router.put("/plan-checkins")
+def save_plan_checkin(data: schemas.PlanCheckInIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    checkin = db.query(PlanCheckIn).filter_by(user_id=user.id, day=data.day).first()
+    if checkin:
+        checkin.completed_items = list(set(data.completed_items))
+        checkin.water_glasses = data.water_glasses
+    else:
+        checkin = PlanCheckIn(
+            user_id=user.id,
+            day=data.day,
+            completed_items=list(set(data.completed_items)),
+            water_glasses=data.water_glasses,
+        )
+        db.add(checkin)
+    db.commit()
+    return {"ok": True, "day": data.day.isoformat()}
+
+
 @router.get("/week-plan/history")
 def list_week_plan_history(db: Session = Depends(get_db), user=Depends(get_current_user)):
     snapshots = (db.query(PhysicalPlanSnapshot)
                  .filter_by(user_id=user.id)
                  .order_by(PhysicalPlanSnapshot.plan_date.desc(), PhysicalPlanSnapshot.created_at.desc())
                  .limit(90).all())
-    return [
-        {
+    results = []
+    for snapshot in snapshots:
+        plan_dates = [
+            datetime.date.fromisoformat(day["date"])
+            for day in (snapshot.plan_data or {}).get("days", [])
+            if isinstance(day, dict) and day.get("date")
+        ]
+        progress = _plan_progress_for_dates(db, user.id, plan_dates)
+        results.append({
             "id": snapshot.id,
             "plan_date": snapshot.plan_date.isoformat(),
             "days_count": snapshot.days_count,
             "is_exam_period": snapshot.is_exam_period,
             "use_baseline": snapshot.use_baseline,
-            "model_version": snapshot.plan_data.get("model_version", "Saved plan"),
+            "model_version": (snapshot.plan_data or {}).get("model_version", "Saved plan"),
             "created_at": snapshot.created_at.isoformat(),
-        }
-        for snapshot in snapshots
-    ]
+            "progress": progress["summary"],
+        })
+    return results
 
 
 @router.get("/week-plan/history/{snapshot_id}")
@@ -624,11 +708,18 @@ def get_week_plan_snapshot(snapshot_id: str, db: Session = Depends(get_db), user
     snapshot = db.query(PhysicalPlanSnapshot).filter_by(id=snapshot_id, user_id=user.id).first()
     if not snapshot:
         raise HTTPException(404, "Saved plan not found")
+    plan_data = snapshot.plan_data or {}
+    plan_dates = [
+        datetime.date.fromisoformat(day["date"])
+        for day in plan_data.get("days", [])
+        if isinstance(day, dict) and day.get("date")
+    ]
     return {
         "id": snapshot.id,
         "plan_date": snapshot.plan_date.isoformat(),
         "days_count": snapshot.days_count,
-        "plan": _inject_plan_images(snapshot.plan_data),
+        "plan": _inject_plan_images(plan_data),
+        "progress": _plan_progress_for_dates(db, user.id, plan_dates),
     }
 
 

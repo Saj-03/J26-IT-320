@@ -4,14 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckIcon, PlayIcon, ClockIcon, XIcon, PlusIcon, MinusIcon,
   CalendarIcon, HistoryIcon, SparklesIcon, AlertCircleIcon, ShieldCheckIcon,
-  UtensilsIcon, DumbbellIcon, FlameIcon, LayersIcon, SlidersHorizontalIcon, Trash2Icon, ShuffleIcon
+  UtensilsIcon, DumbbellIcon, FlameIcon, LayersIcon, Trash2Icon, ShuffleIcon
 } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { PhysicalNav } from '../components/PhysicalNav';
 import { AdaptedChip } from '../components/Shared';
-import { getWeekPlan, getWeekPlanHistory, getWeekPlanSnapshot, deleteWeekPlanSnapshot, updatePlanDuration, getProfile } from '../api';
+import { getWeekPlan, getWeekPlanHistory, getWeekPlanSnapshot, deleteWeekPlanSnapshot, updatePlanDuration, getPlanCheckins, savePlanCheckin, getProfile } from '../api';
 import { cn } from '../../../shared/lib/cn';
 import { RecommendationImage, mealImageFallbacks, exerciseImageFallback } from '../components/RecommendationImage';
 
@@ -46,13 +46,31 @@ export function PhysicalPlan() {
   const [historyRecords, setHistoryRecords] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState('');
+  const [historyMonth, setHistoryMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [selectedHistoryDate, setSelectedHistoryDate] = useState('');
   const [loadingSnapshotId, setLoadingSnapshotId] = useState('');
   const [deletingSnapshotId, setDeletingSnapshotId] = useState('');
   const [viewingSavedPlan, setViewingSavedPlan] = useState(false);
 
   // Today timeline statuses
   const [statuses, setStatuses] = useState({});
-  const [water, setWater] = useState(5);
+  const [water, setWater] = useState(0);
+  const [savedPlanProgress, setSavedPlanProgress] = useState(null);
+  const [progressSaveError, setProgressSaveError] = useState('');
+
+  const historyDateGroups = historyRecords.reduce((groups, record) => {
+    (groups[record.plan_date] ||= []).push(record);
+    return groups;
+  }, {});
+  const historyMonthStart = new Date(historyMonth.getFullYear(), historyMonth.getMonth(), 1);
+  const historyCalendarCells = [
+    ...Array(historyMonthStart.getDay()).fill(null),
+    ...Array.from({ length: new Date(historyMonth.getFullYear(), historyMonth.getMonth() + 1, 0).getDate() }, (_, index) => {
+      const day = String(index + 1).padStart(2, '0');
+      return `${historyMonth.getFullYear()}-${String(historyMonth.getMonth() + 1).padStart(2, '0')}-${day}`;
+    }),
+  ];
+  const selectedHistoryRecords = historyDateGroups[selectedHistoryDate] || [];
 
   useEffect(() => {
     let active = true;
@@ -79,6 +97,15 @@ export function PhysicalPlan() {
       setPlanData(wp);
       setUserProfile(prof);
       setSelectedDayIdx((prev) => (wp?.days && prev >= wp.days.length ? 0 : prev));
+      if (wp?.days?.length) {
+        const dates = wp.days.map((day) => day.date).filter(Boolean).sort();
+        try {
+          const progress = await getPlanCheckins(dates[0], dates[dates.length - 1]);
+          setSavedPlanProgress(progress);
+        } catch {
+          setSavedPlanProgress(null);
+        }
+      }
     } catch (err) {
       console.error(err);
       setError('Unable to load your personalized plan. Please check your connection.');
@@ -97,7 +124,16 @@ export function PhysicalPlan() {
     setHistoryLoading(true);
     setHistoryError('');
     try {
-      setHistoryRecords(await getWeekPlanHistory());
+      const records = await getWeekPlanHistory();
+      setHistoryRecords(records);
+      if (records.length) {
+        const latestDate = records[0].plan_date;
+        setSelectedHistoryDate(latestDate);
+        const [year, month] = latestDate.split('-').map(Number);
+        setHistoryMonth(new Date(year, month - 1, 1));
+      } else {
+        setSelectedHistoryDate('');
+      }
       setHistoryMode(true);
     } catch (err) {
       setHistoryError('Could not load your saved plan history. Please try again.');
@@ -114,6 +150,7 @@ export function PhysicalPlan() {
       const saved = await getWeekPlanSnapshot(record.id);
       setReturnDaysCount(daysCount);
       setPlanData(saved.plan);
+      setSavedPlanProgress(saved.progress || null);
       setUserProfile(saved.plan?.user_preferences || null);
       setDaysCount(saved.days_count);
       setIsExamPeriod(Boolean(record.is_exam_period));
@@ -131,6 +168,7 @@ export function PhysicalPlan() {
 
   const returnToCurrentPlan = () => {
     setHistoryMode(false);
+    setSavedPlanProgress(null);
     if (viewingSavedPlan) setDaysCount(returnDaysCount);
     setViewingSavedPlan(false);
   };
@@ -171,11 +209,53 @@ export function PhysicalPlan() {
     }
   };
 
-  const setStatus = (id, s) => setStatuses((prev) => ({ ...prev, [id]: s }));
+  const persistCheckin = async (nextStatuses, nextWater) => {
+    if (!currentDay?.date || viewingSavedPlan) return;
+    setProgressSaveError('');
+    try {
+      const completedItems = Object.entries(nextStatuses).filter(([, value]) => value === 'done').map(([key]) => key);
+      await savePlanCheckin({ day: currentDay.date, completed_items: completedItems, water_glasses: nextWater });
+    } catch {
+      setProgressSaveError('Could not save your check-in. Please try again.');
+    }
+  };
+
+  const setStatus = (id, s) => {
+    const next = { ...statuses, [id]: s };
+    setStatuses(next);
+    void persistCheckin(next, water);
+  };
+
+  const changeWater = (delta) => {
+    const next = Math.max(0, Math.min(8, water + delta));
+    setWater(next);
+    void persistCheckin(statuses, next);
+  };
 
   const currentDay = planData?.days?.[selectedDayIdx] || planData?.days?.[0];
   const userPrefs = planData?.user_preferences || userProfile || {};
   const todayProgress = Object.values(statuses).filter((status) => status === 'done').length + (water >= 8 ? 1 : 0);
+
+  useEffect(() => {
+    if (activeTab !== 'today' || viewingSavedPlan || !currentDay?.date) return undefined;
+    let active = true;
+    getPlanCheckins(currentDay.date, currentDay.date).then((progress) => {
+      if (!active) return;
+      const dayProgress = progress?.daily?.[currentDay.date] || {};
+      setStatuses(Object.fromEntries((dayProgress.completed_items || []).map((key) => [key, 'done'])));
+      setWater(dayProgress.water_glasses || 0);
+    }).catch(() => {
+      if (active) {
+        setStatuses({});
+        setWater(0);
+      }
+    });
+    return () => { active = false; };
+  }, [activeTab, currentDay?.date, viewingSavedPlan]);
+
+  const savedProgressSummary = savedPlanProgress?.summary;
+  const savedProgressDaily = savedPlanProgress?.daily || {};
+  const selectedDayProgress = savedProgressDaily[currentDay?.date] || {};
 
   return (
     <div className="space-y-6">
@@ -189,9 +269,6 @@ export function PhysicalPlan() {
             </div>
             <h1 className="text-2xl font-black tracking-tight sm:text-3xl">A plan that fits you.</h1>
             <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-emerald-50/80">Your assessment shapes your goals, schedule, food preferences, and safe movement. Update your preferences anytime to reshape the plan.</p>
-            <button type="button" onClick={() => navigate(userProfile ? '/app/physical/profile' : '/physical-setup')} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-white px-3.5 py-2 text-xs font-extrabold text-emerald-950 shadow-sm transition hover:bg-lime-50 focus:outline-none focus:ring-2 focus:ring-white/70">
-              <SlidersHorizontalIcon size={16} /> {userProfile ? 'Customize my plan' : 'Start assessment'}
-            </button>
             {userPrefs.physical_limitations && userPrefs.physical_limitations !== 'none' && (
               <span className="mt-4 inline-flex rounded-full border border-amber-200/30 bg-amber-300/15 px-3 py-1.5 text-xs font-semibold text-amber-50">
                 🦵 Safety: <strong className="ml-1">{userPrefs.physical_limitations} protected</strong>
@@ -216,11 +293,6 @@ export function PhysicalPlan() {
             </div>
           </div>
           <div className="w-full shrink-0 space-y-3 xl:w-[410px]">
-            <div className="flex justify-start gap-1.5 rounded-2xl border border-white/15 bg-black/10 p-1.5 backdrop-blur-sm lg:justify-end">
-              <button onClick={() => { setActiveTab('week'); if (historyMode || viewingSavedPlan) returnToCurrentPlan(); }} className={cn('flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-extrabold transition-all', activeTab === 'week' && !historyMode ? 'border-white bg-white text-emerald-900 shadow-sm' : 'border-transparent text-white/80 hover:bg-white/10 hover:text-white')}><CalendarIcon size={15} /> Plan</button>
-              <button onClick={() => { if (historyMode || viewingSavedPlan) returnToCurrentPlan(); setActiveTab('today'); }} className={cn('flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-extrabold transition-all', activeTab === 'today' && !historyMode ? 'border-white bg-white text-emerald-900 shadow-sm' : 'border-transparent text-white/80 hover:bg-white/10 hover:text-white')}><ClockIcon size={15} /> Today</button>
-              <button type="button" onClick={openHistory} disabled={historyLoading} className={cn('inline-flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-extrabold transition-all disabled:opacity-60', historyMode ? 'border-white bg-white text-emerald-900 shadow-sm' : 'border-transparent text-white/80 hover:bg-white/10 hover:text-white')}><HistoryIcon size={14} /> {historyLoading ? 'Loading…' : 'Past'}</button>
-            </div>
             <div className="rounded-2xl border border-white/15 bg-white/10 p-3.5 backdrop-blur-sm">
               <p className="mb-2.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-emerald-50/70">Plan uses</p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -242,12 +314,17 @@ export function PhysicalPlan() {
         </div>
       </section>
 
-      <div className="flex flex-col gap-3 rounded-3xl border border-black/[0.06] bg-white p-3 shadow-sm lg:flex-row lg:flex-wrap lg:items-center lg:justify-between xl:flex-nowrap">
+      <div className="flex flex-col gap-3 rounded-3xl border border-black/[0.06] bg-white p-3 shadow-sm lg:flex-row lg:flex-wrap lg:items-center">
         <div className="flex flex-nowrap items-center gap-2 self-start rounded-2xl bg-cream p-2">
           <label htmlFor="plan-length-days" className="pl-1 text-xs font-bold text-charcoal">Plan length</label>
           <input id="plan-length-days" type="number" min="1" max="31" step="1" inputMode="numeric" value={daysDraft} disabled={viewingSavedPlan} onChange={(event) => setDaysDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); applyPlanLength(); } }} className="w-20 rounded-xl border border-black/[0.08] bg-white px-3 py-2 text-sm font-bold text-charcoal outline-none focus:border-brand-400" />
           <span className="text-xs font-semibold text-charcoal-muted">days</span>
           <button type="button" onClick={applyPlanLength} disabled={viewingSavedPlan || durationSaving || !Number.isInteger(Number(daysDraft)) || Number(daysDraft) < 1 || Number(daysDraft) > 31} className="rounded-xl bg-brand-500 px-3 py-2 text-xs font-bold text-white shadow-glow transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40">{durationSaving ? 'Saving…' : 'Update plan'}</button>
+        </div>
+        <div className="flex flex-nowrap items-center gap-1.5 rounded-2xl border border-brand-100 bg-brand-50/70 p-1.5 lg:ml-auto">
+          <button onClick={() => { setActiveTab('week'); if (historyMode || viewingSavedPlan) returnToCurrentPlan(); }} className={cn('flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-extrabold transition-all duration-200', activeTab === 'week' && !historyMode ? 'border-brand-500 bg-brand-500 text-white shadow-glow' : 'border-transparent bg-white/70 text-brand-800 hover:border-brand-200 hover:bg-white')}><CalendarIcon size={15} /> Plan</button>
+          <button onClick={() => { if (historyMode || viewingSavedPlan) returnToCurrentPlan(); setActiveTab('today'); }} className={cn('flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-extrabold transition-all duration-200', activeTab === 'today' && !historyMode ? 'border-brand-500 bg-brand-500 text-white shadow-glow' : 'border-transparent bg-white/70 text-brand-800 hover:border-brand-200 hover:bg-white')}><ClockIcon size={15} /> Today</button>
+          <button type="button" onClick={openHistory} disabled={historyLoading} className={cn('inline-flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-extrabold transition-all disabled:opacity-60', historyMode ? 'border-brand-500 bg-brand-500 text-white shadow-glow' : 'border-transparent bg-white/70 text-brand-800 hover:border-brand-200 hover:bg-white')}><HistoryIcon size={14} /> {historyLoading ? 'Loading…' : 'Past'}</button>
         </div>
         <div className="flex flex-nowrap items-center gap-2 overflow-x-auto rounded-2xl border border-emerald-100 bg-emerald-50/70 p-2">
           <button
@@ -265,9 +342,30 @@ export function PhysicalPlan() {
       <PhysicalNav />
 
       {viewingSavedPlan && (
-        <Card padding="sm" className="flex flex-wrap items-center justify-between gap-3 border border-brand-200 bg-brand-50/80">
+          <Card padding="sm" className="flex flex-wrap items-center justify-between gap-3 border border-brand-200 bg-brand-50/80">
           <p className="text-sm font-semibold text-brand-900">Viewing a saved plan from {planData?.days?.[0]?.date || 'an earlier date'}.</p>
           <Button size="sm" variant="outline" onClick={returnToCurrentPlan}>Back to current plan</Button>
+        </Card>
+      )}
+      {viewingSavedPlan && savedProgressSummary && (
+        <Card padding="md" className="border border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-lime-50 shadow-sm">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-emerald-700">Past plan overview</p>
+              <h2 className="text-base font-black text-emerald-950">What you completed</h2>
+            </div>
+            {!savedProgressSummary.has_data && <span className="text-xs font-medium text-charcoal-muted">No activity or check-in history was saved for this plan.</span>}
+          </div>
+          {savedProgressSummary.days_with_checkins === 0 && savedProgressSummary.has_data && (
+            <p className="mb-3 text-xs font-medium text-charcoal-muted">Meal and water check-ins weren’t recorded for this older plan.</p>
+          )}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+            <div className="rounded-xl border border-emerald-100 bg-white/90 p-3"><span className="block text-lg font-black text-emerald-800">{savedProgressSummary.workouts_completed}</span><span className="text-[10px] font-bold text-emerald-700">Workouts</span></div>
+            <div className="rounded-xl border border-emerald-100 bg-white/90 p-3"><span className="block text-lg font-black text-emerald-800">{savedProgressSummary.days_with_checkins ? savedProgressSummary.meal_checkins : '—'}</span><span className="text-[10px] font-bold text-emerald-700">Meals checked off</span></div>
+            <div className="rounded-xl border border-emerald-100 bg-white/90 p-3"><span className="block text-lg font-black text-emerald-800">{savedProgressSummary.active_minutes}</span><span className="text-[10px] font-bold text-emerald-700">Active minutes</span></div>
+            <div className="rounded-xl border border-emerald-100 bg-white/90 p-3"><span className="block text-lg font-black text-emerald-800">{savedProgressSummary.steps.toLocaleString()}</span><span className="text-[10px] font-bold text-emerald-700">Steps logged</span></div>
+            <div className="rounded-xl border border-emerald-100 bg-white/90 p-3"><span className="block text-lg font-black text-emerald-800">{savedProgressSummary.days_with_checkins ? savedProgressSummary.water_goal_days : '—'}</span><span className="text-[10px] font-bold text-emerald-700">8-glass days</span></div>
+          </div>
         </Card>
       )}
 
@@ -363,29 +461,73 @@ export function PhysicalPlan() {
         <Card padding="lg" className="space-y-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-extrabold text-charcoal">Past plan history</h2>
-              <p className="mt-1 text-sm text-charcoal-muted">Open a saved schedule to review its workouts and meals.</p>
+              <h2 className="text-lg font-extrabold text-charcoal">Your past plans</h2>
+              <p className="mt-1 text-sm text-charcoal-muted">Choose a date to review the plan and activity saved that day.</p>
             </div>
             <Button size="sm" variant="outline" onClick={returnToCurrentPlan}>Back to current plan</Button>
           </div>
           {historyError && <p role="alert" className="rounded-xl bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">{historyError}</p>}
           {historyRecords.length ? (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {historyRecords.map((record) => (
-                <div key={record.id} className="rounded-2xl border border-black/[0.07] bg-cream p-4 transition hover:border-brand-300 hover:bg-brand-50/50">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-extrabold text-charcoal">{new Date(`${record.plan_date}T00:00:00`).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                    <CalendarIcon size={16} className="text-brand-600" />
-                  </div>
-                  <p className="mt-2 text-xs font-semibold text-charcoal-muted">{record.days_count}-day plan · {record.use_baseline ? 'Baseline model' : 'Adaptive model'}{record.is_exam_period ? ' · Exam mode' : ''}</p>
-                  <div className="mt-3 flex items-center justify-between gap-2">
-                    <button type="button" onClick={() => openSnapshot(record)} disabled={Boolean(loadingSnapshotId || deletingSnapshotId)} className="text-xs font-bold text-brand-700 hover:text-brand-900 disabled:opacity-50">{loadingSnapshotId === record.id ? 'Opening…' : 'View plan →'}</button>
-                    <button type="button" onClick={() => deleteSnapshot(record)} disabled={Boolean(deletingSnapshotId || loadingSnapshotId)} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50" aria-label={`Delete plan from ${record.plan_date}`}>
-                      <Trash2Icon size={13} /> {deletingSnapshotId === record.id ? 'Deleting…' : 'Delete'}
-                    </button>
-                  </div>
+            <div className="grid gap-5 lg:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.4fr)]">
+              <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-4">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <button type="button" onClick={() => setHistoryMonth(new Date(historyMonth.getFullYear(), historyMonth.getMonth() - 1, 1))} className="rounded-xl border border-emerald-100 bg-white px-3 py-2 text-sm font-black text-emerald-800 hover:bg-emerald-100" aria-label="Previous month">‹</button>
+                  <h3 className="text-sm font-black text-emerald-950">{historyMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</h3>
+                  <button type="button" onClick={() => setHistoryMonth(new Date(historyMonth.getFullYear(), historyMonth.getMonth() + 1, 1))} className="rounded-xl border border-emerald-100 bg-white px-3 py-2 text-sm font-black text-emerald-800 hover:bg-emerald-100" aria-label="Next month">›</button>
                 </div>
-              ))}
+                <div className="grid grid-cols-7 gap-1 text-center">
+                  {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => <span key={day} className="py-1 text-[10px] font-extrabold uppercase text-emerald-700">{day}</span>)}
+                  {historyCalendarCells.map((date, index) => {
+                    if (!date) return <span key={`empty-${index}`} />;
+                    const hasPlan = Boolean(historyDateGroups[date]);
+                    const selected = selectedHistoryDate === date;
+                    return (
+                      <button key={date} type="button" onClick={() => setSelectedHistoryDate(date)} disabled={!hasPlan} aria-pressed={selected} className={cn('relative flex aspect-square flex-col items-center justify-center rounded-xl text-xs font-bold transition', selected ? 'bg-emerald-700 text-white shadow-sm' : hasPlan ? 'bg-white text-emerald-900 hover:bg-emerald-100' : 'cursor-default text-slate-300')}>
+                        {Number(date.slice(-2))}
+                        {hasPlan && <span className={cn('absolute bottom-1 h-1 w-1 rounded-full', selected ? 'bg-lime-200' : 'bg-emerald-500')} />}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="mt-3 text-center text-[11px] font-medium text-charcoal-muted">Green dots mark days with saved plans.</p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <CalendarIcon size={17} className="text-emerald-700" />
+                  <h3 className="text-sm font-black text-charcoal">{selectedHistoryDate ? new Date(`${selectedHistoryDate}T00:00:00`).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : 'Select a date'}</h3>
+                </div>
+                {selectedHistoryRecords.length ? selectedHistoryRecords.map((record) => (
+                  <div key={record.id} className="rounded-2xl border border-black/[0.07] bg-cream p-4 transition hover:border-brand-300 hover:bg-brand-50/50">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-sm font-extrabold text-charcoal">{record.days_count}-day plan · {record.use_baseline ? 'Baseline model' : 'Adaptive model'}{record.is_exam_period ? ' · Exam mode' : ''}</p>
+                      <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-charcoal-muted">Saved plan</span>
+                    </div>
+                    {record.progress?.has_data ? (
+                      <div className="mt-3 grid grid-cols-2 gap-1.5 rounded-xl border border-emerald-100 bg-white/80 p-2 text-[10px] font-semibold text-emerald-800 sm:grid-cols-3">
+                        <span>🏃 {record.progress.workouts_completed} workouts</span>
+                        <span>🍽️ {record.progress.days_with_checkins ? `${record.progress.meal_checkins} meals checked` : 'Meals not recorded'}</span>
+                        <span>⏱️ {record.progress.active_minutes} active min</span>
+                        <span>👟 {record.progress.steps.toLocaleString()} steps</span>
+                        <span>💧 {record.progress.days_with_checkins ? `${record.progress.water_goal_days} water goals` : 'Water not recorded'}</span>
+                      </div>
+                    ) : (
+                      <p className="mt-3 rounded-xl bg-white/70 px-2.5 py-2 text-[10px] font-medium text-charcoal-muted">No completion check-ins were saved for this plan.</p>
+                    )}
+                    <div className="mt-3 flex items-center justify-between gap-2">
+                      <button type="button" onClick={() => openSnapshot(record)} disabled={Boolean(loadingSnapshotId || deletingSnapshotId)} className="text-xs font-bold text-brand-700 hover:text-brand-900 disabled:opacity-50">{loadingSnapshotId === record.id ? 'Opening…' : 'View plan →'}</button>
+                      <button type="button" onClick={() => deleteSnapshot(record)} disabled={Boolean(deletingSnapshotId || loadingSnapshotId)} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50" aria-label={`Delete plan from ${record.plan_date}`}>
+                        <Trash2Icon size={13} /> {deletingSnapshotId === record.id ? 'Deleting…' : 'Delete'}
+                      </button>
+                    </div>
+                  </div>
+                )) : (
+                  <div className="rounded-2xl border border-dashed border-black/15 bg-cream/60 p-8 text-center">
+                    <p className="font-bold text-charcoal">No saved plan on this date</p>
+                    <p className="mt-1 text-sm text-charcoal-muted">Choose a day with a green dot to review your past plan.</p>
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-black/15 bg-cream/60 p-8 text-center">
@@ -459,6 +601,13 @@ export function PhysicalPlan() {
                     <h2 className="text-xl font-extrabold text-charcoal mt-0.5">
                       {currentDay.day_name}, {currentDay.date}
                     </h2>
+                    {viewingSavedPlan && (
+                      <p className="mt-1 text-[11px] font-semibold text-emerald-800">
+                        {selectedDayProgress.workout_completed ? 'Workout completed' : 'No workout logged'}
+                        {' · '}{selectedDayProgress.has_checkin ? `${selectedDayProgress.completed_items?.length || 0} of 3 meals checked` : 'Meals not recorded'}
+                        {' · '}{selectedDayProgress.has_checkin ? `${selectedDayProgress.water_glasses || 0}/8 glasses` : 'Water not recorded'}
+                      </p>
+                    )}
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-bold text-charcoal-muted block">Estimated Routine Time</span>
@@ -535,15 +684,15 @@ export function PhysicalPlan() {
 
                 {/* Section 2: Four Date-Wise Meal Slots */}
                 <div className="space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-lime-200 bg-gradient-to-r from-lime-50 via-white to-emerald-50 px-4 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-gradient-to-r from-brand-50 via-white to-emerald-50 px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <span className="rounded-xl bg-lime-600 p-2.5 text-white shadow-sm"><UtensilsIcon size={19} /></span>
+                      <span className="rounded-xl bg-brand-500 p-2.5 text-white shadow-sm"><UtensilsIcon size={19} /></span>
                       <div>
-                        <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-lime-800">Food & nourishment</p>
-                        <h3 className="text-base font-black text-emerald-950 sm:text-lg">Daily Meal Slots</h3>
+                        <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-700">Food & nourishment</p>
+                        <h3 className="text-base font-black text-brand-950 sm:text-lg">Daily Meal Slots</h3>
                       </div>
                     </div>
-                    <span className="rounded-full border border-emerald-100 bg-white/90 px-3 py-1.5 text-xs font-semibold text-emerald-900">
+                    <span className="rounded-full border border-brand-100 bg-white/90 px-3 py-1.5 text-xs font-semibold text-brand-800">
                       {String(userPrefs.meal_style || 'Both').replace('_', ' ')} cuisine · {userPrefs.diet_pref || 'Any'} diet
                     </span>
                   </div>
@@ -556,7 +705,7 @@ export function PhysicalPlan() {
                       const alternative = slotMeals[1];
 
                       return (
-                        <Card key={slotKey} padding="md" className="flex flex-col justify-between">
+                        <Card key={slotKey} padding="md" className="group flex flex-col justify-between border border-emerald-100 bg-gradient-to-b from-white to-emerald-50/40 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md">
                           <div>
                             <RecommendationImage src={primary?.image} alt={primary?.name || `${meta.title} recommendation`} fallbackSrc={primary?.cuisine === 'sri_lankan' ? mealImageFallbacks.sri_lankan : mealImageFallbacks.international} className="mb-3 h-36 w-full rounded-2xl object-cover" />
                             <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-black/[0.05]">
@@ -580,17 +729,17 @@ export function PhysicalPlan() {
                                 </p>
 
                                 <div className="grid grid-cols-3 gap-1.5 py-2">
-                                  <div className="bg-cream rounded-xl p-2 text-center">
-                                    <span className="block text-xs font-black text-charcoal">{primary.calories}</span>
-                                    <span className="text-[10px] text-charcoal-muted">kcal</span>
+                                  <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-2 text-center">
+                                    <span className="block text-xs font-black text-emerald-900">{primary.calories}</span>
+                                    <span className="text-[10px] font-semibold text-emerald-700">kcal</span>
                                   </div>
-                                  <div className="bg-cream rounded-xl p-2 text-center">
-                                    <span className="block text-xs font-black text-charcoal">{primary.protein}g</span>
-                                    <span className="text-[10px] text-charcoal-muted">Protein</span>
+                                  <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-2 text-center">
+                                    <span className="block text-xs font-black text-emerald-900">{primary.protein}g</span>
+                                    <span className="text-[10px] font-semibold text-emerald-700">Protein</span>
                                   </div>
-                                  <div className="bg-cream rounded-xl p-2 text-center">
-                                    <span className="block text-xs font-black text-charcoal">{primary.prep_time}m</span>
-                                    <span className="text-[10px] text-charcoal-muted">Prep</span>
+                                  <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-2 text-center">
+                                    <span className="block text-xs font-black text-emerald-900">{primary.prep_time}m</span>
+                                    <span className="text-[10px] font-semibold text-emerald-700">Prep</span>
                                   </div>
                                 </div>
                               </div>
@@ -641,6 +790,7 @@ export function PhysicalPlan() {
             </div>
             <ProgressBar value={(todayProgress / 4) * 100} color="bg-emerald-600" track="bg-emerald-900/10" />
             <p className="mt-3 text-xs leading-relaxed text-emerald-900/65">Check off your meals and reach your water goal as you go. Your check-ins help shape future recommendations.</p>
+            {progressSaveError && <p role="alert" className="mt-2 text-xs font-semibold text-rose-700">{progressSaveError}</p>}
           </Card>
 
           {/* Timeline Blocks */}
@@ -745,14 +895,14 @@ export function PhysicalPlan() {
 
                 <div className="flex items-center gap-1.5">
                   <button
-                    onClick={() => setWater((w) => Math.max(0, w - 1))}
+                    onClick={() => changeWater(-1)}
                     className="w-7 h-7 rounded-full bg-cream flex items-center justify-center text-charcoal-light hover:bg-black/[0.06]"
                   >
                     <MinusIcon size={13} />
                   </button>
                   <span className="text-xs font-extrabold text-brand-600 px-1">{water} / 8 glasses</span>
                   <button
-                    onClick={() => setWater((w) => Math.min(8, w + 1))}
+                    onClick={() => changeWater(1)}
                     className="w-7 h-7 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600"
                   >
                     <PlusIcon size={13} />

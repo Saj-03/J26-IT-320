@@ -29,6 +29,12 @@ class PlanDurationIn(BaseModel):
     days_count: int = Field(ge=1, le=31)
 
 
+class PlanCheckInIn(BaseModel):
+    day: date
+    completed_items: list[Literal["bf", "lu", "dn"]] = Field(default_factory=list)
+    water_glasses: int = Field(default=0, ge=0, le=8)
+
+
 class ActivityIn(BaseModel):
     day: date
     steps: int
