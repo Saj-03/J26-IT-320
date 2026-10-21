@@ -56,6 +56,8 @@ export function PhysicalPlan() {
   // Today timeline statuses
   const [statuses, setStatuses] = useState({});
   const [water, setWater] = useState(0);
+  const [workoutCompleted, setWorkoutCompleted] = useState(false);
+  const [loggedWorkoutMinutes, setLoggedWorkoutMinutes] = useState(0);
   const [savedPlanProgress, setSavedPlanProgress] = useState(null);
   const [todayHabits, setTodayHabits] = useState([]);
   const [habitsLoading, setHabitsLoading] = useState(false);
@@ -364,25 +366,31 @@ export function PhysicalPlan() {
     : adaptationMessages[adaptation.reason] || 'Your plan uses your assessment and recent check-ins to guide today’s recommendations.';
 
   useEffect(() => {
-    if (activeTab !== 'today' || viewingSavedPlan || !currentDay?.date) return undefined;
+    if (viewingSavedPlan || !currentDay?.date) return undefined;
     let active = true;
     getPlanCheckins(currentDay.date, currentDay.date).then((progress) => {
       if (!active) return;
       const dayProgress = progress?.daily?.[currentDay.date] || {};
       setStatuses(Object.fromEntries((dayProgress.completed_items || []).map((key) => [key, 'done'])));
       setWater(dayProgress.water_glasses || 0);
+      setWorkoutCompleted(Boolean(dayProgress.workout_completed));
+      setLoggedWorkoutMinutes(Number(dayProgress.exercise_minutes) || 0);
     }).catch(() => {
       if (active) {
         setStatuses({});
         setWater(0);
+        setWorkoutCompleted(false);
+        setLoggedWorkoutMinutes(0);
       }
     });
     return () => { active = false; };
-  }, [activeTab, currentDay?.date, viewingSavedPlan]);
+  }, [currentDay?.date, viewingSavedPlan]);
 
   const savedProgressSummary = savedPlanProgress?.summary;
   const savedProgressDaily = savedPlanProgress?.daily || {};
   const selectedDayProgress = savedProgressDaily[currentDay?.date] || {};
+  const selectedWorkoutCompleted = viewingSavedPlan ? Boolean(selectedDayProgress.workout_completed) : workoutCompleted;
+  const selectedWorkoutMinutes = viewingSavedPlan ? Number(selectedDayProgress.exercise_minutes) || 0 : loggedWorkoutMinutes;
 
   return (
     <div className="space-y-6">
@@ -711,11 +719,11 @@ export function PhysicalPlan() {
                     <h2 className="text-xl font-extrabold text-charcoal mt-0.5">
                       {currentDay.day_name}, {currentDay.date}
                     </h2>
-                    {viewingSavedPlan && (
+                    {(viewingSavedPlan || selectedWorkoutCompleted) && (
                       <p className="mt-1 text-[11px] font-semibold text-emerald-800">
-                        {selectedDayProgress.workout_completed ? 'Workout completed' : 'No workout logged'}
-                        {' · '}{selectedDayProgress.has_checkin ? `${selectedDayProgress.completed_items?.length || 0} of 4 meals checked` : 'Meals not recorded'}
-                        {' · '}{selectedDayProgress.has_checkin ? `${selectedDayProgress.water_glasses || 0}/8 glasses` : 'Water not recorded'}
+                        {selectedWorkoutCompleted ? `✓ Workout completed${selectedWorkoutMinutes ? ` · ${selectedWorkoutMinutes} min logged` : ''}` : 'No workout logged'}
+                        {viewingSavedPlan && <> {' · '}{selectedDayProgress.has_checkin ? `${selectedDayProgress.completed_items?.length || 0} of 4 meals checked` : 'Meals not recorded'}
+                        {' · '}{selectedDayProgress.has_checkin ? `${selectedDayProgress.water_glasses || 0}/8 glasses` : 'Water not recorded'}</>}
                       </p>
                     )}
                   </div>

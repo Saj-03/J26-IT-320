@@ -43,6 +43,11 @@ export function PhysicalNutrition() {
     getPlanCheckins(today, today).then((progress) => setEatenSlots(progress?.daily?.[today]?.completed_items || [])).catch(() => setEatenSlots([]));
   }, [today]);
   const currentSlotMeals = recomData?.today_slots?.[slotKey] || [];
+  const dailyCalorieTarget = recomData?.nutrition_targets?.target_kcal_per_day;
+  const slotCalorieShares = { breakfast: 0.25, lunch: 0.30, dinner: 0.30, snack: 0.15 };
+  const slotCalorieTarget = dailyCalorieTarget != null && Number.isFinite(Number(dailyCalorieTarget))
+    ? Math.round(Number(dailyCalorieTarget) * (slotCalorieShares[slotKey] || 0.25))
+    : null;
   const featuredMeal = currentSlotMeals[0] || recomData?.meals?.[0] || {
     name: 'Red Rice with Dhal Curry, Kola Mallum & Soya Meat Curry',
     calories: 420, protein: 24, carbs: 68, fat: 7.5, prep_time: 20,
@@ -154,9 +159,25 @@ export function PhysicalNutrition() {
                 {featuredMeal.description || 'Specially selected to support sustained cognitive stamina during university study sessions.'}
               </p>
 
+              {slotCalorieTarget !== null && (
+                <div className="mt-4 grid gap-3 rounded-2xl border border-brand-100 bg-brand-50/70 p-4 sm:grid-cols-2">
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-brand-700">Estimated daily target</p>
+                    <p className="mt-1 text-xl font-black text-charcoal">{Number(dailyCalorieTarget).toLocaleString()} <span className="text-xs font-bold">kcal/day</span></p>
+                    <p className="mt-0.5 text-[11px] text-charcoal-muted">Based on your assessment and goal</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-brand-700">Suggested {slot.toLowerCase()} share</p>
+                    <p className="mt-1 text-xl font-black text-charcoal">~{slotCalorieTarget.toLocaleString()} <span className="text-xs font-bold">kcal</span></p>
+                    <p className="mt-0.5 text-[11px] text-charcoal-muted">Flexible guide across your meals</p>
+                  </div>
+                  <p className="sm:col-span-2 text-[11px] leading-relaxed text-charcoal-muted">Targets are estimates. Meal calories below are for the dataset’s listed serving, so the same meal can have the same calories while your daily target changes by goal.</p>
+                </div>
+              )}
+
               <div className="grid grid-cols-4 gap-2.5 mt-5">
                 {[
-                  { l: 'Calories', v: `${featuredMeal.calories || 400}`, u: 'kcal' },
+                  { l: 'Per listed serving', v: `${featuredMeal.calories || 400}`, u: 'kcal' },
                   { l: 'Protein', v: `${featuredMeal.protein || 20}`, u: 'g' },
                   { l: 'Carbs', v: `${featuredMeal.carbs || 60}`, u: 'g' },
                   { l: 'Prep Time', v: `${featuredMeal.prep_time || 15}`, u: 'mins' }

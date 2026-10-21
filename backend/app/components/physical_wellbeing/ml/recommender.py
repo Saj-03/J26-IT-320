@@ -787,7 +787,7 @@ def predict_adherence(feats: Dict[str, float]) -> float:
 
 # ── Helper: Filter & Score Meals for Profile ─────────────────────────────────
 def _weight_goal_type(profile: dict) -> str | None:
-    """Resolve explicit weight goals before using BMI as a cautious fallback."""
+    """Resolve explicit weight goals; BMI alone must not choose a diet goal."""
     primary = str(profile.get("goal", "")).lower().replace("_", " ")
     secondary = " ".join(str(item).lower().replace("_", " ") for item in profile.get("goals", []))
     nutrition = " ".join(str(item).lower().replace("_", " ") for item in profile.get("nutrition_goals", []))
@@ -796,11 +796,69 @@ def _weight_goal_type(profile: dict) -> str | None:
             return "gain"
         if any(term in text for term in ("weight loss", "lose weight", "fat loss", "fat burn", "weight reduction")):
             return "loss"
-    if float(profile.get("bmi", 22.0)) >= 25.0:
-        return "loss"
-    if float(profile.get("bmi", 22.0)) < 18.5:
-        return "gain"
     return None
+
+
+def estimate_daily_calorie_target(profile: dict) -> dict:
+    """Estimate adult energy needs with Mifflin-St Jeor and a coarse activity factor.
+
+    This is a planning estimate, not a clinical prescription. Unknown sex coefficients
+    are returned as a range rather than guessed from BMI or gender identity.
+    """
+    assessment = profile.get("assessment_data") or {}
+    age = profile.get("age", assessment.get("age"))
+    height_cm = profile.get("height_cm", assessment.get("height"))
+    weight_kg = profile.get("weight_kg", assessment.get("weight"))
+    try:
+        age, height_cm, weight_kg = int(float(age)), float(height_cm), float(weight_kg)
+    except (TypeError, ValueError):
+        return {"available": False, "reason": "assessment_measurements_missing"}
+    if age < 18 or age > 120 or not (120 <= height_cm <= 230) or not (30 <= weight_kg <= 350):
+        return {"available": False, "reason": "assessment_measurements_out_of_range"}
+
+    gender = str(profile.get("gender", assessment.get("gender", ""))).strip().lower()
+    if gender == "male":
+        sex_constants = [5]
+        basis = "male_coefficient"
+    elif gender == "female":
+        sex_constants = [-161]
+        basis = "female_coefficient"
+    else:
+        sex_constants = [-161, 5]
+        basis = "coefficient_range_due_to_unspecified_sex"
+
+    activity = str(profile.get("activity_level", "medium")).lower()
+    activity_factor = 1.2 if activity in {"low", "inactive", "sedentary"} else 1.7 if activity in {"high", "very active", "highly active"} else 1.45
+    resting_values = [10 * weight_kg + 6.25 * height_cm - 5 * age + constant for constant in sex_constants]
+    maintenance_values = [max(1000, value * activity_factor) for value in resting_values]
+
+    goal = _weight_goal_type(profile)
+    adjusted = []
+    for maintenance, resting in zip(maintenance_values, resting_values):
+        if goal == "loss":
+            adjusted.append(max(resting, maintenance - min(300, maintenance * 0.10)))
+        elif goal == "gain":
+            adjusted.append(maintenance + min(300, maintenance * 0.10))
+        else:
+            adjusted.append(maintenance)
+
+    def bounds(values):
+        low, high = min(values), max(values)
+        # Show a modest uncertainty band around formula estimates, plus sex-coefficient range if needed.
+        return {"min": int(round(low * 0.9 / 10) * 10), "max": int(round(high * 1.1 / 10) * 10)}
+
+    middle_target = sum(adjusted) / len(adjusted)
+    return {
+        "available": True,
+        "method": "Mifflin-St Jeor resting energy estimate × activity factor",
+        "goal": goal or "maintain/general wellbeing",
+        "target_kcal_per_day": int(round(middle_target / 10) * 10),
+        "target_range_kcal_per_day": bounds(adjusted),
+        "maintenance_range_kcal_per_day": bounds(maintenance_values),
+        "activity_factor": activity_factor,
+        "coefficient_basis": basis,
+        "disclaimer": "Estimated adult energy needs; individual results vary. Use as a flexible guide, not a medical prescription."
+    }
 
 
 def _meal_goal_alignment(meal: dict, weight_goal: str | None, profile: dict) -> float:
@@ -809,6 +867,13 @@ def _meal_goal_alignment(meal: dict, weight_goal: str | None, profile: dict) -> 
     calorie_score = min(1.0, max(0.0, (calories - 200.0) / 450.0))
     protein_score = min(1.0, protein / 30.0)
     protein_density = min(1.0, (protein / max(calories, 1.0)) * 650.0)
+    calorie_plan = estimate_daily_calorie_target(profile)
+    if calorie_plan.get("available"):
+        slot_portions = {"breakfast": 0.25, "lunch": 0.30, "dinner": 0.30, "snack": 0.15}
+        target = calorie_plan["target_kcal_per_day"] * slot_portions.get(meal.get("slot"), 0.25)
+        calorie_fit = max(0.0, 1.0 - abs(calories - target) / max(target, 1.0))
+        nutrient_score = protein_density if weight_goal == "loss" else protein_score if weight_goal == "gain" or "strength" in str(profile.get("goal", "")).lower() else 0.5
+        return 0.7 * calorie_fit + 0.3 * nutrient_score
     if weight_goal == "loss":
         return 0.58 * (1.0 - calorie_score) + 0.42 * protein_density
     if weight_goal == "gain":
@@ -1348,6 +1413,7 @@ def get_baseline_recommendations(profile: dict, k: int = 3) -> Dict[str, Any]:
         "context_aware": False,
         "is_exam_period": False,
         "effective_available_minutes": avail_mins,
+        "nutrition_targets": estimate_daily_calorie_target(profile),
         "recommended_workouts": formatted_exercises,
         "recommended_meals": raw_meals[:k]
     }
@@ -1361,6 +1427,7 @@ def get_adaptive_recommendations(profile: dict, is_exam_period: bool = False, k:
     """
     exercises = get_tailored_exercises_for_profile(profile, is_exam_period=is_exam_period)
     meals = get_scored_meals_for_profile(profile, is_exam_period=is_exam_period)
+    nutrition_targets = estimate_daily_calorie_target(profile)
 
     avail_mins = int(profile.get("available_minutes", 20))
     stress = float(profile.get("stress_score", 3.0))
@@ -1376,6 +1443,7 @@ def get_adaptive_recommendations(profile: dict, is_exam_period: bool = False, k:
     lu = [m for m in meals if m["slot"] == "lunch"][:2]
     dn = [m for m in meals if m["slot"] == "dinner"][:2]
     sn = [m for m in meals if m["slot"] == "snack"][:2]
+    primary_day_meals = [items[0] for items in (bf, lu, dn, sn) if items]
 
     return {
         "model_version": "Model 2 - Context-Aware Adaptive XGBoost",
@@ -1385,6 +1453,12 @@ def get_adaptive_recommendations(profile: dict, is_exam_period: bool = False, k:
         "stress_level": round(stress, 2),
         "workload_score": round(workload, 2),
         "behavior_adaptation": profile.get("behavior_adaptation"),
+        "nutrition_targets": nutrition_targets,
+        "today_nutrition": {
+            "target_kcal_per_day": nutrition_targets.get("target_kcal_per_day") if nutrition_targets.get("available") else None,
+            "recommended_meals_kcal": int(round(sum(float(meal.get("calories", 0)) for meal in primary_day_meals))),
+            "estimate_available": nutrition_targets.get("available", False),
+        },
         "safety_analysis": analyze_limitations_and_safety(profile),
         "recommended_workouts": exercises[:k],
         "recommended_meals": meals[:k],
@@ -1413,6 +1487,8 @@ def generate_week_plan(
     """
     if start_date is None:
         start_date = datetime.date.today()
+
+    nutrition_targets = estimate_daily_calorie_target(profile)
 
     num_days = max(1, min(31, int(num_days or 7)))
     safety = analyze_limitations_and_safety(profile)
@@ -1507,6 +1583,11 @@ def generate_week_plan(
                 "lunch": [lu_item_1, lu_item_2],
                 "dinner": [dn_item_1, dn_item_2],
                 "snack": [sn_item_1, sn_item_2]
+            },
+            "nutrition": {
+                "target_kcal_per_day": nutrition_targets.get("target_kcal_per_day") if nutrition_targets.get("available") else None,
+                "selected_meals_kcal": int(round(sum(float(item.get("calories", 0)) for item in (bf_item_1, lu_item_1, dn_item_1, sn_item_1)))),
+                "estimate_available": nutrition_targets.get("available", False),
             }
         }
         days.append(day_plan)
@@ -1517,6 +1598,7 @@ def generate_week_plan(
         "is_exam_period": is_exam_period,
         "effective_available_minutes": engine_info["effective_available_minutes"],
         "behavior_adaptation": profile.get("behavior_adaptation"),
+        "nutrition_targets": nutrition_targets,
         "safety_analysis": safety,
         "user_preferences": {
             "goal": profile.get("goal", "fitness"),

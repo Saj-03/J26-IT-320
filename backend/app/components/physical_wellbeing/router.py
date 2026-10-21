@@ -448,6 +448,7 @@ def save_workout_time_window(data: schemas.WorkoutTimeWindowIn, db: Session = De
 
 
 def _profile_to_dict(p: WellbeingProfile) -> dict:
+    assessment = p.assessment_data or {}
     return {
         "workload_intensity_score": p.workload_intensity_score or 50.0,
         "stress_score": p.stress_score or 3.0,
@@ -467,6 +468,14 @@ def _profile_to_dict(p: WellbeingProfile) -> dict:
         "preferred_activities": getattr(p, "preferred_activities", []) or [],
         "goal": p.goal or "fitness",
         "goals": p.goals or ([p.goal] if p.goal else ["fitness"]),
+        "activity_level": p.activity_level or "medium",
+        "nutrition_goals": assessment.get("nutritionGoals", []),
+        "age": assessment.get("age"),
+        "gender": assessment.get("gender"),
+        "height_cm": assessment.get("height"),
+        "weight_kg": assessment.get("weight"),
+        "assessment_data": assessment,
+        "meal_source": assessment.get("mealSource", ""),
         "sleep_deficit": max(0.0, 7.5 - (p.sleep_hours or 7.0))
     }
 
@@ -584,6 +593,8 @@ def recommendations(is_exam_period: bool = False, use_baseline: bool = False, db
         "context_aware": res["context_aware"],
         "is_exam_period": res.get("is_exam_period", is_exam_period),
         "effective_available_minutes": res.get("effective_available_minutes", p.available_minutes),
+        "nutrition_targets": res.get("nutrition_targets"),
+        "today_nutrition": res.get("today_nutrition"),
         "user_preferences": profile_dict,
         "exercises": formatted_exercises,
         "meals": formatted_meals,
