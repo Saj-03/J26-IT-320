@@ -42,6 +42,7 @@ def participant_metrics(db: Session, user, weeks: int = 7, now: datetime | None 
     tried = sum(t.action == "tried" for t in tips)
     return {"research_id": user.research_id,
             "group": "grounded" if service.chat_grounded(user) else "baseline2",
+            "tip_policy": service.tip_policy(user),
             "chat_sessions_per_week": round(len(sessions) / weeks, 2),
             "turn_depth": round(mean(sessions), 2) if sessions else None,
             "journal_days_per_week": round(len(jdays) / weeks, 2),
@@ -59,4 +60,14 @@ def group_summary(rows: list[dict]) -> dict:
             return round(mean(v), 2) if v else None
         out[g] = {"n": len(rs), "chat_sessions_per_week": m("chat_sessions_per_week"), "turn_depth": m("turn_depth"),
                   "journal_days_per_week": m("journal_days_per_week"), "tip_click_through": m("tip_click_through")}
+    return out
+
+
+def tip_policy_summary(rows: list[dict]) -> dict:
+    """Tip click-through (tried / shown) per tip policy: learned (bandit) versus fixed rules."""
+    out = {}
+    for pol in ("rules", "bandit"):
+        rs = [r for r in rows if r.get("tip_policy") == pol]
+        shown = sum(r["tips_shown"] for r in rs); tried = sum(r["tips_tried"] for r in rs)
+        out[pol] = {"n": len(rs), "tips_shown": shown, "tips_tried": tried, "click_through": round(tried / shown, 2) if shown else None}
     return out

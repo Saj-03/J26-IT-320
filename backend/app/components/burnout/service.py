@@ -7,6 +7,7 @@ from app.components.burnout.models import JournalEntry, ChatMessage, MoodTap, We
 from app.components.burnout.ml.fusion import fuse
 from app.components.burnout.ml.deviation_detector import deviation_score, deviation_detail
 from app.components.burnout import tips
+from app.components.burnout.ml import tip_bandit as bandit
 from app.components.burnout.schemas import SignalOut
 from app.shared.integration.contracts import RiskSignal, RecoverySignal
 from app.shared.integration.models import SignalEvent
@@ -114,6 +115,15 @@ def chat_grounded(user) -> bool:
     return user.research_id not in ids
 
 
+def tip_policy(user) -> str:
+    """'bandit' = the per-student tip learner, 'rules' = fixed rules. BANDIT_IDS (researcher-assigned pilot arm) wins; otherwise TIP_POLICY."""
+    from app.core.config import settings
+    ids = {i.strip() for i in settings.BANDIT_IDS.split(",") if i.strip()}
+    if ids:
+        return "bandit" if user.research_id in ids else "rules"
+    return "bandit" if settings.TIP_POLICY.strip().lower() == "bandit" else "rules"
+
+
 def log_tip_event(db: Session, user, category: str, action: str) -> bool:
     """Record shown / tried / dismissed. A 'shown' is stored once per category per day so refreshing does not inflate it."""
     if action == "shown":
@@ -157,8 +167,9 @@ def summary(db: Session, user, n: int = 14) -> dict:
     inp = rows[0].inputs or {}
     sig = inp.get("signals", {})
     factors = inp.get("factors", [])
+    picker = bandit.make_picker(db, user) if tip_policy(user) == "bandit" else None
     return {"latest": to_out(rows[0]), "history": [r.risk_score for r in reversed(rows)],
-            "signals": sig, "factors": factors, "tip": tips.choose_tip(sig, factors, user.id)}
+            "signals": sig, "factors": factors, "tip": tips.choose_tip(sig, factors, user.id, picker)}
 
 
 def build_context(db: Session, user) -> dict | None:

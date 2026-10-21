@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import app.db.base  # noqa: F401,E402  (registers every model)
 from app.db.session import SessionLocal  # noqa: E402
 from app.shared.users.models import User  # noqa: E402
-from app.components.burnout.metrics import participant_metrics, group_summary  # noqa: E402
+from app.components.burnout.metrics import participant_metrics, group_summary, tip_policy_summary  # noqa: E402
 
 
 def main():
@@ -28,6 +28,9 @@ def main():
     for g, v in group_summary(rows).items():
         print(f"  {g:<10} n={v['n']}  chat/wk={v['chat_sessions_per_week']}  depth={v['turn_depth']}  "
               f"journal d/wk={v['journal_days_per_week']}  tip CTR={v['tip_click_through']}")
+    print("\nTips by policy (learned = bandit, BANDIT_IDS in .env):")
+    for pol, v in tip_policy_summary(rows).items():
+        print(f"  {pol:<7} n={v['n']}  shown={v['tips_shown']}  tried={v['tips_tried']}  click-through={v['click_through']}")
     print("\nProposal targets: depth > 4 turns; journal > 40% of participants weekly; tip click-through > 40%.")
 
 

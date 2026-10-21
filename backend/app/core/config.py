@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     LLM_BASE_URL: str = ""                     # only for provider "openai", e.g. https://api.groq.com/openai/v1
     RISK_SIGNAL_MAX_AGE_HOURS: int = 24       # freshness check (C3 <- C4)
     BASELINE2_IDS: str = ""                   # comma-separated research_ids whose chat gets NO academic context (Baseline 2, pilot)
+    TIP_POLICY: str = "rules"                 # "rules" (fixed rules) or "bandit" (per-student learning of the tip category); used when BANDIT_IDS is empty
+    BANDIT_IDS: str = ""                      # comma-separated research_ids who get the learning tip policy (pilot arm); everyone else gets rules
     DEMO_MODE: bool = True                    # enables /burnout/demo/* (seeds sample weeks); set False in production
     URGENT_DEADLINE_WINDOW_HOURS: int = 48    # tasks due inside this window are never deferred
     SCHEDULER_RESEARCHER_EMAILS: str = ""    # C3 pilot: who may set participants' experiment mode (comma-separated)
