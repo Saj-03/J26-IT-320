@@ -23,10 +23,12 @@ import pandas as pd
 import numpy as np
 import joblib
 
+
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CLEANED_DIR = r"d:\RP\J26-IT-320\backend\datasets\physical\cleaned"
-DATASETS_DIR = r"d:\RP\J26-IT-320\backend\datasets\physical"
-MODEL_DIR = os.path.join(BASE_DIR, "models")
+BACKEND_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "..", ".."))
+CLEANED_DIR = os.path.join(BACKEND_DIR, "datasets", "physical", "cleaned")
+MODEL_DIR = os.path.join(BACKEND_DIR, "datasets", "physical")
 
 MODEL_PATH = os.path.join(MODEL_DIR, "adherence_xgb.joblib")
 SCALER_PATH = os.path.join(MODEL_DIR, "scaler.joblib")

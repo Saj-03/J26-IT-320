@@ -79,3 +79,29 @@ def test_offline_handles_greetings_and_clarifying_questions():
     assert "wasn't clear" in offline_reply(h("um is that all?")).lower()
     assert "no rush" in offline_reply(h("okay")).lower()
     assert "exam" in offline_reply(h("my exams are killing me")).lower() or "academic" in offline_reply(h("my exams are killing me")).lower()
+
+
+# ---- crisis phrasing that is not a fixed term (found when "I feel like dying" was missed) ----
+import pytest
+from app.components.burnout.llm import prompts as _prompts
+
+
+@pytest.mark.parametrize("text", [
+    "I want to die", "I feel like dying", "I feel like I'm dying", "I wish I could just disappear",
+    "I want to end it", "I feel like I should just die", "i dont wanna be here", "I want to be dead",
+    "I just want it all to stop", "life isn't worth living", "please kill me",
+])
+def test_crisis_phrasings_are_caught(text):
+    assert _prompts.is_crisis(text)
+
+
+@pytest.mark.parametrize("text", [
+    "I am exhausted and I cannot cope with all these deadlines.",
+    "I did not sleep, I feel hopeless about this semester.",
+    "I am dying to finish this report and go home",
+    "This deadline is killing me a little but I have a plan",
+    "I want to end the meeting early",
+    "I can't keep up with the assignments",
+])
+def test_ordinary_stress_is_not_a_crisis(text):
+    assert not _prompts.is_crisis(text)

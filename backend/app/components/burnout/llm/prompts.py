@@ -42,6 +42,21 @@ CRISIS_TERMS = [
 ]
 
 
+# Phrasings that do not fit a fixed term ("I feel like dying", "I wish I could just disappear"). Matched on the
+# normalised text. Deliberately safety-first: showing the support card by mistake costs little, missing it costs a lot.
+CRISIS_PATTERNS = [
+    r"\b(want|wanna|wish|need|feel like|feels like|going to|gonna)\b.{0,15}\b(die|dying|dead|death)\b",
+    r"\bshould (just )?die\b",
+    r"\b(dont|do not) (wanna|want to) (be )?(here|alive|live|exist)\b",
+    r"\b(want|wanna|wish).{0,15}\b(disappear|vanish|not exist|not wake up|go to sleep and not)\b",
+    r"\b(want|wanna|going|gonna|need|ready|should)( to)? end (it|things|everything)\b",
+    r"\bwant (it all|everything) to stop\b",
+    r"\b(life|living) (is|isnt|is not) (not )?worth\b",
+    r"\bkill me\b",
+]
+_CRISIS_RE = [re.compile(p) for p in CRISIS_PATTERNS]
+
+
 def _normalise(text: str) -> str:
     t = text.lower().replace("\u2019", "'").replace("'", "")
     t = re.sub(r"[^a-z0-9\s]", " ", t)
@@ -50,7 +65,7 @@ def _normalise(text: str) -> str:
 
 def is_crisis(message: str) -> bool:
     norm = _normalise(message)
-    return any(term in norm for term in CRISIS_TERMS)
+    return any(term in norm for term in CRISIS_TERMS) or any(r.search(norm) for r in _CRISIS_RE)
 
 
 def build_system_prompt(context: dict | None) -> str:
