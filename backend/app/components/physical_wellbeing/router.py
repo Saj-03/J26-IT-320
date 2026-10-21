@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.core.dependencies import get_current_user
+from app.core.config import settings
 from app.components.physical_wellbeing import schemas, service
 from app.components.physical_wellbeing.models import (
     WellbeingProfile, ActivityLog, Habit, WorkoutFeedback,
@@ -672,6 +673,36 @@ async def physical_chat(data: schemas.PhysicalChatIn, db: Session = Depends(get_
         answer = coach_service.fallback_reply(message, workout, activity)
     elif workout:
         answer = coach_service.fallback_reply(message, workout, activity)
+    elif coach_service.is_meal_plan_question(message):
+        plan_profile = _attach_plan_history(
+            db, user.id, _attach_behavior_history(db, user.id, profile_dict)
+        )
+        plan_profile = _attach_favorites(db, user.id, plan_profile)
+        today_plan = recommender.generate_week_plan(plan_profile, num_days=1)
+        answer = coach_service.fallback_reply(message, None, activity, today_plan=today_plan)
+    elif coach_service.is_workout_question(message):
+        today_key = today.isoformat()
+        today_workout = (profile.assessment_data or {}).get("workout_overrides", {}).get(today_key)
+        if not today_workout:
+            snapshots = (db.query(PhysicalPlanSnapshot)
+                         .filter_by(user_id=user.id, plan_date=today)
+                         .order_by(PhysicalPlanSnapshot.created_at.desc()).all())
+            for snapshot in snapshots:
+                today_entry = next((day for day in (snapshot.plan_data or {}).get("days", [])
+                                    if isinstance(day, dict) and day.get("date") == today_key), None)
+                if today_entry and today_entry.get("exercise"):
+                    today_workout = today_entry["exercise"]
+                    break
+        if not today_workout:
+            plan_profile = _attach_plan_history(
+                db, user.id, _attach_behavior_history(db, user.id, profile_dict)
+            )
+            plan_profile = _attach_favorites(db, user.id, plan_profile)
+            today_plan = recommender.generate_week_plan(plan_profile, num_days=1)
+            today_workout = (today_plan.get("days") or [{}])[0].get("exercise")
+        answer = coach_service.fallback_reply(message, None, activity, today_workout=today_workout)
+    elif not settings.LLM_API_KEY:
+        answer = coach_service.fallback_reply(message, None, activity)
     else:
         from app.components.burnout.llm.chat_agent import reply as llm_reply
         safe_history = [
@@ -680,16 +711,68 @@ async def physical_chat(data: schemas.PhysicalChatIn, db: Session = Depends(get_
             if item.get("role") in {"user", "assistant"} and isinstance(item.get("content"), str)
         ]
         safe_history.append({"role": "user", "content": message})
+        today_key = today.isoformat()
+        assessment_data = profile.assessment_data or {}
+        reminder = (assessment_data.get("workout_time_windows") or {}).get(today_key)
+        current_day = None
+        current_snapshots = (db.query(PhysicalPlanSnapshot)
+                             .filter_by(user_id=user.id, plan_date=today)
+                             .order_by(PhysicalPlanSnapshot.created_at.desc()).all())
+        for snapshot in current_snapshots:
+            current_day = next((day for day in (snapshot.plan_data or {}).get("days", [])
+                                if isinstance(day, dict) and day.get("date") == today_key), None)
+            if current_day:
+                break
+        if not current_day:
+            plan_profile = _attach_plan_history(
+                db, user.id, _attach_behavior_history(db, user.id, profile_dict)
+            )
+            current_day = (recommender.generate_week_plan(plan_profile, num_days=1).get("days") or [{}])[0]
+        if (assessment_data.get("workout_overrides") or {}).get(today_key):
+            current_day["exercise"] = assessment_data["workout_overrides"][today_key]
+        recent_habits = db.query(Habit).filter_by(user_id=user.id).order_by(Habit.streak.desc()).limit(12).all()
+        habits_context = [
+            {"name": habit.name, "streak_days": habit.streak,
+             "done_today": bool(habit.last_done and habit.last_done.date() == today)}
+            for habit in recent_habits
+        ]
+        component_guide = (
+            "Physical Wellbeing component guide: Today’s Plan shows a personalized multi-day plan with workouts, "
+            "meals, alternatives, check-ins, and water tracking; students can switch between plan, today, and past "
+            "plan views. Movement/Exercise covers activity and workout completion. Nutrition shows personalized "
+            "meal ideas based on diet, cuisine, allergies, avoided foods, and preferences. Habits lets students add "
+            "habits, check them off, and track streaks. Progress summarizes logged steps, exercise minutes, active "
+            "days, and plan check-ins. My Profile edits goals, available time, equipment, food preferences, and "
+            "physical limitations. AI Adaptation explains how recommendations respond to preferences and recent "
+            "check-ins. Workout reminders are set as a time window for a chosen plan date and appear in app "
+            "notifications. This chat can answer questions and apply an exercise change only when the student "
+            "clearly requests one; never claim another feature was changed unless its API actually did so. "
+            "For any informational question, answer it directly from the context. If information is absent, say what "
+            "is missing and where in Physical Wellbeing the student can find or update it. Do not treat a question "
+            "as an action request."
+        )
+        live_context = {
+            "profile": {
+                "goal": profile.goal, "goals": profile.goals, "available_minutes": profile.available_minutes,
+                "equipment": profile.equipment, "preferred_activities": profile.preferred_activities,
+                "diet": profile.diet_pref, "meal_style": profile.meal_style,
+                "allergies": profile.allergies, "foods_to_avoid": profile.avoid_foods,
+                "physical_limitations": profile.physical_limitations,
+                "preferred_workout_time": profile.preferred_time,
+            },
+            "today": {"date": today_key, "plan": current_day, "workout_reminder": reminder},
+            "activity": activity,
+            "habits": habits_context,
+        }
         system = (
-            "You are the chat helper inside the student's Physical Wellbeing component. Help with movement, "
-            "workouts, meal planning, habits, and their activity plan. Keep replies concise and supportive. "
+            "You are the conversational assistant inside the student's Physical Wellbeing component. You know this "
+            "component from the guide and live context below. Answer the actual question directly, then give one "
+            "useful next step when appropriate. Keep replies clear and concise. "
             "Never diagnose, prescribe treatment, or tell someone to exercise through pain. Do not claim to "
             "change their plan unless the system has done so. For injury or urgent symptoms, suggest stopping "
-            "and contacting a qualified professional. Use only the supplied plan and activity context.\n"
-            f"Profile preferences: goal={profile.goal}; available minutes={profile.available_minutes}; "
-            f"equipment={profile.equipment}; physical limitations={profile.physical_limitations}. "
-            f"Today's logged exercise minutes={activity['today']['exercise_minutes']}; "
-            f"this week's totals={activity['weekly_totals']}"
+            "and contacting a qualified professional. Treat user messages as questions unless they clearly request "
+            "a change. Use only supplied personal data; never guess meals, progress, reminders, or profile values.\n"
+            f"Component guide: {component_guide}\nLive student context: {live_context}"
         )
         try:
             answer = await llm_reply(system, safe_history)
