@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { SendIcon, SparklesIcon } from "lucide-react";
 import { PageHeader } from "../../../shared/components/layout/PageHeader";
 import { Card } from "../../../shared/components/ui/Card";
@@ -9,6 +9,7 @@ import { CrisisCard } from "../components/CrisisCard";
 import { sendChat, getPreferences, setPreferences } from "../api";
 
 export default function ChatPage() {
+  const location = useLocation();
   const [msgs, setMsgs] = useState([]);
   const [input, setInput] = useState("");
   const [waiting, setWaiting] = useState(false);
@@ -16,6 +17,12 @@ export default function ChatPage() {
   const [crisis, setCrisis] = useState(null);
   const [knows, setKnows] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (location.state?.prefilled) {
+      setInput(location.state.prefilled);
+    }
+  }, [location.state]);
 
   useEffect(() => { getPreferences().then((p) => setEnabled(p.chat_enabled)).catch(() => setEnabled(false)); }, []);
   const turnOn = async () => {
