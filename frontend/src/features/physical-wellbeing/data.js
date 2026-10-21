@@ -25,36 +25,145 @@ export const wellbeingProfile = {
     favourites: 'Rice & curry, fruit',
     streak: 7
 };
-export const fitnessLevels = [
-    { id: 'beginner', label: 'Beginner', desc: 'Little or no regular exercise', emoji: '🌱' },
-    { id: 'moderate', label: 'Moderate', desc: 'Active once or twice a week', emoji: '🚶' },
-    { id: 'active', label: 'Active', desc: 'Exercise 3–4 times a week', emoji: '🏃' },
-    { id: 'very', label: 'Very Active', desc: 'Training most days', emoji: '⚡' }
-];
+// Physical Wellbeing Goals (Survey Col 55)
 export const wellbeingGoals = [
-    { id: 'fitness', label: 'Improve Physical Fitness', emoji: '💪' },
-    { id: 'active', label: 'Become More Active', emoji: '🚶' },
-    { id: 'maintain', label: 'Maintain Healthy Weight', emoji: '⚖️' },
-    { id: 'lose', label: 'Lose Weight', emoji: '🎯' },
-    { id: 'eating', label: 'Build Better Eating Habits', emoji: '🥗' },
-    { id: 'consistency', label: 'Improve Exercise Consistency', emoji: '📅' },
-    { id: 'sedentary', label: 'Reduce Sedentary Time', emoji: '⏱️' },
-    { id: 'habits', label: 'Build Healthy Daily Habits', emoji: '✨' },
-    { id: 'overall', label: 'Improve Overall Wellbeing', emoji: '🌿' }
+    { id: 'Improve overall fitness', label: 'Improve Overall Fitness', emoji: '💪', desc: 'Build aerobic capacity and vitality' },
+    { id: 'Increase physical activity', label: 'Increase Physical Activity', emoji: '🚶', desc: 'Move more and reduce sedentary study hours' },
+    { id: 'Improve strength', label: 'Improve Strength', emoji: '🏋️', desc: 'Tone muscles, posture and core endurance' },
+    { id: 'Manage body weight', label: 'Manage Body Weight', emoji: '⚖️', desc: 'Healthy body mass management' },
+    { id: 'Improve flexibility / mobility', label: 'Flexibility & Mobility', emoji: '🧘', desc: 'Relieve stiff neck, shoulders and lower back' },
+    { id: 'Improve sleep', label: 'Improve Sleep Quality', emoji: '😴', desc: 'De-stress for deeper, restorative rest' },
+    { id: 'Maintain current wellbeing', label: 'Maintain Current Wellbeing', emoji: '🌿', desc: 'Sustain balanced daily health habits' }
 ];
+
+// Physical Activity Levels (Survey Col 56)
+export const activityLevels = [
+    { id: 'Very inactive', label: 'Very Inactive', desc: 'Sedentary study days, little to no exercise', emoji: '🪑' },
+    { id: 'Lightly active', label: 'Lightly Active', desc: 'Occasional light walking around campus', emoji: '🚶' },
+    { id: 'Moderately active', label: 'Moderately Active', desc: 'Regular exercise 1–2 times a week', emoji: '🏃' },
+    { id: 'Highly active', label: 'Highly Active', desc: 'Structured exercise 3–4 times a week', emoji: '⚡' },
+    { id: 'Very active', label: 'Very Active', desc: 'Intensive sports or training most days', emoji: '🔥' }
+];
+export const fitnessLevels = activityLevels; // Backwards compatibility alias
+
+// Willing Physical Activities (Survey Col 58)
+export const willingActivities = [
+    { id: 'Home workouts', label: 'Home Workouts', emoji: '🏠' },
+    { id: 'Gym / strength training', label: 'Gym / Strength', emoji: '🏋️' },
+    { id: 'Walking', label: 'Walking', emoji: '🚶' },
+    { id: 'Running / jogging', label: 'Running / Jogging', emoji: '🏃' },
+    { id: 'Stretching / mobility', label: 'Stretching / Mobility', emoji: '🧘' },
+    { id: 'Yoga', label: 'Yoga', emoji: '🕉️' },
+    { id: 'Cycling', label: 'Cycling', emoji: '🚴' },
+    { id: 'Sports', label: 'Sports (Badminton, etc.)', emoji: '🏸' },
+    { id: 'Dance / Zumba', label: 'Dance / Zumba', emoji: '💃' }
+];
+
+// Exercise Facilities & Equipment (Survey Col 61)
+export const equipmentFacilities = [
+    { id: 'No equipment', label: 'No Equipment (Bodyweight)', emoji: '🤸' },
+    { id: 'Exercise mat', label: 'Exercise Mat', emoji: '🧘' },
+    { id: 'Dumbbells / weights', label: 'Dumbbells / Weights', emoji: '🏋️' },
+    { id: 'Resistance bands', label: 'Resistance Bands', emoji: '🎗️' },
+    { id: 'Outdoor walking / running area', label: 'Outdoor Walking Area', emoji: '🌳' },
+    { id: 'Gym / fitness centre', label: 'Gym / Fitness Centre', emoji: '🏢' },
+    { id: 'Sports facilities', label: 'Sports Facilities', emoji: '🏟️' }
+];
+
+// Primary screening choice (matches survey question Col 59)
+export const limitationPrimaryChoices = [
+    { id: 'no', label: 'No limitations', emoji: '✅', desc: 'No joint pain or physical barriers to exercise' },
+    { id: 'prefer_not_to_say', label: 'Prefer not to say', emoji: '🔒', desc: 'Keep private — system will assign gentle, joint-neutral routines' },
+    { id: 'yes', label: 'Yes, I have limitations', emoji: '⚠️', desc: 'Specify joint pain or conditions for clinical safety adaptation' }
+];
+
+// Physical limitation categories (Col 60)
 export const limitationOptions = [
-    { id: 'none', label: 'No limitations', emoji: '✅' },
-    { id: 'knee', label: 'Knee discomfort', emoji: '🦵' },
-    { id: 'back', label: 'Back discomfort', emoji: '🧍' },
-    { id: 'joint', label: 'Joint limitations', emoji: '🔧' },
-    { id: 'mobility', label: 'Limited mobility', emoji: '♿' },
-    { id: 'other', label: 'Other', emoji: '📝' }
+    { id: 'lower_body', label: 'Lower-body (Knee / Ankle / Hip)', emoji: '🦵', desc: 'Excludes deep squats, lunges, running, and jump plyometrics' },
+    { id: 'upper_body', label: 'Upper-body (Lower Back / Spine)', emoji: '🧍', desc: 'Excludes deadlifts, heavy overhead loads, and unsupported spinal flexion' },
+    { id: 'shoulder_neck', label: 'Shoulders & Neck', emoji: '💪', desc: 'Excludes heavy push-ups and overhead barbell presses' },
+    { id: 'high_impact', label: 'High-impact movements', emoji: '👟', desc: 'Low-impact, joint-cushioned exercises only' },
+    { id: 'respiratory', label: 'Respiratory / Asthma', emoji: '🫁', desc: 'Excludes breathless sprint intervals; steady aerobic pacing only' },
+    { id: 'cardiovascular', label: 'Cardiovascular / Blood Pressure / Dizziness', emoji: '❤️', desc: 'Requires medical clearance; gentle supervised movements' },
+    { id: 'surgery_injury', label: 'Recent Injury or Surgery', emoji: '🩹', desc: 'Post-rehabilitation; doctor guidance required' },
+    { id: 'flexibility', label: 'Chronic Stiffness / Limited Mobility', emoji: '🧘', desc: 'Gentle therapeutic range-of-motion routines' },
+    { id: 'other', label: 'Other Medical Condition', emoji: '❓', desc: 'Personalized clinical review (specify below)' }
 ];
+
+// Limitation severity levels
+export const limitationSeverities = [
+    { id: 'mild', label: 'Mild / Occasional', emoji: '🟢', desc: 'Slight stiffness or tightness after sitting' },
+    { id: 'moderate', label: 'Moderate Discomfort', emoji: '🟡', desc: 'Noticeable pain or ache during certain loaded movements' },
+    { id: 'severe', label: 'Severe / Chronic / Sharp Pain', emoji: '🔴', desc: 'Persistent pain, recent injury, or diagnosed medical condition' }
+];
+
+// Available Time per University Day (Survey Col 62)
+export const availableTimeOptions = [
+    { id: 'Less than 15 minutes', label: 'Less than 15 mins', desc: 'Quick desk stretch & micro-routine', minutes: 15 },
+    { id: '15–30 minutes', label: '15–30 mins', desc: 'Efficient university session', minutes: 20 },
+    { id: '31–45 minutes', label: '31–45 mins', desc: 'Balanced cardio & strength', minutes: 35 },
+    { id: '46–60 minutes', label: '46–60 mins', desc: 'Complete workout routine', minutes: 45 },
+    { id: 'More than 60 minutes', label: '60+ mins', desc: 'In-depth fitness training', minutes: 60 }
+];
+
+// Main Routine Difficulties / Barriers (Survey Col 64)
+export const barrierOptions = [
+    'Academic workload',
+    'Lack of time',
+    'Stress',
+    'Tiredness / lack of sleep',
+    'Lack of motivation',
+    'Lack of facilities / equipment',
+    'Lack of knowledge'
+];
+
+// Main Nutrition Goals (Survey Col 65)
+export const nutritionGoals = [
+    { id: 'Maintain healthy eating', label: 'Maintain Healthy Eating', emoji: '🥗' },
+    { id: 'Improve nutritional quality', label: 'Improve Food Quality', emoji: '🍎' },
+    { id: 'Manage body weight', label: 'Manage Body Weight', emoji: '⚖️' },
+    { id: 'Increase protein intake', label: 'Increase Protein Intake', emoji: '🍗' },
+    { id: 'Increase fruit and vegetable intake', label: 'More Fruits & Veggies', emoji: '🥦' },
+    { id: 'Support fitness', label: 'Fuel Workout & Energy', emoji: '⚡' }
+];
+
+// Meal Cuisine Style (Survey Col 66)
+export const mealStyles = [
+    { id: 'Sri Lankan meals', label: 'Sri Lankan Meals', emoji: '🍛', desc: 'Rice & curry, hoppers, dhal, sambol' },
+    { id: 'International meals', label: 'International Meals', emoji: '🥗', desc: 'Oats, grilled chicken, pasta, wraps' },
+    { id: 'Combination of both', label: 'Combination of Both', emoji: '🍽️', desc: 'Blend of local cuisine and quick global meals' }
+];
+
+// Dietary Preference (Survey Col 67)
 export const dietOptions = [
-    { id: 'veg', label: 'Vegetarian', emoji: '🥬' },
-    { id: 'nonveg', label: 'Non-Vegetarian', emoji: '🍗' },
-    { id: 'vegan', label: 'Vegan', emoji: '🌱' },
-    { id: 'none', label: 'No Preference', emoji: '🍽️' }
+    { id: 'Non-Vegetarian', label: 'Non-Vegetarian', emoji: '🍗', desc: 'Includes poultry, fish, eggs and dairy' },
+    { id: 'Vegetarian', label: 'Vegetarian', emoji: '🥬', desc: 'Plant-based with dairy and eggs' },
+    { id: 'Vegan', label: '100% Vegan', emoji: '🌱', desc: 'Purely plant-based, no animal products' },
+    { id: 'No specific preference', label: 'No Specific Preference', emoji: '🍽️', desc: 'Flexible with any balanced meal' }
+];
+
+// Meal Sources (Survey Col 68)
+export const mealSources = [
+    'Cook at home',
+    'Family-prepared meals',
+    'University cafeteria / canteen',
+    'Restaurants / takeaway',
+    'Combination'
+];
+
+// Academic Study Hours Outside Lectures (Survey Col 29)
+export const studyHourRanges = [
+    'Less than 5 hours',
+    '5–10 hours',
+    '10–20 hours',
+    'More than 20 hours'
+];
+
+// Weekly Academic Tasks (Survey Col 34)
+export const academicTaskRanges = [
+    '1–2 tasks',
+    '3–5 tasks',
+    'More than 5 tasks'
 ];
 export const todayRecommendation = {
     id: 'r1',
@@ -102,14 +211,43 @@ export const alternativeExercises = [
     { id: 'cardio', name: 'Light Cardio', emoji: '🏃', mins: 15, difficulty: 'Easy', tag: 'Recommended' },
     { id: 'strength', name: 'Strength Exercise', emoji: '🏋️', mins: 30, difficulty: 'Moderate', tag: 'Progression' }
 ];
-export const workoutSteps = [
-    { name: 'Warm-Up March', seconds: 120, cue: 'March on the spot, swing your arms gently.', emoji: '🚶' },
-    { name: 'Bodyweight Squats', seconds: 120, cue: 'Feet shoulder-width. Sit back slowly, keep knees soft.', emoji: '🦵' },
-    { name: 'Standing Knee Lifts', seconds: 120, cue: 'Lift one knee at a time to hip height. Stay controlled.', emoji: '🦿' },
-    { name: 'Arm Circles', seconds: 120, cue: 'Big slow circles forward, then backward.', emoji: '💪' },
-    { name: 'Side Steps', seconds: 120, cue: 'Step side to side, keep a light bounce.', emoji: '↔️' },
-    { name: 'Cool-Down Stretch', seconds: 120, cue: 'Slow breathing, gentle hamstring and calf stretch.', emoji: '🧘' }
+export const kneeSafeWorkoutSteps = [
+    { name: 'Warm-Up March', seconds: 120, cue: 'Gentle flat march, swing arms loosely without stomping or jumping.', emoji: '🚶' },
+    { name: 'Glute Bridge Hold', seconds: 120, cue: 'Lie on back, knees bent. Drive hips up, squeeze glutes. Zero knee shear force.', emoji: '🍑' },
+    { name: 'Straight-Leg Quad Raises', seconds: 120, cue: 'Lie down or sit tall. Lift one leg straight up without bending knee. Strengthens quads safely.', emoji: '🦵' },
+    { name: 'Arm Circles & Torso Rotation', seconds: 120, cue: 'Big circles forward and back with gentle torso twists.', emoji: '💪' },
+    { name: 'Seated Core & Arm Reach', seconds: 120, cue: 'Sit tall, brace abdominals, reach overhead side to side with controlled breath.', emoji: '✨' },
+    { name: 'Cool-Down Hamstring & Calf Stretch', seconds: 120, cue: 'Slow deep breathing, gentle standing or seated hamstring and calf stretch.', emoji: '🧘' }
 ];
+
+export const backSafeWorkoutSteps = [
+    { name: 'Warm-Up Flat Walk', seconds: 120, cue: 'Light march in place with tall spinal posture and relaxed shoulders.', emoji: '🚶' },
+    { name: 'Cat-Cow Spinal Flow', seconds: 120, cue: 'On hands and knees, gently arch and round spine with slow deep breaths.', emoji: '🐈' },
+    { name: 'Bird-Dog Core Hold', seconds: 120, cue: 'Reach opposite arm and leg out. Builds deep lumbar stability without compressive load.', emoji: '🐕' },
+    { name: 'Forearm Plank Hold', seconds: 120, cue: 'Draw navel in, keep neck neutral, hold strong steady core.', emoji: '🪵' },
+    { name: 'Gentle Child’s Pose', seconds: 120, cue: 'Sit hips toward heels, extend arms forward on mat, release lower back tension.', emoji: '🧘' },
+    { name: 'Standing Chest & Doorway Opener', seconds: 120, cue: 'Open chest, breathe into upper ribs to reverse study hunching.', emoji: '🌿' }
+];
+
+export const gentleWorkoutSteps = [
+    { name: 'Gentle Campus Stride', seconds: 120, cue: 'Smooth walking cadence, swing arms naturally, inhale deeply.', emoji: '🚶' },
+    { name: 'Standing Torso Twists', seconds: 120, cue: 'Slow, relaxed twists side to side. Keep joints loose and comfortable.', emoji: '↔️' },
+    { name: 'Shoulder Rolls & Neck Release', seconds: 120, cue: 'Roll shoulders back 5 times, gently drop ear to shoulder.', emoji: '💆' },
+    { name: 'Side Step & Tap', seconds: 120, cue: 'Step side to side with zero bounce. Light and rhythmic.', emoji: '👟' },
+    { name: 'Seated Overhead Reach', seconds: 120, cue: 'Extend arms upward, stretch ribcage, exhale slowly.', emoji: '✨' },
+    { name: 'Box Breathing Relaxation', seconds: 120, cue: 'Inhale 4s, hold 4s, exhale 4s, hold 4s. Calms nervous system.', emoji: '🧘' }
+];
+
+export const standardWorkoutSteps = [
+    { name: 'Warm-Up March', seconds: 120, cue: 'March on the spot, swing your arms gently.', emoji: '🚶' },
+    { name: 'Bodyweight Squats & Core', seconds: 120, cue: 'Feet shoulder-width. Sit back slowly, keep knees tracking over toes.', emoji: '🦵' },
+    { name: 'Standing Knee Lifts', seconds: 120, cue: 'Lift one knee at a time to hip height. Stay controlled.', emoji: '🦿' },
+    { name: 'Arm Circles & Shoulder Burn', seconds: 120, cue: 'Big slow circles forward, then backward.', emoji: '💪' },
+    { name: 'Side Steps & Skater Taps', seconds: 120, cue: 'Step side to side with athletic rhythm.', emoji: '↔️' },
+    { name: 'Cool-Down Full Stretch', seconds: 120, cue: 'Slow breathing, gentle hamstring, quad and calf stretch.', emoji: '🧘' }
+];
+
+export const workoutSteps = standardWorkoutSteps;
 export const meals = [
     {
         id: 'm1',

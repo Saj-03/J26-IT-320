@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from app.components.scheduler import focus_service as fs
+from app.components.scheduler.focus import focus_service as fs
 from app.components.scheduler.models import RewardEvent, Task
 from app.components.scheduler.schemas import FocusEndIn, FocusStartIn
 
@@ -92,10 +92,10 @@ def test_xp_never_given_twice_for_same_session(env):
 def test_xp_adds_up_to_levels(env):
     _, db, current, _ = env
     me = current["user"]
-    for i in range(6):                                        # 6 x 30 xp = 180
+    for i in range(5):                                        # 5 x 30 xp = 150 (+20 "first hour" milestone)
         out = run(db, me, 25)
-    assert out["total_xp"] == 180 and out["level"] == 1
-    assert run(db, me, 25)["level"] == 2                       # 210 xp -> level 2
+    assert out["total_xp"] == 170 and out["level"] == 1
+    assert run(db, me, 25)["level"] == 2                       # 200 xp -> level 2
 
 
 # ---------------------------------------------------------------------------

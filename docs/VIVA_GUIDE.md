@@ -39,13 +39,14 @@ see `backend/tests/`."
 - Webcam pose (browser-only, no storage) → `frontend/.../components/PoseCoach.jsx`
 - Recovery mode switched on by C4 signal → `WellbeingProfile.recovery_mode`
 
-**C3 Adaptive Scheduler (IT23270206)** — three pillars
-- Pillar 1 constraint scheduling + static baseline → `scheduler/engine/constraint_scheduler.py`
-- Pillar 2 attention capacity, peak windows, adaptive Pomodoro → `scheduler/engine/attention_model.py`
-- Pillar 3 stress-responsive rules (urgent tasks protected, proposal only) → `scheduler/engine/stress_rules.py`
-- Gamification (idempotent XP) → `scheduler/engine/gamification.py`
-- Static vs adaptive experiment switch → `GET /api/scheduler/plan?adaptive=false`
-- Student override logged → `ScheduleChange.decision`
+**C3 Adaptive Scheduler (IT23270206)** — full requirement → code → test map: `backend/app/components/scheduler/README.md`
+- Plan my week, CP-SAT constraint scheduler + static baseline → `scheduler/planning/cp_scheduler.py`, `planning/planner_service.py`
+- Attention capacity, peak windows, adaptive Pomodoro (M1 GRU) → `scheduler/ml/m1_predictor.py`, `scheduler/focus/attention_service.py`
+- Task load (M2), real duration (M3), voice planner (M4) → `scheduler/ml/`
+- Stress-responsive proposals from the C4 signal (urgent tasks protected, accept / edit / reject / undo) → `scheduler/stress/stress_service.py`
+- Gamification (idempotent XP, streaks, badges, milestones) → `scheduler/rewards/gamification.py`, `rewards/progress_service.py`
+- Static vs adaptive experiment mode per participant (researcher) → `scheduler/research/research_service.py`
+- Student decisions logged → `ScheduleChange.decision` + `SchedulerAuditLog`
 
 **C4 Burnout Prediction & Nudging (IT23201378)**
 - Passive deviation, Isolation Forest → `burnout/ml/deviation_detector.py`

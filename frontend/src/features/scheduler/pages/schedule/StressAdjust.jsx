@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckIcon, ArrowRightIcon, LeafIcon, XIcon, LockIcon, RotateCcwIcon, Undo2Icon, ScissorsIcon, CalendarClockIcon, CoffeeIcon } from 'lucide-react';
+import { CheckIcon, ArrowRightIcon, LeafIcon, XIcon, LockIcon, RotateCcwIcon, Undo2Icon, ScissorsIcon, CalendarClockIcon, CoffeeIcon, InfoIcon } from 'lucide-react';
 import { PageHeader } from '../../../../shared/components/layout/PageHeader';
 import { Card } from '../../../../shared/components/ui/Card';
 import { Button } from '../../../../shared/components/ui/Button';
@@ -16,8 +16,9 @@ import { apiErrorMessage } from '../../../../shared/api/client';
 import { cn } from '../../../../shared/lib/cn';
 import {
     decideStressProposal, getStressStatus, getTaskSafety, listStressProposals,
-    proposeStressChanges, restoreStressProposal, utcMs,
+    proposeStressChanges, restoreStressProposal, utcMs, rateStressProposal,
 } from '../../api';
+import UsefulnessRating from '../../components/UsefulnessRating';
 
 const ICON = { move: CalendarClockIcon, split: ScissorsIcon, rest: CoffeeIcon };
 const LOAD_LABEL = { low: 'Light', medium: 'Medium', heavy: 'Heavy' };   // PlanPrimitives uses these words
@@ -32,7 +33,8 @@ const when = (iso) => new Date(utcMs(iso)).toLocaleString([], { weekday: 'short'
 
 // One line under the title: what exactly changes
 function detail(c) {
-    if (c.action === 'move') return <>Move to <b>{when(c.to)}</b></>;
+    if (c.action === 'move')     // NFR-08: old slot -> new slot
+        return c.old_start ? <>Move from {when(c.old_start)} to <b>{when(c.to)}</b></> : <>Not planned yet. Start from <b>{when(c.to)}</b></>;
     if (c.action === 'split') return <>Split into {c.pieces.length} pieces: {c.pieces.join(' + ')} min</>;
     return <>Add a {c.minutes}-min break in the next hour</>;
 }
@@ -207,6 +209,9 @@ export function StressAdjust() {
                     ? 'Changed your mind? You can go back to your original plan.'
                     : 'Remember to take short breaks.'}
                 </p>
+                {proposal.decision !== 'restored' &&
+                  <UsefulnessRating className="mt-3" question="How helpful was this suggestion?"
+                      send={(n) => rateStressProposal(proposal.id, n)}/>}
               </div>
               <div className="flex flex-wrap gap-2">
                 {(proposal.decision === 'accepted' || proposal.decision === 'edited') &&
@@ -220,5 +225,14 @@ export function StressAdjust() {
             </Card>
           </motion.div>}
       </AnimatePresence>
+
+      {/* NFR-12: planning aid, not a diagnosis - with a support pathway */}
+      <p className="flex items-start gap-2 text-xs text-charcoal-muted leading-relaxed">
+        <InfoIcon size={14} className="mt-0.5 shrink-0"/>
+        <span>
+          ThriveU only adjusts your study plan. It is a planning aid, not a medical or psychological diagnosis.
+          If you feel overwhelmed or unsafe, please talk to the university counselling service or someone you trust.
+        </span>
+      </p>
     </div>);
 }

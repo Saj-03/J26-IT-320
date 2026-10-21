@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ListTodoIcon, TimerIcon, GaugeIcon, FlameIcon, MoonIcon, ZapIcon, HeartPulseIcon, ArrowRightIcon, SparklesIcon } from 'lucide-react';
+import { ListTodoIcon, TimerIcon, GaugeIcon, FlameIcon, HeartPulseIcon, ArrowRightIcon, SparklesIcon } from 'lucide-react';
 import { Card } from '../shared/components/ui/Card';
 import { Button } from '../shared/components/ui/Button';
 import { ProgressRing } from '../shared/components/ui/ProgressRing';
@@ -10,7 +10,8 @@ import { StatCard } from '../shared/components/domain/StatCard';
 import { ScheduleTimeline } from '../features/scheduler/components/ScheduleTimeline';
 import { AIInsightCard } from '../shared/components/domain/AIInsightCard';
 import { BarChart } from '../shared/components/charts/Charts';
-import { weeklyTasksData, focusTimeData } from '../shared/lib/data';
+import api from '../shared/api/client';
+import { getStressStatus } from '../features/scheduler/api';
 import useStudent from '../shared/hooks/useStudent';
 import { cn } from '../shared/lib/cn';
 // Scheduler numbers (today's tasks, focus, streak, best hours) come from the scheduler API
@@ -25,7 +26,22 @@ export function Dashboard() {
     const student = useStudent();
     const navigate = useNavigate();
     const today = useToday();
-    const xpPct = Math.round(student.xp / student.xpToNext * 100);
+    const xpPct = Math.round((student.xp % 200) / 200 * 100);          // progress inside this level (200 XP each)
+    // Real numbers only: last 7 days (GET /scheduler/insights) and Component 4's signal as the scheduler sees it
+    const [insights, setInsights] = useState(null);
+    const [stress, setStress] = useState(null);
+    useEffect(() => {
+        api.get('/scheduler/insights').then((r) => setInsights(r.data)).catch(() => {});
+        getStressStatus().then(setStress).catch(() => {});
+    }, []);
+    const plannedToday = today.tasks.length + today.doneToday;
+    const todayPct = plannedToday ? Math.round(today.doneToday / plannedToday * 100) : 0;
+    const days = insights?.days ?? [];
+    const week = insights?.week;
+    const taskChange = week?.tasks_done_before ? Math.round((week.tasks_done - week.tasks_done_before) / week.tasks_done_before * 100) : null;
+    const bestDay = days.reduce((best, d) => (d.focus_minutes > (best?.focus_minutes ?? 0) ? d : best), null);
+    const STRESS = { LOW: ['Low', 'text-emerald-600'], MODERATE: ['Moderate', 'text-amber-600'], HIGH: ['High', 'text-brand-600'] };
+    const [stressWord, stressTone] = STRESS[stress?.level] ?? ['No signal shared', 'text-charcoal-muted'];
     return (<div className="space-y-6">
       {/* Hero card */}
       <motion.div {...fade}>
@@ -49,8 +65,8 @@ export function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-6">
-              <ProgressRing value={75} size={128} stroke={12}>
-                <span className="text-3xl font-extrabold text-charcoal">75%</span>
+              <ProgressRing value={todayPct} size={128} stroke={12}>
+                <span className="text-3xl font-extrabold text-charcoal">{plannedToday ? `${todayPct}%` : '–'}</span>
                 <span className="text-xs font-semibold text-charcoal-muted">Today done</span>
               </ProgressRing>
             </div>
@@ -109,23 +125,18 @@ export function Dashboard() {
               </span>
               <h3 className="font-bold text-charcoal">Today’s Wellbeing</h3>
             </div>
+            {/* Only what the scheduler really receives: Component 4's risk level (no made-up mood / sleep numbers) */}
             <div className="space-y-3">
-              {[
-            { label: 'Mood', value: 'Good', icon: '🙂', tone: 'text-emerald-600' },
-            { label: 'Stress', value: 'Moderate', icon: null, tone: 'text-amber-600' },
-            { label: 'Sleep', value: '7h 20m', icon: null, tone: 'text-charcoal' },
-            { label: 'Energy', value: '78%', icon: null, tone: 'text-charcoal' }
-        ].
-            map((r) => <div key={r.label} className="flex items-center justify-between">
-                  <span className="text-sm text-charcoal-muted font-medium flex items-center gap-2">
-                    {r.label === 'Sleep' && <MoonIcon size={14}/>}
-                    {r.label === 'Energy' && <ZapIcon size={14}/>}
-                    {r.label}
-                  </span>
-                  <span className={cn('text-sm font-bold flex items-center gap-1.5', r.tone)}>
-                    {r.icon} {r.value}
-                  </span>
-                </div>)}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-charcoal-muted font-medium">Stress signal</span>
+                <span className={cn('text-sm font-bold', stressTone)}>{stressWord}</span>
+              </div>
+              {stress?.trend && <div className="flex items-center justify-between">
+                  <span className="text-sm text-charcoal-muted font-medium">Trend</span>
+                  <span className="text-sm font-bold text-charcoal capitalize">{stress.trend.toLowerCase()}</span>
+                </div>}
+              <p className="text-xs text-charcoal-muted leading-relaxed">{stress?.reason ?? 'From your wellbeing check-ins, if you share them with the scheduler.'}</p>
+              <Button variant="soft" size="sm" onClick={() => navigate('/app/wellbeing')}>Open wellbeing</Button>
             </div>
           </Card>
 
@@ -142,7 +153,7 @@ export function Dashboard() {
             </div>
             <ProgressBar value={xpPct}/>
             <p className="text-xs font-semibold text-charcoal-muted mt-2">
-              {student.xp.toLocaleString()} / {student.xpToNext.toLocaleString()} XP
+              {(student.xpToNext - student.xp).toLocaleString()} XP to Level {student.level + 1}
             </p>
           </Card>
         </div>
@@ -155,16 +166,18 @@ export function Dashboard() {
           <Card>
             <div className="flex items-center justify-between mb-4">
               <h4 className="font-bold text-charcoal">Completed Tasks</h4>
-              <span className="text-xs font-semibold text-brand-600">+18% vs last week</span>
+              <span className="text-xs font-semibold text-brand-600">
+                {taskChange == null ? `${week?.tasks_done ?? 0} this week` : `${taskChange >= 0 ? '+' : ''}${taskChange}% vs last week`}
+              </span>
             </div>
-            <BarChart data={weeklyTasksData.map((d) => ({ label: d.day, value: d.value }))}/>
+            <BarChart data={days.map((d) => ({ label: d.label, value: d.tasks_done }))}/>
           </Card>
           <Card>
             <div className="flex items-center justify-between mb-4">
               <h4 className="font-bold text-charcoal">Focus Time (hrs)</h4>
-              <span className="text-xs font-semibold text-charcoal-muted">Peak Friday</span>
+              <span className="text-xs font-semibold text-charcoal-muted">{bestDay ? `Most on ${bestDay.label}` : 'No focus logged yet'}</span>
             </div>
-            <BarChart data={focusTimeData.map((d) => ({ label: d.day, value: d.value }))} unit="h"/>
+            <BarChart data={days.map((d) => ({ label: d.label, value: Math.round(d.focus_minutes / 6) / 10 }))} unit="h"/>
           </Card>
         </div>
       </div>

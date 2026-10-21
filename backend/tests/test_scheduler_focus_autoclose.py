@@ -5,7 +5,7 @@ Rule: open 3 hours LONGER than planned -> closed, marked invalid, no XP, no task
 from datetime import datetime, timedelta
 
 
-from app.components.scheduler import focus_service as fs
+from app.components.scheduler.focus import focus_service as fs
 from app.components.scheduler.models import FocusSession, RewardEvent, Task
 
 T0 = datetime(2026, 10, 20, 4, 0)

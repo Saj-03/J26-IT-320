@@ -4,7 +4,7 @@ Fixed clock: the task was planned for PLANNED; NOW is 31 minutes later (past the
 """
 from datetime import datetime, timedelta
 
-from app.components.scheduler import focus_service as fs
+from app.components.scheduler.focus import focus_service as fs
 from app.components.scheduler.models import FocusSession, SchedulerSettings, Task
 
 PLANNED = datetime(2026, 10, 20, 4, 0)

@@ -1,0 +1,201 @@
+{
+  "data": {
+    "tasks": 16381,
+    "students": 500,
+    "train_tasks": 12294,
+    "test_tasks": 4087,
+    "global_over_run": 1.133
+  },
+  "test_scores": {
+    "student_estimate": {
+      "mae_minutes": 22.5,
+      "median_pct_error": 21.1
+    },
+    "global_ratio": {
+      "mae_minutes": 21.7,
+      "median_pct_error": 20.0
+    },
+    "personal_ratio": {
+      "mae_minutes": 18.0,
+      "median_pct_error": 16.7
+    },
+    "personal_by_load": {
+      "mae_minutes": 16.7,
+      "median_pct_error": 15.5
+    },
+    "M3": {
+      "mae_minutes": 14.9,
+      "median_pct_error": 13.8,
+      "range_10_90_coverage": 0.777,
+      "range_10_90_median_width_minutes": 39.1
+    },
+    "ceiling": {
+      "mae_minutes": 14.1,
+      "median_pct_error": 13.0
+    }
+  },
+  "mae_by_history_size": {
+    "student_estimate": {
+      "5-9": {
+        "tasks": 94,
+        "mae_minutes": 25.9
+      },
+      "10-19": {
+        "tasks": 449,
+        "mae_minutes": 23.0
+      },
+      "20+": {
+        "tasks": 3544,
+        "mae_minutes": 22.3
+      }
+    },
+    "personal_by_load": {
+      "5-9": {
+        "tasks": 94,
+        "mae_minutes": 19.6
+      },
+      "10-19": {
+        "tasks": 449,
+        "mae_minutes": 18.7
+      },
+      "20+": {
+        "tasks": 3544,
+        "mae_minutes": 16.4
+      }
+    },
+    "M3": {
+      "5-9": {
+        "tasks": 94,
+        "mae_minutes": 15.9
+      },
+      "10-19": {
+        "tasks": 449,
+        "mae_minutes": 15.5
+      },
+      "20+": {
+        "tasks": 3544,
+        "mae_minutes": 14.9
+      }
+    }
+  },
+  "unseen_students": {
+    "students": 100,
+    "tasks": 3163,
+    "scores": {
+      "student_estimate": {
+        "mae_minutes": 22.3,
+        "median_pct_error": 20.8
+      },
+      "global_ratio": {
+        "mae_minutes": 21.5,
+        "median_pct_error": 20.0
+      },
+      "personal_ratio": {
+        "mae_minutes": 18.6,
+        "median_pct_error": 17.1
+      },
+      "personal_by_load": {
+        "mae_minutes": 18.1,
+        "median_pct_error": 16.7
+      },
+      "M3": {
+        "mae_minutes": 15.3,
+        "median_pct_error": 14.4
+      },
+      "ceiling": {
+        "mae_minutes": 14.3,
+        "median_pct_error": 13.5
+      }
+    },
+    "mae_by_history_size": {
+      "student_estimate": {
+        "0 (new student)": {
+          "tasks": 100,
+          "mae_minutes": 19.4
+        },
+        "1-4": {
+          "tasks": 400,
+          "mae_minutes": 22.9
+        },
+        "5-9": {
+          "tasks": 496,
+          "mae_minutes": 22.0
+        },
+        "10-19": {
+          "tasks": 866,
+          "mae_minutes": 21.4
+        },
+        "20+": {
+          "tasks": 1301,
+          "mae_minutes": 23.0
+        }
+      },
+      "personal_by_load": {
+        "0 (new student)": {
+          "tasks": 100,
+          "mae_minutes": 18.6
+        },
+        "1-4": {
+          "tasks": 400,
+          "mae_minutes": 24.1
+        },
+        "5-9": {
+          "tasks": 496,
+          "mae_minutes": 18.4
+        },
+        "10-19": {
+          "tasks": 866,
+          "mae_minutes": 17.5
+        },
+        "20+": {
+          "tasks": 1301,
+          "mae_minutes": 16.4
+        }
+      },
+      "M3": {
+        "0 (new student)": {
+          "tasks": 100,
+          "mae_minutes": 14.4
+        },
+        "1-4": {
+          "tasks": 400,
+          "mae_minutes": 18.2
+        },
+        "5-9": {
+          "tasks": 496,
+          "mae_minutes": 15.2
+        },
+        "10-19": {
+          "tasks": 866,
+          "mae_minutes": 15.0
+        },
+        "20+": {
+          "tasks": 1301,
+          "mae_minutes": 14.6
+        }
+      },
+      "ceiling": {
+        "0 (new student)": {
+          "tasks": 100,
+          "mae_minutes": 14.5
+        },
+        "1-4": {
+          "tasks": 400,
+          "mae_minutes": 15.9
+        },
+        "5-9": {
+          "tasks": 496,
+          "mae_minutes": 13.6
+        },
+        "10-19": {
+          "tasks": 866,
+          "mae_minutes": 14.4
+        },
+        "20+": {
+          "tasks": 1301,
+          "mae_minutes": 14.0
+        }
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 """Tests for GET /stress/status - reading Component 4's wellbeing signal safely (Module F, F1)."""
 from datetime import datetime, timedelta
 
-from app.components.scheduler import stress_service as ss
+from app.components.scheduler.stress import stress_service as ss
 from app.components.scheduler.models import ScheduleChange, SchedulerSettings
 from app.shared.integration.models import SignalEvent
 

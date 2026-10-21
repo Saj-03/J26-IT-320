@@ -1,0 +1,243 @@
+{
+  "recordings": 486,
+  "labels": {
+    "other": 200,
+    "commitment": 186,
+    "task_personal": 59,
+    "routine": 41
+  },
+  "asr": "whisper base.en",
+  "word_error_rate_pct": 28.8,
+  "keywords_on_speech_text": {
+    "accuracy": 66.3,
+    "macro_f1": 0.668
+  },
+  "times_on_human_text": {
+    "clock_times": 77,
+    "exact_pct": 97.4
+  },
+  "times_on_speech_text": {
+    "clock_times": 77,
+    "exact_pct": 84.4
+  },
+  "models": {
+    "m4_typed_only": {
+      "on_human_text": {
+        "accuracy": 93.4,
+        "macro_f1": 0.927
+      },
+      "on_speech_text": {
+        "accuracy": 88.1,
+        "macro_f1": 0.84
+      },
+      "spoken_day": {
+        "days": 150,
+        "items_said": 452,
+        "cards_made": 407,
+        "item_recall_pct": 80.8,
+        "card_precision_pct": 89.7
+      },
+      "examples_wrong_on_speech": [
+        {
+          "said": "remind me to send email to boss after one hour",
+          "heard": "We'd like me to send emails to Boss after one hour.",
+          "want": "task_personal",
+          "got": "other"
+        },
+        {
+          "said": "add business contacts to contact list",
+          "heard": "and business contacts to contact list.",
+          "want": "task_personal",
+          "got": "other"
+        },
+        {
+          "said": "ensure i have to get up at six in morning",
+          "heard": "and sure I have to get up at 6 in the morning.",
+          "want": "routine",
+          "got": "commitment"
+        },
+        {
+          "said": "get me up in half an hour",
+          "heard": "That made up in half an hour.",
+          "want": "routine",
+          "got": "other"
+        },
+        {
+          "said": "olly set alarm for reminder",
+          "heard": "set it out, set it along for the reminder.",
+          "want": "routine",
+          "got": "commitment"
+        },
+        {
+          "said": "add this to the list",
+          "heard": "I'll just do this.",
+          "want": "task_personal",
+          "got": "other"
+        },
+        {
+          "said": "set an alarm at six am",
+          "heard": "Set on the LUM at 6am.",
+          "want": "routine",
+          "got": "commitment"
+        },
+        {
+          "said": "can i know what i have to do the next saturday at six pm",
+          "heard": "I can't know what I have to do the next Saturday on 16th.",
+          "want": "commitment",
+          "got": "other"
+        },
+        {
+          "said": "set alarm for eight am",
+          "heard": "1,4,8,a,m.",
+          "want": "routine",
+          "got": "other"
+        },
+        {
+          "said": "thirteenth june is a day of election result please set it",
+          "heard": "13 June is a day of election. Result, please settle.",
+          "want": "commitment",
+          "got": "other"
+        },
+        {
+          "said": "please set the alarm for next friday at six thirty am",
+          "heard": "Please head along for next Friday at 6.30am.",
+          "want": "routine",
+          "got": "commitment"
+        },
+        {
+          "said": "add an alarm for tomorrow morning at six am",
+          "heard": "I'll do a laugh at tomorrow morning at 600 a.m.",
+          "want": "routine",
+          "got": "commitment"
+        },
+        {
+          "said": "olly there's a good band playing tonight at nine at jazz bar i want to go",
+          "heard": "Only there is a good brand-plane at night at night at Jazbar. I want to go.",
+          "want": "commitment",
+          "got": "other"
+        },
+        {
+          "said": "add a wrist watch to the shopping list",
+          "heard": "At risk was the shopping list.",
+          "want": "task_personal",
+          "got": "other"
+        },
+        {
+          "said": "tell me when i should leave for a scheduled event so that i am on time",
+          "heard": "Tell me what I should need for scheduled events that I must times.",
+          "want": "commitment",
+          "got": "other"
+        }
+      ]
+    },
+    "m4_speech_noise": {
+      "on_human_text": {
+        "accuracy": 93.6,
+        "macro_f1": 0.927
+      },
+      "on_speech_text": {
+        "accuracy": 87.2,
+        "macro_f1": 0.835
+      },
+      "spoken_day": {
+        "days": 150,
+        "items_said": 452,
+        "cards_made": 406,
+        "item_recall_pct": 80.3,
+        "card_precision_pct": 89.4
+      },
+      "examples_wrong_on_speech": [
+        {
+          "said": "remind me to send email to boss after one hour",
+          "heard": "We'd like me to send emails to Boss after one hour.",
+          "want": "task_personal",
+          "got": "other"
+        },
+        {
+          "said": "add business contacts to contact list",
+          "heard": "and business contacts to contact list.",
+          "want": "task_personal",
+          "got": "other"
+        },
+        {
+          "said": "ensure i have to get up at six in morning",
+          "heard": "and sure I have to get up at 6 in the morning.",
+          "want": "routine",
+          "got": "commitment"
+        },
+        {
+          "said": "get me up in half an hour",
+          "heard": "That made up in half an hour.",
+          "want": "routine",
+          "got": "other"
+        },
+        {
+          "said": "olly set alarm for reminder",
+          "heard": "set it out, set it along for the reminder.",
+          "want": "routine",
+          "got": "commitment"
+        },
+        {
+          "said": "add this to the list",
+          "heard": "I'll just do this.",
+          "want": "task_personal",
+          "got": "other"
+        },
+        {
+          "said": "set an alarm at six am",
+          "heard": "Set on the LUM at 6am.",
+          "want": "routine",
+          "got": "commitment"
+        },
+        {
+          "said": "can i know what i have to do the next saturday at six pm",
+          "heard": "I can't know what I have to do the next Saturday on 16th.",
+          "want": "commitment",
+          "got": "other"
+        },
+        {
+          "said": "i need next week's lunch put on the calendar",
+          "heard": "May this make lunch without the hammer.",
+          "want": "commitment",
+          "got": "other"
+        },
+        {
+          "said": "set alarm for eight am",
+          "heard": "1,4,8,a,m.",
+          "want": "routine",
+          "got": "other"
+        },
+        {
+          "said": "thirteenth june is a day of election result please set it",
+          "heard": "13 June is a day of election. Result, please settle.",
+          "want": "commitment",
+          "got": "other"
+        },
+        {
+          "said": "please set the alarm for next friday at six thirty am",
+          "heard": "Please head along for next Friday at 6.30am.",
+          "want": "routine",
+          "got": "commitment"
+        },
+        {
+          "said": "add an alarm for tomorrow morning at six am",
+          "heard": "I'll do a laugh at tomorrow morning at 600 a.m.",
+          "want": "routine",
+          "got": "commitment"
+        },
+        {
+          "said": "olly there's a good band playing tonight at nine at jazz bar i want to go",
+          "heard": "Only there is a good brand-plane at night at night at Jazbar. I want to go.",
+          "want": "commitment",
+          "got": "other"
+        },
+        {
+          "said": "add a wrist watch to the shopping list",
+          "heard": "At risk was the shopping list.",
+          "want": "task_personal",
+          "got": "other"
+        }
+      ]
+    }
+  }
+}

@@ -3,8 +3,9 @@ from app.db.session import Base  # noqa
 from app.shared.users.models import User  # noqa
 from app.shared.integration.models import SignalEvent  # noqa
 from app.components.career.models import CareerProfile, InterviewSession  # noqa
-from app.components.physical_wellbeing.models import WellbeingProfile, ActivityLog, Habit  # noqa
+from app.components.physical_wellbeing.models import WellbeingProfile, ActivityLog, Habit, WorkoutFeedback, PhysicalPlanSnapshot, PeerChallenge, PeerChallengeMember, FavoriteItem  # noqa
+
 from app.components.scheduler.models import (  # noqa
-    Task, Commitment, FocusSession, SchedulerSettings, ScheduleChange, RewardEvent, SchedulerAuditLog,
+    Task, Commitment, FocusSession, PlannedSession, SchedulerSettings, ScheduleChange, RewardEvent, SchedulerAuditLog,
 )
 from app.components.burnout.models import JournalEntry, ChatMessage, MoodTap, WellbeingSignal, BurnoutPreference, TipEvent  # noqa

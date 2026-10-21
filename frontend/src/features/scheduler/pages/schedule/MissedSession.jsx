@@ -25,7 +25,9 @@ function candidateTimes(days, minutes, deadlineMs) {
     for (const day of days) {
         for (const slot of day.slots) {
             const end = utcMs(slot.end);
-            let t = Math.ceil(utcMs(slot.start) / 3600000) * 3600000;      // next full hour
+            const first = new Date(utcMs(slot.start));                      // next full hour on the student's clock
+            if (first.getMinutes() || first.getSeconds() || first.getMilliseconds()) first.setHours(first.getHours() + 1, 0, 0, 0);
+            let t = first.getTime();                                        // (UTC full hours are :30 in Sri Lanka)
             while (t + minutes * 60000 <= Math.min(end, deadlineMs)) {
                 out.push(t);
                 t += 3600000;
@@ -130,7 +132,7 @@ export function MissedSession() {
                   </p>
                 </div>
                 {i === 0 && chanceByHour &&
-                    <span className="text-[10px] font-bold uppercase tracking-wide text-white bg-brand-500 rounded-full px-2 py-0.5 shrink-0">Best</span>}
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-white bg-brand-500 rounded-full px-2 py-0.5 shrink-0">Best</span>}
               </button>)}
           </div>
         </Card>}

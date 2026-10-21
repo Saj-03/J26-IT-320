@@ -8,6 +8,7 @@ How the tables fit together (every table belongs to one student via user_id):
     users ─┬─< tasks ──────────< tasks          (a big task can have subtasks)
            ├─< commitments                     (lectures, work hours = busy time)
            ├─< focus_sessions >── tasks        (training data for the attention model M1)
+           ├─< planned_sessions >── tasks      (pieces placed by the CP-SAT scheduler)
            ├── scheduler_settings              (one row per student: mode, timer, opt-outs)
            ├─< schedule_changes                (stress-responsive proposals + student decision)
            ├─< reward_events                   (XP / badges / streaks)
@@ -78,6 +79,8 @@ class Task(Base):
     # --- Planning and progress ---
     source: Mapped[str] = mapped_column(String, default="student")          # see TASK_SOURCES
     scheduled_start: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # FR-04 dependency: do this task only after that one is finished (no FK: a plain id, cleared on delete)
+    after_task_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     status: Mapped[str] = mapped_column(String, default="pending", index=True)  # see TASK_STATUSES
     actual_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)  # sum of focus sessions
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
@@ -165,6 +168,32 @@ class FocusSession(Base):
 
 
 # ===========================================================================
+# 3b. PLANNED SESSIONS  (FR-04, FR-14) - the pieces the CP-SAT scheduler placed
+# ===========================================================================
+class PlannedSession(Base):
+    """
+    One planned study piece, e.g. "ML past paper - part 2 of 3, Mon 20:00-20:40".
+    A new plan replaces the student's future pieces; past ones are kept for the research data.
+    """
+    __tablename__ = "planned_sessions"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=new_id)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    task_id: Mapped[str] = mapped_column(ForeignKey("tasks.id"), index=True)
+    plan_id: Mapped[str] = mapped_column(String, index=True)       # all pieces of one "Plan my week" run
+
+    start: Mapped[datetime] = mapped_column(DateTime, index=True)   # UTC
+    end: Mapped[datetime] = mapped_column(DateTime)
+    minutes: Mapped[int] = mapped_column(Integer)
+    break_minutes: Mapped[int] = mapped_column(Integer, default=5)
+    piece: Mapped[int] = mapped_column(Integer, default=1)          # 2 ...
+    piece_count: Mapped[int] = mapped_column(Integer, default=1)    # ... of 3
+    chance: Mapped[float | None] = mapped_column(nullable=True)     # M1 chance of finishing it (adaptive only)
+    mode: Mapped[str] = mapped_column(String, default="adaptive")   # experiment mode when planned
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+# ===========================================================================
 # 4. SCHEDULER SETTINGS - one row per student
 # ===========================================================================
 class SchedulerSettings(Base):
@@ -193,6 +222,8 @@ class SchedulerSettings(Base):
 
     # --- Student control (ethics 3.7) ---
     focus_tracking_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    # proposal 3.2.2: the student left the C3 study -> never exported again, research-only records deleted
+    research_withdrawn_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     stress_adaptation_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     fixed_timer_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)  # set = ignore M1
 

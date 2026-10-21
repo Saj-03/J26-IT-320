@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { CalendarIcon, TimerIcon, HeartIcon, TrophyIcon } from "lucide-react";
 import { PageHeader } from "../shared/components/layout/PageHeader";
 import { Card } from "../shared/components/ui/Card";
-import { notifications } from "../shared/lib/data";
+import useNotifications, { relativeTime } from "../features/scheduler/hooks/useNotifications";
 import { cn } from "../shared/lib/cn";
 const cats = ['All', 'Schedule', 'Focus', 'Wellbeing', 'Achievements'];
 const iconMap = {
@@ -27,8 +28,20 @@ const iconMap = {
         color: 'text-amber-600'
     }
 };
+// Real notifications from the scheduler API (upcoming sessions, deadlines, missed sessions,
+// focus alert, lighter-plan suggestion, new badges / milestones). Opening this page marks them as read.
 export function Notifications() {
+    const navigate = useNavigate();
     const [cat, setCat] = useState('All');
+    const { items, loaded, markSeen } = useNotifications();
+    const [unreadIds, setUnreadIds] = useState(null);         // what was new when the page opened
+    useEffect(() => {
+        if (loaded && unreadIds === null) {
+            setUnreadIds(new Set(items.filter((n) => n.unread).map((n) => n.id)));
+            markSeen();
+        }
+    }, [loaded]);   // eslint-disable-line react-hooks/exhaustive-deps
+    const notifications = items.map((n) => ({ ...n, unread: unreadIds?.has(n.id) ?? n.unread }));
     const list = cat === 'All' ? notifications : notifications.filter((n) => n.category === cat);
     return <div className="space-y-6 max-w-3xl mx-auto">
       <PageHeader title="Notifications" subtitle="Gentle updates from ThriveU — nothing noisy."/>
@@ -40,10 +53,12 @@ export function Notifications() {
       </div>
 
       <div className="space-y-3">
+        {loaded && list.length === 0 &&
+          <Card padding="lg"><p className="text-sm text-charcoal-muted">Nothing new. We only tell you when something needs you - an upcoming session, a close deadline or a new badge.</p></Card>}
         {list.map((n) => {
             const meta = iconMap[n.icon] ?? iconMap.calendar;
             const Icon = meta.icon;
-            return <Card key={n.id} padding="sm" className={cn('flex items-start gap-3', n.unread && 'ring-1 ring-brand-100')}>
+            return <Card key={n.id} padding="sm" onClick={() => navigate(n.link)} className={cn('flex items-start gap-3 cursor-pointer hover:bg-cream/60 transition-colors', n.unread && 'ring-1 ring-brand-100')}>
               <span className={cn('w-11 h-11 rounded-2xl flex items-center justify-center shrink-0', meta.bg)}>
                 <Icon size={18} className={meta.color}/>
               </span>
@@ -53,7 +68,7 @@ export function Notifications() {
                   {n.unread && <span className="w-2 h-2 rounded-full bg-brand-500 shrink-0"/>}
                 </div>
                 <p className="text-sm text-charcoal-muted mt-0.5 leading-relaxed">{n.body}</p>
-                <p className="text-xs text-charcoal-muted mt-1.5 font-medium">{n.category} · {n.time}</p>
+                <p className="text-xs text-charcoal-muted mt-1.5 font-medium">{n.category} · {relativeTime(n.at)}</p>
               </div>
             </Card>;
         })}

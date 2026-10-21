@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from app.components.scheduler.engine import m2_classifier
+from app.components.scheduler.ml import m2_classifier
 from app.components.scheduler.models import SchedulerAuditLog
 from ml_training.scheduler.train_m2 import keyword_rules
 

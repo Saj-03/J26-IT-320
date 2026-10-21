@@ -1,10 +1,10 @@
 import React from 'react';
 import { ShieldCheckIcon, EyeIcon, SlidersHorizontalIcon, DownloadIcon, Trash2Icon, HeartHandshakeIcon } from 'lucide-react';
-import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { ToggleRow } from '../../../shared/components/ui/SettingsRow';
 import { PhysicalNav } from '../components/PhysicalNav';
+import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { SectionTitle } from '../components/Shared';
 const collected = [
     { emoji: '🚶', label: 'Activity & steps', desc: 'To measure daily movement' },
@@ -16,7 +16,7 @@ const collected = [
 ];
 export function PhysicalPrivacy() {
     return (<div className="space-y-6">
-      <PageHeader title="Your Data, Your Control" subtitle="Your lifestyle and activity information is used to personalise your recommendations — nothing else."/>
+      <PhysicalMasterCard title="Your Data, Your Control" subtitle="Your lifestyle and activity information is used to personalise your recommendations — nothing else." eyebrow="Privacy & control" />
 
       <PhysicalNav />
 

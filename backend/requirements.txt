@@ -28,6 +28,7 @@ vaderSentiment==3.3.2          # Burnout: sentiment
 sentence-transformers==3.1.1   # Career: SBERT similarity
 transformers==4.45.2           # Burnout: DistilBERT emotion
 torch==2.14.1                  # Scheduler: M1 focus success network (GRU); also needed by sentence-transformers
+ortools==9.14.6206             # Scheduler: CP-SAT constraint scheduler (Module D)
 httpx==0.27.2                  # LLM API calls
 
 # --- Testing ---

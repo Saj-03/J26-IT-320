@@ -8,10 +8,11 @@ Component 3 - request / response shapes (Pydantic).
 Validation here means bad data never reaches the database
 (e.g. a deadline in the past, priority 9, a 0-minute task).
 """
+import datetime as dt
 from datetime import datetime, time, timezone
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
 
 # Allowed values - must match the constants in models.py
 CognitiveLoad = Literal["low", "medium", "heavy"]
@@ -51,6 +52,9 @@ class TaskCreate(BaseModel):
     # Optional: makes this task a SUBTASK of another task
     parent_id: str | None = None
 
+    # Optional (FR-04): plan this task only after that task is finished
+    after_task_id: str | None = None
+
     @field_validator("title")
     @classmethod
     def title_not_blank(cls, v: str) -> str:
@@ -77,6 +81,8 @@ class TaskUpdate(BaseModel):
     task_type: TaskType | None = None
     deadline: datetime | None = None
     estimated_minutes: int | None = Field(default=None, ge=5, le=24 * 60)
+    after_task_id: str | None = None                          # FR-04: null = no longer depends on a task
+    predicted_minutes: int | None = Field(default=None, ge=5, le=24 * 60)   # student sets the real duration (overrides M3)
     priority: int | None = Field(default=None, ge=1, le=5)
     is_flexible: bool | None = None
     cognitive_load: CognitiveLoad | None = None   # changing this = student overrides the AI
@@ -115,6 +121,7 @@ class TaskOut(BaseModel):
     status: str
     actual_minutes: int | None
     completed_at: datetime | None
+    after_task_id: str | None = None                          # FR-04 dependency
     created_at: datetime
     updated_at: datetime
 
@@ -437,6 +444,7 @@ class ProposedChange(BaseModel):
     task_id: str | None
     title: str
     reason: str
+    old_start: str | None = Field(default=None, validation_alias=AliasChoices("from", "old_start"))  # move: old slot
     to: str | None = None            # move: new planned start (UTC, ISO)
     pieces: list[int] | None = None  # split: minutes per piece
     minutes: int | None = None       # rest: length of the break
@@ -499,6 +507,17 @@ class BadgeOut(BaseModel):
     target: int
 
 
+class MilestoneOut(BaseModel):
+    code: str
+    title: str
+    unit: str                        # focus_minutes / tasks_done / study_days
+    target: int
+    progress: int                    # capped at target
+    xp: int                          # bonus XP when reached
+    earned: bool
+    earned_at: datetime | None
+
+
 class ProgressOut(BaseModel):
     total_xp: int
     level: int
@@ -506,6 +525,8 @@ class ProgressOut(BaseModel):
     streak: StreakOut
     badges: list[BadgeOut]
     new_badges: list[str]            # earned just now
+    milestones: list[MilestoneOut] = []
+    new_milestones: list[str] = []   # reached just now
 
 
 # ===========================================================================
@@ -543,15 +564,260 @@ class WeeklySummarySentOut(BaseModel):
 
 
 # ===========================================================================
-# OLD ENDPOINTS (kept so the current frontend keeps working)
+# PLAN MY WEEK (Module D - CP-SAT scheduler)
 # ===========================================================================
-class FocusIn(BaseModel):
-    task_id: str | None = None
-    started_at: datetime
-    planned_minutes: int
-    actual_minutes: int
-    completed: bool
+class PlannedSessionOut(BaseModel):
+    id: str
+    task_id: str
+    title: str
+    load: str
+    start: datetime                  # UTC
+    end: datetime
+    minutes: int
+    break_minutes: int
+    piece: int                       # piece 2 ...
+    of: int                          # ... of 3
+    chance: float | None             # M1 chance of finishing it here (adaptive only)
+    deadline: datetime
 
 
-class DecisionIn(BaseModel):
-    decision: str   # accepted / edited / rejected
+class UnplacedTaskOut(BaseModel):
+    task_id: str
+    title: str
+    minutes: int                     # work that did not fit
+    reason: str
+
+
+class PlanOut(BaseModel):
+    mode: str                        # adaptive / static / attention_only
+    sessions: list[PlannedSessionOut]
+
+
+class PlanBuiltOut(PlanOut):
+    plan_id: str
+    status: str                      # OPTIMAL / FEASIBLE (CP-SAT)
+    latency_ms: int
+    focus_minutes: int               # piece size used
+    break_minutes: int
+    timer_source: str                # m1_model / history_rules / survey / static_default ...
+    attention_source: str            # m1_model / survey / none
+    peak_hours: list[int]            # M1 best hours (Sri Lanka clock), empty if not from M1
+    unplaced: list[UnplacedTaskOut]
+
+
+class SuggestedStep(BaseModel):
+    title: str
+    minutes: int
+    load: str
+
+
+class SuggestedStepsOut(BaseModel):
+    """FR-03: a task cut into steps that fit the student's focus length (M1 / rules / survey)."""
+    task_id: str
+    focus_minutes: int
+    source: str                      # m1_model / history_rules / survey / static_default / default ...
+    reason: str
+    steps: list[SuggestedStep]
+
+
+class MissedPieceOut(BaseModel):
+    task_id: str
+    title: str
+    start: datetime
+    end: datetime
+    minutes: int
+    piece: int
+    of: int
+
+
+class RecoveryMoveOut(BaseModel):
+    task_id: str
+    title: str
+    new_start: datetime              # first new time of that task's work
+
+
+class RecoveryOut(BaseModel):
+    """FR-09: missed study sessions + a recovery plan preview (nothing saved until the student applies it)."""
+    missed: list[MissedPieceOut]
+    moves: list[RecoveryMoveOut]
+    at_risk: list[UnplacedTaskOut]   # deadlines rechecked: work that no longer fits
+    deadlines_ok: bool
+
+
+# ===========================================================================
+# PILOT STUDY (researcher only) - experiment mode per participant, by research_id
+# ===========================================================================
+class ParticipantOut(BaseModel):
+    research_id: str                 # pseudonymous - no name / email (NFR-05)
+    mode: str
+    pilot_group: str | None
+    completed_sessions: int
+    tasks_done: int
+    last_active: datetime | None
+
+
+class ParticipantsOut(BaseModel):
+    participants: list[ParticipantOut]
+    without_consent: int             # students not shown because they did not consent
+
+
+class ParticipantModeIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    mode: Literal["static", "adaptive", "attention_only"] | None = None
+    pilot_group: Literal["AB", "BA", ""] | None = None     # "" clears it
+
+
+class ParticipantModeOut(BaseModel):
+    research_id: str
+    mode: str
+    pilot_group: str | None
+
+
+class ResearcherOut(BaseModel):
+    is_researcher: bool
+    research_withdrawn_at: datetime | None = None   # the student left the study (proposal 3.2.2)
+
+
+class WithdrawIn(BaseModel):
+    """Body of POST /research/me/withdraw - must say yes on purpose."""
+    model_config = ConfigDict(extra="forbid")
+    confirm: Literal[True]
+
+
+class WithdrawOut(BaseModel):
+    research_withdrawn_at: datetime
+    records_deleted: int
+
+
+class DurationOut(BaseModel):
+    """M3: how long a task will really take (Objective 2)."""
+    task_id: str
+    estimated_minutes: int           # what the student said
+    predicted_minutes: int | None    # what the plan uses (M3 or the student's own choice)
+    model_minutes: int | None        # what M3 says right now (differs from predicted = student kept their own)
+    low: int | None                  # 10% - 90% range from M3
+    high: int | None
+    history_used: int                # finished tasks with logged time that M3 learned from
+    source: str                      # m3_model / model_unavailable
+
+
+class UsefulnessIn(BaseModel):
+    """1-5: how helpful a stress suggestion / timer length was (evaluation, proposal Table 3)."""
+    model_config = ConfigDict(extra="forbid")
+    rating: int = Field(ge=1, le=5)
+
+
+class UsefulnessOut(BaseModel):
+    id: str
+    rating: int
+
+
+class FocusAlertOut(BaseModel):
+    """FR-16: a sustained drop in focus quality or study habit (no diagnosis)."""
+    alert: bool
+    kind: Literal["quality", "habit"] | None
+    title: str | None
+    message: str | None
+    details: dict                    # recent vs usual: sessions, finished_rate, avg_rating, days_per_week
+
+
+class FocusAlertDismissIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    kind: Literal["quality", "habit"]
+
+
+class NotificationOut(BaseModel):
+    id: str                          # stable key, e.g. "due-<task id>"
+    category: Literal["Schedule", "Focus", "Wellbeing", "Achievements"]
+    icon: str                        # calendar / timer / heart / trophy
+    title: str
+    body: str
+    at: datetime
+    link: str                        # page to open
+    unread: bool
+
+
+class NotificationsOut(BaseModel):
+    items: list[NotificationOut]
+    unread: int
+
+
+# ===========================================================================
+# VOICE PLANNER "Speak your day" (M4)
+# ===========================================================================
+class BrainDumpIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    text: str = Field(min_length=2, max_length=2000)
+
+
+class BrainDumpItemOut(BaseModel):
+    index: int
+    text: str                        # the piece of what was said
+    type: str                        # task_academic / task_personal / commitment / routine / energy / plan_request / other
+    confidence: float                # M4 probability
+    needs_check: bool                # low confidence or a missing detail -> highlight it
+    include: bool                    # "other" pieces start unticked
+    title: str
+    kind: str | None                 # commitment kind / task type / energy level
+    date: dt.date | None
+    start: str | None                # "HH:MM" Sri Lanka time
+    end: str | None
+    duration_minutes: int | None
+    deadline: dt.date | None
+    in_minutes: int | None
+    after_previous: bool
+    load: str | None                 # M2
+    predicted_minutes: int | None    # M3
+    warning: str | None = None       # e.g. a 10-hour breakfast: probably a misheard time
+    urgent: bool = False             # "urgent exam" -> top priority when saved
+
+
+class BrainDumpOut(BaseModel):
+    items: list[BrainDumpItemOut]
+    plan_requested: bool
+    energy: str | None               # low / high, if the student said so
+    today: dt.date
+    model: str | None                # m4_model / keyword_rules
+    ignored: list[str] = []          # filler the student said ("yeah", "sorry") - shown, not made into cards
+
+
+class BrainDumpSaveItem(BaseModel):
+    """One card the student checked (and maybe edited) on the review screen."""
+    model_config = ConfigDict(extra="forbid")
+
+    type: Literal["task_academic", "task_personal", "commitment", "routine"]
+    title: str = Field(min_length=1, max_length=200)
+    kind: str | None = Field(default=None, max_length=40)       # commitment kind / task type
+    date: dt.date | None = None                                 # commitment day (default today)
+    start: time | None = None                                   # Sri Lanka clock
+    end: time | None = None
+    duration_minutes: int | None = Field(default=None, ge=5, le=24 * 60)
+    deadline: dt.date | None = None                             # tasks
+    load: CognitiveLoad | None = None                           # kept only if the student changed it
+    urgent: bool = False                                        # -> priority 5
+    # learning loop: what M4 said and what the student changed (no spoken text is stored)
+    model_type: str | None = Field(default=None, max_length=40)
+    confidence: float | None = Field(default=None, ge=0, le=1)
+    changed: list[str] = Field(default_factory=list, max_length=20)
+
+
+class BrainDumpConfirmIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    items: list[BrainDumpSaveItem] = Field(default_factory=list, max_length=30)
+    energy: Literal["low", "high"] | None = None
+    plan: bool = False                                          # run Plan my week after saving
+    dropped: int = Field(default=0, ge=0, le=100)               # cards the student unticked
+
+
+class SavedRef(BaseModel):
+    id: str
+    title: str
+
+
+class BrainDumpSavedOut(BaseModel):
+    tasks: list[SavedRef]
+    commitments: list[SavedRef]
+    planned: bool
+    sessions: int | None             # planned pieces (if a plan was made)
+    unplaced: int | None
+    today_cap_minutes: int | None    # lowered study cap for today (low energy)

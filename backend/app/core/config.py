@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     BASELINE2_IDS: str = ""                   # comma-separated research_ids whose chat gets NO academic context (Baseline 2, pilot)
     DEMO_MODE: bool = True                    # enables /burnout/demo/* (seeds sample weeks); set False in production
     URGENT_DEADLINE_WINDOW_HOURS: int = 48    # tasks due inside this window are never deferred
+    SCHEDULER_RESEARCHER_EMAILS: str = ""    # C3 pilot: who may set participants' experiment mode (comma-separated)
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

@@ -181,24 +181,6 @@ export const priorityStyles = {
     medium: { bg: 'bg-amber-light', text: 'text-amber-700', label: 'Medium Priority' },
     low: { bg: 'bg-sage-light', text: 'text-emerald-700', label: 'Low Priority' }
 };
-export const weeklyTasksData = [
-    { day: 'Mon', value: 6 },
-    { day: 'Tue', value: 4 },
-    { day: 'Wed', value: 7 },
-    { day: 'Thu', value: 5 },
-    { day: 'Fri', value: 8 },
-    { day: 'Sat', value: 3 },
-    { day: 'Sun', value: 2 }
-];
-export const focusTimeData = [
-    { day: 'Mon', value: 3.2 },
-    { day: 'Tue', value: 2.5 },
-    { day: 'Wed', value: 3.4 },
-    { day: 'Thu', value: 4.1 },
-    { day: 'Fri', value: 4.6 },
-    { day: 'Sat', value: 1.8 },
-    { day: 'Sun', value: 1.2 }
-];
 export const stressData = [
     { day: 'Mon', value: 42 },
     { day: 'Tue', value: 55 },
@@ -207,19 +189,6 @@ export const stressData = [
     { day: 'Fri', value: 72 },
     { day: 'Sat', value: 38 },
     { day: 'Sun', value: 30 }
-];
-export const productivityByHour = [
-    { hour: '6a', value: 20 },
-    { hour: '8a', value: 55 },
-    { hour: '9a', value: 88 },
-    { hour: '10a', value: 92 },
-    { hour: '11a', value: 85 },
-    { hour: '12p', value: 60 },
-    { hour: '2p', value: 74 },
-    { hour: '4p', value: 66 },
-    { hour: '6p', value: 48 },
-    { hour: '8p', value: 32 },
-    { hour: '10p', value: 18 }
 ];
 export const badges = [
     { name: 'Deep Focus', icon: 'target', earned: true, desc: '10 distraction-free sessions' },
@@ -295,20 +264,4 @@ export const aptitudes = [
     { name: 'Creativity', value: 74, prev: 70 },
     { name: 'Problem Solving', value: 85, prev: 79 },
     { name: 'Leadership', value: 62, prev: 55 }
-];
-export const notifications = [
-    { id: 'n1', category: 'Schedule', title: 'Your schedule was optimized', body: 'We reordered today around your peak focus hours.', time: '8m ago', unread: true, icon: 'calendar' },
-    { id: 'n2', category: 'Focus', title: 'Your focus session starts in 10 minutes', body: 'Chemistry Lab Report · 9:00 AM', time: '20m ago', unread: true, icon: 'timer' },
-    { id: 'n3', category: 'Wellbeing', title: 'Your schedule was lightened', body: 'We added more breathing room to give you space today.', time: '1h ago', unread: true, icon: 'heart' },
-    { id: 'n4', category: 'Achievements', title: 'Great job! You earned 75 XP', body: 'Completed a distraction-free focus session.', time: '2h ago', unread: false, icon: 'trophy' },
-    { id: 'n5', category: 'Schedule', title: 'Your Chemistry task is due tomorrow', body: 'It’s already scheduled for 9:00 AM — you’re on track.', time: '3h ago', unread: false, icon: 'calendar' },
-    { id: 'n6', category: 'Wellbeing', title: 'Your weekly check-in is ready', body: 'Take a moment to reflect on your week.', time: 'Yesterday', unread: false, icon: 'heart' }
-];
-export const participants = [
-    { id: 'P-0142', tasks: 128, focus: 84, trend: 'stable', active: '2m ago' },
-    { id: 'P-0138', tasks: 96, focus: 71, trend: 'rising', active: '15m ago' },
-    { id: 'P-0129', tasks: 154, focus: 90, trend: 'falling', active: '1h ago' },
-    { id: 'P-0121', tasks: 63, focus: 66, trend: 'rising', active: '3h ago' },
-    { id: 'P-0117', tasks: 111, focus: 79, trend: 'stable', active: 'Yesterday' },
-    { id: 'P-0109', tasks: 88, focus: 74, trend: 'falling', active: 'Yesterday' }
 ];

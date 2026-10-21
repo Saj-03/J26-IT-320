@@ -1,0 +1,78 @@
+{
+  "train_days": 10800,
+  "val_days": 1200,
+  "methods": {
+    "rules": {
+      "val": {
+        "item_precision": 0.373,
+        "item_recall": 0.218,
+        "item_f1": 0.275,
+        "boundary_f1": 0.42,
+        "days_fully_right": 0.158
+      },
+      "test": {
+        "item_precision": 0.39,
+        "item_recall": 0.237,
+        "item_f1": 0.295,
+        "boundary_f1": 0.439,
+        "days_fully_right": 0.179
+      },
+      "real_speech": {
+        "item_precision": 0.115,
+        "item_recall": 0.044,
+        "item_f1": 0.063,
+        "boundary_f1": 0.093,
+        "days_fully_right": 0.068
+      }
+    },
+    "logreg": {
+      "val": {
+        "item_precision": 0.957,
+        "item_recall": 0.945,
+        "item_f1": 0.951,
+        "boundary_f1": 0.973,
+        "days_fully_right": 0.909
+      },
+      "test": {
+        "item_precision": 0.737,
+        "item_recall": 0.758,
+        "item_f1": 0.747,
+        "boundary_f1": 0.856,
+        "days_fully_right": 0.582
+      },
+      "real_speech": {
+        "item_precision": 0.565,
+        "item_recall": 0.502,
+        "item_f1": 0.532,
+        "boundary_f1": 0.686,
+        "days_fully_right": 0.333
+      },
+      "threshold": 0.35
+    },
+    "minilm": {
+      "val": {
+        "item_precision": 0.943,
+        "item_recall": 0.948,
+        "item_f1": 0.946,
+        "boundary_f1": 0.969,
+        "days_fully_right": 0.902
+      },
+      "test": {
+        "item_precision": 0.826,
+        "item_recall": 0.87,
+        "item_f1": 0.848,
+        "boundary_f1": 0.914,
+        "days_fully_right": 0.74
+      },
+      "real_speech": {
+        "item_precision": 0.666,
+        "item_recall": 0.666,
+        "item_f1": 0.666,
+        "boundary_f1": 0.794,
+        "days_fully_right": 0.477
+      },
+      "threshold": 0.6
+    }
+  },
+  "chosen": "logreg"
+}

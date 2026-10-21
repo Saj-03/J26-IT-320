@@ -4,21 +4,26 @@ Component 3 - HTTP endpoints, all under /api/scheduler.
 Routers stay thin: read the request -> call a service function -> return the result.
 Every endpoint needs a logged-in student (get_current_user).
 """
-from datetime import datetime, timedelta
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.core.dependencies import get_current_user
-from app.components.scheduler import (
-    schemas, service, task_service, commitment_service, focus_service, settings_service, stress_service,
-    attention_service, progress_service,
-)
-from app.components.scheduler.models import Task, FocusSession, ScheduleChange
-from app.components.scheduler.engine import stress_rules
+from app.components.scheduler import schemas, settings_service
+from app.components.scheduler.focus import focus_service, attention_service, alert_service
+from app.components.scheduler.rewards import progress_service, notification_service, insights_service
+from app.components.scheduler.research import research_service, feedback_service, research_export
+from app.components.scheduler.stress import stress_service
+from app.components.scheduler.planning import planner_service
+from app.components.scheduler.voice import brain_dump_service
+from app.components.scheduler.tasks import task_service, commitment_service
+from app.components.scheduler.models import Task
+from app.components.scheduler.ml import m1_predictor, m3_predictor
 from app.shared.integration import c3_weekly_summary as weekly_summary
 
 router = APIRouter()
+m1_predictor.warm_up_in_background()      # load the M1 model now, not on the first student's request
 
 
 # ===========================================================================
@@ -27,7 +32,9 @@ router = APIRouter()
 @router.post("/tasks", response_model=schemas.TaskOut, status_code=status.HTTP_201_CREATED)
 def create_task(data: schemas.TaskCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Add a task (or a subtask, by sending parent_id)."""
-    return task_service.create_task(db, user, data)
+    task = task_service.create_task(db, user, data)
+    planner_service.auto_replan(db, user, "task_created")
+    return task
 
 
 @router.get("/tasks", response_model=list[schemas.TaskOut])
@@ -47,17 +54,43 @@ def get_task(task_id: str, db: Session = Depends(get_db), user=Depends(get_curre
     return task_service.get_task_detail(db, user, task_id)
 
 
+@router.get("/tasks/{task_id}/duration", response_model=schemas.DurationOut)
+def task_duration(task_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """M3: how long this task will really take, with a 10-90% range."""
+    task = task_service.get_own_task(db, user, task_id)
+    p = m3_predictor.predict_task(db, task)
+    return {"task_id": task.id, "estimated_minutes": task.estimated_minutes, "predicted_minutes": task.predicted_minutes,
+            "model_minutes": p["minutes"] if p else None, "low": p["low"] if p else None, "high": p["high"] if p else None,
+            "history_used": p["history_used"] if p else 0, "source": "m3_model" if p else "model_unavailable"}
+
+
+@router.get("/tasks/{task_id}/suggested-steps", response_model=schemas.SuggestedStepsOut)
+def suggested_steps(task_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Preview: this task cut into steps that fit my focus length (FR-03). Nothing is saved."""
+    return planner_service.suggest_steps(db, user, task_id)
+
+
+@router.post("/tasks/{task_id}/suggested-steps", response_model=schemas.TaskDetailOut)
+def create_suggested_steps(task_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Create the suggested steps as subtasks (only if the task has no steps yet)."""
+    planner_service.create_suggested_steps(db, user, task_id)
+    return task_service.get_task_detail(db, user, task_id)
+
+
 @router.patch("/tasks/{task_id}", response_model=schemas.TaskOut)
 def update_task(task_id: str, data: schemas.TaskUpdate,
                 db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Change some fields of a task (send only what changed)."""
-    return task_service.update_task(db, user, task_id, data)
+    task = task_service.update_task(db, user, task_id, data)
+    planner_service.auto_replan(db, user, "task_updated")
+    return task
 
 
 @router.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_task(task_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Delete a task and its subtasks (focus history is kept)."""
     task_service.delete_task(db, user, task_id)
+    planner_service.auto_replan(db, user, "task_deleted")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -67,7 +100,9 @@ def delete_task(task_id: str, db: Session = Depends(get_db), user=Depends(get_cu
 @router.post("/commitments", response_model=schemas.CommitmentOut, status_code=status.HTTP_201_CREATED)
 def create_commitment(data: schemas.CommitmentCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Add a weekly (e.g. Monday lecture) or one-off busy time."""
-    return commitment_service.create_commitment(db, user, data)
+    item = commitment_service.create_commitment(db, user, data)
+    planner_service.auto_replan(db, user, "commitment_created")
+    return item
 
 
 @router.get("/commitments", response_model=list[schemas.CommitmentOut])
@@ -85,12 +120,15 @@ def get_commitment(commitment_id: str, db: Session = Depends(get_db), user=Depen
 def update_commitment(commitment_id: str, data: schemas.CommitmentUpdate,
                       db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Change some fields (send only what changed)."""
-    return commitment_service.update_commitment(db, user, commitment_id, data)
+    item = commitment_service.update_commitment(db, user, commitment_id, data)
+    planner_service.auto_replan(db, user, "commitment_updated")
+    return item
 
 
 @router.delete("/commitments/{commitment_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_commitment(commitment_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
     commitment_service.delete_commitment(db, user, commitment_id)
+    planner_service.auto_replan(db, user, "commitment_deleted")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -173,6 +211,26 @@ def end_focus(session_id: str, data: schemas.FocusEndIn | None = None,
     return focus_service.end_session(db, user, session_id, data or schemas.FocusEndIn())
 
 
+@router.get("/focus/alert", response_model=schemas.FocusAlertOut)
+def focus_alert(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """FR-16: has my focus quality or study habit dropped compared with my usual weeks?"""
+    return alert_service.focus_alert(db, user)
+
+
+@router.post("/focus/alert/dismiss")
+def dismiss_focus_alert(data: schemas.FocusAlertDismissIn,
+                        db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Hide this kind of alert for 7 days."""
+    return alert_service.dismiss(db, user, data.kind)
+
+
+@router.post("/focus/{session_id}/timer-rating", response_model=schemas.UsefulnessOut)
+def rate_timer(session_id: str, data: schemas.UsefulnessIn,
+               db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """1-5: was the suggested session length useful? (adaptive timer acceptance, once per session)"""
+    return feedback_service.rate_timer(db, user, session_id, data.rating)
+
+
 @router.post("/focus/{session_id}/rating", response_model=schemas.FocusSessionOut)
 def rate_focus(session_id: str, data: schemas.FocusRatingIn,
                db: Session = Depends(get_db), user=Depends(get_current_user)):
@@ -187,6 +245,68 @@ def rate_focus(session_id: str, data: schemas.FocusRatingIn,
 def progress(db: Session = Depends(get_db), user=Depends(get_current_user)):
     """My XP, level, streak and badges (any newly reached badge is given now)."""
     return progress_service.check_progress(db, user)
+
+
+# ===========================================================================
+# VOICE PLANNER "Speak your day" (M4) - preview only, nothing is saved
+# ===========================================================================
+@router.post("/brain-dump", response_model=schemas.BrainDumpOut)
+def brain_dump(data: schemas.BrainDumpIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """A spoken / typed paragraph -> editable items (tasks, commitments, energy, plan request). Saves nothing."""
+    return brain_dump_service.preview(db, user, data.text)
+
+
+@router.post("/brain-dump/confirm", response_model=schemas.BrainDumpSavedOut, status_code=201)
+def brain_dump_confirm(data: schemas.BrainDumpConfirmIn, db: Session = Depends(get_db),
+                       user=Depends(get_current_user)):
+    """Save the cards the student checked (tasks + commitments); plan my week if asked (low energy -> lighter today)."""
+    return brain_dump_service.confirm(db, user, data)
+
+
+# ===========================================================================
+# INSIGHTS - real numbers for the Overview and AI Insights pages
+# ===========================================================================
+@router.get("/insights")
+def get_insights(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Last 7 days, this week vs last, best hours (M1), best effort level, estimate vs actual, stress trend."""
+    return insights_service.insights(db, user)
+
+
+# ===========================================================================
+# NOTIFICATIONS  (FR-11) - built from real data, unread = newer than the last visit
+# ===========================================================================
+@router.get("/notifications", response_model=schemas.NotificationsOut)
+def get_notifications(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Upcoming sessions, deadlines, missed sessions, focus alert, lighter-plan suggestion, new rewards."""
+    return notification_service.notifications(db, user)
+
+
+@router.post("/notifications/seen")
+def notifications_seen(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """The student opened the notifications page -> everything so far counts as read."""
+    return notification_service.mark_seen(db, user)
+
+
+# ===========================================================================
+# PLAN MY WEEK  (FR-04, FR-14) - CP-SAT scheduler (Module D)
+# ===========================================================================
+@router.post("/plan", response_model=schemas.PlanBuiltOut)
+def build_plan(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Plan my open tasks for the next 7 days (replaces the future part of my old plan)."""
+    return planner_service.build_plan(db, user)
+
+
+@router.get("/plan", response_model=schemas.PlanOut)
+def get_plan(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """My planned study pieces from now on."""
+    return planner_service.plan_view(db, user)
+
+
+@router.get("/plan/recovery", response_model=schemas.RecoveryOut)
+def plan_recovery(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """FR-09: planned sessions I missed + where a new plan would put that work (preview, nothing saved).
+    Apply it with POST /plan."""
+    return planner_service.recovery_preview(db, user)
 
 
 # ===========================================================================
@@ -210,7 +330,9 @@ def get_settings(db: Session = Depends(get_db), user=Depends(get_current_user)):
 @router.patch("/settings", response_model=schemas.SettingsOut)
 def update_settings(data: schemas.SettingsUpdate, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Change my settings (send only what changed). Experiment mode can't be changed here."""
-    return settings_service.update_settings(db, user, data)
+    saved = settings_service.update_settings(db, user, data)
+    planner_service.auto_replan(db, user, "settings_changed")      # new study hours / daily cap -> new plan
+    return saved
 
 
 # ===========================================================================
@@ -218,7 +340,8 @@ def update_settings(data: schemas.SettingsUpdate, db: Session = Depends(get_db),
 # ===========================================================================
 @router.get("/stress/status", response_model=schemas.StressStatusOut)
 def stress_status(db: Session = Depends(get_db), user=Depends(get_current_user)):
-    """Latest wellbeing signal and what the scheduler will do with it (nothing is changed here)."""
+    """Latest wellbeing signal and what the scheduler will do with it (an elevated one makes a proposal by itself)."""
+    stress_service.auto_propose(db, user)
     return stress_service.stress_status(db, user)
 
 
@@ -237,6 +360,7 @@ def stress_propose(db: Session = Depends(get_db), user=Depends(get_current_user)
 @router.get("/stress/proposals", response_model=list[schemas.StressProposalOut])
 def stress_proposals(db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Suggestions still waiting for my decision."""
+    stress_service.auto_propose(db, user)
     return stress_service.list_proposals(db, user)
 
 
@@ -244,13 +368,25 @@ def stress_proposals(db: Session = Depends(get_db), user=Depends(get_current_use
 def stress_decide(change_id: str, data: schemas.StressDecisionIn,
                   db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Accept all, keep only some (edited), or reject. Each change is safety-checked again."""
-    return stress_service.decide(db, user, change_id, data.decision, data.keep)
+    change = stress_service.decide(db, user, change_id, data.decision, data.keep)
+    if change.decision != "rejected":
+        planner_service.auto_replan(db, user, "stress_accepted")
+    return change
+
+
+@router.post("/stress/proposals/{change_id}/rating", response_model=schemas.UsefulnessOut)
+def rate_stress_proposal(change_id: str, data: schemas.UsefulnessIn,
+                         db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """1-5: how helpful was this lighter-plan suggestion? (deferral appropriateness, once, after deciding)"""
+    return feedback_service.rate_proposal(db, user, change_id, data.rating)
 
 
 @router.post("/stress/proposals/{change_id}/restore", response_model=schemas.StressProposalOut)
 def stress_restore(change_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Undo an accepted proposal - back to the plan I had before."""
-    return stress_service.restore(db, user, change_id)
+    change = stress_service.restore(db, user, change_id)
+    planner_service.auto_replan(db, user, "stress_restored")
+    return change
 
 
 # ===========================================================================
@@ -264,42 +400,54 @@ def send_weekly_summary(weeks: int = Query(1, ge=1, le=weekly_summary.MAX_BACKFI
     return weekly_summary.send_recent_weeks(db, user, weeks)
 
 
-@router.get("/plan")
-def plan(adaptive: bool = True, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    """adaptive=false gives the STATIC baseline used in the controlled pilot."""
-    return service.build_plan(db, user, adaptive)
-
-
-@router.post("/focus")
-def log_focus(data: schemas.FocusIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    """OLD endpoint: logs an already-finished session in one call (kept for the current frontend)."""
-    ended = data.started_at + timedelta(minutes=data.actual_minutes)   # finished -> never "active"
-    db.add(FocusSession(user_id=user.id, ended_at=ended, **data.model_dump())); db.commit()
-    return {"ok": True}
-
-
-@router.post("/adapt")
-def adapt(db: Session = Depends(get_db), user=Depends(get_current_user)):
-    risk = service.latest_risk_level(db, user.research_id)
-    tasks = db.query(Task).filter_by(user_id=user.id).all()
-    proposal = stress_rules.propose_changes(tasks, risk, datetime.utcnow())
-    ch = ScheduleChange(user_id=user.id, reason=proposal["reason"], change_set=proposal["changes"])
-    db.add(ch); db.commit()
-    return {"change_id": ch.id, **proposal}
-
-
-@router.post("/changes/{change_id}/decision")
-def decide(change_id: str, data: schemas.DecisionIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    ch = db.get(ScheduleChange, change_id)
-    if not ch or ch.user_id != user.id:
-        raise HTTPException(404)
-    ch.decision = data.decision; db.commit()
-    return {"ok": True}
-
-
 @router.post("/tasks/{task_id}/complete")
 def complete(task_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
     t = db.get(Task, task_id)
     if not t or t.user_id != user.id:
         raise HTTPException(404)
-    return service.complete_task(db, user, t)
+    done = progress_service.complete_task(db, user, t)
+    planner_service.auto_replan(db, user, "task_done")
+    return done
+
+
+# ===========================================================================
+# PILOT STUDY  (researcher only) - experiment mode per participant (proposal 3.1)
+# ===========================================================================
+@router.get("/research/me", response_model=schemas.ResearcherOut)
+def research_me(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Am I a researcher? (the frontend shows the pilot controls only then) Did I leave the study?"""
+    return {"is_researcher": research_service.is_researcher(user),
+            "research_withdrawn_at": research_service.withdrawn_at(db, user)}
+
+
+@router.post("/research/me/withdraw", response_model=schemas.WithdrawOut)
+def research_withdraw(data: schemas.WithdrawIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Proposal 3.2.2: leave the C3 study and delete my research records (the app keeps working)."""
+    return research_service.withdraw(db, user)
+
+
+@router.get("/research/overview")
+def research_overview(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Research Dashboard: KPIs, cohort charts and participant table (research IDs only). Researchers only."""
+    return research_service.overview(db, user)
+
+
+@router.get("/research/participants", response_model=schemas.ParticipantsOut)
+def research_participants(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Consenting participants by research ID with their mode and activity. Researchers only."""
+    return research_service.participants(db, user)
+
+
+@router.patch("/research/participants/{research_id}", response_model=schemas.ParticipantModeOut)
+def research_set_mode(research_id: str, data: schemas.ParticipantModeIn,
+                      db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Set a participant's experiment mode (static / adaptive / attention_only) and AB/BA group."""
+    return research_service.set_mode(db, user, research_id, data.mode, data.pilot_group)
+
+
+@router.get("/research/export.csv")
+def research_export_csv(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """FR-12: pilot metrics (proposal Table 3) per participant x mode, research IDs only. Researchers only."""
+    csv_text = research_export.export_csv(db, user)
+    name = f"c3_pilot_metrics_{datetime.utcnow():%Y%m%d}.csv"
+    return Response(csv_text, media_type="text/csv", headers={"Content-Disposition": f'attachment; filename="{name}"'})
