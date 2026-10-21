@@ -22,6 +22,7 @@ from typing import Dict, List, Any, Optional
 import pandas as pd
 import numpy as np
 import joblib
+from app.components.physical_wellbeing.ml.workout_routines import with_workout_routine
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CLEANED_DIR = r"d:\RP\J26-IT-320\backend\datasets\physical\cleaned"
@@ -585,7 +586,7 @@ CURATED_EXERCISES = [
         "knee_safe": True,
         "back_safe": True,
         "calories_per_kg_hr": 6.0,
-        "description": "3 rounds of 10 exercises: push-ups, glute bridges, step-backs, plank shoulder taps, arm circles, and side planks."
+        "description": "3 rounds of 6 timed movements: push-ups, glute bridges, step-backs, plank shoulder taps, arm circles, and side planks."
     },
     {
         "id": "ex_30_2",
@@ -785,6 +786,39 @@ def predict_adherence(feats: Dict[str, float]) -> float:
 
 
 # ── Helper: Filter & Score Meals for Profile ─────────────────────────────────
+def _weight_goal_type(profile: dict) -> str | None:
+    """Resolve explicit weight goals before using BMI as a cautious fallback."""
+    primary = str(profile.get("goal", "")).lower().replace("_", " ")
+    secondary = " ".join(str(item).lower().replace("_", " ") for item in profile.get("goals", []))
+    nutrition = " ".join(str(item).lower().replace("_", " ") for item in profile.get("nutrition_goals", []))
+    for text in (primary, secondary, nutrition):
+        if any(term in text for term in ("weight gain", "gain weight", "gain muscle", "muscle gain", "build muscle", "bulk")):
+            return "gain"
+        if any(term in text for term in ("weight loss", "lose weight", "fat loss", "fat burn", "weight reduction")):
+            return "loss"
+    if float(profile.get("bmi", 22.0)) >= 25.0:
+        return "loss"
+    if float(profile.get("bmi", 22.0)) < 18.5:
+        return "gain"
+    return None
+
+
+def _meal_goal_alignment(meal: dict, weight_goal: str | None, profile: dict) -> float:
+    calories = max(0.0, float(meal.get("calories", 0)))
+    protein = max(0.0, float(meal.get("protein", 0)))
+    calorie_score = min(1.0, max(0.0, (calories - 200.0) / 450.0))
+    protein_score = min(1.0, protein / 30.0)
+    protein_density = min(1.0, (protein / max(calories, 1.0)) * 650.0)
+    if weight_goal == "loss":
+        return 0.58 * (1.0 - calorie_score) + 0.42 * protein_density
+    if weight_goal == "gain":
+        return 0.58 * calorie_score + 0.42 * protein_score
+    nutrition_goals = " ".join(str(item).lower() for item in profile.get("nutrition_goals", []))
+    if "protein" in nutrition_goals or "strength" in str(profile.get("goal", "")).lower():
+        return protein_score
+    return 0.0
+
+
 def get_scored_meals_for_profile(profile: dict, is_exam_period: bool = False) -> List[Dict[str, Any]]:
     """
     Filters and ranks meal candidates based on student diet, cuisine, and context scores.
@@ -799,6 +833,7 @@ def get_scored_meals_for_profile(profile: dict, is_exam_period: bool = False) ->
     burnout = float(profile.get("burnout_score", 3.0))
     sleep_def = float(profile.get("sleep_deficit", max(0.0, 7.5 - float(profile.get("sleep_hours", 7.0)))))
     bmi = float(profile.get("bmi", 22.0))
+    weight_goal = _weight_goal_type(profile)
     avail_mins = float(profile.get("available_minutes", 20))
 
     if is_exam_period or stress >= 3.8:
@@ -883,21 +918,19 @@ def get_scored_meals_for_profile(profile: dict, is_exam_period: bool = False) ->
         m_cals = float(m["calories"])
         m_prot = float(m["protein"])
 
-        # Weight Loss / Fat Burn / High BMI (> 25)
-        if "weight_loss" in all_goal_str or "lose" in all_goal_str or bmi >= 25.0:
+        # An explicit primary goal wins over BMI, so a weight-gain goal is not
+        # accidentally ranked as weight loss just because BMI is above 25.
+        if weight_goal == "loss":
             if m_prot >= 15.0 and m_cals <= 450:
-                # Satiety & lean muscle preservation under caloric deficit
-                adherence = min(0.99, adherence * 1.30)
+                adherence = min(0.99, adherence * 1.18)
             elif m_cals > 550:
-                adherence *= 0.80
+                adherence *= 0.72
 
-        # Weight Gain / Muscle Building / Low BMI (< 18.5)
-        elif "weight_gain" in all_goal_str or "gain" in all_goal_str or "muscle" in all_goal_str or bmi < 18.5:
+        elif weight_goal == "gain":
             if m_cals >= 380 and m_prot >= 16.0:
-                # Caloric surplus & muscle recovery
-                adherence = min(0.99, adherence * 1.30)
+                adherence = min(0.99, adherence * 1.20)
             elif m_cals < 250:
-                adherence *= 0.85
+                adherence *= 0.70
 
         # Strength & Conditioning
         elif "strength" in all_goal_str:
@@ -905,6 +938,7 @@ def get_scored_meals_for_profile(profile: dict, is_exam_period: bool = False) ->
                 adherence = min(0.99, adherence * 1.25)
 
         m_copy = dict(m)
+        m_copy["goal_alignment"] = round(_meal_goal_alignment(m, weight_goal, profile), 4)
         if m.get("name") in profile.get("favorite_meal_names", []):
             adherence = min(0.99, adherence * 1.20)
         recent_count = int((profile.get("plan_history") or {}).get("meal_counts", {}).get(m["name"], 0))
@@ -914,8 +948,9 @@ def get_scored_meals_for_profile(profile: dict, is_exam_period: bool = False) ->
         m_copy["adherence_probability"] = round(adherence, 4)
         scored_meals.append(m_copy)
 
-    # Sort meals by adherence
-    scored_meals.sort(key=lambda x: x["adherence_probability"], reverse=True)
+    # Goal alignment leads the live ordering; XGBoost then personalizes within
+    # equally aligned meal choices.
+    scored_meals.sort(key=lambda x: (x.get("goal_alignment", 0.0), x["adherence_probability"]), reverse=True)
     return scored_meals
 
 
@@ -1061,6 +1096,7 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
     burnout = float(profile.get("burnout_score", 3.0))
     sleep_def = float(profile.get("sleep_deficit", max(0.0, 7.5 - float(profile.get("sleep_hours", 7.0)))))
     bmi = float(profile.get("bmi", 22.0))
+    weight_goal = _weight_goal_type(profile)
     avail_mins = int(profile.get("available_minutes", 20))
     behavior = profile.get("behavior_adaptation") or {}
     behavior_target_mins = int(behavior.get("target_minutes", avail_mins))
@@ -1193,13 +1229,53 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
             prob = min(0.99, prob * 1.25)
             activity_match = max(activity_match, 1)
 
-        # Goal relevance multiplier
-        goal_match = any(g in ex["target_goals"] for g in all_goals)
+        # Translate the selected goals into catalog labels (the assessment uses
+        # display strings such as "Improve Strength", while the catalog uses
+        # compact tags such as "strength").
+        goal_text = " ".join(all_goals).replace("_", " ")
+        normalized_goals = set()
+        if "strength" in goal_text or "muscle" in goal_text:
+            normalized_goals.add("strength")
+        if "weight loss" in goal_text or "lose weight" in goal_text or "fat loss" in goal_text:
+            normalized_goals.add("weight_loss")
+        if "fitness" in goal_text or "physical activity" in goal_text or "active" in goal_text:
+            normalized_goals.add("fitness")
+        if "mobility" in goal_text or "flexibility" in goal_text:
+            normalized_goals.add("mobility")
+        goal_match = bool(normalized_goals.intersection(set(ex.get("target_goals", []))))
+
+        ex_goal_text = " ".join([
+            str(ex.get("primary_goal", "")), str(ex.get("name", "")),
+            str(ex.get("description", "")), " ".join(str(tag) for tag in ex.get("target_goals", [])),
+        ]).lower()
+        if weight_goal == "loss":
+            if "weight_loss" in ex.get("target_goals", []):
+                goal_alignment = 1.0
+            elif any(word in ex_goal_text for word in ("cardio", "walking", "walk", "dance", "running", "jogging")):
+                goal_alignment = 0.78
+            elif "strength" in ex_goal_text:
+                goal_alignment = 0.48
+            else:
+                goal_alignment = 0.25
+        elif weight_goal == "gain":
+            if "strength" in ex.get("target_goals", []) or any(word in ex_goal_text for word in ("resistance", "muscle building", "strength training")):
+                goal_alignment = 1.0
+            elif any(word in ex_goal_text for word in ("cardio", "walking", "walk", "dance", "running", "jogging")):
+                goal_alignment = 0.28
+            else:
+                goal_alignment = 0.58
+        elif "strength" in normalized_goals:
+            goal_alignment = 1.0 if "strength" in ex.get("target_goals", []) else 0.35
+        elif normalized_goals:
+            goal_alignment = 1.0 if goal_match else 0.35
+        else:
+            goal_alignment = 0.0
         if goal_match:
             prob = min(0.99, prob * 1.1)
+        prob = min(0.99, prob * (1.0 + 0.18 * goal_alignment))
 
         # High BMI & Walking Synergy: Safe fat-loss without joint shear
-        is_walking_fat_loss = (bmi >= 24.5 or "weight_loss" in all_goals or any("lose" in g for g in all_goals)) and any("walk" in a for a in pref_acts)
+        is_walking_fat_loss = (weight_goal == "loss" or (weight_goal is None and bmi >= 24.5)) and any("walk" in a for a in pref_acts)
         if is_walking_fat_loss and ("walk" in ex_name_l or "walk" in ex_equip or "walking" in ex_tags_l):
             prob = min(0.99, prob * 1.35)
             activity_match = max(activity_match, 2)
@@ -1216,12 +1292,14 @@ def get_tailored_exercises_for_profile(profile: dict, is_exam_period: bool = Fal
         ex_copy["adherence_probability"] = round(float(prob), 4)
         ex_copy["limitation_warning"] = True if limitation_conflict else False
         ex_copy["activity_match"] = activity_match
-        scored_exercises.append(ex_copy)
+        ex_copy["goal_alignment"] = round(goal_alignment, 4)
+        scored_exercises.append(with_workout_routine(ex_copy))
 
     # Recent check-ins can gently shorten future sessions after repeated missed workouts.
     scored_exercises.sort(
         key=lambda x: (
             0 if x.get("name") in profile.get("favorite_workout_names", []) else 1,
+            -x.get("goal_alignment", 0.0),
             abs(x["duration_mins"] - min(effective_avail_mins, behavior_target_mins)),
             -x.get("activity_match", 0),
             -x["adherence_probability"]
@@ -1251,7 +1329,7 @@ def get_baseline_recommendations(profile: dict, k: int = 3) -> Dict[str, Any]:
         e["calories_burned"] = 150
         e["adherence_probability"] = 0.50
         e["limitation_warning"] = False
-        formatted_exercises.append(e)
+        formatted_exercises.append(with_workout_routine(e))
 
     # Generic meals
     raw_meals = []

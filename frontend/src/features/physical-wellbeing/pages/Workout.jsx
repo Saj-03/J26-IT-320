@@ -21,6 +21,53 @@ function fmt(s) {
     return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 }
 
+function buildWorkoutSteps(workout, workoutMins, workoutTitle) {
+    const routine = workout.routine;
+    if (!routine?.exercises?.length) {
+        return [{ name: workoutTitle, seconds: Math.max(60, workoutMins * 60), cue: workout.description || 'Follow the recommended routine at a comfortable pace, and pause if you feel pain.' }];
+    }
+
+    const totalSeconds = Math.max(60, workoutMins * 60);
+    const warmupSeconds = Math.max(45, Math.round(totalSeconds * 0.1));
+    const cooldownSeconds = Math.max(45, Math.round(totalSeconds * 0.1));
+    const configuredRounds = Math.max(1, Number(routine.rounds) || 1);
+    const restSeconds = Math.max(0, Number(routine.rest_seconds) || 0);
+    let rounds = configuredRounds;
+    let restsPerRound = Math.max(0, routine.exercises.length - 1);
+    let exerciseSeconds = 0;
+    while (rounds > 1) {
+        const restCount = rounds * restsPerRound + (rounds - 1);
+        exerciseSeconds = Math.floor((totalSeconds - warmupSeconds - cooldownSeconds - restCount * restSeconds) / (rounds * routine.exercises.length));
+        if (exerciseSeconds >= 20) break;
+        rounds -= 1;
+    }
+    const restCount = rounds * restsPerRound + (rounds - 1);
+    exerciseSeconds = Math.max(20, Math.floor((totalSeconds - warmupSeconds - cooldownSeconds - restCount * restSeconds) / (rounds * routine.exercises.length)));
+
+    const steps = [{ ...routine.warmup, seconds: warmupSeconds, kind: 'warmup' }];
+    for (let round = 0; round < rounds; round += 1) {
+        routine.exercises.forEach((exercise, exerciseIndex) => {
+            steps.push({ ...exercise, name: `Round ${round + 1} · ${exercise.name}`, seconds: exerciseSeconds, kind: 'exercise' });
+            const hasNextExercise = exerciseIndex < routine.exercises.length - 1;
+            const hasNextRound = !hasNextExercise && round < rounds - 1;
+            if (restSeconds > 0 && (hasNextExercise || hasNextRound)) {
+                steps.push({
+                    name: hasNextRound ? 'Rest before next round' : 'Rest',
+                    cue: 'Take a breath and drink water if you need it. Start the next movement when ready.',
+                    seconds: hasNextRound ? Math.max(restSeconds, 30) : restSeconds,
+                    kind: 'rest'
+                });
+            }
+        });
+    }
+    steps.push({ ...routine.cooldown, seconds: cooldownSeconds, kind: 'cooldown' });
+
+    // Keep the timeline aligned to the session length after rounding the per-move timers.
+    const difference = totalSeconds - steps.reduce((sum, item) => sum + item.seconds, 0);
+    steps[steps.length - 1].seconds = Math.max(30, steps[steps.length - 1].seconds + difference);
+    return steps;
+}
+
 export function PhysicalWorkout() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -67,20 +114,16 @@ export function PhysicalWorkout() {
         } finally { setFavoriteBusy(false); }
     };
     const workoutDay = location.state?.dayName;
-    const currentSteps = [{
-        name: workoutTitle,
-        seconds: Math.max(60, workoutMins * 60),
-        cue: workout.description || 'Follow the recommended routine at a comfortable pace, and pause if you feel pain.'
-    }];
-    const step = currentSteps[0];
+    const currentSteps = buildWorkoutSteps(workout, workoutMins, workoutTitle);
+    const step = currentSteps[index] || currentSteps[0];
 
     useEffect(() => {
-        setLeft(currentSteps[0].seconds);
+        setLeft(buildWorkoutSteps(workout, workoutMins, workoutTitle)[0].seconds);
         setIndex(0);
         setStarted(false);
         setRunning(false);
         setFinished(false);
-    }, [workoutTitle, workoutMins, workout.description]);
+    }, [workoutTitle, workoutMins, workout.description, workout.routine]);
 
     useEffect(() => {
         if (!running || finished) return;
@@ -267,17 +310,8 @@ export function PhysicalWorkout() {
                 </div>
             </div>
 
-            {/* Step dots */}
-            <div className="flex gap-1.5 mt-4">
-                {currentSteps.map((_, i) => (
-                    <span
-                        key={i}
-                        className={cn(
-                            'h-1.5 flex-1 rounded-full transition-colors',
-                            i < index ? 'bg-brand-500' : i === index ? 'bg-brand-300' : 'bg-black/[0.08]'
-                        )}
-                    />
-                ))}
+            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-black/[0.08]" aria-label={`Step ${index + 1} of ${currentSteps.length}`}>
+                <div className="h-full rounded-full bg-brand-500 transition-all" style={{ width: `${((index + 1) / currentSteps.length) * 100}%` }} />
             </div>
 
             <div className="mt-6 grid grid-cols-1 lg:grid-cols-[minmax(0,2.1fr)_minmax(320px,0.9fr)] xl:grid-cols-[minmax(0,2.35fr)_minmax(340px,0.9fr)] gap-5 lg:gap-7 xl:gap-8 items-start">
@@ -310,6 +344,25 @@ export function PhysicalWorkout() {
                 </section>
 
                 <section className="min-w-0">
+                    {workout.routine?.exercises?.length > 0 && (
+                        <Card padding="lg" className="mb-4 text-left">
+                            <div className="flex items-start justify-between gap-3">
+                                <div>
+                                    <h2 className="font-extrabold text-charcoal">Workout steps</h2>
+                                    <p className="mt-1 text-xs text-charcoal-muted">{workout.routine.rounds} rounds · each move has its own timer</p>
+                                </div>
+                                <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-bold text-brand-700">{currentSteps.length} timed steps</span>
+                            </div>
+                            <ol className="mt-3 space-y-2">
+                                <li className="flex gap-2 text-sm"><span className="w-6 shrink-0 font-bold text-brand-700">1.</span><span className="text-charcoal">Warm up: {workout.routine.warmup?.name}</span></li>
+                                {workout.routine.exercises.map((exercise, i) => (
+                                    <li key={`${exercise.name}-${i}`} className="flex gap-2 text-sm"><span className="w-6 shrink-0 font-bold text-brand-700">{i + 2}.</span><span className="text-charcoal">{exercise.name}</span></li>
+                                ))}
+                                {workout.routine.rounds > 1 && <li className="text-xs text-charcoal-muted">Repeat the exercise list for {workout.routine.rounds} rounds, with the timed rests between movements.</li>}
+                                <li className="flex gap-2 text-sm"><span className="w-6 shrink-0 font-bold text-brand-700">✓</span><span className="text-charcoal">Cool down: {workout.routine.cooldown?.name}</span></li>
+                            </ol>
+                        </Card>
+                    )}
                     <div className="flex justify-center py-2 sm:py-4">
                         <ProgressRing value={pct} size={poseTracking ? 180 : 200} stroke={13}>
                             <span className="text-5xl">{step?.emoji || '🏋️'}</span>

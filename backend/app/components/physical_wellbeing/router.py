@@ -382,6 +382,7 @@ def get_profile(db: Session = Depends(get_db), user=Depends(get_current_user)):
         "equipment": p.equipment or [],
         "diet_pref": p.diet_pref or "any",
         "meal_style": getattr(p, "meal_style", "both") or "both",
+        "nutrition_goals": (p.assessment_data or {}).get("nutritionGoals", []),
         "allergies": getattr(p, "allergies", "") or "",
         "avoid_foods": getattr(p, "avoid_foods", "") or "",
         "favourite_foods": getattr(p, "favourite_foods", "") or "",
