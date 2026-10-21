@@ -73,6 +73,7 @@ export function PhysicalExercise() {
         title="Movement"
         subtitle="Your personalized workout is the focus, with daily steps and activity alongside it."
         eyebrow="Exercise & activity"
+        imageSet="movement"
       />
 
       <PhysicalNav />

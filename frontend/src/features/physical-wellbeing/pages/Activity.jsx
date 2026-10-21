@@ -73,6 +73,7 @@ export function ActivityTrackingPanel({ embedded = false, view = 'all' }) {
           title="Movement"
           subtitle="Your workouts, daily steps, and movement progress in one place."
           eyebrow="Exercise & activity"
+          imageSet="movement"
         />
         <PhysicalNav />
       </>}

@@ -787,15 +787,12 @@ def predict_adherence(feats: Dict[str, float]) -> float:
 
 # ── Helper: Filter & Score Meals for Profile ─────────────────────────────────
 def _weight_goal_type(profile: dict) -> str | None:
-    """Resolve explicit weight goals; BMI alone must not choose a diet goal."""
+    """Use the current primary goal so stale secondary goals cannot set calories."""
     primary = str(profile.get("goal", "")).lower().replace("_", " ")
-    secondary = " ".join(str(item).lower().replace("_", " ") for item in profile.get("goals", []))
-    nutrition = " ".join(str(item).lower().replace("_", " ") for item in profile.get("nutrition_goals", []))
-    for text in (primary, secondary, nutrition):
-        if any(term in text for term in ("weight gain", "gain weight", "gain muscle", "muscle gain", "build muscle", "bulk")):
-            return "gain"
-        if any(term in text for term in ("weight loss", "lose weight", "fat loss", "fat burn", "weight reduction")):
-            return "loss"
+    if any(term in primary for term in ("weight gain", "gain weight", "gain muscle", "muscle gain", "build muscle", "bulk")):
+        return "gain"
+    if any(term in primary for term in ("weight loss", "lose weight", "fat loss", "fat burn", "weight reduction")):
+        return "loss"
     return None
 
 

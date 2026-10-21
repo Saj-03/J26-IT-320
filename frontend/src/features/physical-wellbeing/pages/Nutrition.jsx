@@ -48,12 +48,7 @@ export function PhysicalNutrition() {
   const slotCalorieTarget = dailyCalorieTarget != null && Number.isFinite(Number(dailyCalorieTarget))
     ? Math.round(Number(dailyCalorieTarget) * (slotCalorieShares[slotKey] || 0.25))
     : null;
-  const featuredMeal = currentSlotMeals[0] || recomData?.meals?.[0] || {
-    name: 'Red Rice with Dhal Curry, Kola Mallum & Soya Meat Curry',
-    calories: 420, protein: 24, carbs: 68, fat: 7.5, prep_time: 20,
-    cuisine: 'sri_lankan', diet_category: 'vegan',
-    description: 'Nutrient-dense Sri Lankan meal with balanced plant protein, unpolished red rice, and gotukola greens.'
-  };
+  const featuredMeal = currentSlotMeals[0] || recomData?.meals?.[0] || null;
 
   const allMeals = recomData?.meals || [];
   const filteredMeals = allMeals.filter((m) => {
@@ -109,6 +104,7 @@ export function PhysicalNutrition() {
         title="Student Nutrition & Meal Plans"
         subtitle="Healthy Sri Lankan and international meals tailored to your diet, study schedule, and available prep time."
         eyebrow="Food & nourishment"
+        imageSet="nutrition"
       />
 
       <PhysicalNav />
@@ -133,6 +129,7 @@ export function PhysicalNutrition() {
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Featured meal */}
+        {!featuredMeal ? <Card padding="lg" className="lg:col-span-2 text-center py-12"><h2 className="font-bold text-charcoal">No meal recommendation available</h2><p className="text-sm text-charcoal-muted mt-2">Complete or update your assessment and try again to get meals matched to your profile.</p></Card> :
         <motion.div
           key={slot + (featuredMeal.name || '')}
           initial={{ opacity: 0, y: 12 }}
@@ -156,7 +153,7 @@ export function PhysicalNutrition() {
               </h2>
 
               <p className="text-sm text-charcoal-muted mt-2 leading-relaxed">
-                {featuredMeal.description || 'Specially selected to support sustained cognitive stamina during university study sessions.'}
+                {featuredMeal.description || 'Meal details from the recommendation dataset.'}
               </p>
 
               {slotCalorieTarget !== null && (
@@ -177,10 +174,10 @@ export function PhysicalNutrition() {
 
               <div className="grid grid-cols-4 gap-2.5 mt-5">
                 {[
-                  { l: 'Per listed serving', v: `${featuredMeal.calories || 400}`, u: 'kcal' },
-                  { l: 'Protein', v: `${featuredMeal.protein || 20}`, u: 'g' },
-                  { l: 'Carbs', v: `${featuredMeal.carbs || 60}`, u: 'g' },
-                  { l: 'Prep Time', v: `${featuredMeal.prep_time || 15}`, u: 'mins' }
+                  ...(featuredMeal.calories != null ? [{ l: 'Per listed serving', v: `${featuredMeal.calories}`, u: 'kcal' }] : []),
+                  ...(featuredMeal.protein != null ? [{ l: 'Protein', v: `${featuredMeal.protein}`, u: 'g' }] : []),
+                  ...(featuredMeal.carbs != null ? [{ l: 'Carbs', v: `${featuredMeal.carbs}`, u: 'g' }] : []),
+                  ...(featuredMeal.prep_time != null ? [{ l: 'Prep Time', v: `${featuredMeal.prep_time}`, u: 'mins' }] : [])
                 ].map((m) => (
                   <div key={m.l} className="bg-emerald-50 rounded-2xl p-3 text-center border border-emerald-100">
                     <p className="text-base sm:text-lg font-black text-emerald-800 leading-none">{m.v}</p>
@@ -202,7 +199,7 @@ export function PhysicalNutrition() {
               </div>
             </div>
           </Card>
-        </motion.div>
+        </motion.div>}
 
         {/* Why + Preferences */}
         <div className="space-y-6">
@@ -216,8 +213,8 @@ export function PhysicalNutrition() {
               {[
                 { l: 'Dietary Preference', v: dietPrefDisplay },
                 { l: 'Meal Style', v: mealStyleDisplay },
-                { l: 'Avoiding', v: profile?.avoid_foods || 'Deep fried food' },
-                { l: 'Allergies', v: profile?.allergies || 'None reported' }
+                { l: 'Avoiding', v: profile?.avoid_foods || 'Not specified' },
+                { l: 'Allergies', v: profile?.allergies || 'Not specified' }
               ].map((p) => (
                 <div key={p.l} className="flex items-center justify-between py-1 border-b border-black/[0.03]">
                   <span className="text-xs text-charcoal-muted font-medium">{p.l}</span>

@@ -1077,12 +1077,16 @@ def get_user_habits(db: Session = Depends(get_db), user=Depends(get_current_user
     result = []
     for h in habits:
         done_today = False
+        current_streak = h.streak or 0
         if h.last_done:
-            done_today = (h.last_done.date() == today)
+            last_done_day = h.last_done.date()
+            done_today = last_done_day == today
+            if last_done_day < today - datetime.timedelta(days=1):
+                current_streak = 0
         result.append({
             "id": h.id,
             "name": h.name,
-            "streak": h.streak,
+            "streak": current_streak,
             "done": done_today,
             "last_done": h.last_done.isoformat() if h.last_done else None
         })

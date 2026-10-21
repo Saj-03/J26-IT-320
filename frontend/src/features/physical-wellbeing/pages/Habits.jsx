@@ -11,20 +11,11 @@ import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
 import { cn } from '../../../shared/lib/cn';
 import { getHabits, addHabit, habitDone, deleteHabit } from '../api';
 
-const STARTER_HABITS = [
-  { name: 'Drink 2L Water Daily', emoji: '💧', goal: '2 Liters' },
-  { name: '20-Min Campus Walk', emoji: '🚶', goal: '20 mins' },
-  { name: '5-Min Posture & Neck Stretch', emoji: '🧘', goal: '5 mins' },
-  { name: 'Sleep Before 12:00 AM', emoji: '😴', goal: '7+ hours' }
-];
-
 export function PhysicalHabits() {
   const [habits, setHabits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
-  const [goal, setGoal] = useState('');
-  const [addingQuick, setAddingQuick] = useState(false);
   const [busyId, setBusyId] = useState('');
   const [error, setError] = useState('');
 
@@ -66,6 +57,7 @@ export function PhysicalHabits() {
 
   const add = async () => {
     if (!name.trim()) return;
+    setError('');
     try {
       const created = await addHabit(name.trim());
       setHabits((prev) => [
@@ -73,30 +65,17 @@ export function PhysicalHabits() {
         {
           id: created.data?.id || created.id || Date.now(),
           name: name.trim(),
-          goal: goal.trim() || 'Daily',
           streak: 0,
           done: false,
           emoji: '⭐'
         }
       ]);
       setName('');
-      setGoal('');
       setOpen(false);
       await fetchHabits();
     } catch (err) {
       console.error(err);
-    }
-  };
-
-  const quickAdd = async (starter) => {
-    setAddingQuick(true);
-    try {
-      await addHabit(starter.name);
-      await fetchHabits();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setAddingQuick(false);
+      setError('Could not save this habit. Please try again.');
     }
   };
 
@@ -121,10 +100,13 @@ export function PhysicalHabits() {
         title="Healthy Habits"
         subtitle="Real daily student habits that train discipline, energy, and mental focus."
         eyebrow="Everyday routines"
-        actions={<Button onClick={() => setOpen(true)}><PlusIcon size={16} /> Add Custom Habit</Button>}
       />
 
       <PhysicalNav />
+
+      <div className="flex justify-end">
+        <Button onClick={() => setOpen(true)}><PlusIcon size={16} /> Add Custom Habit</Button>
+      </div>
 
       {/* Streak Hero Card */}
       <Card padding="lg" className="relative overflow-hidden">
@@ -138,7 +120,7 @@ export function PhysicalHabits() {
             <p className="text-sm text-charcoal-muted mt-0.5">
               {habits.length > 0
                 ? `${doneCount} of ${habits.length} habits completed today`
-                : 'No habits tracked yet. Choose a starter habit below to begin!'}
+                : 'No habits tracked yet. Add a routine that fits your day.'}
             </p>
           </div>
           <FlameIcon size={24} className="text-brand-500 shrink-0" />
@@ -167,28 +149,9 @@ export function PhysicalHabits() {
           </div>
           <h3 className="text-lg font-extrabold text-charcoal">No Habits Active Yet</h3>
           <p className="text-sm text-charcoal-muted mt-1 max-w-md mx-auto">
-            Small daily actions build remarkable student wellbeing over a semester. Tap any recommended habit to start tracking:
+            Create a routine you actually want to track. Your list and streaks come from your saved check-ins.
           </p>
-
-          <div className="grid sm:grid-cols-2 gap-3 mt-6 max-w-xl mx-auto">
-            {STARTER_HABITS.map((s) => (
-              <button
-                key={s.name}
-                disabled={addingQuick}
-                onClick={() => quickAdd(s)}
-                className="flex items-center gap-3 p-3.5 rounded-2xl bg-cream hover:bg-brand-50 hover:border-brand-300 border border-black/[0.04] text-left transition-all group"
-              >
-                <span className="text-2xl">{s.emoji}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-extrabold text-charcoal group-hover:text-brand-700">
-                    {s.name}
-                  </p>
-                  <p className="text-[11px] text-charcoal-muted">{s.goal}</p>
-                </div>
-                <PlusIcon size={16} className="text-charcoal-muted group-hover:text-brand-600" />
-              </button>
-            ))}
-          </div>
+          <Button className="mt-5" onClick={() => setOpen(true)}><PlusIcon size={16} /> Create your first habit</Button>
         </Card>
       ) : (
         <div className="grid md:grid-cols-2 gap-4">
@@ -243,11 +206,10 @@ export function PhysicalHabits() {
         </div>
       )}
 
-      {/* Student Encouragement Note */}
       <div className="rounded-3xl bg-cream p-5 flex gap-3">
         <span className="text-lg shrink-0">💛</span>
         <p className="text-sm text-charcoal-light leading-relaxed">
-          Missing a day is completely normal during assignment deadlines. The AI assesses your consistency trends over time rather than penalizing isolated lapses.
+          Streaks reflect consecutive days with a saved check-in. A missed day resets the streak when you next check in.
         </p>
       </div>
 
@@ -259,12 +221,6 @@ export function PhysicalHabits() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. 10-Min Evening Walk after Study"
-          />
-          <Field
-            label="Target Goal"
-            value={goal}
-            onChange={(e) => setGoal(e.target.value)}
-            placeholder="e.g. Daily / 10 minutes"
           />
           <Button fullWidth size="lg" onClick={add} disabled={!name.trim()}>
             Create Habit

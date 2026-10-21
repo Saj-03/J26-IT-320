@@ -3,33 +3,49 @@ import { motion } from 'framer-motion';
 import { SparklesIcon } from 'lucide-react';
 
 export const PHYSICAL_MASTER_SLIDES = [
-  { src: '/img/ChatGPT%20Image%20Sep%2024,%202026,%2009_33_26%20AM%20(1).png', label: 'Campus walk', accent: '#7dd3fc' },
-  { src: '/img/ChatGPT%20Image%20Sep%2024,%202026,%2009_33_29%20AM%20(2).png', label: 'Study break', accent: '#fcd34d' },
-  { src: '/img/ChatGPT%20Image%20Sep%2024,%202026,%2009_33_31%20AM%20(3).png', label: 'Mindful rest', accent: '#c4b5fd' },
-  { src: '/img/ChatGPT%20Image%20Sep%2024,%202026,%2009_33_35%20AM%20(4).png', label: 'Move together', accent: '#fda4af' },
+  { src: '/img/pw_workout.png', label: 'Workout session', accent: '#7dd3fc' },
+  { src: '/img/pw_meal.png', label: 'Balanced meal', accent: '#fcd34d' },
+  { src: '/39c988fa-df0e-4099-8c60-91d3bf4a11aa.jpg', label: 'Rice and curry', accent: '#c4b5fd' },
+  { src: '/img/ChatGPT%20Image%20Sep%2024,%202026,%2009_33_35%20AM%20(4).png', label: 'Campus walk', accent: '#fda4af' },
 ];
+
+const MASTER_IMAGE_SETS = {
+  movement: [
+    { src: '/img/pw_workout.png', label: 'Workout session', accent: '#7dd3fc' },
+    { src: '/9269aefa-f432-481e-9b47-c5d3b25db6a3.jpg', label: 'At-home movement', accent: '#fcd34d' },
+    { src: '/img/ChatGPT%20Image%20Sep%2024,%202026,%2009_33_26%20AM%20(1).png', label: 'Campus walk', accent: '#c4b5fd' },
+    { src: '/img/ChatGPT%20Image%20Sep%2024,%202026,%2009_33_35%20AM%20(4).png', label: 'Students walking', accent: '#fda4af' },
+  ],
+  nutrition: [
+    { src: '/img/pw_meal.png', label: 'Balanced meal', accent: '#7dd3fc' },
+    { src: '/39c988fa-df0e-4099-8c60-91d3bf4a11aa.jpg', label: 'Rice and curry', accent: '#fcd34d' },
+    { src: '/29a98ebd-e302-4ac6-81f6-4da7c5c23863.jpg', label: 'Fresh salad', accent: '#c4b5fd' },
+    { src: '/67a05d45-ab91-4e9b-9572-455e2228a1d0.jpg', label: 'Dhal and fruit', accent: '#fda4af' },
+  ],
+};
 
 export function PhysicalMasterCard({
   title,
   subtitle,
   eyebrow = 'Your physical wellbeing',
-  actions,
   children,
+  imageSet = 'wellbeing',
   className = '',
 }) {
   const [slideIndex, setSlideIndex] = useState(0);
+  const slides = MASTER_IMAGE_SETS[imageSet] || PHYSICAL_MASTER_SLIDES;
 
   useEffect(() => {
     const interval = window.setInterval(() => {
-      setSlideIndex((index) => (index + 1) % PHYSICAL_MASTER_SLIDES.length);
+          setSlideIndex((index) => (index + 1) % slides.length);
     }, 3500);
     return () => window.clearInterval(interval);
-  }, []);
+  }, [slides]);
 
   return (
     <section className={`relative isolate min-h-[220px] overflow-hidden rounded-[1.75rem] bg-slate-950 px-5 py-5 text-white shadow-lg sm:px-7 sm:py-6 ${className}`}>
       <div className="pointer-events-none absolute inset-0 z-0">
-        {PHYSICAL_MASTER_SLIDES.map((slide, index) => (
+        {slides.map((slide, index) => (
           <motion.div
             key={slide.src}
             className="absolute inset-0"
@@ -50,12 +66,9 @@ export function PhysicalMasterCard({
           </div>
           <h1 className="text-2xl font-black tracking-tight sm:text-3xl">{title}</h1>
           {subtitle && <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-slate-100/85">{subtitle}</p>}
-          {actions && <div className="mt-4 flex flex-wrap items-center gap-2">{actions}</div>}
-          <div className="mt-4 flex items-center gap-1.5" aria-label="Hero images">
-            {PHYSICAL_MASTER_SLIDES.map((slide, index) => (
-              <button key={slide.label} type="button" onClick={() => setSlideIndex(index)} aria-label={`Show ${slide.label} image`} className="transition-all duration-300">
-                <span className="block h-1.5 rounded-full transition-all duration-300" style={{ width: index === slideIndex ? 20 : 6, backgroundColor: index === slideIndex ? slide.accent : 'rgba(255,255,255,0.45)' }} />
-              </button>
+          <div className="mt-4 flex items-center gap-1.5" aria-hidden="true">
+            {slides.map((slide, index) => (
+              <span key={slide.label} className="block h-1.5 rounded-full transition-all duration-300" style={{ width: index === slideIndex ? 20 : 6, backgroundColor: index === slideIndex ? slide.accent : 'rgba(255,255,255,0.45)' }} />
             ))}
           </div>
         </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { PencilIcon, RotateCwIcon, ChevronRightIcon } from 'lucide-react';
+import { RotateCwIcon, ChevronRightIcon } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { Avatar } from '../../../shared/components/ui/Avatar';
@@ -125,7 +125,7 @@ export function PhysicalProfile() {
     }, 1600);
   };
   return (<div className="space-y-6">
-    <PhysicalMasterCard title="My Wellbeing Profile" subtitle="Everything the AI uses to build your plan — fully editable." eyebrow="Your profile" actions={<Button variant="outline" className="border-white/30 bg-white/90 text-slate-900 hover:bg-white" onClick={() => navigate('/physical-setup/assessment')}><PencilIcon size={15} /> Edit Preferences</Button>} />
+    <PhysicalMasterCard title="My Wellbeing Profile" subtitle="Everything the AI uses to build your plan — fully editable." eyebrow="Your profile" />
 
     <PhysicalNav />
 
@@ -165,7 +165,10 @@ export function PhysicalProfile() {
             <h2 className="mt-1 text-xl font-extrabold tracking-tight text-charcoal">Your preferences</h2>
             <p className="mt-1 text-sm text-charcoal-muted">The details behind your personalized plan.</p>
           </div>
-          {!profileLoading && profile && <span className="rounded-full bg-brand-50 px-3 py-1.5 text-[11px] font-bold text-brand-700">{rows.length} profile details</span>}
+          {!profileLoading && profile && <div className="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center">
+            <span className="rounded-full bg-brand-50 px-3 py-1.5 text-[11px] font-bold text-brand-700">{rows.length} profile details</span>
+            <Button size="sm" variant="outline" onClick={() => navigate('/physical-setup/assessment')}>Edit Preferences</Button>
+          </div>}
         </div>
         {profileLoading ? (
           <p className="text-sm text-charcoal-muted py-4">Loading your saved preferences…</p>

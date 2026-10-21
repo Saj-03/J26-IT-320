@@ -1,213 +1,98 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRightIcon, TrophyIcon, ShieldCheckIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { TrophyIcon, LockKeyholeIcon, SparklesIcon } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
-import { Button } from '../../../shared/components/ui/Button';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { PhysicalNav } from '../components/PhysicalNav';
 import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
-import { SectionTitle } from '../components/Shared';
-import { getProfile, getActivitySummary, getHabits } from '../api';
-import { cn } from '../../../shared/lib/cn';
+import { getActivitySummary, getHabits } from '../api';
 
 export function PhysicalAchievements() {
-  const navigate = useNavigate();
-  const [profile, setProfile] = useState(null);
-  const [activitySummary, setActivitySummary] = useState(null);
+  const [activity, setActivity] = useState(null);
   const [habits, setHabits] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    Promise.all([
-      getProfile().catch(() => null),
-      getActivitySummary().catch(() => null),
-      getHabits().catch(() => [])
-    ]).then(([prof, act, habs]) => {
-      setProfile(prof);
-      setActivitySummary(act);
-      setHabits(Array.isArray(habs) ? habs : []);
-      setLoading(false);
-    });
+    Promise.all([getActivitySummary(), getHabits()])
+      .then(([summary, savedHabits]) => {
+        setActivity(summary);
+        setHabits(Array.isArray(savedHabits) ? savedHabits : []);
+      })
+      .catch(() => setError('Could not load achievements. Refresh and try again.'))
+      .finally(() => setLoading(false));
   }, []);
 
-  const weeklySteps = activitySummary?.weekly_totals?.steps || 0;
-  const weeklyMins = activitySummary?.weekly_totals?.exercise_minutes || 0;
-  const maxStreak = habits.length > 0 ? Math.max(...habits.map((h) => h.streak || 0), 0) : 0;
-  const weeklyTarget = 150;
-  const challengePct = Math.min(100, Math.round((weeklyMins / weeklyTarget) * 100));
-
-  const badges = [
-    {
-      id: 'profile',
-      name: 'Undergraduate Setup',
-      emoji: '🎓',
-      desc: 'Completed the intake assessment for personalized recommendations.',
-      earned: Boolean(profile?.diet_pref || profile?.goal),
-      progress: profile ? 1 : 0,
-      total: 1
-    },
-    {
-      id: 'first_steps',
-      name: 'First Steps Logged',
-      emoji: '👟',
-      desc: 'Logged your initial walking activity into the system.',
-      earned: weeklySteps > 0,
-      progress: weeklySteps > 0 ? 1 : 0,
-      total: 1
-    },
-    {
-      id: 'step_10k',
-      name: '10,000 Step Milestone',
-      emoji: '🚶‍♂️',
-      desc: 'Reached 10,000 total walking steps this week.',
-      earned: weeklySteps >= 10000,
-      progress: Math.min(10000, weeklySteps),
-      total: 10000
-    },
-    {
-      id: 'active_60',
-      name: '60 Active Minutes',
-      emoji: '⏱️',
-      desc: 'Completed 60 total minutes of scheduled workouts.',
-      earned: weeklyMins >= 60,
-      progress: Math.min(60, weeklyMins),
-      total: 60
-    },
-    {
-      id: 'habit_pioneer',
-      name: 'Habit Pioneer',
-      emoji: '⭐',
-      desc: 'Added your first daily student habit.',
-      earned: habits.length >= 1,
-      progress: Math.min(1, habits.length),
-      total: 1
-    },
-    {
-      id: 'streak_3',
-      name: '3-Day Consistency Streak',
-      emoji: '🔥',
-      desc: 'Hit a 3-day completion streak on any habit.',
-      earned: maxStreak >= 3,
-      progress: Math.min(3, maxStreak),
-      total: 3
-    },
-    {
-      id: 'safety',
-      name: 'Clinical Safety Protocol',
-      emoji: '🛡️',
-      desc: 'Configured physical limitations with the adaptive engine.',
-      earned: Boolean(profile?.physical_limitations && profile.physical_limitations !== 'none'),
-      progress: (profile?.physical_limitations && profile.physical_limitations !== 'none') ? 1 : 0,
-      total: 1
-    },
-    {
-      id: 'who_150',
-      name: 'WHO 150-Min Target',
-      emoji: '🏆',
-      desc: 'Achieved the WHO recommended 150 active minutes in a week.',
-      earned: weeklyMins >= 150,
-      progress: Math.min(150, weeklyMins),
-      total: 150
-    }
+  const days = activity?.daily_history || [];
+  const activeDays = Number(activity?.weekly_totals?.days_active || 0);
+  const weeklyMinutes = Number(activity?.weekly_totals?.exercise_minutes || 0);
+  const peakStepsInADay = days.reduce((peak, day) => Math.max(peak, Number(day.steps || 0)), 0);
+  const longestHabitStreak = habits.reduce((best, habit) => Math.max(best, Number(habit.streak || 0)), 0);
+  const milestones = [
+    { id: 'first-move', icon: '👟', title: 'First Move', detail: 'Record steps or exercise in your activity log.', current: Number(activity?.weekly_totals?.steps || 0) + weeklyMinutes > 0 ? 1 : 0, target: 1, unit: 'logged activity' },
+    { id: 'three-days', icon: '🗓️', title: 'Show Up Three Times', detail: 'Be active on three different days in the last seven days.', current: activeDays, target: 3, unit: 'active days' },
+    { id: 'stride', icon: '⚡', title: 'Big Day on Your Feet', detail: 'Reach 10,000 steps in a single logged day.', current: peakStepsInADay, target: 10000, unit: 'steps in one day' },
+    { id: 'move-hour', icon: '⏱️', title: 'An Hour of Movement', detail: 'Log 60 exercise minutes over the last seven days.', current: weeklyMinutes, target: 60, unit: 'exercise minutes' },
+    { id: 'habit-three', icon: '🔥', title: 'Habit in Motion', detail: 'Keep any saved habit going for three consecutive days.', current: longestHabitStreak, target: 3, unit: 'day streak' },
+  ].map((milestone) => ({ ...milestone, progress: Math.min(milestone.current, milestone.target), earned: milestone.current >= milestone.target }));
+  const earnedCount = milestones.filter((milestone) => milestone.earned).length;
+  const palettes = [
+    { card: 'border-amber-200 from-amber-50 via-white to-orange-100', icon: 'from-amber-300 to-orange-400', bar: 'bg-amber-500', badge: 'bg-amber-100 text-amber-900' },
+    { card: 'border-sky-200 from-sky-50 via-white to-cyan-100', icon: 'from-sky-300 to-cyan-500', bar: 'bg-sky-500', badge: 'bg-sky-100 text-sky-900' },
+    { card: 'border-violet-200 from-violet-50 via-white to-fuchsia-100', icon: 'from-violet-300 to-fuchsia-500', bar: 'bg-violet-500', badge: 'bg-violet-100 text-violet-900' },
+    { card: 'border-emerald-200 from-emerald-50 via-white to-teal-100', icon: 'from-emerald-300 to-teal-500', bar: 'bg-emerald-500', badge: 'bg-emerald-100 text-emerald-900' },
+    { card: 'border-rose-200 from-rose-50 via-white to-pink-100', icon: 'from-rose-300 to-pink-500', bar: 'bg-rose-500', badge: 'bg-rose-100 text-rose-900' },
   ];
-
-  const earnedCount = badges.filter((b) => b.earned).length;
 
   return (
     <div className="space-y-6">
       <PhysicalMasterCard
-        title="Student Achievements"
-        subtitle={`${earnedCount} of ${badges.length} badges earned so far from real verified activity.`}
-        eyebrow="Milestones & motivation"
+        title="Achievements"
+        subtitle="Small wins become big momentum. Unlock milestones from the activity and habit check-ins you save."
+        eyebrow="Your milestones"
       />
-
       <PhysicalNav />
 
-      {/* Real Weekly Challenge */}
-      <Card padding="lg" className="relative overflow-hidden">
-        <div className="absolute -right-12 -top-12 w-44 h-44 rounded-full bg-brand-50" aria-hidden />
-        <div className="relative">
-          <div className="flex items-center gap-2 mb-2">
-            <TrophyIcon size={17} className="text-brand-500" />
-            <p className="text-sm font-semibold text-brand-600">Weekly Target Challenge</p>
-          </div>
-          <div className="flex items-center gap-3 mt-1">
-            <span className="text-4xl">🏃‍♂️</span>
-            <div>
-              <h2 className="text-xl font-extrabold text-charcoal">150-Minute Movement Target</h2>
-              <p className="text-sm text-charcoal-muted">
-                World Health Organization standard for maintaining cognitive sharpness and cardiovascular health during university.
-              </p>
-            </div>
-          </div>
-          <div className="mt-5">
-            <div className="flex justify-between text-sm font-medium text-charcoal-muted mb-1.5">
-              <span>
-                <span className="text-charcoal font-extrabold">{weeklyMins}</span> / {weeklyTarget} minutes logged
-              </span>
-              <span>{challengePct}%</span>
-            </div>
-            <ProgressBar value={challengePct} height={10} />
-          </div>
-          <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
-            <span className="text-sm font-semibold text-charcoal-light bg-cream rounded-full px-4 py-2 w-fit">
-              Reward: Neurocognitive focus badge + 100 XP
-            </span>
-            <Button className="sm:ml-auto bg-emerald-600 hover:bg-emerald-700 shadow-none" onClick={() => navigate('/app/physical/activity')}>
-              Log Activity <ArrowRightIcon size={16} />
-            </Button>
-          </div>
-        </div>
-      </Card>
+      {error && <p role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">{error}</p>}
 
-      {/* Dynamic Badges */}
-      <div>
-        <SectionTitle
-          title="Your Milestones & Badges"
-          subtitle="Earned solely through verified logged actions — zero simulated accomplishments."
-        />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {badges.map((a, i) => (
-            <motion.div
-              key={a.id}
-              initial={{ opacity: 0, scale: 0.94 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.04 }}
-            >
-              <Card
-                padding="sm"
-                className={cn('h-full flex flex-col text-center transition-all', !a.earned && 'opacity-65')}
-              >
-                <div
-                  className={cn(
-                    'w-14 h-14 rounded-2xl mx-auto flex items-center justify-center text-2xl',
-                    a.earned ? 'bg-brand-50 ring-2 ring-brand-300' : 'bg-cream grayscale'
-                  )}
-                >
-                  {a.emoji}
-                </div>
-                <p className="font-bold text-charcoal text-sm mt-3">{a.name}</p>
-                <p className="text-[11px] text-charcoal-muted mt-1 leading-tight">{a.desc}</p>
-                <div className="mt-auto pt-4">
-                  {a.earned ? (
-                    <span className="text-[10px] font-extrabold uppercase tracking-wide text-brand-700 bg-brand-50 rounded-full px-3 py-1 border border-brand-200">
-                      Earned ✓
-                    </span>
-                  ) : (
-                    <>
-                      <ProgressBar value={Math.round((a.progress / a.total) * 100)} height={5} />
-                      <p className="text-[10px] font-semibold text-charcoal-muted mt-1.5">
-                        {a.progress.toLocaleString()} / {a.total.toLocaleString()}
-                      </p>
-                    </>
-                  )}
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+      {loading ? (
+        <Card padding="lg" className="py-10 text-center"><div className="mx-auto mb-2 h-7 w-7 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" /><p className="text-xs font-bold text-charcoal-muted">Loading your milestones…</p></Card>
+      ) : activity && (
+        <>
+          <section>
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+              <div><p className="text-xs font-extrabold uppercase tracking-[0.16em] text-brand-600">Keep collecting</p><h2 className="mt-1 text-2xl font-black tracking-tight text-charcoal">Milestone gallery</h2><p className="mt-1 text-sm text-charcoal-muted">Unlock awards through your saved movement and habit check-ins.</p></div>
+              <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-violet-100 px-4 py-2.5 text-right shadow-sm"><p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600">Collection</p><p className="text-lg font-black text-indigo-950">{earnedCount}<span className="text-sm font-bold text-indigo-500"> / {milestones.length}</span></p></div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {milestones.map((milestone, index) => (
+                <motion.div key={milestone.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
+                  <Card padding="md" className={`relative h-full overflow-hidden border bg-gradient-to-br transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${milestone.earned ? `${palettes[index].card} shadow-md` : 'border-slate-200 from-slate-50 via-white to-slate-100 opacity-90'}`}>
+                    {milestone.earned && <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/45 blur-sm" aria-hidden="true" />}
+                    <div className="relative flex items-start gap-3">
+                      <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.25rem] text-3xl shadow-md ${milestone.earned ? `bg-gradient-to-br ${palettes[index].icon} text-white ring-2 ring-white` : 'bg-gradient-to-br from-slate-200 to-slate-300 grayscale'}`}>{milestone.icon}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2"><h3 className="font-extrabold text-charcoal">{milestone.title}</h3>{milestone.earned ? <span className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wide ${palettes[index].badge}`}>Unlocked</span> : <LockKeyholeIcon size={15} className="shrink-0 text-slate-400" />}</div>
+                        <p className="mt-1 min-h-10 text-xs leading-relaxed text-charcoal-muted">{milestone.detail}</p>
+                      </div>
+                    </div>
+                    <div className="relative mt-5">
+                      <div className="mb-2 flex items-center justify-between gap-2 text-[11px]"><span className="font-bold text-charcoal-muted">{milestone.current.toLocaleString()} / {milestone.target.toLocaleString()} {milestone.unit}</span><span className={`font-extrabold ${milestone.earned ? 'text-emerald-700' : 'text-charcoal'}`}>{milestone.earned ? 'Complete' : `${Math.round(milestone.progress / milestone.target * 100)}%`}</span></div>
+                      <ProgressBar value={milestone.progress / milestone.target * 100} height={9} color={milestone.earned ? 'bg-emerald-500' : palettes[index].bar} />
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+
+          <div className="flex items-center gap-3 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-violet-50 to-brand-50 p-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700"><TrophyIcon size={22} /></div>
+            <div><p className="font-extrabold text-charcoal">{earnedCount} of {milestones.length} milestones unlocked</p><p className="text-xs text-charcoal-muted">Calculated from activity saved in the last seven days and your current habit streaks.</p></div>
+            <SparklesIcon size={19} className="ml-auto shrink-0 text-violet-500" />
+          </div>
+        </>
+      )}
     </div>
   );
 }

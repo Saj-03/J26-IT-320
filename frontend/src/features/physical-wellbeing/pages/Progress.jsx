@@ -77,21 +77,24 @@ export function PhysicalProgress() {
         title="Student Progress & Trends"
         subtitle="Real-world physical activity, weekly volume, and goal alignment without synthetic inflation."
         eyebrow="Your progress"
-        actions={<div className="flex rounded-full border border-white/20 bg-slate-950/35 p-1 backdrop-blur-sm">
+      />
+
+      <div className="flex justify-end">
+        <div className="flex rounded-full border border-black/[0.06] bg-white p-1 shadow-sm">
           {['Steps', 'Exercise Minutes'].map((t) => (
             <button
               key={t}
               onClick={() => setMetricTab(t)}
               className={cn(
                 'px-4 py-1.5 rounded-full text-xs font-bold transition-colors',
-                metricTab === t ? 'bg-white text-slate-900' : 'text-white/80 hover:text-white'
+                metricTab === t ? 'bg-brand-500 text-white' : 'text-charcoal-muted hover:text-charcoal'
               )}
             >
               {t}
             </button>
           ))}
-        </div>}
-      />
+        </div>
+      </div>
 
       <PhysicalNav />
 
