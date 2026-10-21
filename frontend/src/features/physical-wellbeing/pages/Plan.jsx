@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckIcon, PlayIcon, ClockIcon, XIcon, PlusIcon, MinusIcon,
   CalendarIcon, HistoryIcon, SparklesIcon, AlertCircleIcon, ShieldCheckIcon,
-  UtensilsIcon, DumbbellIcon, FlameIcon, LayersIcon, Trash2Icon, ShuffleIcon
+  UtensilsIcon, DumbbellIcon, FlameIcon, LayersIcon, Trash2Icon, ShuffleIcon, BotIcon
 } from 'lucide-react';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
@@ -12,7 +12,7 @@ import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { PhysicalNav } from '../components/PhysicalNav';
 import { AdaptedChip } from '../components/Shared';
 import { PhysicalMasterCard } from '../components/PhysicalMasterCard';
-import { getWeekPlan, getWeekPlanHistory, getWeekPlanSnapshot, deleteWeekPlanSnapshot, updatePlanDuration, getPlanCheckins, savePlanCheckin, getHabits, habitDone, getProfile } from '../api';
+import { getWeekPlan, getWeekPlanHistory, getWeekPlanSnapshot, deleteWeekPlanSnapshot, updatePlanDuration, saveWorkoutTimeWindow, getPlanCheckins, savePlanCheckin, getHabits, habitDone, getProfile } from '../api';
 import { cn } from '../../../shared/lib/cn';
 import { RecommendationImage, mealImageFallbacks, exerciseImageFallback } from '../components/RecommendationImage';
 
@@ -62,6 +62,10 @@ export function PhysicalPlan() {
   const [savingHabitId, setSavingHabitId] = useState('');
   const [habitSaveError, setHabitSaveError] = useState('');
   const [progressSaveError, setProgressSaveError] = useState('');
+  const [workoutTimeDraft, setWorkoutTimeDraft] = useState({ start_time: '', end_time: '' });
+  const [workoutTimeSaving, setWorkoutTimeSaving] = useState(false);
+  const [workoutTimeMessage, setWorkoutTimeMessage] = useState('');
+  const [workoutTimeError, setWorkoutTimeError] = useState('');
 
   const historyDateGroups = historyRecords.reduce((groups, record) => {
     (groups[record.plan_date] ||= []).push(record);
@@ -239,6 +243,80 @@ export function PhysicalPlan() {
 
   const currentDay = planData?.days?.[selectedDayIdx] || planData?.days?.[0];
   const currentMeals = currentDay?.meals || {};
+  const workoutTimeWindows = userProfile?.assessment_data?.workout_time_windows || {};
+  const currentWorkoutWindow = currentDay?.date ? workoutTimeWindows[currentDay.date] : null;
+
+  useEffect(() => {
+    setWorkoutTimeDraft({
+      start_time: currentWorkoutWindow?.start_time || '',
+      end_time: currentWorkoutWindow?.end_time || '',
+    });
+    setWorkoutTimeMessage('');
+    setWorkoutTimeError('');
+  }, [currentDay?.date, currentWorkoutWindow?.start_time, currentWorkoutWindow?.end_time]);
+
+  const saveWorkoutReminder = async () => {
+    if (!currentDay?.date || !workoutTimeDraft.start_time || !workoutTimeDraft.end_time) {
+      setWorkoutTimeError('Choose both a start and end time.');
+      return;
+    }
+    if (workoutTimeDraft.end_time <= workoutTimeDraft.start_time) {
+      setWorkoutTimeError('The end time must be after the start time.');
+      return;
+    }
+    setWorkoutTimeSaving(true);
+    setWorkoutTimeError('');
+    setWorkoutTimeMessage('');
+    try {
+      const result = await saveWorkoutTimeWindow({
+        day: currentDay.date,
+        ...workoutTimeDraft,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+      });
+      setUserProfile((profile) => ({
+        ...profile,
+        assessment_data: {
+          ...(profile?.assessment_data || {}),
+          workout_time_windows: {
+            ...(profile?.assessment_data?.workout_time_windows || {}),
+            [currentDay.date]: result.window,
+          },
+        },
+      }));
+      window.dispatchEvent(new Event('notifications:refresh'));
+      setWorkoutTimeMessage('Reminder saved. You can change it any time.');
+    } catch (err) {
+      setWorkoutTimeError(err?.response?.data?.detail || 'Could not save this workout reminder. Please try again.');
+    } finally {
+      setWorkoutTimeSaving(false);
+    }
+  };
+
+  const workoutReminderControl = currentDay && <Card padding="md" className="border border-emerald-100 bg-emerald-50/50">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex-1">
+        <div className="flex items-center gap-2">
+          <ClockIcon size={16} className="text-emerald-700" />
+          <h4 className="text-sm font-extrabold text-charcoal">Workout reminder window</h4>
+        </div>
+        <p className="mt-1 text-xs text-charcoal-muted">Choose when you’re available. A reminder will appear under the bell when this window starts.</p>
+        <div className="mt-3 flex flex-wrap items-end gap-3">
+          <label className="text-xs font-semibold text-charcoal-muted">From
+            <input type="time" value={workoutTimeDraft.start_time} disabled={viewingSavedPlan || workoutTimeSaving} onChange={(event) => setWorkoutTimeDraft((draft) => ({ ...draft, start_time: event.target.value }))} className="mt-1 block rounded-xl border border-black/10 bg-white px-3 py-2 text-sm font-bold text-charcoal" />
+          </label>
+          <label className="text-xs font-semibold text-charcoal-muted">To
+            <input type="time" value={workoutTimeDraft.end_time} disabled={viewingSavedPlan || workoutTimeSaving} onChange={(event) => setWorkoutTimeDraft((draft) => ({ ...draft, end_time: event.target.value }))} className="mt-1 block rounded-xl border border-black/10 bg-white px-3 py-2 text-sm font-bold text-charcoal" />
+          </label>
+        </div>
+        {viewingSavedPlan && <p className="mt-2 text-xs text-charcoal-muted">Return to your current plan to change reminders.</p>}
+        {workoutTimeError && <p className="mt-2 text-xs font-semibold text-red-600" role="alert">{workoutTimeError}</p>}
+        {workoutTimeMessage && <p className="mt-2 text-xs font-semibold text-emerald-700" role="status">{workoutTimeMessage}</p>}
+      </div>
+      <Button size="sm" disabled={viewingSavedPlan || workoutTimeSaving || !workoutTimeDraft.start_time || !workoutTimeDraft.end_time} onClick={saveWorkoutReminder}>
+        {workoutTimeSaving ? 'Saving…' : currentWorkoutWindow ? 'Change reminder' : 'Set reminder'}
+      </Button>
+    </div>
+  </Card>;
   const userPrefs = planData?.user_preferences || userProfile || {};
   const completedHabitCount = todayHabits.filter((habit) => habit.done).length;
   const dailyActionCount = 5 + todayHabits.length;
@@ -389,6 +467,17 @@ export function PhysicalPlan() {
           </div>
         </Card>
       )}
+
+      <button
+        type="button"
+        onClick={() => navigate('/app/physical/chat')}
+        aria-label="Open Fitness Robot chat"
+        title="Chat with Fitness Robot"
+        className="fixed bottom-6 right-5 z-40 flex items-center gap-3 rounded-full border-4 border-white bg-gradient-to-br from-emerald-500 to-teal-700 py-2 pl-2 pr-5 text-white shadow-[0_12px_36px_rgba(4,120,87,0.4)] transition hover:-translate-y-1 hover:shadow-[0_16px_42px_rgba(4,120,87,0.48)] focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300 sm:bottom-8 sm:right-8"
+      >
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-emerald-700"><BotIcon size={27} /></span>
+        <span className="text-left"><span className="block text-[10px] font-bold uppercase tracking-wider text-emerald-100">Need a hand?</span><span className="block text-sm font-extrabold">Fitness Robot</span></span>
+      </button>
 
       {/* Clinical Risk Triage & Doctor Consultation Banner */}
       {planData?.safety_analysis && planData.safety_analysis.has_limitations && (
@@ -701,6 +790,7 @@ export function PhysicalPlan() {
                       </div>
                     </div>
                   </Card>
+                  <div className="mt-3">{workoutReminderControl}</div>
                 </div>
 
                 {/* Section 2: Four Date-Wise Meal Slots */}
@@ -882,6 +972,7 @@ export function PhysicalPlan() {
                 <PlayIcon size={14} fill="currentColor" /> Start Workout
               </Button>
             </Card>
+            {workoutReminderControl}
 
             {/* Midday Lunch */}
             <Card padding="md" className={cn('relative flex flex-col border bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center sm:justify-between gap-4', statuses['lu'] === 'done' ? 'border-emerald-200 bg-emerald-50/50' : 'border-black/[0.05]')}>

@@ -18,6 +18,10 @@ export default function useNotifications() {
 
   useEffect(reload, [location.pathname, reload]);
   useEffect(() => {
+    window.addEventListener("notifications:refresh", reload);
+    return () => window.removeEventListener("notifications:refresh", reload);
+  }, [reload]);
+  useEffect(() => {
     const timer = setInterval(reload, REFRESH_MS);
     return () => clearInterval(timer);
   }, [reload]);

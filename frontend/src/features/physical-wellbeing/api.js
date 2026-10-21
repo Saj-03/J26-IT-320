@@ -18,6 +18,8 @@ export const getFavorites = (itemType) => api.get('/physical/favorites', { param
 export const addFavorite = (itemType, item) => api.put('/physical/favorites', { item_type: itemType, item }).then((r) => r.data);
 export const removeFavorite = (itemType, itemName) => api.delete('/physical/favorites', { params: { item_type: itemType, item_name: itemName } }).then((r) => r.data);
 export const updatePlanDuration = (daysCount) => api.put('/physical/profile/plan-duration', { days_count: daysCount }).then((r) => r.data);
+export const saveWorkoutTimeWindow = (window) => api.put('/physical/week-plan/workout-time', window).then((r) => r.data);
+export const sendPhysicalChat = (message, history = []) => api.post('/physical/assistant/chat', { message, history }).then((r) => r.data);
 export const getActivitySummary = () => api.get("/physical/activity").then((r) => r.data);
 export const logActivity = (a) => api.post("/physical/activity", a);
 export const saveWorkoutFeedback = (feedback) => api.post("/physical/activity/workout-feedback", feedback).then((r) => r.data);

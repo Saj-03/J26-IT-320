@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, time
 from typing import Any, Literal, Optional
 from pydantic import BaseModel, Field
 
@@ -27,6 +27,18 @@ class ProfileIn(BaseModel):
 
 class PlanDurationIn(BaseModel):
     days_count: int = Field(ge=1, le=31)
+
+
+class WorkoutTimeWindowIn(BaseModel):
+    day: date
+    start_time: time
+    end_time: time
+    timezone: str = Field(min_length=1, max_length=64)
+
+
+class PhysicalChatIn(BaseModel):
+    message: str = Field(min_length=1, max_length=1200)
+    history: list[dict[str, str]] = Field(default_factory=list, max_length=12)
 
 
 class PlanCheckInIn(BaseModel):

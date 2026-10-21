@@ -16,6 +16,7 @@ import { PhysicalAssessment } from "./pages/Assessment";
 import { PhysicalGenerating } from "./pages/Generating";
 import { PhysicalModelTester } from "./pages/PhysicalModelTester";
 import { PeerChallenges } from "./pages/PeerChallenges";
+import { PhysicalCoach } from "./pages/Coach";
 
 // Mounted under /app by App.jsx (inside the standard IHSD shell).
 export default function physicalRoutes() {
@@ -24,6 +25,7 @@ export default function physicalRoutes() {
       <Route path="physical" element={<PhysicalHome />} />
       <Route path="physical/tester" element={<PhysicalModelTester />} />
       <Route path="physical/plan" element={<PhysicalPlan />} />
+      <Route path="physical/chat" element={<PhysicalCoach />} />
       <Route path="physical/exercise" element={<PhysicalExercise />} />
       <Route path="physical/workout" element={<PhysicalWorkout />} />
       <Route path="physical/nutrition" element={<PhysicalNutrition />} />

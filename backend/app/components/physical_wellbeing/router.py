@@ -1,6 +1,7 @@
 import datetime
 import hashlib
 import secrets
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
@@ -12,6 +13,7 @@ from app.components.physical_wellbeing.models import (
     PhysicalPlanSnapshot, PlanCheckIn, FavoriteItem, PeerChallenge, PeerChallengeMember,
 )
 from app.components.physical_wellbeing.ml import recommender
+from app.components.physical_wellbeing import coach_service
 
 router = APIRouter()
 
@@ -410,6 +412,39 @@ def update_plan_duration(data: schemas.PlanDurationIn, db: Session = Depends(get
     return {"days_count": data.days_count}
 
 
+@router.put("/week-plan/workout-time")
+def save_workout_time_window(data: schemas.WorkoutTimeWindowIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    profile = db.query(WellbeingProfile).filter_by(user_id=user.id).first()
+    if not profile:
+        raise HTTPException(404, "Create your wellbeing profile first")
+    try:
+        student_timezone = ZoneInfo(data.timezone)
+    except ZoneInfoNotFoundError:
+        raise HTTPException(422, "Choose a valid timezone")
+    local_today = datetime.datetime.now(student_timezone).date()
+    if data.day < local_today:
+        raise HTTPException(422, "Workout reminders can only be set for today or a future plan day")
+    if data.end_time <= data.start_time:
+        raise HTTPException(422, "The workout end time must be after its start time")
+    assessment_data = dict(profile.assessment_data or {})
+    workout_windows = {}
+    for day_key, window in (assessment_data.get("workout_time_windows") or {}).items():
+        try:
+            if datetime.date.fromisoformat(day_key) >= local_today:
+                workout_windows[day_key] = window
+        except (TypeError, ValueError):
+            continue
+    workout_windows[data.day.isoformat()] = {
+        "start_time": data.start_time.strftime("%H:%M"),
+        "end_time": data.end_time.strftime("%H:%M"),
+        "timezone": data.timezone,
+    }
+    assessment_data["workout_time_windows"] = workout_windows
+    profile.assessment_data = assessment_data
+    db.commit()
+    return {"day": data.day.isoformat(), "window": workout_windows[data.day.isoformat()]}
+
+
 def _profile_to_dict(p: WellbeingProfile) -> dict:
     return {
         "workload_intensity_score": p.workload_intensity_score or 50.0,
@@ -576,6 +611,11 @@ def get_week_plan(
         use_baseline=use_baseline,
         num_days=days_count
     )
+    overrides = (p.assessment_data or {}).get("workout_overrides", {})
+    for day in plan.get("days", []):
+        override = overrides.get(day.get("date"))
+        if override and day.get("date", "") >= datetime.date.today().isoformat():
+            day["exercise"] = override
     plan = _inject_plan_images(plan)
     plan_date = datetime.date.today()
     snapshot = db.query(PhysicalPlanSnapshot).filter_by(
@@ -599,6 +639,63 @@ def get_week_plan(
         ))
     db.commit()
     return plan
+
+
+@router.post("/assistant/chat")
+async def physical_chat(data: schemas.PhysicalChatIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    profile = db.query(WellbeingProfile).filter_by(user_id=user.id).first()
+    if not profile:
+        raise HTTPException(404, "Create your Physical Wellbeing profile first")
+    profile_dict = _profile_to_dict(profile)
+    message = data.message.strip()
+    if not message:
+        raise HTTPException(422, "Enter a message")
+
+    workout = coach_service.requested_workout(message, profile_dict)
+    today = datetime.date.today()
+    activity_row = db.query(ActivityLog).filter_by(user_id=user.id, day=today).first()
+    week_start = today - datetime.timedelta(days=6)
+    week_logs = db.query(ActivityLog).filter(ActivityLog.user_id == user.id, ActivityLog.day >= week_start).all()
+    activity = {"weekly_totals": {
+        "exercise_minutes": sum(row.exercise_minutes for row in week_logs),
+        "steps": sum(row.steps for row in week_logs),
+        "days_active": sum(1 for row in week_logs if row.steps > 0 or row.exercise_minutes > 0),
+    }, "today": {"exercise_minutes": activity_row.exercise_minutes if activity_row else 0}}
+
+    if workout and not workout.get("unavailable"):
+        assessment = dict(profile.assessment_data or {})
+        overrides = dict(assessment.get("workout_overrides", {}))
+        overrides[today.isoformat()] = workout
+        assessment["workout_overrides"] = overrides
+        profile.assessment_data = assessment
+        db.commit()
+        answer = coach_service.fallback_reply(message, workout, activity)
+    elif workout:
+        answer = coach_service.fallback_reply(message, workout, activity)
+    else:
+        from app.components.burnout.llm.chat_agent import reply as llm_reply
+        safe_history = [
+            {"role": item["role"], "content": item["content"][:1200]}
+            for item in data.history[-10:]
+            if item.get("role") in {"user", "assistant"} and isinstance(item.get("content"), str)
+        ]
+        safe_history.append({"role": "user", "content": message})
+        system = (
+            "You are the chat helper inside the student's Physical Wellbeing component. Help with movement, "
+            "workouts, meal planning, habits, and their activity plan. Keep replies concise and supportive. "
+            "Never diagnose, prescribe treatment, or tell someone to exercise through pain. Do not claim to "
+            "change their plan unless the system has done so. For injury or urgent symptoms, suggest stopping "
+            "and contacting a qualified professional. Use only the supplied plan and activity context.\n"
+            f"Profile preferences: goal={profile.goal}; available minutes={profile.available_minutes}; "
+            f"equipment={profile.equipment}; physical limitations={profile.physical_limitations}. "
+            f"Today's logged exercise minutes={activity['today']['exercise_minutes']}; "
+            f"this week's totals={activity['weekly_totals']}"
+        )
+        try:
+            answer = await llm_reply(system, safe_history)
+        except Exception:
+            answer = coach_service.fallback_reply(message, None, activity)
+    return {"reply": answer, "updated_workout": workout if workout and not workout.get("unavailable") else None}
 
 
 def _plan_progress_for_dates(db: Session, user_id: str, dates: list[datetime.date]) -> dict:

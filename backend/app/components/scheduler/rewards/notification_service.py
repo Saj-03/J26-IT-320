@@ -1,5 +1,5 @@
 """
-Component 3 - NOTIFICATIONS (FR-11): a few useful notes, built from real data each time (nothing stored).
+Component 3 - NOTIFICATIONS (FR-11): a few useful notes, built from real data each time.
 
     Schedule      - next study session starts soon, a deadline within 24 h, missed sessions to re-plan
     Focus         - focus quality / habit dropped (FR-16)
@@ -9,7 +9,8 @@ Component 3 - NOTIFICATIONS (FR-11): a few useful notes, built from real data ea
 "Unread" = newer than the last time the student opened the notifications page
 (saved as a "notifications_seen" audit row).
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date, time, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from sqlalchemy.orm import Session
 
@@ -18,6 +19,7 @@ from app.components.scheduler.planning import planner_service
 from app.components.scheduler.stress import stress_service
 from app.components.scheduler.models import PlannedSession, RewardEvent, SchedulerAuditLog, Task
 from app.components.scheduler.tasks.task_service import audit
+from app.components.physical_wellbeing.models import WellbeingProfile
 
 SOON_HOURS = 3                 # "your session starts in ..." if it starts within 3 h
 DUE_HOURS = 24
@@ -33,6 +35,42 @@ def note(key, category, icon, title, body, at, link):
 def notifications(db: Session, user, now: datetime | None = None) -> dict:
     now = now or datetime.utcnow()
     items = []
+
+    # --- Wellbeing: per-day workout reminder windows set from the physical plan ---
+    profile = db.query(WellbeingProfile).filter_by(user_id=user.id).first()
+    windows = (profile.assessment_data or {}).get("workout_time_windows", {}) if profile else {}
+    for day_key, window in (windows or {}).items():
+        try:
+            workout_day = date.fromisoformat(day_key)
+            local_start = time.fromisoformat(window["start_time"])
+            local_end = time.fromisoformat(window["end_time"])
+            tz = ZoneInfo(window["timezone"])
+            reminder_at = datetime.combine(workout_day, local_start, tzinfo=tz).astimezone(timezone.utc).replace(tzinfo=None)
+            end_at = datetime.combine(workout_day, local_end, tzinfo=tz).astimezone(timezone.utc).replace(tzinfo=None)
+        except (KeyError, TypeError, ValueError, ZoneInfoNotFoundError):
+            continue
+        if reminder_at <= now and now <= end_at + timedelta(hours=24):
+            try:
+                delivery_at = datetime.fromisoformat(window["delivered_at"]) if window.get("delivered_at") else None
+            except (TypeError, ValueError):
+                delivery_at = None
+            if delivery_at is not None and delivery_at.tzinfo is not None:
+                delivery_at = delivery_at.astimezone(timezone.utc).replace(tzinfo=None)
+            if delivery_at is None:
+                delivery_at = now
+                updated_window = dict(window)
+                updated_window["delivered_at"] = delivery_at.isoformat()
+                windows = dict(windows)
+                windows[day_key] = updated_window
+                profile_data = dict(profile.assessment_data or {})
+                profile_data["workout_time_windows"] = windows
+                profile.assessment_data = profile_data
+                db.commit()
+            items.append(note(
+                f"workout-reminder-{workout_day.isoformat()}", "Wellbeing", "timer", "Your workout window is starting",
+                f"Your workout time is {local_start.strftime('%I:%M %p').lstrip('0')}–{local_end.strftime('%I:%M %p').lstrip('0')}. Open today's plan when you're ready.",
+                delivery_at, "/app/physical/plan",
+            ))
 
     # --- Schedule: next planned session soon ---
     nxt = (db.query(PlannedSession, Task).join(Task, Task.id == PlannedSession.task_id)
