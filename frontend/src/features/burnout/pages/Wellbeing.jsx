@@ -1,80 +1,107 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MoonIcon, ZapIcon, BookOpenIcon, BriefcaseIcon, UsersIcon, ArrowRightIcon, SparklesIcon, NotebookPenIcon, MessageCircleHeartIcon, RefreshCwIcon } from 'lucide-react';
+import { ArrowRightIcon, SparklesIcon, NotebookPenIcon, MessageCircleHeartIcon, LightbulbIcon, CalendarCheckIcon, ShieldCheckIcon } from 'lucide-react';
 import { PageHeader } from '../../../shared/components/layout/PageHeader';
 import { Card } from '../../../shared/components/ui/Card';
 import { Button } from '../../../shared/components/ui/Button';
 import { ProgressBar } from '../../../shared/components/ui/ProgressBar';
 import { LineChart } from '../../../shared/components/charts/Charts';
-import { stressData } from '../../../shared/lib/data';
-import { cn } from '../../../shared/lib/cn';
-import { sendMood, computeSignal } from '../api';
-const moods = [
-    { emoji: '😣', label: 'Struggling', score: 1 },
-    { emoji: '😐', label: 'Okay', score: 3 },
-    { emoji: '🙂', label: 'Good', score: 4 },
-    { emoji: '🔥', label: 'Motivated', score: 5 }
+import { getSummary, runDemo, logTipEvent } from '../api';
+
+// Real signals only: every bar below comes from the student's own data. A missing signal says "No data yet".
+const SIGNALS = [
+    { key: 'deviation', label: 'This week vs your usual' },
+    { key: 'journal', label: 'Journal tone' },
+    { key: 'chat', label: 'Chat tone' },
+    { key: 'mood', label: 'Mood check-ins' }
 ];
-const metrics = [
-    { icon: null, label: 'Stress level', value: 48, color: 'bg-amber-soft', txt: 'Moderate' },
-    { icon: ZapIcon, label: 'Energy', value: 78, color: 'bg-brand-500', txt: 'Good' },
-    { icon: MoonIcon, label: 'Sleep', value: 82, color: 'bg-violet-400', txt: '7h 20m' },
-    { icon: BookOpenIcon, label: 'Academic pressure', value: 64, color: 'bg-brand-400', txt: 'Elevated' },
-    { icon: BriefcaseIcon, label: 'Work pressure', value: 40, color: 'bg-sky-400', txt: 'Low' },
-    { icon: UsersIcon, label: 'Social connection', value: 70, color: 'bg-sage', txt: 'Good' }
-];
+const wording = (v) => (v < 0.3 ? 'Steady' : v < 0.6 ? 'Some strain' : 'Heavier');
+const barColor = (v) => (v < 0.3 ? 'bg-sage' : v < 0.6 ? 'bg-amber-soft' : 'bg-brand-500');
+const factorText = (f) => `${f.feature[0].toUpperCase()}${f.feature.slice(1)} is ${f.direction === 'up' ? 'higher' : 'lower'} than usual`;
+
 export function Wellbeing() {
     const navigate = useNavigate();
-    const [mood, setMood] = useState(null);
-    const [signal, setSignal] = useState(null);
-    const [updating, setUpdating] = useState(false);
-    const tapMood = (i) => sendMood(moods[i].score).then(() => setMood(i));
-    const updateSignal = async () => {
-        setUpdating(true);
-        try {
-            setSignal(await computeSignal());
-        }
-        finally {
-            setUpdating(false);
-        }
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [demoBusy, setDemoBusy] = useState(false);
+    const [demoMsg, setDemoMsg] = useState('');
+    const [tipAnswer, setTipAnswer] = useState(null);       // null | 'tried' | 'dismissed'
+    const shownTip = useRef(null);
+    const load = useCallback(() => getSummary().then(setData).catch(() => setData(null)).finally(() => setLoading(false)), []);
+    useEffect(() => { load(); }, [load]);
+    // Log that a tip was shown (once per tip category; the server also keeps it to once a day)
+    useEffect(() => {
+        const cat = data?.tip?.category;
+        if (cat && shownTip.current !== cat) { shownTip.current = cat; setTipAnswer(null); logTipEvent(cat, 'shown'); }
+    }, [data]);
+    const answerTip = (action) => { setTipAnswer(action); logTipEvent(data.tip.category, action); };
+
+    const demo = async (scenario) => {
+        setDemoBusy(true);
+        setDemoMsg('');
+        try { await runDemo(scenario); await load(); }
+        catch { setDemoMsg('Demo mode is not available.'); }
+        finally { setDemoBusy(false); }
     };
+
+    const signal = data?.latest;
+    const signals = data?.signals || {};
+    const history = data?.history || [];
+    const noData = !loading && (!signal || Object.keys(signals).length === 0);
+
     return (<div className="space-y-6">
-      <PageHeader title="Your Wellbeing" subtitle="A calm, honest picture of how you’re really doing this week."/>
+      <PageHeader title="Your Wellbeing" subtitle="A calm, honest picture of how you’re doing. Everything here is optional."/>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Mood + metrics */}
         <div className="lg:col-span-2 space-y-6">
           <Card padding="lg">
-            <h3 className="font-bold text-charcoal mb-4">How are you feeling today?</h3>
-            <div className="grid grid-cols-4 gap-2 sm:gap-3">
-              {moods.map((m, i) => <button key={m.label} onClick={() => tapMood(i)} className={cn('flex flex-col items-center gap-2 rounded-3xl py-4 border-2 transition-all', mood === i ? 'border-brand-500 bg-brand-50' : 'border-black/[0.05] bg-white hover:border-brand-200')}>
-                  <span className="text-3xl">{m.emoji}</span>
-                  <span className="text-xs font-bold text-charcoal">{m.label}</span>
-                </button>)}
-            </div>
+            <h3 className="font-bold text-charcoal mb-4">What this picture is based on</h3>
+            {noData ? <p className="text-sm text-charcoal-light">Nothing here yet. A mood tap or a short journal entry starts your picture.</p> :
+            <div className="grid sm:grid-cols-2 gap-x-6 gap-y-4">
+                {SIGNALS.map((s) => { const v = signals[s.key]; return <div key={s.key}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-medium text-charcoal-light">{s.label}</span>
+                      <span className="text-xs font-bold text-charcoal">{v === undefined ? 'No data yet' : wording(v)}</span>
+                    </div>
+                    <ProgressBar value={v === undefined ? 0 : Math.max(4, Math.round(v * 100))} color={v === undefined ? 'bg-black/10' : barColor(v)}/>
+                  </div>; })}
+              </div>}
+            {data?.factors?.length > 0 && <ul className="mt-5 space-y-1 text-sm text-charcoal-light list-disc pl-5">
+                {data.factors.slice(0, 3).map((f) => <li key={f.feature}>{factorText(f)}</li>)}
+              </ul>}
           </Card>
 
-          <Card padding="lg">
-            <h3 className="font-bold text-charcoal mb-4">This week’s signals</h3>
-            <div className="grid sm:grid-cols-2 gap-x-6 gap-y-4">
-              {metrics.map((m) => <div key={m.label}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-medium text-charcoal-light flex items-center gap-1.5">
-                      {m.icon && <m.icon size={14}/>}
-                      {m.label}
-                    </span>
-                    <span className="text-xs font-bold text-charcoal">{m.txt}</span>
-                  </div>
-                  <ProgressBar value={m.value} color={m.color}/>
-                </div>)}
-            </div>
-          </Card>
+          {data?.tip && <Card padding="lg" className="bg-amber-light/40 border-black/[0.04]">
+              <div className="flex items-start gap-3">
+                <span className="w-9 h-9 rounded-xl bg-amber-soft text-white flex items-center justify-center shrink-0"><LightbulbIcon size={17}/></span>
+                <div>
+                  <p className="font-bold text-charcoal">A small idea for today</p>
+                  <p className="mt-1 text-charcoal-light">{data.tip.text}</p>
+                  <p className="mt-2 text-xs text-charcoal-muted">{data.tip.reason}</p>
+                  {tipAnswer === null ? <div className="mt-3 flex gap-2">
+                      <Button size="sm" onClick={() => answerTip('tried')}>I'll try this</Button>
+                      <Button variant="soft" size="sm" onClick={() => answerTip('dismissed')}>Not now</Button>
+                    </div> : <p className="mt-3 text-xs font-semibold text-emerald-700">{tipAnswer === 'tried' ? 'Great, thank you.' : 'No problem.'}</p>}
+                </div>
+              </div>
+            </Card>}
+
+          {signal && signal.risk_level !== 'LOW' && <Card padding="lg">
+              <div className="flex items-start gap-3">
+                <span className="w-9 h-9 rounded-xl bg-sage-light text-emerald-700 flex items-center justify-center shrink-0"><CalendarCheckIcon size={17}/></span>
+                <div>
+                  <p className="font-bold text-charcoal">Shared with your scheduler</p>
+                  <p className="mt-1 text-sm text-charcoal-light">Your latest pattern is shared with your scheduler, which can ease lower-priority tasks. Urgent deadlines are never moved.</p>
+                </div>
+              </div>
+            </Card>}
 
           <div className="grid sm:grid-cols-2 gap-4">
             {[
-            { icon: NotebookPenIcon, title: 'Write it out', desc: 'Journal with text, emoji or voice.', to: '/app/wellbeing/journal' },
-            { icon: MessageCircleHeartIcon, title: 'Talk it through', desc: 'A companion that knows your deadlines.', to: '/app/wellbeing/chat' }
+            { icon: NotebookPenIcon, title: 'Check in', desc: 'Tap your mood or write it out.', to: '/app/journal' },
+            { icon: MessageCircleHeartIcon, title: 'Talk it through', desc: 'Optional chat that knows your week.', to: '/app/wellbeing/chat' },
+            { icon: ShieldCheckIcon, title: 'Privacy and your data', desc: 'See what is stored, opt out, or delete it.', to: '/app/wellbeing/privacy' }
         ].map((l) => <button key={l.to} onClick={() => navigate(l.to)} className="text-left bg-white rounded-3xl border border-black/[0.04] shadow-soft p-5 flex items-center gap-4 hover:shadow-card transition-shadow">
                 <span className="w-11 h-11 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0"><l.icon size={20}/></span>
                 <span className="flex-1 min-w-0">
@@ -86,26 +113,22 @@ export function Wellbeing() {
           </div>
         </div>
 
-        {/* Summary + stress trend */}
         <div className="space-y-6">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
             <Card padding="lg" className="bg-brand-50 border-brand-100">
               <div className="flex items-center gap-2 mb-2">
-                <span className="w-8 h-8 rounded-xl bg-brand-500 text-white flex items-center justify-center">
-                  <SparklesIcon size={15}/>
-                </span>
+                <span className="w-8 h-8 rounded-xl bg-brand-500 text-white flex items-center justify-center"><SparklesIcon size={15}/></span>
                 <span className="font-bold text-brand-700">Wellbeing summary</span>
               </div>
               <p className="text-charcoal-light leading-relaxed text-sm">
-                {signal ? <>This week’s load looks <strong className="text-charcoal">{signal.risk_level.toLowerCase()}</strong> compared with your usual week.</> : <>Your stress appears slightly elevated. We’ve automatically created more breathing room in your schedule
-                today — nothing you need to do.</>}
+                {signal ? <>Your pattern right now looks <strong className="text-charcoal">{signal.label}</strong>{signal.trend === 'RISING' ? ' and is getting heavier' : signal.trend === 'FALLING' ? ' and is easing' : ''}.</> : <>Not enough information yet.</>}
               </p>
+              {signal?.reasons?.length > 0 && signal.reasons[0] !== 'not enough data yet' && <ul className="mt-3 space-y-1 text-xs text-charcoal-light list-disc pl-4">
+                  {signal.reasons.map((r) => <li key={r}>{r}</li>)}
+                </ul>}
               <p className="text-xs text-charcoal-muted mt-3 leading-relaxed">
                 This is an awareness tool, not a diagnosis. If you feel unsafe, contact the university counselling service.
               </p>
-              <Button variant="soft" size="sm" className="mt-4 mr-2 bg-white" onClick={updateSignal} disabled={updating}>
-                <RefreshCwIcon size={14} className={updating ? 'animate-spin' : ''}/> {updating ? 'Updating…' : 'Update pattern'}
-              </Button>
               <Button variant="soft" size="sm" className="mt-4 bg-white" onClick={() => navigate('/app/weekly-checkin')}>
                 Do weekly check-in <ArrowRightIcon size={14}/>
               </Button>
@@ -113,52 +136,21 @@ export function Wellbeing() {
           </motion.div>
 
           <Card>
-            <h3 className="font-bold text-charcoal mb-1">Weekly stress</h3>
-            <p className="text-xs text-charcoal-muted mb-3">Gently trending down over the weekend</p>
-            <LineChart data={stressData.map((d) => ({ label: d.day, value: d.value }))} color="#7F95CC"/>
+            <h3 className="font-bold text-charcoal mb-1">Your pattern over time</h3>
+            <p className="text-xs text-charcoal-muted mb-3">{history.length > 1 ? 'Each point is an update (higher = a heavier pattern)' : 'Check in a few times to see a trend'}</p>
+            {history.length > 1 && <LineChart data={history.map((v, i) => ({ label: String(i + 1), value: Math.round(v * 100) }))} color="#7F95CC"/>}
           </Card>
+
+          <details className="rounded-2xl border border-dashed border-black/10 p-4 text-sm">
+            <summary className="cursor-pointer font-semibold text-charcoal-muted">Demo tools</summary>
+            <p className="mt-2 text-xs text-charcoal-muted">Scripts a sample week for this account (replaces your last 7 days of entries).</p>
+            <div className="mt-3 flex gap-2">
+              <Button variant="soft" size="sm" disabled={demoBusy} onClick={() => demo('bad')}>Bad week</Button>
+              <Button variant="soft" size="sm" disabled={demoBusy} onClick={() => demo('normal')}>Normal week</Button>
+            </div>
+            {demoMsg && <p role="alert" className="mt-2 text-xs text-red-600">{demoMsg}</p>}
+          </details>
         </div>
       </div>
-
-      {/* Stress-aware scheduling */}
-      <StressAwareScheduling />
     </div>);
-}
-function StressAwareScheduling() {
-    return (<Card padding="lg">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-        <div>
-          <h3 className="font-bold text-charcoal">Schedule Adaptation</h3>
-          <p className="text-sm text-charcoal-muted">How ThriveU lightened your day — automatically.</p>
-        </div>
-        <div className="flex gap-2">
-          <span className="text-xs font-bold bg-amber-light text-amber-700 rounded-full px-3 py-1.5">Signal: Elevated</span>
-          <span className="text-xs font-bold bg-brand-50 text-brand-700 rounded-full px-3 py-1.5">Risk 0.78 · Rising</span>
-        </div>
-      </div>
-
-      <div className="grid sm:grid-cols-2 gap-4">
-        <div className="rounded-2xl border border-black/[0.05] p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-charcoal-muted mb-3">Before</p>
-          <ul className="space-y-2 text-sm">
-            <li className="flex justify-between"><span className="text-charcoal">09:00 Chemistry</span></li>
-            <li className="flex justify-between"><span className="text-charcoal">14:00 Math</span></li>
-            <li className="flex justify-between"><span className="text-charcoal">16:00 Sociology</span></li>
-          </ul>
-        </div>
-        <div className="rounded-2xl border-2 border-sage/40 bg-sage-light/50 p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700 mb-3">After</p>
-          <ul className="space-y-2 text-sm">
-            <li className="text-charcoal">09:00 Chemistry <span className="text-xs text-charcoal-muted">(kept)</span></li>
-            <li className="text-emerald-700 font-semibold">13:00 Recovery block <span className="text-xs">(+45m)</span></li>
-            <li className="text-charcoal">14:00 Math <span className="text-xs text-charcoal-muted">(shortened)</span></li>
-            <li className="text-charcoal-muted">Sociology → moved to Thursday</li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="mt-4 bg-cream rounded-2xl p-4 text-sm text-charcoal-light">
-        Your schedule has been lightened a little today. You’ve still got space for what matters most.
-      </div>
-    </Card>);
 }

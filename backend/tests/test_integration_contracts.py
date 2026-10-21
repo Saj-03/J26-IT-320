@@ -19,3 +19,13 @@ def test_unknown_level_rejected():
     bad = mock_risk_signal("P-1"); bad["risk_level"] = "PANIC"
     with pytest.raises(ValidationError):
         RiskSignal(**bad)
+
+
+def test_deviation_and_recovery_contracts():
+    from app.shared.integration.contracts import DeviationSignal, RecoverySignal
+    from app.shared.integration.mock_signals import mock_deviation_signal, mock_recovery_signal
+    assert DeviationSignal(**mock_deviation_signal("P-1", bad_week=True)).missed_sessions == 6
+    assert RecoverySignal(**mock_recovery_signal("P-1")).severity == "MODERATE"
+    bad = mock_recovery_signal("P-1"); bad["severity"] = "EXTREME"
+    with pytest.raises(ValidationError):
+        RecoverySignal(**bad)

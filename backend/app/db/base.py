@@ -7,5 +7,5 @@ from app.components.physical_wellbeing.models import WellbeingProfile, ActivityL
 
 from app.components.scheduler.models import (  # noqa
     Task, Commitment, FocusSession, PlannedSession, SchedulerSettings, ScheduleChange, RewardEvent, SchedulerAuditLog,
-)  # noqa
-from app.components.burnout.models import JournalEntry, ChatMessage, MoodTap, WellbeingSignal  # noqa
+)
+from app.components.burnout.models import JournalEntry, ChatMessage, MoodTap, WellbeingSignal, BurnoutPreference, TipEvent  # noqa

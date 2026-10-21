@@ -11,6 +11,8 @@ dist/
 backend/ml_models/*.pkl
 backend/ml_models/*.joblib
 .DS_Store
+backend/datasets/burnout/private/
+backend/datasets/burnout/*.csv
 
 # Private docs (proposals, survey data with student answers, chat notes) - keep local only
 docs/*.pdf
@@ -23,6 +25,7 @@ backend/ml_training/scheduler/data/tasks.csv
 
 # Downloaded datasets (CogBench, ~11 MB) - train_m2.py downloads them again when missing
 backend/ml_training/scheduler/data/external/
-backend/ml_training/scheduler/data/m4_train.csv
-backend/ml_training/scheduler/data/m4_test.csv
-backend/ml_training/scheduler/data/m4v2_*.jsonl
+   backend/ml_training/scheduler/data/external/
+   backend/ml_training/scheduler/data/m4_train.csv
+   backend/ml_training/scheduler/data/m4_test.csv
+   backend/ml_training/scheduler/data/m4v2_*.jsonl
