@@ -43,11 +43,20 @@ export function PhysicalNutrition() {
     getPlanCheckins(today, today).then((progress) => setEatenSlots(progress?.daily?.[today]?.completed_items || [])).catch(() => setEatenSlots([]));
   }, [today]);
   const currentSlotMeals = recomData?.today_slots?.[slotKey] || [];
-  const dailyCalorieTarget = recomData?.nutrition_targets?.target_kcal_per_day;
+  const dailyCalorieRange = recomData?.nutrition_targets?.target_range_kcal_per_day;
   const slotCalorieShares = { breakfast: 0.25, lunch: 0.30, dinner: 0.30, snack: 0.15 };
-  const slotCalorieTarget = dailyCalorieTarget != null && Number.isFinite(Number(dailyCalorieTarget))
-    ? Math.round(Number(dailyCalorieTarget) * (slotCalorieShares[slotKey] || 0.25))
+  const slotShare = slotCalorieShares[slotKey] || 0.25;
+  const validDailyRange = dailyCalorieRange
+    && Number.isFinite(Number(dailyCalorieRange.min))
+    && Number.isFinite(Number(dailyCalorieRange.max));
+  const slotCalorieRange = validDailyRange
+    ? {
+        min: Math.round(Number(dailyCalorieRange.min) * slotShare),
+        max: Math.round(Number(dailyCalorieRange.max) * slotShare),
+      }
     : null;
+  const calorieGoal = recomData?.nutrition_targets?.goal;
+  const calorieGoalLabel = calorieGoal === 'loss' ? 'Weight loss' : calorieGoal === 'gain' ? 'Weight gain' : 'Maintenance / general wellbeing';
   const featuredMeal = currentSlotMeals[0] || recomData?.meals?.[0] || null;
 
   const allMeals = recomData?.meals || [];
@@ -127,6 +136,25 @@ export function PhysicalNutrition() {
         ))}
       </div>
 
+      <Card padding="md" className="border border-brand-100 bg-brand-50/70">
+        {validDailyRange ? <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-brand-700">Estimated daily calorie range</p>
+            <p className="mt-1 text-xl font-black text-charcoal">{Number(dailyCalorieRange.min).toLocaleString()}–{Number(dailyCalorieRange.max).toLocaleString()} <span className="text-xs font-bold">kcal/day</span></p>
+            <p className="mt-0.5 text-[11px] text-charcoal-muted">An estimate for your assessment and goal: <span className="font-semibold">{calorieGoalLabel}</span>.</p>
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-brand-700">Flexible {slot.toLowerCase()} guide</p>
+            <p className="mt-1 text-xl font-black text-charcoal">~{slotCalorieRange.min.toLocaleString()}–{slotCalorieRange.max.toLocaleString()} <span className="text-xs font-bold">kcal</span></p>
+            <p className="mt-0.5 text-[11px] text-charcoal-muted">A rough share of your daily range, not a meal requirement.</p>
+          </div>
+          <p className="sm:col-span-2 text-[11px] leading-relaxed text-charcoal-muted">Calorie values on meal cards are for each dataset-listed serving. They are not changed to match this guide.</p>
+        </div> : <div>
+          <p className="text-sm font-bold text-charcoal">Personal calorie estimate unavailable</p>
+          <p className="mt-1 text-xs text-charcoal-muted">Complete your age, height, and weight in your assessment to see a goal-based daily and meal calorie guide.</p>
+        </div>}
+      </Card>
+
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Featured meal */}
         {!featuredMeal ? <Card padding="lg" className="lg:col-span-2 text-center py-12"><h2 className="font-bold text-charcoal">No meal recommendation available</h2><p className="text-sm text-charcoal-muted mt-2">Complete or update your assessment and try again to get meals matched to your profile.</p></Card> :
@@ -155,22 +183,6 @@ export function PhysicalNutrition() {
               <p className="text-sm text-charcoal-muted mt-2 leading-relaxed">
                 {featuredMeal.description || 'Meal details from the recommendation dataset.'}
               </p>
-
-              {slotCalorieTarget !== null && (
-                <div className="mt-4 grid gap-3 rounded-2xl border border-brand-100 bg-brand-50/70 p-4 sm:grid-cols-2">
-                  <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-brand-700">Estimated daily target</p>
-                    <p className="mt-1 text-xl font-black text-charcoal">{Number(dailyCalorieTarget).toLocaleString()} <span className="text-xs font-bold">kcal/day</span></p>
-                    <p className="mt-0.5 text-[11px] text-charcoal-muted">Based on your assessment and goal</p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-brand-700">Suggested {slot.toLowerCase()} share</p>
-                    <p className="mt-1 text-xl font-black text-charcoal">~{slotCalorieTarget.toLocaleString()} <span className="text-xs font-bold">kcal</span></p>
-                    <p className="mt-0.5 text-[11px] text-charcoal-muted">Flexible guide across your meals</p>
-                  </div>
-                  <p className="sm:col-span-2 text-[11px] leading-relaxed text-charcoal-muted">Targets are estimates. Meal calories below are for the dataset’s listed serving, so the same meal can have the same calories while your daily target changes by goal.</p>
-                </div>
-              )}
 
               <div className="grid grid-cols-4 gap-2.5 mt-5">
                 {[
@@ -269,7 +281,7 @@ export function PhysicalNutrition() {
 
                 <div className="mt-4 pt-3 border-t border-black/[0.05] flex flex-wrap items-center justify-between gap-2 text-xs">
                   <span className="font-extrabold text-charcoal">
-                    {a.calories} kcal · {a.protein}g P
+                    {a.calories} kcal/serving · {a.protein}g P
                   </span>
                   <button type="button" aria-label={isFavorite(a) ? `Remove ${a.name} from favorites` : `Favorite ${a.name}`} title={isFavorite(a) ? 'Remove from favorites' : 'Add to favorites'} disabled={savingMeal} onClick={() => toggleFavorite(a)} className="inline-flex items-center justify-center rounded-full p-2 text-brand-700 hover:bg-brand-50 disabled:opacity-50">
                     <HeartIcon size={17} fill={isFavorite(a) ? 'currentColor' : 'none'} />

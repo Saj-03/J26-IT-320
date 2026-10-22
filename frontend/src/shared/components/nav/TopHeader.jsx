@@ -4,6 +4,7 @@ import { SearchIcon, BellIcon } from 'lucide-react';
 import { Logo } from '../ui/Logo';
 import { Avatar } from '../ui/Avatar';
 import useNotifications, { relativeTime } from '../../../features/scheduler/hooks/useNotifications';
+import { BuddyNotificationCheckIn } from '../../../features/physical-wellbeing/components/BuddyNotificationCheckIn';
 import useStudent from '../../hooks/useStudent';
 export function TopHeader() {
     const student = useStudent();
@@ -53,6 +54,7 @@ export function TopHeader() {
               <p className="text-sm font-extrabold text-charcoal">Notifications</p>
               {unread > 0 && <span className="text-xs font-semibold text-brand-600">{unread} new</span>}
             </div>
+            <BuddyNotificationCheckIn />
             <div className="max-h-[min(24rem,65vh)] overflow-y-auto">
               {!loaded ? <p className="px-4 py-6 text-sm text-charcoal-muted">Loading notifications…</p>
                 : recentNotifications.length === 0 ? <p className="px-4 py-6 text-sm text-charcoal-muted">No notifications yet. Workout reminders will appear here when their time starts.</p>

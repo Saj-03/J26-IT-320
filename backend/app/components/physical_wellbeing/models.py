@@ -53,6 +53,16 @@ class WorkoutFeedback(Base):
     difficulty: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
+class NutritionFeedback(Base):
+    """Daily self-report on whether meals supported the student's wellbeing."""
+    __tablename__ = "nutrition_feedback"
+    __table_args__ = (UniqueConstraint("user_id", "day", name="uq_nutrition_feedback_user_day"),)
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    day: Mapped[date] = mapped_column(Date, index=True)
+    ate_well: Mapped[bool] = mapped_column(Boolean)
+
+
 class Habit(Base):
     __tablename__ = "habits"
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))

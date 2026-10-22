@@ -13,7 +13,7 @@ import { SectionTitle, AdaptedChip } from '../components/Shared';
 import ProfileRecommendations from '../components/ProfileRecommendations';
 import { WellbeingHeroBanner } from '../components/WellbeingHeroBanner';
 import useStudent from '../../../shared/hooks/useStudent';
-import { getRecommendations, getProfile, getActivitySummary, getHabits, saveWorkoutFeedback } from '../api';
+import { getRecommendations, getProfile, getActivitySummary, getHabits, saveWorkoutFeedback, saveMealFeedback } from '../api';
 
 export function PhysicalHome() {
   const navigate = useNavigate();
@@ -25,47 +25,42 @@ export function PhysicalHome() {
   const buddyImage = String(buddyGender).trim().toLowerCase() === 'female'
     ? '/img/wellbeing-buddy-female.png'
     : '/img/wellbeing-buddy-male.png';
-  const checkInKey = `wellbeing-buddy-checkin:${student?.email || 'guest'}:${new Date().toLocaleDateString('en-CA')}`;
+  const checkInDay = new Date().toLocaleDateString('en-CA');
+  const snoozeKey = `wellbeing-buddy-snooze:${student?.email || 'guest'}:${checkInDay}`;
 
   const [recomData, setRecomData] = useState(null);
   const [activitySummary, setActivitySummary] = useState(null);
   const [habits, setHabits] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [feedbackSaving, setFeedbackSaving] = useState(false);
-  const [feedback, setFeedback] = useState(null);
+  const [savingCheckIn, setSavingCheckIn] = useState(null);
+  const [checkInError, setCheckInError] = useState('');
+  const [workoutAnswer, setWorkoutAnswer] = useState(null);
+  const [mealAnswer, setMealAnswer] = useState(null);
   const [showBuddyPrompt, setShowBuddyPrompt] = useState(false);
-  const [buddyChoice, setBuddyChoice] = useState(null);
-  const [buddyExit, setBuddyExit] = useState(false);
   const [buddyScheduled, setBuddyScheduled] = useState(false);
-  const [checkInDoneForToday, setCheckInDoneForToday] = useState(() => localStorage.getItem(checkInKey) === 'true');
+  const checkInDoneForToday = workoutAnswer !== null && mealAnswer !== null;
 
   useEffect(() => {
     Promise.all([
       getRecommendations(false, false).catch(() => null),
       getProfile().catch(() => null),
-      getActivitySummary().catch(() => null),
+      getActivitySummary(checkInDay).catch(() => null),
       getHabits().catch(() => [])
     ]).then(([rec, prof, act, habs]) => {
       setRecomData(rec);
       setProfile(prof);
       setActivitySummary(act);
-      // A backend answer from earlier today must not look like a fresh click.
-      setFeedback(null);
-      setBuddyChoice(null);
+      setWorkoutAnswer(typeof act?.today?.workout_feedback === 'boolean' ? act.today.workout_feedback : null);
+      setMealAnswer(typeof act?.today?.meals_supported_wellbeing === 'boolean' ? act.today.meals_supported_wellbeing : null);
       setHabits(Array.isArray(habs) ? habs : []);
       setLoading(false);
     });
   }, []);
 
   useEffect(() => {
-    setCheckInDoneForToday(localStorage.getItem(checkInKey) === 'true');
-  }, [checkInKey]);
-
-  useEffect(() => {
     // Wait for today's saved check-in before scheduling the prompt. If the user
     // has already answered today, don't replay the buddy's reaction on refresh.
     if (loading || checkInDoneForToday || buddyScheduled) return;
-    const snoozeKey = `wellbeing-buddy-snooze-${new Date().toLocaleDateString('en-CA')}`;
     const snoozeUntil = Number(localStorage.getItem(snoozeKey) || 0);
     const delay = Math.max(1800, snoozeUntil - Date.now());
     const timer = window.setTimeout(() => {
@@ -73,7 +68,7 @@ export function PhysicalHome() {
       setBuddyScheduled(true);
     }, delay);
     return () => window.clearTimeout(timer);
-  }, [loading, checkInDoneForToday, buddyScheduled]);
+  }, [loading, checkInDoneForToday, buddyScheduled, snoozeKey]);
 
   // Real stats
   const todaySteps = activitySummary?.today?.steps || 0;
@@ -115,32 +110,40 @@ export function PhysicalHome() {
   const isActiveToday = todaySteps > 0 || todayMins > 0;
 
   const answerWorkout = async (didWorkout) => {
-    setBuddyChoice(didWorkout);
-    setFeedbackSaving(true);
+    setSavingCheckIn('workout');
+    setCheckInError('');
     try {
       await saveWorkoutFeedback({
-        day: new Date().toLocaleDateString('en-CA'),
+        day: checkInDay,
         did_workout: didWorkout,
         workout_minutes: didWorkout ? Number(topWorkout?.minutes || topWorkout?.duration_mins || 20) : 0
       });
-      localStorage.setItem(checkInKey, 'true');
-      setCheckInDoneForToday(true);
-      setFeedback(didWorkout);
-      const refreshed = await getActivitySummary().catch(() => null);
+      setWorkoutAnswer(didWorkout);
+      const refreshed = await getActivitySummary(checkInDay).catch(() => null);
       if (refreshed) setActivitySummary(refreshed);
-      window.setTimeout(() => setBuddyExit(true), 450);
-      window.setTimeout(() => setShowBuddyPrompt(false), didWorkout ? 1250 : 1450);
-      window.setTimeout(() => setBuddyChoice(null), 2200);
-    } catch (error) {
-      console.error('Could not save workout check-in:', error);
-      setBuddyChoice(null);
+    } catch {
+      setCheckInError('Could not save your workout check-in. Please try again.');
     } finally {
-      setFeedbackSaving(false);
+      setSavingCheckIn(null);
+    }
+  };
+
+  const answerMeals = async (ateWell) => {
+    setSavingCheckIn('meals');
+    setCheckInError('');
+    try {
+      await saveMealFeedback({ day: checkInDay, ate_well: ateWell });
+      setMealAnswer(ateWell);
+      const refreshed = await getActivitySummary(checkInDay).catch(() => null);
+      if (refreshed) setActivitySummary(refreshed);
+    } catch {
+      setCheckInError('Could not save your meal check-in. Please try again.');
+    } finally {
+      setSavingCheckIn(null);
     }
   };
 
   const remindBuddyLater = () => {
-    const snoozeKey = `wellbeing-buddy-snooze-${new Date().toLocaleDateString('en-CA')}`;
     localStorage.setItem(snoozeKey, String(Date.now() + 30 * 60 * 1000));
     setShowBuddyPrompt(false);
     window.setTimeout(() => setShowBuddyPrompt(true), 30 * 60 * 1000);
@@ -156,53 +159,45 @@ export function PhysicalHome() {
     <AnimatePresence initial={false}>
       {showBuddyPrompt && (
         <motion.div
-          key="wellbeing-buddy-prompt"
-          initial={{ x: -180, opacity: 0 }}
-          animate={buddyExit ? (buddyChoice === false ? { x: -220, opacity: 0 } : { x: 260, opacity: 0 }) : { x: 0, opacity: 1 }}
-          exit={{ x: buddyChoice === false ? -220 : 220, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 65, damping: 14, duration: 0.8 }}
-          className="fixed inset-x-3 bottom-4 z-50 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-[min(36rem,calc(100vw-3rem))]"
+          key="daily-wellbeing-checkin"
+          initial={{ y: 24, opacity: 0, scale: 0.97 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          exit={{ y: 20, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 220, damping: 24 }}
+          className="fixed inset-x-3 bottom-4 z-50 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-[min(38rem,calc(100vw-3rem))]"
         >
-          <Card padding="sm" className="overflow-hidden border border-amber-100 bg-gradient-to-r from-amber-50 via-white to-sky-50">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                <div className="relative h-40 w-28 shrink-0 overflow-hidden" role="img" aria-label={`${buddyGender} wellbeing buddy ${buddyChoice === false ? 'reacting sadly' : buddyChoice === true ? 'celebrating' : 'walking in to ask a question'}`}>
-                  <motion.img
-                    src={buddyImage}
-                    alt=""
-                    className="h-full w-full object-contain object-center drop-shadow-sm"
-                    animate={buddyChoice === false
-                      ? { x: [0, -3, 0], rotate: [0, -4, 2, 0], y: [0, 2, 0] }
-                      : buddyChoice === true
-                        ? { y: [0, -9, 0], scale: [1, 1.06, 1] }
-                        : { y: [0, -3, 0], rotate: [0, 1.5, 0, -1.5, 0] }}
-                    transition={{ duration: buddyChoice === null ? 1.4 : 0.65, repeat: Infinity }}
-                    aria-hidden="true"
-                  />
-                  {buddyChoice === true && <motion.span className="absolute right-1 top-2 text-2xl" aria-hidden="true" animate={{ y: [0, -7, 0], opacity: [0.65, 1, 0.65] }} transition={{ duration: 0.8, repeat: Infinity }}>✨</motion.span>}
-                  {buddyChoice === false && <motion.span className="absolute right-3 top-8 text-xl" aria-hidden="true" animate={{ y: [0, 4, 0], opacity: [1, 0.6, 1] }} transition={{ duration: 0.9, repeat: Infinity }}>💧</motion.span>}
+          <Card padding="md" className="border border-brand-100 bg-white shadow-xl">
+            <div className="flex items-start gap-3">
+              <motion.img src={buddyImage} alt="Your wellbeing buddy" className="h-24 w-16 shrink-0 object-contain" animate={{ y: [0, -3, 0] }} transition={{ duration: 1.8, repeat: Infinity }} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <div><p className="text-xs font-bold uppercase tracking-wide text-brand-700">A quick daily check-in</p><h2 className="mt-0.5 text-base font-extrabold text-charcoal">How did today go?</h2></div>
+                  <button type="button" onClick={() => setShowBuddyPrompt(false)} className="rounded-full px-2 py-1 text-xs font-semibold text-charcoal-muted hover:bg-cream">Close</button>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold text-amber-700">{feedback === null ? 'A quick check-in' : 'Your wellbeing buddy'}</p>
-                  <p className="mt-0.5 text-base font-extrabold text-charcoal">
-                    {feedback === null
-                      ? `Quick movement check ✨ Did you get a workout in today?`
-                      : feedback
-                        ? 'Thanks for checking in! Your effort helps shape your next plan.'
-                        : 'That’s okay. We can try a smaller goal next time.'}
-                  </p>
-                  {feedback === null && <p className="mt-1 text-xs text-charcoal-muted">Your answer helps make your next plan fit you better.</p>}
-                  {feedbackSaving && <p className="mt-1 text-xs text-brand-700">Saving your answer…</p>}
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border border-black/[0.06] bg-cream/50 p-3">
+                    <p className="text-sm font-bold text-charcoal">Did you complete a workout today?</p>
+                    {workoutAnswer !== null && <p className="mt-1 text-[11px] font-semibold text-emerald-700">Saved: {workoutAnswer ? 'Yes' : 'Not today'}</p>}
+                    <div className="mt-2 flex gap-2">
+                      <Button size="sm" variant={workoutAnswer === false ? 'secondary' : 'outline'} disabled={savingCheckIn !== null} onClick={() => answerWorkout(false)} className="flex-1">Not today</Button>
+                      <Button size="sm" variant={workoutAnswer === true ? 'secondary' : 'primary'} disabled={savingCheckIn !== null} onClick={() => answerWorkout(true)} className="flex-1">Yes, I did</Button>
+                    </div>
+                    {savingCheckIn === 'workout' && <p className="mt-1 text-[11px] text-brand-700">Saving workout check-in…</p>}
+                  </div>
+                  <div className="rounded-xl border border-black/[0.06] bg-cream/50 p-3">
+                    <p className="text-sm font-bold text-charcoal">Did you have meals that supported your wellbeing?</p>
+                    {mealAnswer !== null && <p className="mt-1 text-[11px] font-semibold text-emerald-700">Saved: {mealAnswer ? 'Yes' : 'Not quite'}</p>}
+                    <div className="mt-2 flex gap-2">
+                      <Button size="sm" variant={mealAnswer === false ? 'secondary' : 'outline'} disabled={savingCheckIn !== null} onClick={() => answerMeals(false)} className="flex-1">Not quite</Button>
+                      <Button size="sm" variant={mealAnswer === true ? 'secondary' : 'primary'} disabled={savingCheckIn !== null} onClick={() => answerMeals(true)} className="flex-1">Yes, I did</Button>
+                    </div>
+                    {savingCheckIn === 'meals' && <p className="mt-1 text-[11px] text-brand-700">Saving meal check-in…</p>}
+                  </div>
                 </div>
+                {checkInError && <p role="alert" className="mt-2 text-xs font-semibold text-rose-700">{checkInError}</p>}
+                {checkInDoneForToday && <p className="mt-2 text-xs font-semibold text-emerald-700" aria-live="polite">Both answers are saved to your wellbeing record. You can update either answer today.</p>}
+                {!checkInDoneForToday && <button type="button" onClick={remindBuddyLater} className="mt-2 rounded-full px-2 py-1 text-xs font-semibold text-charcoal-muted hover:bg-cream">Remind me later</button>}
               </div>
-              {feedback === null && buddyChoice === null && (
-                <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
-                  <Button size="sm" onClick={() => navigate('/app/physical/exercise')}>Log movement</Button>
-                  <button type="button" disabled={feedbackSaving} onClick={remindBuddyLater} className="rounded-full px-3 py-2 text-xs font-semibold text-charcoal-muted hover:bg-black/[0.04] disabled:opacity-50">Remind me later</button>
-                </div>
-              )}
-              {feedback === null && buddyChoice === false && <p className="shrink-0 text-sm font-semibold text-charcoal-muted">That’s okay 💛</p>}
-              {feedback === null && buddyChoice === true && <p className="shrink-0 text-sm font-semibold text-emerald-700">Amazing! 🎉</p>}
             </div>
           </Card>
         </motion.div>
@@ -210,105 +205,21 @@ export function PhysicalHome() {
     </AnimatePresence>
 
     {!showBuddyPrompt && (
-      <motion.div
-        initial={{ x: 90, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 75, damping: 16 }}
-        className="fixed bottom-4 right-4 z-40 w-[min(19rem,calc(100vw-2rem))] sm:bottom-6 sm:right-6"
-        aria-label="Your wellbeing buddy is here"
-      >
+      <motion.div initial={{ x: 60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 120, damping: 18 }} className="fixed bottom-4 right-4 z-40 w-[min(18rem,calc(100vw-2rem))] sm:bottom-6 sm:right-6" aria-label="Wellbeing check-in reminder">
         <Card padding="sm" className="border border-brand-100 bg-white/95 shadow-lg">
           <div className="flex items-center gap-2.5">
-            <motion.img
-              src={buddyImage}
-              alt=""
-              className="h-24 w-14 object-contain drop-shadow-sm"
-              animate={buddyChoice === false
-                ? { x: [0, -3, 0], rotate: [0, -4, 2, 0] }
-                : buddyChoice === true
-                  ? { y: [0, -7, 0], scale: [1, 1.05, 1] }
-                  : { y: [0, -3, 0], rotate: [0, 1, 0, -1, 0] }}
-              transition={{ duration: buddyChoice === null ? 1.8 : 0.65, repeat: Infinity }}
-            />
-            <div className="min-w-0 flex-1 pr-1">
+            <motion.img src={buddyImage} alt="" className="h-16 w-12 shrink-0 object-contain" animate={{ y: [0, -2, 0] }} transition={{ duration: 1.8, repeat: Infinity }} />
+            <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-brand-700">Your wellbeing buddy</p>
-              <p className="mt-0.5 text-sm font-semibold text-charcoal">
-                  {!checkInDoneForToday
-                  ? 'Tiny movement check ✨ Did you get a workout in today?'
-                  : 'I’m here whenever you need me.'}
-              </p>
-              {buddyChoice !== null && <p className={`mt-1 text-xs font-semibold ${buddyChoice ? 'text-emerald-700' : 'text-amber-700'}`}>{buddyChoice ? 'Amazing! Thanks for checking in 💛' : 'That’s okay. We can try a smaller goal next time.'}</p>}
-              {feedbackSaving && <p className="mt-1 text-[11px] text-brand-700">Saving your answer…</p>}
+              <p className="mt-0.5 text-xs font-semibold text-charcoal">{checkInDoneForToday ? 'Thanks for checking in today!' : 'A quick workout and meal check-in is ready.'}</p>
             </div>
+            <Button size="sm" onClick={() => setShowBuddyPrompt(true)}>{checkInDoneForToday ? 'Review' : 'Check in'}</Button>
           </div>
-          {!checkInDoneForToday && (
-            <div className="mt-2 flex flex-wrap justify-end gap-1.5">
-              <Button size="sm" onClick={() => navigate('/app/physical/exercise')}>Log movement</Button>
-              <button type="button" disabled={feedbackSaving} onClick={remindBuddyLater} className="rounded-full px-2.5 py-2 text-xs font-semibold text-charcoal-muted hover:bg-black/[0.04] disabled:opacity-50">Later</button>
-            </div>
-          )}
         </Card>
       </motion.div>
     )}
 
     <PhysicalNav />
-
-    {false && <Card padding="md" className="overflow-hidden">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="font-bold text-charcoal">Did you work out today?</p>
-          <p className="text-xs text-charcoal-muted mt-0.5">One quick check-in helps tune future workout lengths.</p>
-        </div>
-        <span className="text-3xl" aria-hidden="true">{feedback === true ? '😊' : feedback === false ? '😢' : '🙂'}</span>
-      </div>
-      <div className="relative mt-3 h-12 rounded-2xl bg-brand-50 overflow-hidden" aria-label="Workout check-in avatar">
-        <motion.div
-          className="absolute top-0.5"
-          initial={{ left: '-48px', opacity: 0 }}
-          animate={{ left: feedback === true ? 'calc(100% - 42px)' : feedback === false ? '8px' : 'calc(50% - 18px)', opacity: 1 }}
-          transition={{ left: { type: 'spring', stiffness: 85, damping: 15 }, opacity: { duration: 0.35 } }}
-          role="img"
-          aria-label={feedback === true ? 'Happy avatar walking to the right' : feedback === false ? 'Sad avatar walking to the left' : 'Avatar waiting for your answer'}
-        >
-          <motion.svg viewBox="0 0 48 52" className="h-11 w-10 drop-shadow-sm" animate={feedback === null ? { y: [0, -1, 0] } : { y: [0, -3, 0] }} transition={{ duration: feedback === null ? 1.2 : 0.32, repeat: Infinity }}>
-            {/* Friendly cartoon face and hair */}
-            <path d="M12 14 Q10 3 23 3 Q36 3 35 15 L32 19 L14 18 Z" fill="#49352d" />
-            <circle cx="24" cy="13" r="9" fill="#f2bd91" />
-            <path d="M15 11 Q16 4 24 4 Q32 4 33 11 Q28 7 22 8 Q18 8 15 11" fill="#49352d" />
-            <circle cx="21" cy="13" r="1" fill="#382a27" /><circle cx="27" cy="13" r="1" fill="#382a27" />
-            <circle cx="18" cy="16" r="1.2" fill="#e99587" opacity=".7" /><circle cx="30" cy="16" r="1.2" fill="#e99587" opacity=".7" />
-            {feedback === false ? <path d="M21 19 Q24 16 27 19" fill="none" stroke="#65443b" strokeWidth="1.4" strokeLinecap="round" /> : <path d="M20 17 Q24 21 28 17" fill="none" stroke="#65443b" strokeWidth="1.4" strokeLinecap="round" />}
-            {/* Shirt, sleeves, arms, trousers, and little shoes */}
-            <path d="M17 23 Q24 20 31 23 L34 35 Q24 39 14 35 Z" fill="#55a879" />
-            <path d="M17 24 L11 31 M31 24 L37 29" fill="none" stroke="#f2bd91" strokeWidth="4" strokeLinecap="round" />
-            <path d="M20 36 L18 45 M28 36 L30 45" fill="none" stroke="#42516b" strokeWidth="4.5" strokeLinecap="round" />
-            <path d="M17 46 L14 48 Q14 50 21 49 L22 47 M29 46 L28 48 Q29 50 36 49 L34 47" fill="#f3b84c" stroke="#cc8b2e" strokeWidth=".8" strokeLinejoin="round" />
-          </motion.svg>
-        </motion.div>
-        <span className="absolute left-2 bottom-1 text-[10px] text-charcoal-muted">Not today</span>
-        <span className="absolute right-2 bottom-1 text-[10px] text-charcoal-muted">Yes, I did</span>
-      </div>
-      {feedback === null ? (
-        <div className="mt-3 flex gap-2">
-          <Button size="sm" variant="outline" disabled={feedbackSaving} onClick={() => answerWorkout(false)} className="flex-1">Not today</Button>
-          <Button size="sm" disabled={feedbackSaving} onClick={() => answerWorkout(true)} className="flex-1">Yes, I did</Button>
-        </div>
-      ) : (
-        <p className="mt-2 text-xs font-medium text-charcoal-muted" aria-live="polite">
-          {feedback ? 'Nice work! Your plan will keep what is working for you.' : 'That’s okay. We’ll make future sessions more manageable.'} You can check in again tomorrow.
-        </p>
-      )}
-      {recomData?.behavior_adaptation && (
-        <p className="mt-1 text-[11px] text-charcoal-muted">
-          {recomData.behavior_adaptation.check_ins < 3
-            ? `${recomData.behavior_adaptation.check_ins}/3 check-ins collected before workout-length adjustments.`
-            : recomData.behavior_adaptation.reason === 'shorter_sessions_after_recent_missed_workouts'
-              ? 'Your recent check-ins are guiding the plan toward shorter sessions.'
-              : 'Recent check-ins are included when choosing your workout duration.'}
-        </p>
-      )}
-    </Card>}
-
     {/* Wellbeing score card */}
     <Card padding="lg" className="relative overflow-hidden">
       <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-brand-50" aria-hidden />

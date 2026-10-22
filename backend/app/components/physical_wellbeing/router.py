@@ -10,7 +10,7 @@ from app.core.dependencies import get_current_user
 from app.core.config import settings
 from app.components.physical_wellbeing import schemas, service
 from app.components.physical_wellbeing.models import (
-    WellbeingProfile, ActivityLog, Habit, WorkoutFeedback,
+    WellbeingProfile, ActivityLog, Habit, WorkoutFeedback, NutritionFeedback,
     PhysicalPlanSnapshot, PlanCheckIn, FavoriteItem, PeerChallenge, PeerChallengeMember,
 )
 from app.components.physical_wellbeing.ml import recommender
@@ -1006,12 +1006,26 @@ def save_workout_feedback(data: schemas.WorkoutFeedbackIn, db: Session = Depends
     return {"ok": True, "day": data.day.isoformat(), "did_workout": data.did_workout}
 
 
+@router.post("/activity/meal-feedback")
+def save_meal_feedback(data: schemas.NutritionFeedbackIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    feedback = db.query(NutritionFeedback).filter_by(user_id=user.id, day=data.day).first()
+    if feedback:
+        feedback.ate_well = data.ate_well
+    else:
+        db.add(NutritionFeedback(user_id=user.id, day=data.day, ate_well=data.ate_well))
+    db.commit()
+    return {"ok": True, "day": data.day.isoformat(), "ate_well": data.ate_well}
+
+
 @router.get("/activity")
-def get_activity_summary(db: Session = Depends(get_db), user=Depends(get_current_user)):
-    today = datetime.date.today()
+def get_activity_summary(day: datetime.date | None = None, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    # The browser may provide the student's local calendar day so check-ins stay
+    # consistent around UTC midnight.
+    today = day or datetime.date.today()
     # Today's activity
     today_log = db.query(ActivityLog).filter_by(user_id=user.id, day=today).first()
     today_feedback = db.query(WorkoutFeedback).filter_by(user_id=user.id, day=today).first()
+    today_meal_feedback = db.query(NutritionFeedback).filter_by(user_id=user.id, day=today).first()
     
     # Last 7 days history
     seven_days_ago = today - datetime.timedelta(days=6)
@@ -1044,6 +1058,7 @@ def get_activity_summary(db: Session = Depends(get_db), user=Depends(get_current
             "exercise_minutes": today_log.exercise_minutes if today_log else 0,
             "completed_recommendation": today_log.completed_recommendation if today_log else False,
             "workout_feedback": today_feedback.did_workout if today_feedback else None,
+            "meals_supported_wellbeing": today_meal_feedback.ate_well if today_meal_feedback else None,
             "has_logged_today": today_log is not None
         },
         "weekly_totals": {

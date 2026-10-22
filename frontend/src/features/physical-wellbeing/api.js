@@ -20,9 +20,10 @@ export const removeFavorite = (itemType, itemName) => api.delete('/physical/favo
 export const updatePlanDuration = (daysCount) => api.put('/physical/profile/plan-duration', { days_count: daysCount }).then((r) => r.data);
 export const saveWorkoutTimeWindow = (window) => api.put('/physical/week-plan/workout-time', window).then((r) => r.data);
 export const sendPhysicalChat = (message, history = []) => api.post('/physical/assistant/chat', { message, history }).then((r) => r.data);
-export const getActivitySummary = () => api.get("/physical/activity").then((r) => r.data);
+export const getActivitySummary = (day) => api.get("/physical/activity", { params: day ? { day } : undefined }).then((r) => r.data);
 export const logActivity = (a) => api.post("/physical/activity", a);
 export const saveWorkoutFeedback = (feedback) => api.post("/physical/activity/workout-feedback", feedback).then((r) => r.data);
+export const saveMealFeedback = (feedback) => api.post("/physical/activity/meal-feedback", feedback).then((r) => r.data);
 export const getHabits = () => api.get("/physical/habits").then((r) => r.data);
 export const addHabit = (name) => api.post("/physical/habits", { name });
 export const deleteHabit = (id) => api.delete(`/physical/habits/${id}`).then((r) => r.data);

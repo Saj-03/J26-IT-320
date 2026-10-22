@@ -66,6 +66,11 @@ class WorkoutFeedbackIn(BaseModel):
     difficulty: Optional[str] = None
 
 
+class NutritionFeedbackIn(BaseModel):
+    day: date
+    ate_well: bool
+
+
 class HabitIn(BaseModel):
     name: str
 
